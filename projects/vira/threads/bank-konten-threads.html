@@ -1,0 +1,683 @@
+<title>Bank Konten @povstevens</title>
+<style>
+  /* ---- Tokens: light is the base set ---- */
+  :root {
+    --ground:      #F6F7F9;
+    --surface:     #FFFFFF;
+    --surface-sub: #EDEFF3;
+    --ink:         #171B22;
+    --ink-soft:    #59616F;
+    --ink-faint:   #8B93A1;
+    --line:        #E1E4EA;
+    --line-strong: #CBD0D9;
+    --accent:      #B26A1E;
+    --accent-ink:  #FFFFFF;
+    --accent-wash: #F6EADA;
+
+    --p-a: #B26A1E;
+    --p-b: #4F5F9E;
+    --p-c: #2F7C75;
+    --p-d: #A94A40;
+    --p-e: #6E578C;
+    --p-f: #5F7440;
+
+    --shadow: 0 1px 2px rgba(23,27,34,.06), 0 6px 18px rgba(23,27,34,.05);
+
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0F1217;
+      --surface:     #171B22;
+      --surface-sub: #1F242D;
+      --ink:         #E6E9EF;
+      --ink-soft:    #9AA2B1;
+      --ink-faint:   #6B7382;
+      --line:        #262C36;
+      --line-strong: #333A46;
+      --accent:      #E0A05A;
+      --accent-ink:  #171B22;
+      --accent-wash: #2A2118;
+
+      --p-a: #E0A05A;
+      --p-b: #8B99D8;
+      --p-c: #5FB8AE;
+      --p-d: #E08A80;
+      --p-e: #A992C7;
+      --p-f: #9AB474;
+
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.22);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #0F1217;
+    --surface:     #171B22;
+    --surface-sub: #1F242D;
+    --ink:         #E6E9EF;
+    --ink-soft:    #9AA2B1;
+    --ink-faint:   #6B7382;
+    --line:        #262C36;
+    --line-strong: #333A46;
+    --accent:      #E0A05A;
+    --accent-ink:  #171B22;
+    --accent-wash: #2A2118;
+
+    --p-a: #E0A05A;
+    --p-b: #8B99D8;
+    --p-c: #5FB8AE;
+    --p-d: #E08A80;
+    --p-e: #A992C7;
+    --p-f: #9AB474;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 18px rgba(0,0,0,.22);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 620px; margin: 0 auto; padding: 0 16px 96px; }
+
+  /* ---- Header ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner { max-width: 620px; margin: 0 auto; padding: 14px 16px 0; }
+
+  .masthead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .masthead h1 {
+    margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em;
+  }
+  .masthead .count {
+    font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums;
+    color: var(--ink-soft); white-space: nowrap;
+  }
+
+  .meter { height: 3px; background: var(--surface-sub); border-radius: 2px; margin: 10px 0 12px; overflow: hidden; }
+  .meter > i { display: block; height: 100%; width: 0%; background: var(--accent); transition: width .3s ease; }
+
+  .filters {
+    display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+
+  .chip {
+    flex: 0 0 auto; cursor: pointer; border: 1px solid var(--line-strong);
+    background: transparent; color: var(--ink-soft);
+    font: inherit; font-size: 13px; line-height: 1;
+    padding: 8px 12px; border-radius: 999px; white-space: nowrap;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .chip:hover { border-color: var(--ink-faint); color: var(--ink); }
+  .chip[aria-pressed="true"] {
+    background: var(--ink); color: var(--ground); border-color: var(--ink);
+  }
+  .chip .dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    margin-right: 6px; vertical-align: baseline; background: currentColor;
+  }
+  .chip[data-pilar="A"] .dot { background: var(--p-a); }
+  .chip[data-pilar="B"] .dot { background: var(--p-b); }
+  .chip[data-pilar="C"] .dot { background: var(--p-c); }
+  .chip[data-pilar="D"] .dot { background: var(--p-d); }
+  .chip[data-pilar="E"] .dot { background: var(--p-e); }
+  .chip[data-pilar="F"] .dot { background: var(--p-f); }
+
+  .toolrow { display: flex; gap: 8px; padding-bottom: 12px; }
+  .tool {
+    flex: 1; cursor: pointer; font: inherit; font-size: 13px;
+    padding: 9px 12px; border-radius: 8px;
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .tool:hover { border-color: var(--ink-faint); }
+  .tool.ghost { background: transparent; color: var(--ink-soft); flex: 0 0 auto; }
+
+  /* ---- Tone reminder ---- */
+  details.tone {
+    margin: 18px 0 4px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--surface); overflow: hidden;
+  }
+  details.tone > summary {
+    cursor: pointer; padding: 12px 14px; font-size: 13px; font-weight: 550;
+    color: var(--ink-soft); list-style: none;
+  }
+  details.tone > summary::-webkit-details-marker { display: none; }
+  details.tone > summary::after { content: " ▾"; color: var(--ink-faint); }
+  details.tone[open] > summary::after { content: " ▴"; }
+  .tone-body { padding: 0 14px 14px; font-size: 13.5px; color: var(--ink-soft); }
+  .tone-body ul { margin: 0 0 12px; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+  .tone-body strong { color: var(--ink); }
+  .tone-body .banned {
+    font-family: var(--mono); font-size: 12px; color: var(--p-d);
+    background: var(--surface-sub); padding: 8px 10px; border-radius: 6px;
+    display: block; word-spacing: .2em;
+  }
+
+  /* ---- Post list ---- */
+  .list { display: flex; flex-direction: column; }
+
+  .post {
+    padding: 22px 0;
+    border-bottom: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .post.done { opacity: .42; }
+
+  .post-head { display: flex; align-items: center; gap: 8px; }
+  .pilar {
+    font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .post[data-pilar="A"] .pilar { color: var(--p-a); }
+  .post[data-pilar="B"] .pilar { color: var(--p-b); }
+  .post[data-pilar="C"] .pilar { color: var(--p-c); }
+  .post[data-pilar="D"] .pilar { color: var(--p-d); }
+  .post[data-pilar="E"] .pilar { color: var(--p-e); }
+  .post[data-pilar="F"] .pilar { color: var(--p-f); }
+
+  .pid {
+    font-family: var(--mono); font-size: 11px; color: var(--ink-faint);
+    margin-left: auto; font-variant-numeric: tabular-nums;
+  }
+  .chars { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+  .chars.over { color: var(--p-d); font-weight: 600; }
+
+  .body {
+    white-space: pre-wrap; font-size: 16px; line-height: 1.62;
+    color: var(--ink); margin: 0;
+  }
+
+  .actions { display: flex; align-items: center; gap: 8px; }
+
+  .copy {
+    cursor: pointer; font: inherit; font-size: 13.5px; font-weight: 550;
+    padding: 9px 16px; border-radius: 8px;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+    transition: transform .12s ease, opacity .15s ease;
+  }
+  .copy:active { transform: scale(.97); }
+  .copy.ok { background: transparent; color: var(--accent); }
+
+  .mark {
+    cursor: pointer; font: inherit; font-size: 13.5px;
+    padding: 9px 14px; border-radius: 8px;
+    border: 1px solid var(--line-strong); background: transparent; color: var(--ink-soft);
+    display: flex; align-items: center; gap: 7px;
+  }
+  .mark:hover { border-color: var(--ink-faint); color: var(--ink); }
+  .box {
+    width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid var(--line-strong);
+    display: grid; place-items: center; font-size: 10px; line-height: 1; color: transparent;
+  }
+  .post.done .box { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  .empty { padding: 48px 0; text-align: center; color: var(--ink-faint); font-size: 14px; }
+
+  .foot {
+    margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line);
+    font-size: 12.5px; color: var(--ink-faint); line-height: 1.6;
+  }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+  .flash {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(12px);
+    background: var(--ink); color: var(--ground);
+    padding: 10px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 550;
+    box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease; z-index: 50;
+  }
+  .flash.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="masthead">
+      <h1>Bank Konten @povstevens</h1>
+      <span class="count" id="count">0 / 55</span>
+    </div>
+    <div class="meter"><i id="meter"></i></div>
+    <div class="filters" id="filters"></div>
+    <div class="toolrow">
+      <button class="tool" id="shuffle">Acak satu yang belum diposting</button>
+      <button class="tool ghost" id="reset" title="Kosongkan semua tanda">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <details class="tone">
+    <summary>Pengingat tone sebelum nempel</summary>
+    <div class="tone-body">
+      <ul>
+        <li>Mulai dari <strong>tengah pikiran</strong>, bukan pembukaan.</li>
+        <li>Satu ide per post. Mayoritas <strong>tanpa CTA</strong> — maksimal 1 dari 5.</li>
+        <li>Nggak usah hashtag. Ini bukan IG.</li>
+        <li>Boleh huruf kecil semua, kalimat nggak selesai, typo kecil.</li>
+        <li>Jangan post dua pilar yang sama berturut-turut dalam sehari.</li>
+        <li>Reply 10&ndash;15/hari lebih penting daripada post ke-4.</li>
+      </ul>
+      <span class="banned">unlock &middot; game changer &middot; level up &middot; scale &middot; leverage &middot; di era digital &middot; pertanyaan retoris penutup &middot; 🚀</span>
+    </div>
+  </details>
+
+  <div class="list" id="list"></div>
+
+  <p class="foot">
+    Tanda &ldquo;sudah diposting&rdquo; kesimpan di browser ini aja &mdash; nggak ke mana-mana.<br>
+    Nama klien nggak pernah disebut di semua post. Kalau bikin post baru sendiri, cek lagi sebelum tempel.
+  </p>
+</div>
+
+<div class="flash" id="flash">Tersalin</div>
+
+<script>
+const PILAR = {
+  A: { nama: "Pengakuan QA",     pendek: "QA" },
+  B: { nama: "Jam 1 pagi",       pendek: "Jam 1 pagi" },
+  C: { nama: "Yang klien bilang",pendek: "Klien" },
+  D: { nama: "Lawan arus",       pendek: "Lawan arus" },
+  E: { nama: "Nanya beneran",    pendek: "Nanya" },
+  F: { nama: "Bukti pelan",      pendek: "Bukti" }
+};
+
+const POSTS = [
+{id:"A1",p:"A",t:`ada satu hal yang sampai sekarang nggak aku izinin AI-ku lakuin: ngasih harga final.
+
+dia boleh jelasin range, boleh jelasin apa aja yang termasuk. tapi begitu nyampe angka yang orang bakal pegang buat mutusin, harus manusia.
+
+bukan karena dia gak bisa. dia bisa banget. justru itu masalahnya — dia bakal jawab dengan pede walaupun salah.`},
+{id:"A2",p:"A",t:`kerjaanku senin sampai jumat itu nyari cara ngerusak sistem sebelum sampai ke orang yang make.
+
+terus malemnya aku bangun sistem sendiri.
+
+jadi ya bisa ditebak, aku orang paling nyebelin buat AI-ku sendiri.`},
+{id:"A3",p:"A",t:`AI-ku pernah nyambungin orang ke manusia cuma gara-gara dia jawab "boleh".
+
+konteksnya: AI nanya "mau saya kirimin fotonya?" — orangnya jawab "boleh". harusnya foto dikirim. yang kejadian malah di-escalate ke tim.
+
+dia nangkep kata "boleh" sebagai tanda setuju disambungin, tanpa inget dia barusan nanya apa.
+
+satu kata. cukup buat bikin orang yang cuma pengen liat foto jadi nunggu.`},
+{id:"A4",p:"A",t:`pertanyaan yang selalu aku tanyain ke diri sendiri sebelum ngasih fitur baru ke AI:
+
+kalau ini salah, yang nanggung siapa?
+
+kalau jawabannya "pelanggan klienku" — fiturnya nggak jadi, atau dikasih rem dulu.`},
+{id:"A5",p:"A",t:`yang paling bahaya dari AI customer service bukan pas dia bilang "maaf saya nggak tau".
+
+tapi pas dia nggak tau, terus tetep jawab.
+
+dan jawabannya kedengeran meyakinkan banget.`},
+{id:"A6",p:"A",t:`AI-ku sengaja aku bikin lambat. lima sampai sepuluh detik sebelum bales, padahal bisa instan.
+
+soalnya pas masih instan, orang ngerasa aneh. kecepetan buat ukuran manusia, jadi ketauan bot, terus mereka males lanjut.
+
+kadang perbaikan terbaik itu bukan bikin lebih cepet.`},
+{id:"A7",p:"A",t:`baru sadar aku lebih sering nulis "jangan lakuin ini" di sistem AI-ku daripada "lakuin ini".
+
+mungkin itu efek kelamaan kerja di QA.`},
+{id:"A8",p:"A",t:`pernah ada momen AI-ku lupa total sama orang yang barusan ngobrol panjang sama dia.
+
+user-nya udah cerita lagi ambil program apa, udah nyampe mana. terus sistemnya restart. balik lagi ke "halo, ada yang bisa dibantu?"
+
+bayangin kamu jadi orang itu.`},
+{id:"A9",p:"A",t:`ada seratusan pertanyaan yang udah aku siapin jawabannya.
+
+yang bikin aku nggak bisa tidur itu yang ke-101.`},
+{id:"A10",p:"A",t:`orang nanya "AI-mu udah pinter belum?"
+
+jawaban jujurnya: aku lebih peduli dia tau kapan harus berhenti ngomong.`},
+{id:"A11",p:"A",t:`dulu kalau ada yang ngetik kepotong-potong — "halo" terus "mau nanya" terus "soal harga" — AI-ku bales yang pertama doang. dua sisanya ilang.
+
+nggak ada error. nggak ada notif. cuma ilang.
+
+itu yang paling serem dari bug. bukan yang bikin sistem mati, tapi yang bikin sistem keliatan baik-baik aja.`},
+{id:"A12",p:"A",t:`tiap kali mau demo AI-ku ke orang, ada suara di kepala: "jangan-jangan hari ini dia ngaco".
+
+udah versi keempat, suaranya masih ada.
+
+kayaknya emang nggak bakal ilang. dan mungkin itu bagus.`},
+{id:"A13",p:"A",t:`aku kasih AI-ku rem: maksimal 5 pesan per menit.
+
+bukan buat hemat. buat jaga-jaga kalau suatu hari dia nyangkut di loop terus mulai spam orang.
+
+kalau kamu bangun sesuatu yang ngomong langsung ke pelanggan, mikirin skenario terburuk itu bukan pesimis. itu bagian kerjaan.`},
+{id:"A14",p:"A",t:`cara aku tau AI-ku beneran siap bukan dari dia jawab bener.
+
+tapi dari dia jawab bener pas aku sengaja ngetik kayak orang lagi kesel, typo di mana-mana, nanya tiga hal sekaligus.`},
+{id:"A15",p:"A",t:`pernah aku hapus satu fitur yang udah jadi.
+
+fiturnya jalan. tapi tiap kali dia salah, salahnya di depan pelanggan klienku, bukan di depan aku.
+
+fitur yang gagalnya nggak keliatan sama yang bangun itu fitur paling mahal.`},
+{id:"A16",p:"A",t:`hal paling nggak enak jadi orang QA yang bangun produk sendiri:
+
+kamu tau persis semua tempat yang bisa pecah.
+
+dan kamu tetep harus tekan tombol deploy.`},
+{id:"A17",p:"A",t:`ada seratus dua puluh lima orang yang sekarang ngobrol sama sistem ini tanpa ada manusia di tengahnya.
+
+angka itu kadang bikin bangga, kadang bikin aku buka laptop jam 12 malem cuma buat ngecek log.`},
+{id:"A18",p:"A",t:`aku nggak pernah bilang ke klien "sistemnya udah aman".
+
+aku bilang "ini yang udah aku tes, ini yang belum".
+
+sejauh ini nggak ada yang komplain sama kejujuran itu. malah kebalikannya.`},
+
+{id:"B1",p:"B",t:`jam 1.14 pagi. besok ada meeting jam 9.
+
+tapi ada satu skenario yang kepikiran dari tadi sore, dan kalau nggak aku cek sekarang aku bakal mikirin itu seharian besok.`},
+{id:"B2",p:"B",t:`pulang kantor, makan, buka laptop lagi.
+
+nggak ada yang nyuruh. itu bagian yang aneh.`},
+{id:"B3",p:"B",t:`hari ini nggak nulis satu baris pun.
+
+cuma baca ulang percakapan orang sama AI-ku satu-satu, sambil mikir "kalau aku jadi dia, aku bakal ngerasa dibantu nggak ya".`},
+{id:"B4",p:"B",t:`weekend dipake ngerjain hal yang mirip sama weekdays, cuma ini punya sendiri.
+
+capeknya beda. gak tau kenapa.`},
+{id:"B5",p:"B",t:`lagi di titik di mana aku nggak yakin ini bakal jadi apa.
+
+tapi tiap ada notifikasi orang baru ngobrol sama sistem yang aku bangun, aku tetep buka.`},
+{id:"B6",p:"B",t:`tadi ada yang chat sistemku jam 2 pagi. dan dijawab.
+
+aku tidur. sistemnya kerja.
+
+setelah setahun lebih ngoprek, ini pertama kalinya aku ngerasa "oh, gini rasanya".`},
+{id:"B7",p:"B",t:`kadang mikir, orang lain seumuran udah punya apa ya.
+
+terus balik lagi ke layar.`},
+{id:"B8",p:"B",t:`satu hal yang jarang dibahas soal bangun sesuatu sambil kerja full time:
+
+bukan waktunya yang kurang. tapi kepala yang udah kepake duluan.`},
+{id:"B9",p:"B",t:`udah versi keempat.
+
+versi pertama jelek banget kalau diinget sekarang. tapi kalau nggak ada versi pertama yang jelek itu, nggak ada yang bisa diperbaiki.`},
+{id:"B10",p:"B",t:`nggak ada insight hari ini. cuma capek dan sistemnya jalan.
+
+kadang segitu aja udah cukup.`},
+
+{id:"C1",p:"C",t:`pertanyaan pertama hampir semua owner bisnis ke aku bukan "AI-nya pinter nggak".
+
+tapi "data pelangganku aman nggak?"
+
+dan mereka bener nanya itu duluan.`},
+{id:"C2",p:"C",t:`ada owner yang bilang: "aku bukan takut AI-nya salah. aku takut aku nggak tau dia salah."
+
+kalimat itu ngubah cara aku bangun sistem.`},
+{id:"C3",p:"C",t:`"nanti pelangganku sadar nggak sih itu bot?"
+
+biasanya sadar. dan itu bukan masalah.
+
+yang jadi masalah kalau mereka sadar terus ngerasa nggak ada jalan keluar buat ngomong sama manusia.`},
+{id:"C4",p:"C",t:`ada klien minta AI-nya jangan terlalu formal, soalnya katanya "pelangganku nanti ngerasa lagi ngobrol sama CS bank".
+
+aku ketawa. kerjaan siangku ya di bank.`},
+{id:"C5",p:"C",t:`dua klienku beda banget.
+
+satu butuh AI-nya sabar, ngejelasin pelan-pelan, karena yang chat lagi mikirin keputusan besar buat masa depannya.
+
+satu lagi butuh AI-nya cepet ngajakin ketemu, karena yang chat lagi bandingin beberapa pilihan sekaligus.
+
+kalau dua ini dikasih template yang sama, dua-duanya gagal.`},
+{id:"C6",p:"C",t:`momen paling aneh: pas owner-nya baca percakapan AI sama pelanggannya, terus bilang "ini kayak aku banget".
+
+itu lebih bikin lega daripada semua metrik.`},
+{id:"C7",p:"C",t:`nggak semua bisnis butuh AI customer service.
+
+kalau chat masuknya 5 sehari dan kamu masih sempet bales semua dengan bener, kamu nggak butuh aku. kamu butuh tidur yang cukup.
+
+aku pernah ngomong gitu ke calon klien. dia malah balik lagi beberapa bulan kemudian.`},
+{id:"C8",p:"C",t:`yang paling sering bikin proyek AI gagal menurutku bukan teknologinya.
+
+tapi nggak ada yang mau duduk 2 jam buat jelasin gimana bisnisnya sebenernya jalan.`},
+
+{id:"D1",p:"D",t:`85% orang masih lebih milih ngomong sama manusia daripada bot. angkanya naik, bukan turun.
+
+dan aku bangun AI customer service.
+
+bukan karena aku nggak setuju sama angka itu. justru karena aku percaya angka itu. orang benci bot bukan karena dia bot, tapi karena kebanyakan bot dibangun buat ngusir mereka, bukan buat bantu.`},
+{id:"D2",p:"D",t:`"AI bakal gantiin customer service"
+
+nggak. AI bakal gantiin CS yang jelek. CS yang bagus malah makin mahal karena makin langka.`},
+{id:"D3",p:"D",t:`chatbot yang nyuruh kamu "ketik 1 untuk produk, ketik 2 untuk harga" itu bukan AI.
+
+itu mesin ATM yang nyamar.`},
+{id:"D4",p:"D",t:`kebanyakan konten AI automation jualan mimpi "ngirit 6 jam sehari".
+
+yang nggak diomongin: 6 jam itu keirit setelah kamu abisin puluhan jam di depan buat ngajarin sistemnya.
+
+worth it? buat sebagian iya. tapi jangan dibilang gratis.`},
+{id:"D5",p:"D",t:`AI customer service yang jelek lebih rugi daripada nggak punya sama sekali.
+
+kalau nggak dibales, orang mikir "lagi sibuk". kalau dibales salah sama bot, orang mikir "bisnis ini nggak niat".`},
+{id:"D6",p:"D",t:`aku nggak jualan AI yang bisa semuanya.
+
+aku jualan AI yang tau batasnya, dan ngasih tau kamu pas dia nyampe batas itu.
+
+versi kedua lebih susah dibangun, dan lebih jarang laku dijual.`},
+{id:"D7",p:"D",t:`orang nanya aku pake tool apa, kayak toolnya yang bikin beda.
+
+yang bikin beda itu 2 jam ngobrol sama owner sebelum nyentuh tool apapun.`},
+{id:"D8",p:"D",t:`prediksi yang nggak populer: tahun depan bakal banyak bisnis matiin AI customer service-nya diem-diem.
+
+bukan karena AI-nya jelek. tapi karena dipasang buru-buru, tanpa ada yang tanggung jawab pas dia salah.`},
+
+{id:"E1",p:"E",t:`jujur — terakhir kali kamu chat CS terus dibales bot, kamu langsung nyari cara ngomong sama manusia nggak?
+
+aku iya. dan aku bangun bot.`},
+{id:"E2",p:"E",t:`buat yang punya bisnis: dari semua chat masuk seharian, kira-kira berapa persen yang pertanyaannya itu-itu lagi?`},
+{id:"E3",p:"E",t:`pertanyaan serius, bukan buat konten:
+
+kalau AI di bisnismu salah jawab ke pelanggan, kamu maunya dia (a) diem terus lempar ke kamu, atau (b) tetep jawab yang paling mendekati?
+
+aku milih a. tapi aku sering ketemu orang yang milih b dan alasannya masuk akal juga.`},
+{id:"E4",p:"E",t:`apa kalimat dari pelanggan yang paling sering kamu bales sampai kamu bosen sendiri?`},
+{id:"E5",p:"E",t:`kamu lebih kesel mana: chat nggak dibales 6 jam, atau dibales bot dalam 3 detik tapi jawabannya nggak nyambung?`},
+{id:"E6",p:"E",t:`lagi nyari ide buat dites berikutnya — menurut kalian skenario paling gila yang bisa dilakuin orang ke chatbot itu apa?
+
+aku beneran mau coba.`},
+
+{id:"F1",p:"F",t:`delapan ratusan pesan udah lewat sistem ini.
+
+aku masih baca sebagian besar. bukan karena harus, tapi karena tiap baca ada aja satu yang bikin sadar ada yang perlu dibenerin.`},
+{id:"F2",p:"F",t:`5 orang booking sesi lewat sistem yang aku bangun, 4 kepake beneran.
+
+angkanya kecil. tapi itu 5 orang yang nggak perlu nunggu ada yang online.`},
+{id:"F3",p:"F",t:`164 percakapan. bukan angka yang bikin orang kagum.
+
+tapi tiap satu dari itu orang beneran yang lagi nyari sesuatu, dan sistemnya nggak bikin mereka nunggu.`},
+{id:"F4",p:"F",t:`nggak ada screenshot dashboard hari ini.
+
+cuma: dua bisnis, satu sistem, dan nggak ada yang telfon aku panik weekend ini. itu metriknya.`},
+{id:"F5",p:"F",t:`aku nggak punya angka "ngirit sekian juta" buat dipamerin.
+
+yang aku punya: owner yang sekarang bisa makan siang tanpa HP di tangan.`}
+];
+
+const KEY = "povstevens-threads-terposting";
+let done = new Set();
+try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch (e) { done = new Set(); }
+const simpan = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
+
+let filter = "SEMUA";
+
+const elList    = document.getElementById("list");
+const elFilters = document.getElementById("filters");
+const elCount   = document.getElementById("count");
+const elMeter   = document.getElementById("meter");
+const elFlash   = document.getElementById("flash");
+
+/* --- filter chips --- */
+const chips = [
+  { key: "SEMUA",  label: "Semua",            pilar: null },
+  { key: "BELUM",  label: "Belum diposting",  pilar: null }
+].concat(Object.keys(PILAR).map(k => ({ key: k, label: PILAR[k].pendek, pilar: k })));
+
+chips.forEach(c => {
+  const b = document.createElement("button");
+  b.className = "chip";
+  b.type = "button";
+  if (c.pilar) b.dataset.pilar = c.pilar;
+  b.innerHTML = (c.pilar ? '<span class="dot"></span>' : "") + c.label;
+  b.setAttribute("aria-pressed", String(c.key === filter));
+  b.addEventListener("click", () => {
+    filter = c.key;
+    [...elFilters.children].forEach((x, i) => x.setAttribute("aria-pressed", String(chips[i].key === filter)));
+    render();
+  });
+  elFilters.appendChild(b);
+});
+
+function terlihat(post) {
+  if (filter === "SEMUA") return true;
+  if (filter === "BELUM") return !done.has(post.id);
+  return post.p === filter;
+}
+
+function flash(pesan) {
+  elFlash.textContent = pesan;
+  elFlash.classList.add("show");
+  clearTimeout(flash._t);
+  flash._t = setTimeout(() => elFlash.classList.remove("show"), 1600);
+}
+
+async function salin(teks, tombol) {
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(teks);
+    ok = true;
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = teks;
+    ta.setAttribute("readonly", "");
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand("copy"); } catch (e2) { ok = false; }
+    document.body.removeChild(ta);
+  }
+  if (ok) {
+    const asli = tombol.textContent;
+    tombol.textContent = "Tersalin ✓";
+    tombol.classList.add("ok");
+    setTimeout(() => { tombol.textContent = asli; tombol.classList.remove("ok"); }, 1500);
+    flash("Tersalin — tinggal tempel di Threads");
+  } else {
+    flash("Gagal menyalin. Blok teksnya manual ya.");
+  }
+}
+
+function statusUpdate() {
+  elCount.textContent = done.size + " / " + POSTS.length;
+  elMeter.style.width = (done.size / POSTS.length * 100).toFixed(1) + "%";
+}
+
+function render() {
+  elList.innerHTML = "";
+  const tampil = POSTS.filter(terlihat);
+
+  if (!tampil.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "Kosong — semua post di filter ini udah diposting.";
+    elList.appendChild(p);
+    statusUpdate();
+    return;
+  }
+
+  tampil.forEach(post => {
+    const art = document.createElement("article");
+    art.className = "post" + (done.has(post.id) ? " done" : "");
+    art.dataset.pilar = post.p;
+    art.id = "post-" + post.id;
+
+    const head = document.createElement("div");
+    head.className = "post-head";
+    const pil = document.createElement("span");
+    pil.className = "pilar";
+    pil.textContent = PILAR[post.p].nama;
+    const ch = document.createElement("span");
+    ch.className = "chars" + (post.t.length > 500 ? " over" : "");
+    ch.textContent = post.t.length + " krkt";
+    const pid = document.createElement("span");
+    pid.className = "pid";
+    pid.textContent = post.id;
+    head.append(pil, ch, pid);
+
+    const body = document.createElement("p");
+    body.className = "body";
+    body.textContent = post.t;
+
+    const act = document.createElement("div");
+    act.className = "actions";
+
+    const btnSalin = document.createElement("button");
+    btnSalin.className = "copy";
+    btnSalin.type = "button";
+    btnSalin.textContent = "Salin";
+    btnSalin.addEventListener("click", () => salin(post.t, btnSalin));
+
+    const btnMark = document.createElement("button");
+    btnMark.className = "mark";
+    btnMark.type = "button";
+    btnMark.innerHTML = '<span class="box">✓</span><span></span>';
+    btnMark.lastChild.textContent = done.has(post.id) ? "Sudah diposting" : "Tandai sudah";
+    btnMark.addEventListener("click", () => {
+      if (done.has(post.id)) done.delete(post.id); else done.add(post.id);
+      simpan();
+      render();
+    });
+
+    act.append(btnSalin, btnMark);
+    art.append(head, body, act);
+    elList.appendChild(art);
+  });
+
+  statusUpdate();
+}
+
+document.getElementById("shuffle").addEventListener("click", () => {
+  const sisa = POSTS.filter(p => !done.has(p.id));
+  if (!sisa.length) { flash("Semua post udah diposting."); return; }
+  const pilih = sisa[Math.floor(Math.random() * sisa.length)];
+  if (filter !== "SEMUA" && !terlihat(pilih)) {
+    filter = "SEMUA";
+    [...elFilters.children].forEach((x, i) => x.setAttribute("aria-pressed", String(chips[i].key === filter)));
+  }
+  render();
+  const el = document.getElementById("post-" + pilih.id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    flash(PILAR[pilih.p].nama + " · " + pilih.id);
+  }
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+  if (!done.size) { flash("Belum ada yang ditandai."); return; }
+  done.clear();
+  simpan();
+  render();
+  flash("Semua tanda dikosongkan.");
+});
+
+render();
+</script>

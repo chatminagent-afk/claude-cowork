@@ -1,0 +1,36 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// CHECK MEDIA API RESPONSE (register #4)\n// Kirimi bisa balas HTTP 200 + body success:false -> node HTTP dianggap\n// sukses padahal media TIDAK terkirim. Node ini meniru pola\n// \"Check API Response\" jalur teks: throw kalau body menandakan gagal,\n// error output -> Notify Admin Media Error.\n// ====================================================================\nconst input = $input.first();\nconst r = input.json;\n\n// Flag eksplisit false = gagal, apapun isi field lain\nconst explicitFail = r.success === false || r.status === false;\n\nconst isSuccess = !explicitFail && (\n  r.status === true ||\n  r.success === true ||\n  (r.data && r.data.id) ||\n  (r.message && r.message !== 'error')\n);\n\nif (!isSuccess) {\n  console.log('X Kirimi MEDIA Response Error:', JSON.stringify(r));\n  throw new Error('Kirimi media gagal (HTTP 200 + body gagal): ' + JSON.stringify(r).slice(0, 500));\n}\n\nreturn [input];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        576
+      ],
+      "id": "c4a11a04-0000-4000-8000-2026072000c4",
+      "name": "Check Media API Response",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## WIRING (register #4)\n1. `Send Media Kirimi` output **Success** (atas) -> `Check Media API Response`\n2. `Check Media API Response` output **error** (bawah, merah) -> `Notify Admin Media Error`\n3. Output Success node ini biarkan kosong (tidak ada lanjutan)\n4. Koneksi lama `Send Media Kirimi` error -> `Notify Admin Media Error` JANGAN diubah\n\nTes: ganti sementara URL di LINKS jadi file Drive yang di-suspend/butuh izin -> Kirimi balas 200+success:false -> notif admin masuk. Balikkan lagi.",
+        "height": 300,
+        "width": 420,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        496
+      ],
+      "id": "c4a11a04-0000-4000-8000-2026072001c4",
+      "name": "Sticky Note Reg4"
+    }
+  ],
+  "connections": {},
+  "pins": {}
+}

@@ -1,0 +1,76 @@
+Webhook --(out0)--> If From Group
+Bootstrap Config --(out0)--> Read CONFIG
+Read CONFIG --(out0)--> Parse Config
+Parse Config --(out0)--> Whitelist Gate
+Whitelist Gate --(out0)--> Chat Counter
+If From Group --(out0)--> IF From Me
+IF From Me --(out0)--> IF (Whitelist)
+Chat Counter --(out0)--> Read User STATS
+Read User STATS --(out0)--> Resolve User Row
+Resolve User Row --(out0)--> IF Bot Mode Active
+IF Bot Mode Active --(out0)--> Rate Limiter LID
+IF Bot Mode Active --(out1)--> Delete_Pending_Msg_Bot_Off
+Rate Limiter LID --(out0)--> Append MSG_BUFFER
+Append MSG_BUFFER --(out0)--> Update Buffer
+Append MSG_BUFFER --(out1)--> Notify User Error
+Update Buffer --(out0)--> Read STATS for HITL
+Read STATS for HITL --(out0)--> HITL Check
+HITL Check --(out0)--> Wait3
+Wait3 --(out0)--> Re-Read STATS Debounce
+Re-Read STATS Debounce --(out0)--> IF_Chat_Debounce
+IF_Chat_Debounce --(out0)--> Read MSG_BUFFER
+Read MSG_BUFFER --(out0)--> Cek_user_status
+Cek_user_status --(out0)--> Detect Lead Source
+Detect Lead Source --(out0)--> Preprocess - Context Detection
+Preprocess - Context Detection --(out0)--> Read FAQ
+Read FAQ --(out0)--> Read PRODUK Data
+Read PRODUK Data --(out0)--> Read LINKS Data
+Read LINKS Data --(out0)--> FAQ Retrieve
+FAQ Retrieve --(out0)--> AI Agent
+AI Agent --(out0)--> Process All
+AI Agent --(out1)--> Reply Error
+Process All --(out0)--> IF Media Manual
+Process All --(out0)--> IF Schedule Survey
+Process All --(out0)--> IF Request Call
+Process All --(out0)--> IF Unknown
+Process All --(out0)--> Wait1
+Process All --(out0)--> IF Talk To Admin
+IF Send Media --(out0)--> Wait Media
+Wait Media --(out0)--> Download Media
+Download Media --(out0)--> Send Media Kirimi
+Download Media --(out1)--> Notify Admin Media Error
+Send Media Kirimi --(out1)--> Notify Admin Media Error
+IF Media Manual --(out0)--> Format Media Notif
+Format Media Notif --(out0)--> Notify Media Team
+IF Schedule Survey --(out0)--> Update STATS Survey
+Update STATS Survey --(out0)--> Collect Handover Context
+Collect Handover Context --(out0)--> Summarize Handover
+Summarize Handover --(out0)--> Format Handover Message
+Summarize Handover --(out0)--> Write SURVEY
+Format Handover Message --(out0)--> Notify Field Team
+Notify Field Team --(out0)--> Log EVENTS Delegated
+IF Request Call --(out0)--> Log Call Request
+IF Unknown --(out0)--> Record to UNKNOWN
+Record to UNKNOWN --(out0)--> Wait2
+Wait2 --(out0)--> Notify Admin Unknown
+Wait1 --(out0)--> Reply Chat Kirimi
+Reply Chat Kirimi --(out0)--> Check API Response
+Reply Chat Kirimi --(out1)--> Notify Admin API Error
+Check API Response --(out0)--> Extract & Prepare Data
+Check API Response --(out0)--> Delete_Pending_Msg
+Check API Response --(out0)--> Update STATS - Greeting Flag
+Check API Response --(out0)--> IF Send Media
+Check API Response --(out1)--> Notify Admin API Error
+Extract & Prepare Data --(out0)--> Read STATS
+Read STATS --(out0)--> Process Counter & Merge Data
+Process Counter & Merge Data --(out0)--> Update to STATS
+Update STATS - Greeting Flag --(out0)--> IF Update Greeting
+IF Update Greeting --(out0)--> Update Greeting
+Notify Admin API Error --(out0)--> Delete_Pending_Msg_Error
+IF Talk To Admin --(out0)--> Notify Talk to Admin
+Notify Talk to Admin --(out0)--> Update row in sheet
+Reply Error --(out0)--> Delete_Pending_Msg_Bot_Off1
+Simple Memory --(out0)--> AI Agent
+OpenAI Chat Model --(out0)--> AI Agent
+OpenAI Chat Model1 --(out0)--> Summarize Handover
+IF (Whitelist) --(out0)--> Bootstrap Config

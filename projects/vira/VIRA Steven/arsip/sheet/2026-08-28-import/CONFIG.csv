@@ -1,0 +1,52 @@
+﻿key,value
+bot_name,VIRA
+persona_name,Steven versi AI
+owner_name,Steven
+owner_display_name,Steven Leroy
+panggilan_prospek,kak
+bot_wa_number,ISI MANUAL - nomor VIRA Personal baru
+admin_phone,6285171701168
+admin_phone_display,0851-7170-1168
+kirimi_user_code,ISI MANUAL - dari dashboard Kirimi
+kirimi_secret,ISI MANUAL - dari dashboard Kirimi
+kirimi_device_id,ISI MANUAL - device baru di Kirimi
+reply_model,claude-sonnet-4.5
+reply_thinking,disabled
+utility_model,claude-haiku-4-5
+vision_model,claude-haiku-4-5
+vision_mode,full
+vision_max_images,3
+vision_max_tokens,1000
+default_language,auto
+source_language,id
+debounce_seconds,60
+msg_buffer_ttl_minutes,30
+msg_buffer_retention_hours,2
+rate_limit_max,5
+rate_limit_window_sec,60
+daily_message_cap,500
+daily_vision_cap,100
+blocklist_numbers,[]
+ignore_self_number,true
+greeting_enabled,true
+fact_ttl_days,60
+handover_keywords,"[""ngobrol sama steven"",""bicara langsung"",""telepon"",""zoom"",""meeting"",""ketemu""]"
+followup_enabled,false
+followup_max,2
+followup_interval_hours,24
+followup_open_hour,9
+followup_close_hour,21
+followup_templates,"[""Halo kak {nama}, aku Steven versi AI. Kemarin kita sempat ngobrol soal otomasi chat — masih ada yang mau ditanyain?"",""Hai kak {nama}, kalau mau lihat contoh VIRA jalan di bisnis lain, aku bisa ceritain. Tinggal bilang aja ya.""]"
+price_basic_monthly,3000000
+price_premium_monthly,5000000
+setup_fee,0
+price_disclosure,range
+token_billing_model,pass_through
+token_estimate_note,"Kisaran per balasan: model hemat sekitar USD 0,01-0,02; model canggih sekitar USD 0,02-0,04. Angka pasti menyesuaikan kebutuhan tiap bisnis."
+guarantee_text,100% Satisfaction Guarantee — sistem terus disesuaikan dan dioptimalkan tanpa biaya tambahan sampai benar-benar cocok dengan kebutuhan bisnismu.
+ig_handle,@povstevens
+contact_email,chatminagent@gmail.com
+jam_steven_online,Fleksibel — Steven balas begitu sedang online.
+katalog_cache_minutes,10
+stats_retention_days,90
+stats_purge_dry_run,Y

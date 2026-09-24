@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05070e" />
+<meta name="color-scheme" content="dark light" />
+<meta name="referrer" content="no-referrer" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="Dashboard performa dan direktori lead." />
+<title>VIRA Dashboard</title>
+
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/app.css" />
+
+<!--
+  Tema dipasang SEBELUM stylesheet sempat melukis apa pun. Kalau ini ditunda
+  sampai app.js jalan, pengguna mode terang akan melihat kedipan gelap dulu di
+  setiap muat halaman. Blok ini sengaja kecil, tanpa dependensi, dan aman gagal:
+  kalau localStorage diblokir, ia jatuh ke preferensi sistem, lalu ke gelap.
+-->
+<script>
+(function () {
+  var t = '';
+  try { t = localStorage.getItem('vd.theme') || ''; } catch (e) {}
+  if (t !== 'light' && t !== 'dark') {
+    try {
+      t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+        ? 'light' : 'dark';
+    } catch (e) { t = 'dark'; }
+  }
+  document.documentElement.setAttribute('data-theme', t);
+  var m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute('content', t === 'light' ? '#eef1f7' : '#05070e');
+}());
+</script>
+</head>
+<body>
+
+<!-- Latar ambient: tiga bola warna yang bergerak sangat lambat. Dekoratif
+     murni, tidak pernah menangkap klik, dan berhenti kalau pengguna meminta
+     gerak dikurangi. -->
+<div class="ambient" aria-hidden="true">
+  <span class="b1"></span><span class="b2"></span><span class="b3"></span>
+</div>
+
+<!-- Banner alamat server non-produksi. Sengaja di luar kedua layar supaya
+     terlihat juga di halaman login. -->
+<div id="apiBanner" class="test-banner" hidden>
+  <span id="apiBannerText"></span>
+  <button type="button" id="apiBannerReset" class="test-banner-btn">Kembali ke produksi</button>
+</div>
+
+<!-- =============================================================== LOGIN -->
+<div id="screenLogin" class="login-screen" hidden>
+  <div class="login-shell">
+
+    <div class="login-topbar">
+      <button type="button" id="themeToggleLogin" class="btn-ghost btn-icon theme-toggle"
+              aria-label="Ganti tema"></button>
+    </div>
+
+    <form id="loginForm" class="login-card glass" autocomplete="on" novalidate>
+      <div class="login-mark" aria-hidden="true"><img src="icons/viralogo-mark.png" alt="" /></div>
+      <h1 class="login-title">Masuk</h1>
+      <p class="login-sub">Dashboard performa dan direktori lead.</p>
+
+      <div class="field">
+        <label class="field-label" for="loginUser">Nama pengguna</label>
+        <input class="input" id="loginUser" name="username" type="text"
+               autocomplete="username" autocapitalize="none" autocorrect="off"
+               spellcheck="false" required />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="loginPass">Kata sandi</label>
+        <div class="field-wrap">
+          <input class="input" id="loginPass" name="password" type="password"
+                 autocomplete="current-password" required />
+          <button type="button" id="passToggle" class="field-btn"
+                  aria-label="Tampilkan kata sandi"></button>
+        </div>
+      </div>
+
+      <p id="loginError" class="form-error" hidden></p>
+
+      <button type="submit" id="loginBtn" class="btn btn-block">Masuk</button>
+    </form>
+
+    <p class="login-foot">VIRA Dashboard</p>
+  </div>
+</div>
+
+<!-- =========================================================== DASHBOARD -->
+<div id="screenApp" hidden>
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo" id="brandLogo" aria-hidden="true">V</div>
+      <div class="brand-text">
+        <h1 class="brand-title" id="tenantName">&nbsp;</h1>
+        <div class="brand-sub" id="tenantProduct"></div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <label class="visually-hidden" for="tenantSelect">Pilih tenant</label>
+      <select class="select" id="tenantSelect" hidden></select>
+
+      <button type="button" class="btn-ghost btn-icon theme-toggle" id="themeToggle"
+              aria-label="Ganti tema"></button>
+
+      <button type="button" class="btn-ghost is-wide-only" id="btnRefresh">Segarkan</button>
+      <button type="button" class="btn-ghost is-wide-only" id="btnLogout">Keluar</button>
+
+      <!-- Di layar sempit, dua tombol di atas dilipat ke sini. -->
+      <div class="menu-wrap">
+        <button type="button" class="btn-ghost btn-icon" id="menuBtn"
+                aria-label="Menu lainnya" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="menu-pop" id="menuPop" role="menu">
+          <button type="button" class="menu-item is-narrow-only" id="menuRefresh" role="menuitem">Segarkan</button>
+          <button type="button" class="menu-item" id="menuView" role="menuitem">Atur tampilan</button>
+          <div class="menu-sep"></div>
+          <button type="button" class="menu-item is-danger is-narrow-only" id="menuLogout" role="menuitem">Keluar</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="meta-bar">
+    <span class="meta-pill"><span class="dot"></span><span id="metaUser"></span></span>
+    <span class="meta-pill" id="metaTimePill">Data per <span id="metaTime">—</span></span>
+    <span class="meta-pill is-cached" id="metaCached" hidden>dari cache</span>
+    <span class="meta-spacer"></span>
+  </div>
+
+  <main class="container">
+
+    <div class="range-bar" id="rangeBar" role="group" aria-label="Rentang waktu">
+      <span class="range-label">Rentang</span>
+    </div>
+
+    <section class="grid-metrics" id="kpiGrid" aria-label="Ringkasan angka"></section>
+
+    <div class="grid-charts" id="chartGrid"></div>
+
+    <!-- Rekomendasi AI. Diletakkan tepat di bawah grid chart supaya berdiri
+         persis di bawah kartu topik yang jadi sumbernya. -->
+    <div id="insightsWrap"></div>
+
+    <section class="glass-card" id="leadsCard" hidden>
+      <div class="section-head">
+        <button type="button" class="section-toggle" id="leadsToggle"
+                aria-controls="leadsBody" aria-expanded="true">
+          <span class="section-caret" id="leadsCaret"></span>
+          <span class="section-label" id="leadsTitle"></span>
+          <span class="section-count" id="leadsCount"></span>
+        </button>
+        <button type="button" class="section-info" id="leadsInfo" hidden>i</button>
+      </div>
+
+      <div class="section-body" id="leadsBody">
+
+      <div class="table-toolbar">
+        <div class="search-wrap" id="searchWrap">
+          <span class="search-icon" id="searchIcon" aria-hidden="true"></span>
+          <label class="visually-hidden" for="leadSearch">Cari lead</label>
+          <input class="input" id="leadSearch" type="search" placeholder="Cari nama atau nomor"
+                 autocapitalize="none" autocorrect="off" spellcheck="false" />
+          <button type="button" class="search-clear" id="searchClear"
+                  aria-label="Hapus pencarian">✕</button>
+        </div>
+        <div class="seg" id="botFilter" role="group" aria-label="Saring status bot">
+          <button type="button" class="seg-btn active" data-mode="all">Semua</button>
+          <button type="button" class="seg-btn" data-mode="on">Bot aktif</button>
+          <button type="button" class="seg-btn" data-mode="off">Manual</button>
+        </div>
+
+        <!-- Pengurutan. Di tampilan tabel dilakukan lewat kepala kolom; dalam
+             tampilan kartu kepala kolom tidak ada, jadi kontrol ini yang
+             menggantikannya. Isinya dibangun app.js dari definisi kolom. -->
+        <div class="sort-wrap" id="sortWrap" hidden>
+          <label class="visually-hidden" for="sortSelect">Urutkan</label>
+          <select class="select" id="sortSelect"></select>
+        </div>
+
+        <!-- Tombol tambah sengaja diletakkan di toolbar, bukan di dalam tabel:
+             toolbar berada di luar kedua jalur render (tabel di layar lebar,
+             kartu di layar sempit), jadi tombolnya tampil sama di keduanya. -->
+        <button type="button" class="btn btn-add" id="addLeadBtn">
+          <span aria-hidden="true">+</span> Tambah
+        </button>
+      </div>
+
+      <div class="table-wrap" id="leadTableWrap"></div>
+
+      <div class="pager">
+        <span class="pager-info" id="pagerInfo"></span>
+        <span class="pager-btns">
+          <button type="button" class="btn-ghost" id="pagePrev">Sebelumnya</button>
+          <button type="button" class="btn-ghost" id="pageNext">Berikutnya</button>
+        </span>
+      </div>
+
+      </div><!-- /leadsBody -->
+    </section>
+
+    <div id="tablesWrap"></div>
+
+  </main>
+</div>
+
+<!-- ============================================================== DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head">
+      <div>
+        <h2 class="drawer-title" id="drawerTitle"></h2>
+        <p class="drawer-sub" id="drawerSub"></p>
+      </div>
+      <button type="button" class="drawer-close" id="drawerClose" aria-label="Tutup"></button>
+    </div>
+    <div id="drawerBody"></div>
+  </aside>
+</div>
+
+<!-- =============================================================== MODAL -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <h2 class="modal-title" id="modalTitle"></h2>
+    <p class="modal-body" id="modalBody"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn-ghost" id="modalCancel">Batal</button>
+      <button type="button" class="btn" id="modalOk">Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ====================================================== PENJELASAN "i" -->
+<div class="hint-overlay" id="hintOverlay" role="dialog" aria-modal="true" aria-labelledby="hintTitle">
+  <div class="hint-sheet">
+    <h2 class="hint-title" id="hintTitle"></h2>
+    <p class="hint-body" id="hintBody"></p>
+    <button type="button" class="btn btn-block" id="hintClose">Mengerti</button>
+  </div>
+</div>
+
+<!-- ====================================================== ATUR TAMPILAN -->
+<div class="drawer-overlay" id="viewOverlay" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
+  <aside class="drawer">
+    <div class="drawer-head">
+      <div>
+        <h2 class="drawer-title" id="viewTitle">Atur tampilan</h2>
+        <p class="drawer-sub">Matikan bagian yang tidak Anda pakai. Pengaturan ini tersimpan di perangkat ini saja, terpisah per klien.</p>
+      </div>
+      <button type="button" class="drawer-close" id="viewClose" aria-label="Tutup"></button>
+    </div>
+    <div id="viewBody"></div>
+    <button type="button" class="btn-ghost btn-block-ghost" id="viewReset">Tampilkan semua lagi</button>
+  </aside>
+</div>
+
+<!-- ========================================================= TAMBAH LEAD -->
+<div class="drawer-overlay" id="addOverlay" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+  <aside class="drawer">
+    <div class="drawer-head">
+      <div>
+        <h2 class="drawer-title" id="addTitle">Tambah nomor</h2>
+        <p class="drawer-sub" id="addSub"></p>
+      </div>
+      <button type="button" class="drawer-close" id="addClose" aria-label="Tutup"></button>
+    </div>
+
+    <form id="addForm" novalidate>
+      <div class="field">
+        <label class="field-label" for="addWa" id="addWaLabel">Nomor WhatsApp</label>
+        <input class="input" id="addWa" type="tel" inputmode="tel"
+               autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" />
+        <p class="field-help" id="addWaHelp"></p>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="addNama" id="addNamaLabel">Nama (opsional)</label>
+        <input class="input" id="addNama" type="text" maxlength="80"
+               autocomplete="off" autocapitalize="words" spellcheck="false" />
+        <p class="field-help" id="addNamaHelp"></p>
+      </div>
+
+      <div class="view-row" id="addBotRow">
+        <div class="view-row-text">
+          <div class="view-row-label" id="addBotLabel">Bot langsung aktif</div>
+        </div>
+        <button type="button" class="ios-switch" id="addBot" role="switch" aria-checked="false">
+          <span class="ios-knob"></span>
+        </button>
+      </div>
+
+      <p class="add-warn" id="addWarn" hidden></p>
+
+      <button type="submit" class="btn btn-block" id="addSubmit">Tambahkan</button>
+      <button type="button" class="btn-ghost btn-block-ghost" id="addCancel">Batal</button>
+    </form>
+  </aside>
+</div>
+
+<!-- ============================================================= LOADING -->
+<div class="loader-overlay" id="loader">
+  <div class="spinner" aria-hidden="true"></div>
+  <div class="loader-text" id="loaderText">Memuat data…</div>
+</div>
+
+<div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

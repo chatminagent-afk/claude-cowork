@@ -1,0 +1,44 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "user_code",
+                                                                     "value":  "KM40LI0426"
+                                                                 },
+                                                                 {
+                                                                     "name":  "secret",
+                                                                     "value":  "REDACTED"
+                                                                 },
+                                                                 {
+                                                                     "name":  "device_id",
+                                                                     "value":  "D-4ZV1F"
+                                                                 },
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "=6596110395"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ \"🙋 [VIRA] MAU NGOMONG LANGSUNG SAMA SAM :\\n\" + $(\u0027Chat Counter\u0027).first().json.user_wa + \"\\n\" + $(\u0027Chat Counter\u0027).first().json.user_name + \"\\nPesan: \" + $(\u0027Cek_user_status\u0027).first().json.user_message_final }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     752,
+                     2192
+                 ],
+    "id":  "8d13f8c8-5472-44a2-adc6-3ebdbf1b8628",
+    "name":  "Notify Talk to Sam",
+    "retryOnFail":  true,
+    "waitBetweenTries":  2000
+}

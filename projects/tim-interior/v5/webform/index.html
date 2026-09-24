@@ -1,0 +1,3045 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAPI — Rekap &amp; Arsip Progress Inti</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#B49157" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="RAPI" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="./icon-152.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png" />
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #F9F8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F2EFE9;
+      --surface-3: #EAE5DC;
+      --gold: #B49157;
+      --gold-dim: #8A7257;
+      --gold-glow: rgba(180, 145, 87, 0.15);
+      --text: #2C2B29;
+      --text-muted: #59554C;
+      --text-dim: #A39E93;
+      --text-1: #2C2B29;
+      --text-2: #A39E93;
+      --border: rgba(180, 145, 87, 0.25);
+      --border-focus: rgba(180, 145, 87, 0.60);
+      --danger: #C0392B;
+      --success: #27AE60;
+      --r: 18px;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.03), 0 12px 40px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(180, 145, 87, 0.06);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0F0F0D;
+      --surface: #171714;
+      --surface-2: #1E1E1A;
+      --surface-3: #252521;
+      --gold: #C4A97D;
+      --gold-dim: #C2A471;
+      --text: #EDE8DF;
+      --text-muted: #C4BAAA;
+      --text-dim: #948B7C;
+      --text-1: #EDE8DF;
+      --text-2: #AA9F8F;
+      --border: rgba(196, 169, 125, 0.22);
+      --border-focus: rgba(196, 169, 125, 0.55);
+      --shadow: 0 0 0 1px rgba(196, 169, 125, 0.04), 0 24px 80px rgba(0, 0, 0, 0.5);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SCREEN SYSTEM ─────────────────────── */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── TOPBAR ────────────────────────────── */
+    .topbar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold-dim) 25%, var(--gold) 50%, var(--gold-dim) 75%, transparent 100%);
+    }
+
+    /* ── THEME TOGGLE ──────────────────────── */
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .theme-toggle:hover {
+      background: var(--surface-3);
+    }
+
+    .theme-toggle-global {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      z-index: 860;
+    }
+
+    .theme-toggle .sun {
+      display: none;
+    }
+
+    .theme-toggle .moon {
+      display: block;
+    }
+
+    [data-theme="dark"] .theme-toggle .sun {
+      display: block;
+    }
+
+    [data-theme="dark"] .theme-toggle .moon {
+      display: none;
+    }
+
+    /* ── HOME SCREEN ───────────────────────── */
+    .home-wrap {
+      position: relative;
+    }
+
+    .home-header {
+      text-align: center;
+      padding: 56px 24px 36px;
+    }
+
+    .home-logo {
+      width: 84px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 22px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .home-eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+
+    .home-eyebrow::before,
+    .home-eyebrow::after {
+      content: '';
+      width: 32px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-dim));
+    }
+
+    .home-eyebrow::after {
+      background: linear-gradient(to left, transparent, var(--gold-dim));
+    }
+
+    .home-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 6vw, 40px);
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .home-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .home-sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 300;
+    }
+
+    .menu-list {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.12s;
+      box-shadow: var(--shadow);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .menu-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 8px 32px rgba(180, 145, 87, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .menu-card:active {
+      transform: scale(0.98);
+    }
+
+    .menu-icon {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      background: var(--surface-2);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .menu-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .menu-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .menu-desc {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .menu-arrow {
+      color: var(--gold-dim);
+      font-size: 20px;
+      font-weight: 300;
+    }
+
+    .home-footer {
+      text-align: center;
+      padding: 12px 20px 32px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .home-footer strong {
+      color: var(--gold-dim);
+    }
+
+    /* ── INNER SCREENS ─────────────────────── */
+    .screen-topbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 14px 16px 6px;
+      position: relative;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gold-dim);
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .back-btn:hover {
+      color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    .screen-title-bar {
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.3px;
+    }
+
+    .screen-spacer {
+      width: 80px;
+    }
+
+    /* balance the back button */
+
+    .form-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 4px 16px 80px;
+    }
+
+    /* ── CARD / SECTION ────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-section {
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-section:last-child {
+      border-bottom: none;
+    }
+
+    .sec-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    /* ── FIELDS ────────────────────────────── */
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field-row .field {
+      margin-bottom: 0;
+    }
+
+    .f-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+    }
+
+    .f-label .req {
+      color: var(--gold);
+      font-size: 14px;
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 300;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      font-family: 'Sora', sans-serif;
+      font-size: 13.5px;
+      font-weight: 400;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 13px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -webkit-appearance: none;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--border-focus);
+      background: var(--surface);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A7257' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
+      padding-right: 34px;
+      cursor: pointer;
+    }
+
+    /* ── RAB TABLE ─────────────────────────── */
+    .rab-scroll {
+      overflow-x: auto;
+      margin-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table.rab {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 690px;
+    }
+
+    table.rab thead th {
+      background: var(--surface-3);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 8px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    table.rab tbody td {
+      padding: 5px 4px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    table.rab tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    table.rab input,
+    table.rab select {
+      font-size: 12.5px;
+      padding: 7px 8px;
+      border-radius: 6px;
+    }
+
+    table.rab .c-no {
+      width: 32px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+      padding: 0 4px;
+    }
+
+    table.rab .c-item {
+      min-width: 150px;
+    }
+
+    table.rab .c-vol {
+      width: 62px;
+    }
+
+    table.rab .c-sat {
+      width: 80px;
+    }
+
+    table.rab .c-kat {
+      width: 140px;
+    }
+
+    table.rab .c-price {
+      width: 115px;
+    }
+
+    table.rab .c-total {
+      width: 115px;
+    }
+
+    table.rab .c-del {
+      width: 32px;
+      text-align: center;
+    }
+
+    .total-row-wrap {
+      margin-top: 2px;
+    }
+
+    .total-lbl {
+      font-size: 10px;
+      color: var(--text-dim);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-align: right;
+      margin-bottom: 3px;
+    }
+
+    .grand-total {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      text-align: right;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .btn-add-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 16px;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--gold-dim);
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: border-color 0.2s, color 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-add-row:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-del {
+      background: none;
+      border: none;
+      font-size: 18px;
+      color: var(--text-dim);
+      cursor: pointer;
+      padding: 3px 5px;
+      border-radius: 4px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .btn-del:hover {
+      color: var(--danger);
+    }
+
+    /* ── SUBMIT BUTTON ─────────────────────── */
+    .btn-submit {
+      width: 100%;
+      padding: 14px 20px;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.12s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(180, 145, 87, 0.3);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-submit:hover {
+      background: var(--gold-dim);
+      box-shadow: 0 6px 20px rgba(180, 145, 87, 0.35);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.99);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ── CEK SCREEN ────────────────────────── */
+    .result-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .result-summary strong {
+      color: var(--gold);
+      font-size: 14px;
+    }
+
+    .hint-text {
+      font-size: 11px;
+      color: var(--text-2);
+      font-weight: 400;
+    }
+
+    .btn-secondary {
+      background: var(--surface-2) !important;
+      color: var(--text-1) !important;
+      border: 1.5px solid var(--gold) !important;
+    }
+
+    .btn-secondary:active {
+      background: var(--gold) !important;
+      color: #fff !important;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 11px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-action:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    .record-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .record-head {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .record-date {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .record-project {
+      display: inline-block;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--gold-dim);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .record-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 8px 18px 0;
+      font-style: italic;
+    }
+
+    .record-items {
+      padding: 8px 18px 14px;
+    }
+
+    .record-item {
+      display: grid;
+      grid-template-columns: 22px 1fr auto auto;
+      gap: 6px 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+      font-size: 12.5px;
+    }
+
+    .record-item:last-child {
+      border-bottom: none;
+    }
+
+    .ri-no {
+      color: var(--text-dim);
+      font-size: 11px;
+      padding-top: 1px;
+    }
+
+    .ri-name {
+      color: var(--text);
+    }
+
+    .ri-vol {
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-size: 11.5px;
+    }
+
+    .ri-total {
+      color: var(--gold);
+      font-weight: 500;
+      white-space: nowrap;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .record-subtotal {
+      text-align: right;
+      padding: 8px 18px;
+      background: var(--surface-2);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+      border-top: 1px solid var(--border);
+    }
+
+    /* Komplain card — subtle marker, NOT heavy red */
+    .komplain-card {
+      border-left: 3px solid #c97b3f;
+    }
+
+    .komplain-tag {
+      display: inline-block;
+      background: rgba(201, 123, 63, 0.14);
+      color: #b9651f;
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    [data-theme="dark"] .komplain-tag {
+      background: rgba(201, 123, 63, 0.2);
+      color: #e0a070;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-dim);
+    }
+
+    .empty-icon {
+      font-size: 44px;
+      margin-bottom: 14px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ── TOAST ─────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 11px 22px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+      z-index: 9999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── LOADING SPINNER ───────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-inline {
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .loading-inline::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    /* ── TEST MODE BADGE ───────────────────── */
+    .test-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(193, 154, 107, 0.12);
+      border: 1px solid rgba(180, 145, 87, 0.3);
+      color: var(--gold-dim);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 400px) {
+      .card-section {
+        padding: 18px 16px;
+      }
+
+      .home-header {
+        padding: 44px 20px 28px;
+      }
+    }
+
+    @media print {
+      .screen {
+        min-height: auto !important;
+      }
+
+      .topbar,
+      .screen-topbar,
+      .theme-toggle,
+      .btn-submit,
+      .btn-action,
+      .action-row,
+      .menu-list,
+      .home-footer,
+      .test-badge,
+      .toast {
+        display: none !important;
+      }
+    }
+
+    /* ── SUBMIT OVERLAY ─────────────────────── */
+    .submit-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(15, 15, 13, 0.45);
+      backdrop-filter: blur(3px);
+      cursor: wait;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .submit-overlay.active {
+      display: flex;
+    }
+
+    .submit-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px 34px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+    }
+
+    .submit-loader .ldr-ring {
+      width: 38px;
+      height: 38px;
+      border: 3px solid var(--surface-3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .submit-loader .ldr-text {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+
+    /* ── MODAL ───────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(3px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border-radius: 18px;
+      padding: 28px 24px 22px;
+      width: min(340px, 90vw);
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-modal-cancel {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+
+    .btn-modal-ok {
+      flex: 2;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--gold);
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .btn-modal-ok:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ── KOMPLAIN CARDS ─────────────────────── */
+    .record-card-komplain {
+      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid #e8cfc4;
+      margin-bottom: 14px;
+      overflow: hidden;
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .record-card-komplain .record-head {
+      background: linear-gradient(135deg, #c0392b 0%, #e55039 100%);
+    }
+
+    .record-card-komplain .record-head .record-project {
+      color: #fff;
+    }
+
+    .record-card-komplain .record-head .record-date {
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .komplain-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .komplain-body {
+      padding: 12px 18px 10px;
+      font-size: 12.5px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .komplain-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 18px 14px;
+      font-size: 10.5px;
+      color: var(--text-dim);
+    }
+
+    .komplain-meta span {
+      display: flex;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .komplain-status {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .komplain-status.open {
+      background: #fde8e6;
+      color: #c0392b;
+    }
+
+    .komplain-status.inprogress {
+      background: #d4eaf7;
+      color: #1a6a96;
+    }
+
+    .komplain-status.closed {
+      background: #d4f0e0;
+      color: #1a7a46;
+    }
+
+    [data-theme="dark"] .record-card-komplain {
+      border-color: #4a2a24;
+    }
+
+    [data-theme="dark"] .komplain-status.open {
+      background: #3a100c;
+      color: #e57373;
+    }
+
+    [data-theme="dark"] .komplain-status.inprogress {
+      background: #0a1e2e;
+      color: #7cc0e8;
+    }
+
+    [data-theme="dark"] .komplain-status.closed {
+      background: #0a1e14;
+      color: #6dd4a0;
+    }
+
+    /* ── PER-ITEM STATUS ────────────────────── */
+    .item-status-row {
+      display: flex;
+      gap: 5px;
+      padding: 3px 0 9px 26px;
+    }
+
+    .ist {
+      padding: 4px 9px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-family: 'Sora', sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1.4;
+    }
+
+    .ist.pending.active {
+      background: #f0e6d2;
+      border-color: #c4a97d;
+      color: #7a5c1e;
+    }
+
+    .ist.inprogress.active {
+      background: #d4eaf7;
+      border-color: #5ba8d4;
+      color: #1a6a96;
+    }
+
+    .ist.done.active {
+      background: #d4f0e0;
+      border-color: #4caf80;
+      color: #1a7a46;
+    }
+
+    .ist:not(.active):hover {
+      border-color: var(--gold-dim);
+      color: var(--gold-dim);
+    }
+
+    .item-wrap.done-item .ri-name {
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+
+    [data-theme="dark"] .ist.pending.active {
+      background: #2e2410;
+      border-color: #b49157;
+      color: #c4a97d;
+    }
+
+    [data-theme="dark"] .ist.inprogress.active {
+      background: #0a1e2e;
+      border-color: #5ba8d4;
+      color: #7cc0e8;
+    }
+
+    [data-theme="dark"] .ist.done.active {
+      background: #0a1e14;
+      border-color: #4caf80;
+      color: #6dd4a0;
+    }
+
+    .btn-submit-status {
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #5ba8d4, #3d8ab8);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.12s;
+      box-shadow: 0 4px 16px rgba(91, 168, 212, 0.3);
+      margin-top: 8px;
+      -webkit-tap-highlight-color: transparent;
+      display: none;
+    }
+
+    .btn-submit-status.visible {
+      display: block;
+    }
+
+    .btn-submit-status:hover {
+      opacity: 0.88;
+    }
+
+    .btn-submit-status:active {
+      transform: scale(0.99);
+    }
+
+    .btn-submit-status:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── SUCCESS SCREEN ───────────────────────── */
+    .success-wrap { max-width: 460px; margin: 0 auto; padding: 78px 28px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .success-check { width: 88px; height: 88px; border-radius: 50%; background: rgba(39,174,96,0.12); border: 2px solid rgba(39,174,96,0.45); color: var(--success); display: flex; align-items: center; justify-content: center; font-size: 44px; line-height: 1; margin-bottom: 24px; animation: popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .success-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+    .success-msg { font-size: 13.5px; color: var(--text-dim); line-height: 1.6; margin-bottom: 32px; }
+    .success-actions { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+
+    /* ── DASHBOARD MONITORING ─────────────── */
+    .dash-refresh{background:none;border:none;color:var(--gold);font-size:20px;cursor:pointer;padding:4px 8px;line-height:1}
+    .dash-wrap{max-width:920px;margin:0 auto;padding:14px 16px 48px}
+    .dash-eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:12px}
+    .dash-switch{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .dash-chip{padding:7px 14px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);transition:.15s}
+    .dash-chip.active{background:var(--gold);border-color:var(--gold);color:#fff}
+    .dash-projhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:4px}
+    .dash-projname{font-size:20px;font-weight:800;margin:0;color:var(--text)}
+    .dash-projmeta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;color:var(--text-dim)}
+    .dash-kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:14px 0}
+    .dash-kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}
+    .dash-kpi-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .dash-kpi-ic{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+    .dash-kpi-eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim)}
+    .dash-kpi-val{font-size:25px;font-weight:800;color:var(--text);line-height:1}
+    .dash-kpi-sub{font-size:12px;color:var(--text-muted);margin-top:6px}
+    .ruler{position:relative;height:20px;border-radius:5px;background:var(--surface-2);border:1px solid var(--border);overflow:hidden;display:flex;margin-top:10px}
+    .ruler-seg{height:100%}
+    .ruler-tick{position:absolute;top:0;bottom:0;width:1px;background:rgba(140,114,87,.18)}
+    .ruler-tick.mid{background:rgba(140,114,87,.4)}
+    .ruler-scale{display:flex;justify-content:space-between;margin-top:4px;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;color:var(--text-dim)}
+    .dash-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+    .dash-card-eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;letter-spacing:1.5px;color:var(--gold);margin-bottom:4px}
+    .dash-card-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px}
+    .dash-legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:12px;color:var(--text-muted)}
+    .dash-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+    .dash-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border)}
+    .dash-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .dash-row-desc{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dash-row-meta{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;color:var(--text-dim);margin-top:2px}
+    .dash-badge{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10px;font-weight:600;padding:3px 8px;border-radius:5px;white-space:nowrap}
+    .dash-barline{display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px;gap:8px}
+    .dash-barline .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--text-dim);text-align:right}
+    .dash-block{margin-bottom:14px}
+    .dash-empty{text-align:center;color:var(--text-dim);padding:30px;font-size:13px}
+
+  </style>
+</head>
+
+<body>
+
+  <!-- Global dark-mode toggle — visible on every screen -->
+  <button class="theme-toggle theme-toggle-global" onclick="toggleTheme()" aria-label="Ganti tema">
+    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+
+  <!-- ══════════════════════════════════════
+       SCREEN: HOME
+  ══════════════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="topbar"></div>
+    <div class="home-wrap">
+
+
+      <div class="home-header">
+        <img src="./logo.png" alt="RAPI" class="home-logo" onerror="this.style.display='none'" />
+        <div class="home-eyebrow">Rekap &amp; Arsip Progress Inti</div>
+        <h1 class="home-title">RA<em>PI</em></h1>
+        <p class="home-sub">Catat · Pantau · Rencanakan</p>
+      </div>
+
+      <div class="menu-list">
+        <div class="menu-card menu-card-feature" onclick="goto('dashboard')">
+          <div class="menu-icon">📈</div>
+          <div class="menu-info">
+            <div class="menu-label">Dashboard Monitoring</div>
+            <div class="menu-desc">Pantau progres, komplain &amp; realisasi RAB semua proyek</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </div>
+
+        <div class="menu-card" onclick="goto('catat-pekerjaan')">
+          <div class="menu-icon">📋</div>
+          <div class="menu-info">
+            <div class="menu-label">Catat Pekerjaan</div>
+            <div class="menu-desc">Input item kerja harian format RAB</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </div>
+
+        <div class="menu-card" onclick="goto('catat-komplain')">
+          <div class="menu-icon">⚠️</div>
+          <div class="menu-info">
+            <div class="menu-label">Catat Komplain</div>
+            <div class="menu-desc">Laporkan masalah atau temuan lapangan</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </div>
+
+        <div class="menu-card" onclick="goto('cek-pekerjaan')">
+          <div class="menu-icon">🔍</div>
+          <div class="menu-info">
+            <div class="menu-label">Cek Pekerjaan</div>
+            <div class="menu-desc">Lihat list pekerjaan &amp; update status</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </div>
+
+        <div class="menu-card" onclick="goto('rab-checklist')">
+          <div class="menu-icon">📊</div>
+          <div class="menu-info">
+            <div class="menu-label">Generate RAB / Checklist</div>
+            <div class="menu-desc">Buat dokumen RAB dan checklist lapangan</div>
+          </div>
+          <div class="menu-arrow">›</div>
+        </div>
+      </div>
+
+      <div class="home-footer" id="home-footer">RAPI · v5</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN: CATAT PEKERJAAN
+  ══════════════════════════════════════ -->
+  <div id="screen-catat-pekerjaan" class="screen">
+    <div class="topbar"></div>
+    <div class="screen-topbar">
+      <button class="back-btn" onclick="history.back()">‹ Kembali</button>
+      <div class="screen-title-bar">Catat Pekerjaan</div>
+      <div class="screen-spacer"></div>
+    </div>
+
+    <div class="form-wrap">
+      <!-- Info Dasar -->
+      <div class="card">
+        <div class="card-section">
+          <div class="sec-label">Informasi Dasar</div>
+
+          <div class="field-row" style="margin-bottom:18px">
+            <div class="field">
+              <label class="f-label" for="cp-proyek">Proyek <span class="req">*</span></label>
+              <select id="cp-proyek" required>
+                <option value="">— Memuat... —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="f-label" for="cp-tanggal">Tanggal <span class="req">*</span></label>
+              <input type="date" id="cp-tanggal" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="f-label" for="cp-pekerja">Nama Pekerja <span class="req">*</span></label>
+            <select id="cp-pekerja" required>
+              <option value="">— Memuat... —</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="f-label" for="cp-catatan">Catatan</label>
+            <input type="text" id="cp-catatan" placeholder="Misal: Lanjut area kamar tidur lt.2" />
+          </div>
+        </div>
+      </div>
+
+      <!-- RAB Table -->
+      <div class="card">
+        <div class="card-section">
+          <div class="sec-label">Daftar Pekerjaan — Format RAB</div>
+
+          <div class="rab-scroll">
+            <table class="rab">
+              <thead>
+                <tr>
+                  <th class="c-no">No</th>
+                  <th class="c-item">Pekerjaan</th>
+                  <th class="c-kat">Kategori RAB</th>
+                  <th class="c-vol">Vol</th>
+                  <th class="c-sat">Sat</th>
+                  <th class="c-price">Harga / Sat <span style="font-weight:300;opacity:0.6">(ops.)</span></th>
+                  <th class="c-total">Total</th>
+                  <th class="c-del"></th>
+                </tr>
+              </thead>
+              <tbody id="rab-tbody"></tbody>
+            </table>
+          </div>
+
+          <button class="btn-add-row" onclick="addRow()">
+            <span style="font-size:16px;font-weight:400">+</span> Tambah Baris
+          </button>
+
+          <div class="total-row-wrap">
+            <div class="total-lbl">Total Keseluruhan</div>
+            <div class="grand-total" id="grand-total">Rp 0</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-cp" onclick="submitPekerjaan()">
+        Simpan Pekerjaan
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN: CATAT KOMPLAIN
+  ══════════════════════════════════════ -->
+  <div id="screen-catat-komplain" class="screen">
+    <div class="topbar"></div>
+    <div class="screen-topbar">
+      <button class="back-btn" onclick="history.back()">‹ Kembali</button>
+      <div class="screen-title-bar">Catat Komplain</div>
+      <div class="screen-spacer"></div>
+    </div>
+
+    <div class="form-wrap">
+      <div class="card">
+        <div class="card-section">
+          <div class="sec-label">Detail Komplain</div>
+
+          <div class="field-row" style="margin-bottom:18px">
+            <div class="field">
+              <label class="f-label" for="ck-proyek">Proyek <span class="req">*</span></label>
+              <select id="ck-proyek" required>
+                <option value="">— Memuat... —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="f-label" for="ck-tanggal">Tanggal <span class="req">*</span></label>
+              <input type="date" id="ck-tanggal" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="f-label" for="ck-pekerja">Nama Pekerja / Pengaju <span class="req">*</span></label>
+            <select id="ck-pekerja" required>
+              <option value="">— Memuat... —</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="f-label" for="ck-komplain">Deskripsi Komplain <span class="req">*</span></label>
+            <textarea id="ck-komplain" placeholder="Jelaskan masalah atau temuan lapangan secara detail..."
+              required></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label class="f-label" for="ck-lokasi">Lokasi / Area</label>
+              <input type="text" id="ck-lokasi" placeholder="Misal: Kamar lt.2" />
+            </div>
+            <div class="field">
+              <label class="f-label" for="ck-prioritas">Prioritas</label>
+              <select id="ck-prioritas">
+                <option value="Normal">Normal</option>
+                <option value="Tinggi">Tinggi</option>
+                <option value="Kritis">Kritis ⚠️</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btn-ck" onclick="submitKomplain()">
+        Kirim Komplain
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN: CEK PEKERJAAN
+  ══════════════════════════════════════ -->
+  <div id="screen-cek-pekerjaan" class="screen">
+    <div class="topbar"></div>
+    <div class="screen-topbar">
+      <button class="back-btn" onclick="history.back()">‹ Kembali</button>
+      <div class="screen-title-bar">Cek Pekerjaan</div>
+      <div class="screen-spacer"></div>
+    </div>
+
+    <div class="form-wrap">
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-section">
+          <div class="sec-label">Filter</div>
+
+          <div class="field-row" style="margin-bottom:18px">
+            <div class="field">
+              <label class="f-label" for="cek-proyek">Proyek</label>
+              <select id="cek-proyek">
+                <option value="">— Semua Proyek —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="f-label" for="cek-pekerja">Nama Pekerja</label>
+              <select id="cek-pekerja">
+                <option value="">— Semua Pekerja —</option>
+              </select>
+            </div>
+          </div>
+          <p style="font-size:11px;color:var(--text-dim);margin-bottom:14px">Isi minimal salah satu filter</p>
+
+          <button class="btn-submit" style="margin-top:0" onclick="cariPekerjaan()">
+            Cari Pekerjaan
+          </button>
+        </div>
+      </div>
+
+      <div id="cek-results"></div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN: GENERATE RAB / CHECKLIST
+  ══════════════════════════════════════ -->
+  <div id="screen-rab-checklist" class="screen">
+    <div class="topbar"></div>
+    <div class="screen-topbar">
+      <button class="back-btn" onclick="history.back()">‹ Kembali</button>
+      <div class="screen-title-bar">Generate RAB / Checklist</div>
+      <div class="screen-spacer"></div>
+    </div>
+    <div class="form-wrap">
+      <div class="card">
+        <div class="card-section">
+          <div class="sec-label">Filter Dokumen</div>
+          <div class="field">
+            <label class="f-label" for="rab-proyek">Proyek <span class="req">*</span></label>
+            <select id="rab-proyek">
+              <option value="">— Memuat... —</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="btn-submit" onclick="genRABFromMenu()" style="flex:1">📊 Generate RAB</button>
+        <button class="btn-submit btn-secondary" onclick="genChecklistFromMenu()" style="flex:1">🖨 Checklist</button>
+      </div>
+      <div id="rab-loading" style="display:none;text-align:center;padding:16px;color:var(--text-dim)">Memuat data...
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN: DASHBOARD MONITORING
+  ══════════════════════════════════════ -->
+  <div id="screen-dashboard" class="screen">
+    <div class="topbar"></div>
+    <div class="screen-topbar">
+      <button class="back-btn" onclick="history.back()">‹ Kembali</button>
+      <div class="screen-title-bar">Dashboard Monitoring</div>
+      <button class="dash-refresh" onclick="initDashboard(true)" title="Muat ulang">⟳</button>
+    </div>
+    <div class="dash-wrap" id="dash-wrap">
+      <div class="dash-eyebrow">DASHBOARD MONITORING</div>
+      <div id="dash-proj-switch" class="dash-switch"></div>
+      <div id="dash-body"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       SCREEN: SUCCESS
+  ══════════════════════════════════════ -->
+  <div id="screen-success" class="screen">
+    <div class="topbar"></div>
+    <div class="success-wrap">
+      <div class="success-check">✓</div>
+      <h2 class="success-title" id="success-title">Berhasil</h2>
+      <p class="success-msg" id="success-msg">Data berhasil disimpan.</p>
+      <div class="success-actions">
+        <button class="btn-submit" onclick="goHomeFromSuccess()">Kembali ke Menu Awal</button>
+        <button class="btn-submit btn-secondary" id="success-again" onclick="successAgain()">Catat Lagi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Submit overlay (prevents editing during submit) -->
+  <div id="submit-overlay" class="submit-overlay">
+    <div class="submit-loader">
+      <div class="ldr-ring"></div>
+      <div class="ldr-text" id="submit-overlay-text">Memproses...</div>
+    </div>
+  </div>
+
+  <!-- ══ ADD WORKER MODAL ══ -->
+  <div id="modal-add-worker" class="modal-overlay" onclick="if(event.target===this)closeWorkerModal()">
+    <div class="modal-box">
+      <div class="modal-title">Tambah Pekerja Baru</div>
+      <div class="field" style="margin-bottom:14px">
+        <label class="f-label">Nama <span class="req">*</span></label>
+        <input type="text" id="mw-nama" placeholder="Nama lengkap" />
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label class="f-label">No. HP / WhatsApp</label>
+        <input type="tel" id="mw-hp" placeholder="Contoh: 08123456789" />
+      </div>
+      <div class="field" style="margin-bottom:20px">
+        <label class="f-label">Keterangan</label>
+        <input type="text" id="mw-ket" placeholder="Misal: Tukang listrik, mandor, dll" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-modal-cancel" onclick="closeWorkerModal()">Batal</button>
+        <button class="btn-modal-ok" id="btn-mw-ok" onclick="confirmAddWorker()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       JAVASCRIPT
+  ══════════════════════════════════════ -->
+  <script>
+    // ═══════════════════════════════════════
+    // CONFIG
+    // ═══════════════════════════════════════
+    const N8N_BASE = 'https://n8n.srv1270416.hstgr.cloud/webhook';
+
+    const EP = {
+      getProjects: `${N8N_BASE}/v4/get-projects`,
+      addProject: `${N8N_BASE}/v4/add-project`,
+      submitKomplain: `${N8N_BASE}/v4/submit-komplain`,
+      getWorkers: `${N8N_BASE}/v4/get-workers`,
+      addWorker: `${N8N_BASE}/v4/add-worker`,
+      submitPekerj: `${N8N_BASE}/v4/submit-pekerjaan`,
+      getPekerj: `${N8N_BASE}/v4/get-pekerjaan`,
+      updateStatus: `${N8N_BASE}/v4/update-status`,
+      updateKomplainStatus: `${N8N_BASE}/v4/update-komplain-status`,
+      getKomplain: `${N8N_BASE}/v4/get-komplain`,
+      getDashboard: `${N8N_BASE}/v4/get-dashboard`,
+    };
+
+    // Set TEST_MODE = false setelah endpoint n8n v3 siap
+    const TEST_MODE = true;   // true = mode demo: semua fitur jalan tanpa server. Set false untuk LIVE (deploy).
+
+    // ── TEST DATA ──────────────────────────
+    const DEMO_PROJECTS = ['Rumah Kebun Jeruk', 'Apartemen PIK', 'Kantor Pondok Indah'];
+    const DEMO_WORKERS = [
+      { nama: 'Rizal Hakim', no_hp: '6281200110022' },
+      { nama: 'Yusuf Maulana', no_hp: '6281300220033' },
+      { nama: 'Bayu Pratama', no_hp: '6281400330044' },
+      { nama: 'Hendra Gunawan', no_hp: '' },
+      { nama: 'Agus Salim', no_hp: '6281600550066' },
+      { nama: 'Dimas Aryo', no_hp: '' },
+    ];
+
+    const DEMO_DATA = [
+      {
+        id: 'PKJ-001', project: 'Rumah Kebun Jeruk', pekerja: 'Rizal Hakim',
+        tanggal: '2026-06-15', catatan: 'Area ruang tamu lt.1',
+        items: [
+          { no: 1, pekerjaan: 'Pasang lantai marmer 60x60', vol: 18, sat: 'm2', harga_satuan: 450000, total: 8100000 },
+          { no: 2, pekerjaan: 'Pasang skirting marmer', vol: 22, sat: "m'", harga_satuan: 90000, total: 1980000 },
+          { no: 3, pekerjaan: 'Pasang wallpaper dinding', vol: 30, sat: 'm2', harga_satuan: 120000, total: 3600000 },
+        ],
+        total: 13680000
+      },
+      {
+        id: 'PKJ-002', project: 'Rumah Kebun Jeruk', pekerja: 'Yusuf Maulana',
+        tanggal: '2026-06-16', catatan: 'Plafon & pencahayaan',
+        items: [
+          { no: 1, pekerjaan: 'Plafon gypsum drop ceiling', vol: 24, sat: 'm2', harga_satuan: 165000, total: 3960000 },
+          { no: 2, pekerjaan: 'Downlight LED 7W', vol: 14, sat: 'unit', harga_satuan: 95000, total: 1330000 },
+          { no: 3, pekerjaan: 'Hidden lamp LED strip', vol: 16, sat: "m'", harga_satuan: 85000, total: 1360000 },
+        ],
+        total: 6650000
+      },
+      {
+        id: 'PKJ-003', project: 'Apartemen PIK', pekerja: 'Bayu Pratama',
+        tanggal: '2026-06-16', catatan: 'Unit 21F',
+        items: [
+          { no: 1, pekerjaan: 'Pasang vinyl flooring SPC', vol: 36, sat: 'm2', harga_satuan: 175000, total: 6300000 },
+          { no: 2, pekerjaan: 'Backdrop TV custom HPL', vol: 1, sat: 'unit', harga_satuan: 4500000, total: 4500000 },
+          { no: 3, pekerjaan: 'Kitchen set atas-bawah', vol: 1, sat: 'set', harga_satuan: 18500000, total: 18500000 },
+        ],
+        total: 29300000
+      },
+      {
+        id: 'PKJ-004', project: 'Kantor Pondok Indah', pekerja: 'Agus Salim',
+        tanggal: '2026-06-17', catatan: 'Area kerja open space',
+        items: [
+          { no: 1, pekerjaan: 'Partisi kaca tempered + frame', vol: 12, sat: 'm2', harga_satuan: 850000, total: 10200000 },
+          { no: 2, pekerjaan: 'Pasang karpet tile', vol: 60, sat: 'm2', harga_satuan: 145000, total: 8700000 },
+          { no: 3, pekerjaan: 'Meja kerja custom', vol: 6, sat: 'unit', harga_satuan: 1750000, total: 10500000 },
+        ],
+        total: 29400000
+      },
+    ];
+
+    const DEMO_KOMPLAIN = [
+      {
+        id: 'KMP-001', _type: 'komplain',
+        project: 'Rumah Kebun Jeruk', pengaju: 'Pak Wijaya',
+        tanggal: '2026-06-15',
+        komplain: 'Marmer ruang tamu ada goresan di dekat jendela.',
+        status: 'open', prioritas: 'Tinggi', lokasi: 'Ruang tamu lt1'
+      },
+      {
+        id: 'KMP-002', _type: 'komplain',
+        project: 'Apartemen PIK', pengaju: 'Bu Lestari',
+        tanggal: '2026-06-16',
+        komplain: 'Pintu kitchen set tidak rata saat ditutup.',
+        status: 'inprogress', prioritas: 'Sedang', lokasi: 'Unit 21F dapur'
+      },
+      {
+        id: 'KMP-003', _type: 'komplain',
+        project: 'Kantor Pondok Indah', pengaju: 'Pak Hartono',
+        tanggal: '2026-06-17',
+        komplain: 'Lampu area meeting sering berkedip.',
+        status: 'open', prioritas: 'Sedang', lokasi: 'Ruang meeting lt2'
+      },
+    ];
+
+    // ═══════════════════════════════════════
+    // THEME
+    // ═══════════════════════════════════════
+    function toggleTheme() {
+      const d = document.documentElement;
+      const isDark = d.getAttribute('data-theme') === 'dark';
+      d.setAttribute('data-theme', isDark ? '' : 'dark');
+      localStorage.setItem('app-theme', isDark ? '' : 'dark');
+    }
+    (function () {
+      const t = localStorage.getItem('app-theme');
+      if (t) document.documentElement.setAttribute('data-theme', t);
+    })();
+
+    // ═══════════════════════════════════════
+    // NAVIGATION (history-aware + loading gate)
+    // ═══════════════════════════════════════
+    const DATA_SCREENS = ['catat-pekerjaan', 'catat-komplain', 'cek-pekerjaan', 'rab-checklist', 'dashboard'];
+
+    function showScreen(id) {
+      const el = document.getElementById('screen-' + id);
+      if (!el) return;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
+    async function goto(id, opts) {
+      opts = opts || {};
+      const needsData = DATA_SCREENS.includes(id);
+      if (needsData) lockUI('Menyiapkan halaman...');
+      if (!opts.fromPop) history.pushState({ screen: id }, '', '#' + id);
+      showScreen(id);
+      try {
+        if (id === 'catat-pekerjaan') await initCatatPekerjaan();
+        else if (id === 'catat-komplain') await initCatatKomplain();
+        else if (id === 'cek-pekerjaan') await initCekPekerjaan();
+        else if (id === 'rab-checklist') await initRABChecklist();
+        else if (id === 'dashboard') await initDashboard(true);
+      } catch (e) {
+        console.warn('init error', e);
+      } finally {
+        if (needsData) unlockUI();
+      }
+    }
+
+    // Back/swipe (hardware) returns to previous screen instead of leaving the app
+    window.addEventListener('popstate', function (e) {
+      const id = (e.state && e.state.screen) || 'home';
+      goto(id, { fromPop: true });
+    });
+    history.replaceState({ screen: 'home' }, '', '#home');
+
+    // ── Success screen ──────────────────────────────────────
+    let _successOrigin = null;
+    function showSuccess(title, msg, againLabel, origin) {
+      document.getElementById('success-title').textContent = title || 'Berhasil';
+      document.getElementById('success-msg').textContent = msg || '';
+      const again = document.getElementById('success-again');
+      if (againLabel && origin) { _successOrigin = origin; again.textContent = againLabel; again.style.display = ''; }
+      else { _successOrigin = null; again.style.display = 'none'; }
+      history.replaceState({ screen: 'success' }, '', '#success');
+      showScreen('success');
+    }
+    function successAgain() {
+      const o = _successOrigin || 'home';
+      history.replaceState({ screen: o }, '', '#' + o);
+      goto(o, { fromPop: true });
+    }
+    function goHomeFromSuccess() {
+      history.replaceState({ screen: 'home' }, '', '#home');
+      showScreen('home');
+    }
+
+    // ═══════════════════════════════════════
+    // DASHBOARD MONITORING
+    // ═══════════════════════════════════════
+    const DASH_C = { slate: '#5C6E78', sage: '#6E7F5C', terracotta: '#AD5640', gold: '#B49157' };
+    let _dashData = null, _dashActive = 0;
+
+    const DEMO_DASHBOARD = {
+      projects: [
+        {
+          key: 'Rumah Kebun Jeruk', name: 'Rumah Kebun Jeruk', lokasi: 'Jakarta Barat',
+          statusCounts: { Pending: 2, Proses: 4, Selesai: 9 }, kritisAktif: 1, komplainOpen: 2, komplainClosed: 5,
+          budget: 120000000, realisasi: 78500000, updateCompliance: 90,
+          rabCategories: [
+            { name: 'Persiapan', budget: 8000000, realisasi: 8000000 },
+            { name: 'Sipil & Partisi', budget: 35000000, realisasi: 30200000 },
+            { name: 'Finishing', budget: 32000000, realisasi: 21800000 },
+            { name: 'MEP (Elektrikal/Plumbing)', budget: 20000000, realisasi: 11500000 },
+            { name: 'Furniture & Custom', budget: 25000000, realisasi: 7000000 }],
+          recentTickets: [
+            { id: 'KBJ-014', kategori: 'Komplain', deskripsi: 'Marmer ruang tamu tergores', pic: 'Rizal Hakim', status: 'Proses', prioritas: 'Kritis', tanggal: '15 Jun' },
+            { id: 'KBJ-013', kategori: 'Pekerjaan', deskripsi: 'Pasang wallpaper ruang tamu', pic: 'Yusuf Maulana', status: 'Selesai', prioritas: 'Normal', tanggal: '16 Jun' }],
+          picWorkload: [{ nama: 'Rizal Hakim', aktif: 3, selesai: 7 }, { nama: 'Yusuf Maulana', aktif: 2, selesai: 6 }]
+        },
+        {
+          key: 'Apartemen PIK', name: 'Apartemen PIK', lokasi: 'Jakarta Utara',
+          statusCounts: { Pending: 3, Proses: 6, Selesai: 7 }, kritisAktif: 2, komplainOpen: 1, komplainClosed: 3,
+          budget: 95000000, realisasi: 52300000, updateCompliance: 82,
+          rabCategories: [
+            { name: 'Persiapan', budget: 5000000, realisasi: 5000000 },
+            { name: 'Sipil & Partisi', budget: 18000000, realisasi: 15500000 },
+            { name: 'Finishing', budget: 24000000, realisasi: 14000000 },
+            { name: 'MEP (Elektrikal/Plumbing)', budget: 16000000, realisasi: 9800000 },
+            { name: 'Furniture & Custom', budget: 32000000, realisasi: 8000000 }],
+          recentTickets: [
+            { id: 'PIK-021', kategori: 'Pekerjaan', deskripsi: 'Pasang kitchen set unit 21F', pic: 'Bayu Pratama', status: 'Proses', prioritas: 'Normal', tanggal: '16 Jun' },
+            { id: 'PIK-020', kategori: 'Komplain', deskripsi: 'Pintu kitchen set tidak rata', pic: 'Bayu Pratama', status: 'Proses', prioritas: 'Kritis', tanggal: '16 Jun' }],
+          picWorkload: [{ nama: 'Bayu Pratama', aktif: 4, selesai: 5 }, { nama: 'Hendra Gunawan', aktif: 1, selesai: 3 }]
+        },
+        {
+          key: 'Kantor Pondok Indah', name: 'Kantor Pondok Indah', lokasi: 'Jakarta Selatan',
+          statusCounts: { Pending: 1, Proses: 3, Selesai: 6 }, kritisAktif: 1, komplainOpen: 1, komplainClosed: 2,
+          budget: 80000000, realisasi: 41600000, updateCompliance: 76,
+          rabCategories: [
+            { name: 'Persiapan', budget: 4000000, realisasi: 4000000 },
+            { name: 'Sipil & Partisi', budget: 22000000, realisasi: 18000000 },
+            { name: 'Finishing', budget: 18000000, realisasi: 9500000 },
+            { name: 'MEP (Elektrikal/Plumbing)', budget: 14000000, realisasi: 7100000 },
+            { name: 'Furniture & Custom', budget: 22000000, realisasi: 3000000 }],
+          recentTickets: [
+            { id: 'PI-009', kategori: 'Komplain', deskripsi: 'Lampu area meeting berkedip', pic: 'Agus Salim', status: 'Open', prioritas: 'Normal', tanggal: '17 Jun' },
+            { id: 'PI-008', kategori: 'Pekerjaan', deskripsi: 'Partisi kaca open space', pic: 'Agus Salim', status: 'Proses', prioritas: 'Normal', tanggal: '17 Jun' }],
+          picWorkload: [{ nama: 'Agus Salim', aktif: 2, selesai: 4 }, { nama: 'Dimas Aryo', aktif: 1, selesai: 2 }]
+        }]
+    };
+
+    const fmtRp = (n) => 'Rp ' + (Number(n) || 0).toLocaleString('id-ID');
+
+    function rulerBar(segments, total) {
+      const segs = segments.map(s => `<div class="ruler-seg" style="width:${Math.max(0, Math.min(100, (s.value / (total || 1)) * 100))}%;background:${s.color}"></div>`).join('');
+      const ticks = [10, 20, 30, 40, 50, 60, 70, 80, 90].map(t => `<div class="ruler-tick ${t === 50 ? 'mid' : ''}" style="left:${t}%"></div>`).join('');
+      return `<div class="ruler">${segs}${ticks}</div><div class="ruler-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>`;
+    }
+
+    function statusColor(s) { return s === 'Selesai' ? DASH_C.sage : s === 'Pending' ? DASH_C.gold : DASH_C.slate; }
+
+    async function initDashboard(force) {
+      const body = document.getElementById('dash-body');
+      const sw = document.getElementById('dash-proj-switch');
+      if (!_dashData || force) {
+        body.innerHTML = '<div class="dash-empty">Memuat data dashboard…</div>';
+        sw.innerHTML = '';
+        try {
+          if (TEST_MODE) { _dashData = DEMO_DASHBOARD; }
+          else {
+            const ctrl = new AbortController(); setTimeout(() => ctrl.abort(), 30000);
+            const r = await fetch(EP.getDashboard, { signal: ctrl.signal });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const j = await r.json();
+            _dashData = { projects: (j.projects || []) };
+          }
+          _dashActive = 0;
+        } catch (e) {
+          console.warn('dashboard failed:', e && e.message);
+          body.innerHTML = '<div class="dash-empty">Gagal memuat dashboard. Coba muat ulang.</div>';
+          return;
+        }
+      }
+      renderDashboard();
+    }
+
+    function renderDashboard() {
+      const sw = document.getElementById('dash-proj-switch');
+      const body = document.getElementById('dash-body');
+      const projects = (_dashData && _dashData.projects) || [];
+      if (!projects.length) { sw.innerHTML = ''; body.innerHTML = '<div class="dash-empty">Belum ada data proyek.</div>'; return; }
+      if (_dashActive >= projects.length) _dashActive = 0;
+
+      sw.innerHTML = projects.map((p, i) =>
+        `<button class="dash-chip ${i === _dashActive ? 'active' : ''}" onclick="_dashSwitch(${i})">${esc((p.name || '').split('—')[0].trim())}</button>`
+      ).join('');
+
+      const p = projects[_dashActive];
+      const sc = p.statusCounts || { Pending: 0, Proses: 0, Selesai: 0 };
+      const totalTiket = (sc.Pending || 0) + (sc.Proses || 0) + (sc.Selesai || 0);
+      const realisasiPct = p.budget ? Math.round((p.realisasi / p.budget) * 100) : 0;
+
+      const kpi = (ic, bg, fg, eyebrow, val, sub, ruler) => `
+        <div class="dash-kpi">
+          <div class="dash-kpi-top"><div class="dash-kpi-ic" style="background:${bg};color:${fg}">${ic}</div>
+            <span class="dash-kpi-eyebrow">${eyebrow}</span></div>
+          <div class="dash-kpi-val">${val}</div>
+          <div class="dash-kpi-sub">${sub}</div>${ruler || ''}</div>`;
+
+      const kpis = `<div class="dash-kpis">
+        ${kpi('📋', 'rgba(92,110,120,.15)', DASH_C.slate, 'Tiket Aktif', (sc.Pending || 0) + (sc.Proses || 0), `belum selesai dari ${totalTiket} tiket`)}
+        ${kpi('⚠️', 'rgba(173,86,64,.15)', DASH_C.terracotta, 'Perlu Perhatian', p.kritisAktif || 0, 'prioritas kritis, belum selesai')}
+        ${kpi('💰', 'rgba(180,145,87,.18)', DASH_C.gold, 'Realisasi RAB', realisasiPct + '%', `${fmtRp(p.realisasi)} / ${fmtRp(p.budget)}`, rulerBar([{ value: p.realisasi, color: DASH_C.gold }], p.budget))}
+        ${kpi('🛎️', 'rgba(110,127,92,.15)', DASH_C.sage, 'Komplain', `${p.komplainOpen || 0}/${(p.komplainOpen || 0) + (p.komplainClosed || 0)}`, 'open / total komplain')}
+      </div>`;
+
+      const statusCard = `<div class="dash-card">
+        <div class="dash-card-eyebrow">STATUS TIKET</div><div class="dash-card-title">Distribusi Status</div>
+        ${rulerBar([{ value: sc.Pending, color: DASH_C.gold }, { value: sc.Proses, color: DASH_C.slate }, { value: sc.Selesai, color: DASH_C.sage }], totalTiket)}
+        <div class="dash-legend">
+          ${[['Pending', sc.Pending, DASH_C.gold], ['Proses', sc.Proses, DASH_C.slate], ['Selesai', sc.Selesai, DASH_C.sage]].map(a =>
+            `<span><span class="dash-dot" style="background:${a[2]}"></span>${a[0]} <strong>${a[1] || 0}</strong></span>`).join('')}
+        </div></div>`;
+
+      const tickets = (p.recentTickets || []);
+      const ticketsCard = `<div class="dash-card">
+        <div class="dash-card-eyebrow">AKTIVITAS</div><div class="dash-card-title">Tiket Terbaru</div>
+        ${tickets.length ? tickets.map(t => `
+          <div class="dash-row"><div style="min-width:0">
+            <div class="dash-row-desc">${(t.prioritas === 'Kritis' || t.prioritas === 'Tinggi') ? '🔴 ' : ''}${esc(t.deskripsi)}</div>
+            <div class="dash-row-meta">${esc(t.id)} · ${esc(t.kategori)} · ${esc(t.pic)} · ${esc(t.tanggal)}</div>
+          </div>
+          <span class="dash-badge" style="background:${statusColor(t.status)}22;color:${statusColor(t.status)}">${esc((t.status || '').toUpperCase())}</span></div>`).join('')
+          : '<div class="dash-empty">Belum ada tiket.</div>'}</div>`;
+
+      const cats = (p.rabCategories || []);
+      const rabCard = `<div class="dash-card">
+        <div class="dash-card-eyebrow">REALISASI RAB</div><div class="dash-card-title">Per Kategori Pekerjaan</div>
+        ${cats.length ? cats.map(c => { const pct = c.budget ? Math.round((c.realisasi / c.budget) * 100) : 0; return `
+          <div class="dash-block"><div class="dash-barline"><span style="font-weight:600">${esc(c.name)}</span>
+            <span class="mono">${fmtRp(c.realisasi)} / ${fmtRp(c.budget)} · ${pct}%</span></div>
+            ${rulerBar([{ value: c.realisasi, color: DASH_C.gold }], c.budget)}</div>`; }).join('')
+          : '<div class="dash-empty">Belum ada data RAB budget.</div>'}</div>`;
+
+      const pics = (p.picWorkload || []);
+      const picCard = `<div class="dash-card">
+        <div class="dash-card-eyebrow">BEBAN KERJA</div><div class="dash-card-title">Tiket per PIC</div>
+        ${pics.length ? pics.map(pic => { const tot = (pic.aktif || 0) + (pic.selesai || 0); return `
+          <div class="dash-block"><div class="dash-barline"><span style="font-weight:600">${esc(pic.nama)}</span>
+            <span class="mono">${pic.aktif || 0} aktif · ${pic.selesai || 0} selesai</span></div>
+            ${rulerBar([{ value: pic.aktif, color: DASH_C.slate }, { value: pic.selesai, color: DASH_C.sage }], tot)}</div>`; }).join('')
+          : '<div class="dash-empty">Belum ada data PIC.</div>'}</div>`;
+
+      body.innerHTML = `
+        <div class="dash-projhead"><h1 class="dash-projname">${esc(p.name)}</h1>
+          <span class="dash-projmeta">${p.lokasi ? esc(p.lokasi) + ' · ' : ''}Update ${new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })} WIB</span></div>
+        ${kpis}${statusCard}${ticketsCard}${rabCard}${picCard}`;
+    }
+
+    function _dashSwitch(i) { _dashActive = i; renderDashboard(); }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+
+    // ═══════════════════════════════════════
+    // SUBMIT OVERLAY
+    // ═══════════════════════════════════════
+    function lockUI(msg) {
+      const ov = document.getElementById('submit-overlay');
+      const txt = document.getElementById('submit-overlay-text');
+      if (txt) txt.textContent = msg || 'Memproses...';
+      ov.classList.add('active');
+    }
+    function unlockUI() { document.getElementById('submit-overlay').classList.remove('active'); }
+
+    // Promise-based delay (used by TEST_MODE flows and timed UX)
+    function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+    // ═══════════════════════════════════════
+    // TOAST
+    // ═══════════════════════════════════════
+    function toast(msg, ms = 3000) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), ms);
+    }
+
+    // ═══════════════════════════════════════
+    // CURRENCY HELPERS
+    // ═══════════════════════════════════════
+    function fmt(n) {
+      if (!n && n !== 0) return '—';
+      return 'Rp ' + Math.round(n).toLocaleString('id-ID');
+    }
+
+    function fmtDate(str) {
+      if (!str) return '';
+      try {
+        return new Date(str + 'T00:00:00').toLocaleDateString('id-ID', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+      } catch { return str; }
+    }
+
+    // ═══════════════════════════════════════
+    // PROJECT LIST
+    // ═══════════════════════════════════════
+    let _projects = null;
+
+    async function getProjects() {
+      if (_projects) return _projects;
+      if (TEST_MODE) { _projects = [...DEMO_PROJECTS]; return _projects; }
+      try {
+        const ctrl = new AbortController();
+        setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch(EP.getProjects, { signal: ctrl.signal });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+        const raw = Array.isArray(d) ? d : (d.data || []);
+        _projects = raw
+          .map(p => typeof p === 'string' ? p : (p.Project || p.project || Object.values(p)[0] || ''))
+          .map(p => (p || '').toString().trim())
+          .filter(Boolean);
+        if (!_projects.length) _projects = [...DEMO_PROJECTS];
+      } catch (e) {
+        console.warn('getProjects failed:', e && e.message);
+        _projects = [...DEMO_PROJECTS];
+      }
+      return _projects;
+    }
+
+    async function fillProjectSelect(id, withAdd = true) {
+      if (!document.getElementById(id)) return;
+      const list = await getProjects();
+      // Re-get after async; replace node to clear any stale listeners
+      let sel = document.getElementById(id);
+      if (!sel || !sel.parentNode) return;
+      const fresh = sel.cloneNode(false);
+      sel.parentNode.replaceChild(fresh, sel);
+      sel = document.getElementById(id);
+      const defaultLabel = withAdd ? '— Pilih Proyek —' : '— Semua Proyek —';
+      sel.innerHTML = `<option value="">${defaultLabel}</option>`;
+      list.forEach(p => sel.add(new Option(p, p)));
+      if (withAdd) {
+        sel.add(new Option('──────────', '__psep__', false, false));
+        sel.options[sel.options.length - 1].disabled = true;
+        sel.add(new Option('+ Tambah Proyek Baru...', '__padd__'));
+        sel.addEventListener('change', function () {
+          if (this.value === '__padd__') {
+            const nm = prompt('Nama proyek baru:');
+            if (nm && nm.trim()) pushProject(nm.trim(), this);
+            else this.value = '';
+          }
+        });
+      }
+    }
+
+    async function pushProject(name, originId) {
+      if (!TEST_MODE) {
+        try { await fetch(EP.addProject, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ project: name }) }); }
+        catch { }
+      }
+      if (!_projects) _projects = [];
+      if (!_projects.includes(name)) _projects.push(name);
+
+      ['cp-proyek', 'ck-proyek', 'cek-proyek'].forEach(sid => {
+        const s = document.getElementById(sid);
+        if (!s) return;
+        if (!Array.from(s.options).some(o => o.value === name)) {
+          const addIdx = Array.from(s.options).findIndex(o => o.value === '__padd__');
+          const o = new Option(name, name);
+          if (addIdx > -1) s.add(o, addIdx - 1);
+          else s.add(o);
+        }
+        if (sid === originId) s.value = name;
+      });
+    }
+
+    // ═══════════════════════════════════════
+    // WORKER LIST
+    // ═══════════════════════════════════════
+    let _workers = null;
+    let _workerPhones = {};
+    function workerPhone(selId,name){var s=document.getElementById(selId);var o=s&&s.selectedOptions&&s.selectedOptions[0];var p=(o&&o.dataset&&o.dataset.phone)||'';return p||(_workerPhones[name]||'');}
+
+    async function getWorkers() {
+      if (_workers) return _workers;
+      if (TEST_MODE) {
+        _workers = DEMO_WORKERS.map(w => w.nama); _workerPhones = {}; DEMO_WORKERS.forEach(w => { _workerPhones[w.nama] = w.no_hp || ''; });
+        return _workers;
+      }
+      try {
+        const ctrl = new AbortController();
+        setTimeout(() => ctrl.abort(), 8000);
+        const r = await fetch(EP.getWorkers, { signal: ctrl.signal });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+        const raw = Array.isArray(d) ? d : (d.data || []);
+        _workers = raw.map(w => (typeof w === 'string' ? w : w.nama || w.Nama || '')).filter(Boolean); _workerPhones = {}; raw.forEach(w => { if (w && typeof w === 'object') { const nm = w.nama || w.Nama || ''; if (nm) _workerPhones[nm] = w.no_hp || w.No_HP || ''; } });
+      } catch (e) {
+        console.warn('getWorkers failed:', e && e.message);
+        _workers = [];
+      }
+      return _workers;
+    }
+
+    async function fillWorkerSelect(id, withAdd = true) {
+      if (!document.getElementById(id)) return;
+      const list = await getWorkers();
+      // Re-get after async; replace node to clear stale listeners
+      let sel = document.getElementById(id);
+      if (!sel || !sel.parentNode) return;
+      const fresh = sel.cloneNode(false);
+      sel.parentNode.replaceChild(fresh, sel);
+      sel = document.getElementById(id);
+      const defaultLabel = withAdd ? '— Pilih Pekerja —' : '— Semua Pekerja —';
+      sel.innerHTML = `<option value="">${defaultLabel}</option>`;
+      list.forEach(w => { const _o = new Option(w, w); _o.dataset.phone = (_workerPhones[w] || ''); sel.add(_o); });
+      if (withAdd) {
+        sel.add(new Option('──────────', '__wsep__', false, false));
+        sel.options[sel.options.length - 1].disabled = true;
+        sel.add(new Option('+ Tambah Nama Baru...', '__wadd__'));
+        sel.addEventListener('change', function () {
+          if (this.value === '__wadd__') openWorkerModal(this.id);
+        });
+      }
+    }
+
+    // ── Add Worker Modal ────────────────────────────────────────────────────
+    let _workerModalOrigin = null;
+
+    function openWorkerModal(originId) {
+      _workerModalOrigin = originId;
+      document.getElementById('mw-nama').value = '';
+      document.getElementById('mw-hp').value = '';
+      document.getElementById('mw-ket').value = '';
+      document.getElementById('modal-add-worker').classList.add('active');
+      setTimeout(() => document.getElementById('mw-nama').focus(), 100);
+    }
+
+    function closeWorkerModal() {
+      document.getElementById('modal-add-worker').classList.remove('active');
+      // Reset the origin select to empty if user cancelled
+      const origin = _workerModalOrigin ? document.getElementById(_workerModalOrigin) : null;
+      if (origin && origin.value === '__wadd__') origin.value = '';
+      _workerModalOrigin = null;
+    }
+
+    async function confirmAddWorker() {
+      const nama = document.getElementById('mw-nama').value.trim();
+      const hp = document.getElementById('mw-hp').value.trim();
+      const ket = document.getElementById('mw-ket').value.trim();
+      if (!nama) { document.getElementById('mw-nama').focus(); return; }
+
+      const btn = document.getElementById('btn-mw-ok');
+      btn.disabled = true;
+      btn.textContent = 'Menyimpan...';
+
+      await pushWorker(nama, hp, ket, _workerModalOrigin);
+
+      btn.disabled = false;
+      btn.textContent = 'Simpan';
+      document.getElementById('modal-add-worker').classList.remove('active');
+      _workerModalOrigin = null;
+    }
+
+    async function pushWorker(name, noHp, keterangan, originId) {
+      if (!TEST_MODE) {
+        try {
+          await fetch(EP.addWorker, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nama: name, no_hp: noHp || '', keterangan: keterangan || '' })
+          });
+        } catch { }
+      }
+      if (!_workers) _workers = [];
+      if (!_workers.includes(name)) _workers.push(name);
+      _workerPhones[name] = noHp || '';
+
+      ['cp-pekerja', 'ck-pekerja', 'cek-pekerja'].forEach(sid => {
+        const s = document.getElementById(sid);
+        if (!s) return;
+        if (!Array.from(s.options).some(o => o.value === name)) {
+          const addIdx = Array.from(s.options).findIndex(o => o.value === '__wadd__');
+          const o = new Option(name, name);
+          o.dataset.phone = noHp || '';
+          if (addIdx > -1) s.add(o, addIdx - 1);
+          else s.add(o);
+        }
+        if (sid === originId) s.value = name;
+      });
+    }
+
+    // ═══════════════════════════════════════
+    // CATAT PEKERJAAN
+    // ═══════════════════════════════════════
+    const SATUAN = ['unit', 'm2', "m'", 'meter', 'lump', 'rit', 'seat', 'set', 'titik', 'pcs', 'kg', 'ls'];
+    const KATEGORI_RAB = ['Persiapan', 'Sipil & Partisi', 'Finishing', 'MEP (Elektrikal/Plumbing)', 'Furniture & Custom'];
+    let rowSeq = 0;
+
+    async function initCatatPekerjaan() {
+      _workers = null; _projects = null;
+      document.getElementById('cp-tanggal').value = todayStr();
+      document.getElementById('cp-catatan').value = '';
+      document.getElementById('rab-tbody').innerHTML = '';
+      addRow(); addRow(); addRow();
+      document.getElementById('grand-total').textContent = 'Rp 0';
+      await Promise.all([fillProjectSelect('cp-proyek'), fillWorkerSelect('cp-pekerja', true)]);
+    }
+
+    function todayStr() {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    function addRow() {
+      rowSeq++;
+      const tb = document.getElementById('rab-tbody');
+      const n = tb.children.length + 1;
+      const satOpts = SATUAN.map(s => `<option>${s}</option>`).join('');
+      const katOpts = `<option value="">— pilih —</option>` + KATEGORI_RAB.map(k => `<option>${k}</option>`).join('');
+      const tr = document.createElement('tr');
+      tr.dataset.seq = rowSeq;
+      tr.innerHTML = `
+        <td class="c-no row-num">${n}</td>
+        <td class="c-item"><input type="text" placeholder="Nama pekerjaan..." /></td>
+        <td class="c-kat"><select>${katOpts}</select></td>
+        <td class="c-vol"><input type="number" placeholder="0" min="0" step="any" oninput="calcRow(this)" /></td>
+        <td class="c-sat"><select>${satOpts}</select></td>
+        <td class="c-price"><input type="number" placeholder="" min="0" step="any" oninput="calcRow(this)" /></td>
+        <td class="c-total"><input type="text" readonly style="color:var(--gold);font-weight:600;background:var(--surface-3)" value="Rp 0" /></td>
+        <td class="c-del"><button class="btn-del" onclick="delRow(this)" title="Hapus">×</button></td>
+      `;
+      tb.appendChild(tr);
+      renum();
+    }
+
+    function calcRow(inp) {
+      const tr = inp.closest('tr');
+      const vol = parseFloat(tr.querySelector('.c-vol input').value) || 0;
+      const price = parseFloat(tr.querySelector('.c-price input').value) || 0;
+      tr.querySelector('.c-total input').value = fmt(vol * price);
+      calcGrand();
+    }
+
+    function delRow(btn) {
+      const tb = document.getElementById('rab-tbody');
+      if (tb.children.length <= 1) { toast('Minimal 1 baris'); return; }
+      btn.closest('tr').remove();
+      renum(); calcGrand();
+    }
+
+    function renum() {
+      document.querySelectorAll('#rab-tbody tr').forEach((tr, i) => {
+        tr.querySelector('.row-num').textContent = i + 1;
+      });
+    }
+
+    function calcGrand() {
+      let sum = 0;
+      document.querySelectorAll('#rab-tbody tr').forEach(tr => {
+        const v = parseFloat(tr.querySelector('.c-vol input').value) || 0;
+        const p = parseFloat(tr.querySelector('.c-price input').value) || 0;
+        sum += v * p;
+      });
+      document.getElementById('grand-total').textContent = fmt(sum);
+    }
+
+    async function submitPekerjaan() {
+      const proyek = document.getElementById('cp-proyek').value;
+      const pekerja = document.getElementById('cp-pekerja').value;
+      const tanggal = document.getElementById('cp-tanggal').value;
+      const catatan = document.getElementById('cp-catatan').value.trim();
+
+      if (!proyek || proyek === '__padd__') { toast('⚠️ Pilih proyek'); return; }
+      if (!pekerja || pekerja === '__wadd__') { toast('⚠️ Pilih nama pekerja'); return; }
+      if (!tanggal) { toast('⚠️ Isi tanggal'); return; }
+
+      const items = [];
+      let n = 1;
+      document.querySelectorAll('#rab-tbody tr').forEach(tr => {
+        const pekerjaan = tr.querySelector('.c-item input').value.trim();
+        const vol = parseFloat(tr.querySelector('.c-vol input').value) || 0;
+        const sat = tr.querySelector('.c-sat select').value;
+        const kategori = tr.querySelector('.c-kat select').value;
+        const harga = parseFloat(tr.querySelector('.c-price input').value) || 0;
+        if (pekerjaan) items.push({ no: n++, pekerjaan, vol, sat, kategori, harga_satuan: harga || null, total: harga ? vol * harga : null });
+      });
+
+      if (!items.length) { toast('⚠️ Isi minimal satu baris pekerjaan'); return; }
+
+      const total = items.reduce((s, it) => s + it.total, 0);
+      const payload = { project: proyek, pekerja, tanggal, catatan, items, total, no_hp: workerPhone('cp-pekerja', pekerja) };
+
+      lockUI('Menyimpan pekerjaan...');
+      const btn = document.getElementById('btn-cp');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Menyimpan...';
+
+      try {
+        if (TEST_MODE) {
+          await delay(600);
+          DEMO_DATA.push({
+            id: 'PKJ-' + String(DEMO_DATA.length + 1).padStart(3, '0'),
+            ...payload
+          });
+        } else {
+          const r = await fetch(EP.submitPekerj, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!r.ok) throw new Error();
+        }
+        document.getElementById('rab-tbody').innerHTML = '';
+        rowSeq = 0;
+        document.getElementById('cp-catatan').value = '';
+        addRow(); addRow(); addRow();
+        calcGrand();
+        showSuccess('Pekerjaan Tersimpan', 'Catatan pekerjaan berhasil disimpan.', 'Catat Pekerjaan Lagi', 'catat-pekerjaan');
+      } catch {
+        toast('✗ Gagal menyimpan. Coba lagi.');
+      } finally {
+        unlockUI();
+        btn.disabled = false;
+        btn.textContent = 'Simpan Pekerjaan';
+      }
+    }
+
+    // ═══════════════════════════════════════
+    // CATAT KOMPLAIN
+    // ═══════════════════════════════════════
+    async function initCatatKomplain() {
+      _workers = null; _projects = null;
+      document.getElementById('ck-tanggal').value = todayStr();
+      document.getElementById('ck-komplain').value = '';
+      document.getElementById('ck-lokasi').value = '';
+      document.getElementById('ck-prioritas').value = 'Normal';
+      await Promise.all([fillProjectSelect('ck-proyek'), fillWorkerSelect('ck-pekerja', true)]);
+    }
+
+    async function submitKomplain() {
+      const proyek = document.getElementById('ck-proyek').value;
+      const pekerja = document.getElementById('ck-pekerja').value;
+      const tanggal = document.getElementById('ck-tanggal').value;
+      const komplain = document.getElementById('ck-komplain').value.trim();
+      const lokasi = document.getElementById('ck-lokasi').value.trim();
+      const prioritas = document.getElementById('ck-prioritas').value;
+
+      if (!proyek || proyek === '__padd__') { toast('⚠️ Pilih proyek'); return; }
+      if (!pekerja || pekerja === '__wadd__') { toast('⚠️ Pilih nama pekerja'); return; }
+      if (!komplain) { toast('⚠️ Isi deskripsi komplain'); return; }
+
+      const payload = {
+        type: 'komplain', status: 'Open',
+        project: proyek, pekerja, tanggal, komplain, lokasi, prioritas,
+        no_hp: workerPhone('ck-pekerja', pekerja),
+        timestamp: new Date().toISOString()
+      };
+
+      lockUI('Mengirim komplain...');
+      const btn = document.getElementById('btn-ck');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Mengirim...';
+
+      try {
+        if (TEST_MODE) {
+          await delay(600);
+          DEMO_KOMPLAIN.unshift({
+            id: 'KMP-' + String(DEMO_KOMPLAIN.length + 1).padStart(3, '0'), _type: 'komplain',
+            project: proyek, pengaju: pekerja, tanggal,
+            komplain, status: 'open', prioritas, lokasi
+          });
+        } else {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 12000);
+          let r;
+          try {
+            r = await fetch(EP.submitKomplain, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              signal: ctrl.signal
+            });
+          } finally { clearTimeout(timer); }
+          if (!r.ok) {
+            let errDetail = '';
+            try { const j = await r.json(); errDetail = j.error || j.message || ''; } catch { }
+            throw new Error(errDetail || `HTTP ${r.status}`);
+          }
+        }
+        document.getElementById('ck-komplain').value = '';
+        document.getElementById('ck-lokasi').value = '';
+        showSuccess('Komplain Terkirim', 'Komplain berhasil dicatat.', 'Catat Komplain Lagi', 'catat-komplain');
+      } catch (e) {
+        if (e && e.name === 'AbortError') {
+          toast('✗ Timeout — periksa koneksi & coba lagi');
+        } else {
+          toast('✗ Gagal kirim: ' + (e && e.message ? e.message : 'Coba lagi'));
+        }
+      } finally {
+        unlockUI();
+        btn.disabled = false;
+        btn.textContent = 'Kirim Komplain';
+      }
+    }
+
+    // ═══════════════════════════════════════
+    // CEK PEKERJAAN
+    // ═══════════════════════════════════════
+    async function initCekPekerjaan() {
+      _workers = null; _projects = null;
+      _cekData = null;
+      _statusMap = {};
+      _statusDirty = new Set();
+      _recKind = {};
+      const sp = document.getElementById('cek-proyek');
+      const sw = document.getElementById('cek-pekerja');
+      if (sp) { sp.innerHTML = '<option value="">— Semua Proyek —</option>'; }
+      if (sw) { sw.innerHTML = '<option value="">— Semua Pekerja —</option>'; }
+      document.getElementById('cek-results').innerHTML = '';
+      const sb = document.getElementById('btn-status-submit');
+      if (sb) sb.classList.remove('visible');
+      await Promise.all([fillProjectSelect('cek-proyek', false), fillWorkerSelect('cek-pekerja', false)]);
+    }
+
+    let _cekData = null;
+    let _statusMap = {};  // key: "bid|noItem" → 'pending'|'inprogress'|'done'
+    let _statusDirty = new Set();  // Set of dirty "bid|noItem" keys
+    let _recKind = {};  // bid → 'pekerjaan' | 'komplain'
+    let _demoStatus = {};  // TEST_MODE: simpan update status agar persist antar pencarian
+
+    function _sKey(bid, noItem) { return bid + '|' + noItem; }
+
+    async function cariPekerjaan() {
+      const pekerja = document.getElementById('cek-pekerja').value;
+      const proyek = document.getElementById('cek-proyek').value;
+
+      if (!pekerja && !proyek) { toast('⚠️ Pilih minimal proyek atau nama pekerja'); return; }
+
+      const el = document.getElementById('cek-results');
+      el.innerHTML = '<div class="loading-inline">Memuat data pekerjaan...</div>';
+      lockUI('Memuat data...');
+      _statusMap = {};
+      _statusDirty = new Set();
+
+      let pkjData = [], kmpData = [];
+      try {
+        if (TEST_MODE) {
+          await delay(350);
+          pkjData = DEMO_DATA.filter(d =>
+            (!pekerja || d.pekerja === pekerja) &&
+            (!proyek || d.project === proyek)
+          ).map(d => ({ ...d, _type: 'pekerjaan' }));
+          kmpData = DEMO_KOMPLAIN.filter(d =>
+            (!proyek || d.project === proyek)
+          );
+          if (pkjData[0] && pkjData[0].items) {
+            _statusMap[_sKey(pkjData[0].id, 1)] = 'done';
+            _statusMap[_sKey(pkjData[0].id, 2)] = 'inprogress';
+          }
+        } else {
+          const p = new URLSearchParams();
+          if (pekerja) p.set('pekerja', pekerja);
+          if (proyek) p.set('project', proyek);
+
+          // Fetch pekerjaan + komplain in parallel
+          const [rPkj, rKmp] = await Promise.allSettled([
+            fetch(`${EP.getPekerj}?${p}`),
+            fetch(`${EP.getKomplain}?${new URLSearchParams(proyek ? { project: proyek } : {})}`)
+          ]);
+
+          if (rPkj.status === 'fulfilled' && rPkj.value.ok) {
+            const j = await rPkj.value.json();
+            const arr = Array.isArray(j) ? j : (j.data || []);
+            pkjData = arr.filter(d => d && d.id).map(d => ({ ...d, _type: 'pekerjaan' }));
+            pkjData.forEach(d => {
+              (d.items || []).forEach(it => {
+                const st = it.status || '';
+                if (st) _statusMap[_sKey(d.id, it.no || 1)] = st;
+              });
+            });
+          } else if (rPkj.status === 'rejected') {
+            console.warn('Pekerjaan fetch failed:', rPkj.reason);
+          }
+          if (rKmp.status === 'fulfilled' && rKmp.value.ok) {
+            const j = await rKmp.value.json();
+            const arr = Array.isArray(j) ? j : (j.data || []);
+            kmpData = arr.filter(d => d && !d._empty).map(d => ({ ...d, _type: 'komplain' }));
+          }
+        }
+      } catch (e) {
+        unlockUI();
+        el.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Gagal memuat data.<br>' + (e.message || 'Periksa koneksi.') + '</p></div>';
+        return;
+      }
+
+      // Filter komplain by pekerja (pengaju) so search matches the worker too
+      if (pekerja) {
+        kmpData = kmpData.filter(k => String(k.pengaju || k.pekerja || '').trim() === pekerja.trim());
+      }
+
+      // Track record kind + seed komplain status into the same status map
+      _recKind = {};
+      pkjData.forEach(d => { _recKind[d.id] = 'pekerjaan'; });
+      kmpData.forEach(k => {
+        _recKind[k.id] = 'komplain';
+        const s = String(k.status || 'open').toLowerCase();
+        _statusMap[_sKey(k.id, 1)] = s === 'closed' || s === 'done' ? 'done'
+          : s === 'inprogress' || s === 'proses' ? 'inprogress' : 'pending';
+      });
+
+      if (TEST_MODE) Object.assign(_statusMap, _demoStatus);
+      const data = [...pkjData, ...kmpData];
+      if (!data.length) {
+        unlockUI();
+        const who = [pekerja && `<strong>${pekerja}</strong>`, proyek && `proyek ${proyek}`].filter(Boolean).join(' di ');
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>Tidak ada data${who ? ' untuk ' + who : ''}.</p></div>`;
+        return;
+      }
+
+      _cekData = { data, pekerja, proyek };
+      data.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+      const grandTotal = pkjData.reduce((s, d) => s + (d.total || 0), 0);
+      const allItems = pkjData.reduce((s, d) => s + (d.items || []).length, 0);
+      const doneItems = pkjData.reduce((s, d) =>
+        s + (d.items || []).filter(it => (_statusMap[_sKey(d.id, it.no || 1)] || 'pending') === 'done').length, 0);
+
+      const kmpOpen = kmpData.filter(k => k.status !== 'closed').length;
+
+      let html = `
+        <div class="result-summary">
+          <span>${allItems} item · ${doneItems} selesai${kmpOpen ? ` · ${kmpOpen} komplain` : ''}</span>
+          <strong>${fmt(grandTotal)}</strong>
+        </div>
+        <div class="action-row">
+          <button class="btn-action" onclick="genChecklist()">🖨 Generate Checklist</button>
+        </div>
+      `;
+
+      data.forEach(rec => {
+        // ── Komplain card (layout mirip pekerjaan, penanda halus) ──────
+        if (rec._type === 'komplain') {
+          const kbid = rec.id;
+          const kst = _statusMap[_sKey(kbid, 1)] || 'pending';
+          const meta = [
+            rec.lokasi ? `📍 ${rec.lokasi}` : '',
+            rec.prioritas ? `⚡ ${rec.prioritas}` : ''
+          ].filter(Boolean).join(' · ');
+          html += `
+          <div class="record-card komplain-card" id="card-${kbid}">
+            <div class="record-head">
+              <span class="record-project">${rec.project} <span class="komplain-tag">KOMPLAIN</span></span>
+              ${rec.pengaju ? `<span class="record-date">👤 ${rec.pengaju}</span>` : ''}
+            </div>
+            <div class="record-items">
+              <div class="item-wrap ${kst === 'done' ? 'done-item' : ''}" id="iw-${kbid}-1">
+                <div class="record-item">
+                  <span class="ri-no">!</span>
+                  <span class="ri-name">${rec.komplain || rec.deskripsi || '—'}</span>
+                  <span class="ri-vol">${meta}</span>
+                  <span class="ri-total">${rec.tanggal || ''}</span>
+                </div>
+                <div class="item-status-row">
+                  <button class="ist pending ${kst === 'pending' ? 'active' : ''}"
+                    onclick="setStatus('${kbid}',1,'pending')">🔴 Open</button>
+                  <button class="ist inprogress ${kst === 'inprogress' ? 'active' : ''}"
+                    onclick="setStatus('${kbid}',1,'inprogress')">🔨 Proses</button>
+                  <button class="ist done ${kst === 'done' ? 'active' : ''}"
+                    onclick="setStatus('${kbid}',1,'done')">✅ Selesai</button>
+                </div>
+              </div>
+            </div>
+          </div>`;
+          return;
+        }
+
+        // ── Pekerjaan card ─────────────────────────────────────────
+        const bid = rec.id;
+        const rows = (rec.items || []).map((it, i) => {
+          const noItem = it.no || (i + 1);
+          const st = _statusMap[_sKey(bid, noItem)] || 'pending';
+          return `
+          <div class="item-wrap ${st === 'done' ? 'done-item' : ''}" id="iw-${bid}-${noItem}">
+            <div class="record-item">
+              <span class="ri-no">${noItem}</span>
+              <span class="ri-name">${it.pekerjaan}</span>
+              <span class="ri-vol">${it.vol} ${it.sat}</span>
+              <span class="ri-total">${fmt(it.total)}</span>
+            </div>
+            <div class="item-status-row">
+              <button class="ist pending ${st === 'pending' ? 'active' : ''}"
+                onclick="setStatus('${bid}',${noItem},'pending')">⏳ Pending</button>
+              <button class="ist inprogress ${st === 'inprogress' ? 'active' : ''}"
+                onclick="setStatus('${bid}',${noItem},'inprogress')">🔨 Proses</button>
+              <button class="ist done ${st === 'done' ? 'active' : ''}"
+                onclick="setStatus('${bid}',${noItem},'done')">✅ Selesai</button>
+            </div>
+          </div>`;
+        }).join('');
+
+        html += `
+          <div class="record-card" id="card-${bid}">
+            <div class="record-head">
+              <span class="record-project">${rec.project}</span>
+              ${rec.pekerja ? `<span class="record-date">${rec.pekerja}</span>` : ''}
+            </div>
+            ${rec.catatan ? `<div class="record-note">📝 ${rec.catatan}</div>` : ''}
+            <div class="record-items">${rows}</div>
+            <div class="record-subtotal">${fmt(rec.total)}</div>
+          </div>`;
+      });
+
+      html += `<button class="btn-submit-status" id="btn-status-submit" onclick="submitStatusUpdate()">
+        Simpan Update Status
+      </button>`;
+
+      el.innerHTML = html;
+      unlockUI();
+    }
+
+    function setStatus(bid, noItem, newStatus) {
+      const key = _sKey(bid, noItem);
+      const old = _statusMap[key] || 'pending';
+      _statusMap[key] = newStatus;
+      if (newStatus !== old) _statusDirty.add(key);
+
+      // Update item-wrap visuals
+      const wrap = document.getElementById('iw-' + bid + '-' + noItem);
+      if (wrap) {
+        wrap.className = 'item-wrap' + (newStatus === 'done' ? ' done-item' : '');
+        wrap.querySelectorAll('.ist').forEach(b => {
+          const s = b.className.match(/pending|inprogress|done/)?.[0];
+          b.classList.toggle('active', s === newStatus);
+        });
+      }
+
+      // Show/hide submit button
+      const btn = document.getElementById('btn-status-submit');
+      if (btn) btn.classList.toggle('visible', _statusDirty.size > 0);
+    }
+
+    async function submitStatusUpdate() {
+      if (_statusDirty.size === 0) return;
+      lockUI('Menyimpan status...');
+      const btn = document.getElementById('btn-status-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Menyimpan...';
+
+      // Split: pekerjaan items -> update-status ; komplain -> update-komplain-status
+      const pkjUpdates = [];
+      const kmpUpdates = [];
+      const kmpStatusMap = { pending: 'open', inprogress: 'inprogress', done: 'closed' };
+      Array.from(_statusDirty).forEach(key => {
+        const [bid, noStr] = key.split('|');
+        const status = _statusMap[key];
+        if (_recKind[bid] === 'komplain') {
+          kmpUpdates.push({ id: bid, status: kmpStatusMap[status] || status });
+        } else {
+          pkjUpdates.push({ batch_id: bid, no_item: parseInt(noStr) || 1, status });
+        }
+      });
+      const totalCount = pkjUpdates.length + kmpUpdates.length;
+
+      try {
+        if (!TEST_MODE) {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 15000);
+          try {
+            const calls = [];
+            if (pkjUpdates.length) {
+              calls.push(fetch(EP.updateStatus, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ updates: pkjUpdates }),
+                signal: ctrl.signal
+              }));
+            }
+            kmpUpdates.forEach(u => {
+              calls.push(fetch(EP.updateKomplainStatus, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(u),
+                signal: ctrl.signal
+              }));
+            });
+            const results = await Promise.all(calls);
+            const bad = results.find(r => !r.ok);
+            if (bad) {
+              let detail = '';
+              try { const j = await bad.json(); detail = j.error || ''; } catch { }
+              throw new Error(detail || `HTTP ${bad.status}`);
+            }
+          } finally { clearTimeout(timer); }
+        } else {
+          await delay(500);
+          Array.from(_statusDirty).forEach(k => { _demoStatus[k] = _statusMap[k]; });
+        }
+        _statusDirty.clear();
+        btn.classList.remove('visible');
+        showSuccess('Status Diperbarui', totalCount + ' status berhasil diperbarui.', null, null);
+      } catch (e) {
+        if (e && e.name === 'AbortError') toast('✗ Timeout — coba lagi');
+        else toast('✗ Gagal simpan: ' + (e && e.message ? e.message : 'coba lagi'));
+      } finally {
+        unlockUI();
+        btn.disabled = false;
+        btn.textContent = 'Simpan Update Status';
+      }
+    }
+
+
+    // ═══════════════════════════════════════
+    // GENERATE RAB (print window)
+    // ═══════════════════════════════════════
+    function _printRAB(pkjData, projectLabel, win) {
+      let rows = [], n = 1;
+      pkjData.forEach(rec => {
+        (rec.items || []).forEach(it => {
+          rows.push({
+            no: n++, pekerjaan: it.pekerjaan, vol: it.vol, sat: it.sat,
+            harga_satuan: it.harga_satuan || 0, total: it.total || 0
+          });
+        });
+      });
+      const grandTotal = pkjData.reduce((s, d) => s + (d.total || 0), 0);
+      const tableRows = rows.map(r => `
+        <tr>
+          <td class="td-no">${r.no}</td>
+          <td class="td-item">${r.pekerjaan}</td>
+          <td class="td-num">${r.vol}</td>
+          <td class="td-sat">${r.sat}</td>
+          <td class="td-num">${r.harga_satuan > 0 ? 'Rp ' + fmt2(r.harga_satuan) : '—'}</td>
+          <td class="td-num">${r.total > 0 ? 'Rp ' + fmt2(r.total) : '—'}</td>
+        </tr>`).join('');
+
+      win = win || window.open('', '_blank', 'width=850,height=700');
+      if (!win) { toast('⚠️ Popup diblokir browser. Izinkan popup untuk mencetak.'); return; }
+      win.document.write(`<!DOCTYPE html><html lang="id"><head>
+        <meta charset="UTF-8"/>
+        <title>RAB — ${projectLabel}</title>
+        <style>
+          *{box-sizing:border-box;margin:0;padding:0}
+          body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1a1a1a;padding:28px 36px}
+          h2{font-size:15px;font-weight:700;margin-bottom:2px;letter-spacing:0.5px}
+          .meta{font-size:11px;color:#555;margin-bottom:18px}
+          table{width:100%;border-collapse:collapse;margin-bottom:16px}
+          th{background:#B49157;color:#fff;font-size:9.5px;letter-spacing:1.5px;
+             text-transform:uppercase;padding:7px 10px;text-align:left}
+          td{padding:6px 10px;border-bottom:1px solid #e5ddd2}
+          tr:nth-child(even) td{background:#faf7f3}
+          .td-no{width:32px;text-align:center;color:#888}
+          .td-num{text-align:right;white-space:nowrap}
+          .td-sat{width:60px}
+          .tfoot td{background:#f5ede0!important;font-weight:700;border-top:2px solid #B49157;border-bottom:none}
+          @media print{body{padding:14px 18px}.no-print{display:none}}
+        </style>
+      </head><body>
+        <h2>RENCANA ANGGARAN BIAYA</h2>
+        <div class="meta">Proyek: <strong>${projectLabel}</strong></div>
+        <table>
+          <thead><tr>
+            <th class="td-no">No</th><th>Pekerjaan</th>
+            <th style="width:50px;text-align:right">Vol</th><th>Sat</th>
+            <th style="text-align:right">Harga/Sat</th>
+            <th style="text-align:right">Total</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+          <tfoot><tr>
+            <td colspan="5" style="text-align:right;padding-right:10px">TOTAL KESELURUHAN</td>
+            <td class="td-num">Rp ${fmt2(grandTotal)}</td>
+          </tr></tfoot>
+        </table>
+        <p class="no-print" style="text-align:center;margin-top:16px">
+          <button onclick="window.close()" style="padding:8px 22px;background:#fff;color:#B49157;border:1px solid #B49157;border-radius:6px;cursor:pointer;font-size:12px;margin-right:8px">‹ Kembali</button>
+          <button onclick="window.print()" style="padding:8px 22px;background:#B49157;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px">🖨 Cetak / Save PDF</button>
+        </p>
+      
+  </body></html>`);
+      win.document.close();
+    }
+
+    function genRAB() {
+      const { data, proyek } = _cekData || {};
+      if (!data) { toast('⚠️ Tidak ada data'); return; }
+      const pkjOnly = data.filter(d => d._type !== 'komplain');
+      if (!pkjOnly.length) { toast('⚠️ Tidak ada data pekerjaan untuk RAB'); return; }
+      _printRAB(pkjOnly, proyek || (pkjOnly[0] && pkjOnly[0].project) || 'Semua Proyek');
+    }
+
+    // ═══════════════════════════════════════
+    // GENERATE CHECKLIST (print window)
+    // ═══════════════════════════════════════
+    function _printChecklist(pkjData, kmpData, projectLabel, statusMap, win) {
+      let blocks = '';
+      pkjData.forEach(rec => {
+        const st = statusMap[rec.id] || rec.status || 'pending';
+        const statusLabel = { pending: 'Pending', inprogress: 'In Progress', done: 'Selesai' }[st] || 'Pending';
+        const items = (rec.items || []).map((it, i) => `
+          <tr>
+            <td style="width:24px;text-align:center">☐</td>
+            <td style="width:22px;color:#888">${it.no || i + 1}</td>
+            <td>${it.pekerjaan}</td>
+            <td style="text-align:right;white-space:nowrap">${it.vol} ${it.sat}</td>
+          </tr>`).join('');
+        blocks += `
+          <div class="block">
+            <div class="block-head">
+              <span>${rec.project}${rec.pekerja ? ' · ' + rec.pekerja : ''}</span>
+              <span style="font-size:10px;color:#888">${statusLabel}</span>
+            </div>
+            ${rec.catatan ? `<div style="font-size:10px;color:#666;padding:4px 8px;font-style:italic">Catatan: ${rec.catatan}</div>` : ''}
+            <table><tbody>${items}</tbody></table>
+          </div>`;
+      });
+      kmpData.forEach(rec => {
+        const stLabel = rec.status === 'closed' ? 'Selesai' : rec.status === 'inprogress' ? 'In Progress' : 'Open';
+        const sub = [rec.lokasi ? 'Lokasi: ' + rec.lokasi : '', rec.pengaju ? 'Dilaporkan: ' + rec.pengaju : '']
+          .filter(Boolean).join(' · ');
+        blocks += `
+          <div class="block block-komplain">
+            <div class="block-head block-head-komplain">
+              <span>${rec.project} <span class="kmp-tag">KOMPLAIN</span></span>
+              <span style="font-size:10px;color:#888">${stLabel}${rec.prioritas ? ' · ' + rec.prioritas : ''}</span>
+            </div>
+            <table><tbody>
+              <tr>
+                <td style="width:24px;text-align:center;font-size:14px">☐</td>
+                <td>${rec.komplain || '—'}${sub ? `<div style="color:#777;margin-top:2px;font-size:10px">${sub}</div>` : ''}</td>
+              </tr>
+            </tbody></table>
+          </div>`;
+      });
+
+      win = win || window.open('', '_blank', 'width=700,height=650');
+      if (!win) { toast('⚠️ Popup diblokir browser. Izinkan popup untuk mencetak.'); return; }
+      win.document.write(`<!DOCTYPE html><html lang="id"><head>
+        <meta charset="UTF-8"/>
+        <title>Checklist — ${projectLabel}</title>
+        <style>
+          *{box-sizing:border-box;margin:0;padding:0}
+          body{font-family:'Segoe UI',Arial,sans-serif;font-size:11px;color:#1a1a1a;padding:24px 28px}
+          h2{font-size:14px;font-weight:700;margin-bottom:14px}
+          .block{border:1px solid #ddd;border-radius:6px;margin-bottom:12px;overflow:hidden}
+          .block-head{background:#f5ede0;padding:8px 12px;font-weight:600;font-size:11px;
+                      display:flex;justify-content:space-between;align-items:center;
+                      border-bottom:1px solid #ddd}
+          table{width:100%;border-collapse:collapse}
+          td{padding:5px 10px;border-bottom:1px solid #f0e8de}
+          tr:last-child td{border-bottom:none}
+          .block-komplain{border-color:#e6cfa8}
+          .block-head-komplain{background:#faf3e8}
+          .kmp-tag{display:inline-block;background:#b9842f;color:#fff;font-size:8px;letter-spacing:1px;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
+          @media print{body{padding:10px 14px}.no-print{display:none}}
+        </style>
+      </head><body>
+        <h2>CHECKLIST PEKERJAAN — ${projectLabel}</h2>
+        ${blocks}
+        <p class="no-print" style="text-align:center;margin-top:16px">
+          <button onclick="window.close()" style="padding:8px 22px;background:#fff;color:#B49157;border:1px solid #B49157;border-radius:6px;cursor:pointer;font-size:12px;margin-right:8px">‹ Kembali</button>
+          <button onclick="window.print()" style="padding:8px 22px;background:#B49157;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px">🖨 Cetak / Save PDF</button>
+        </p>
+      </body></html>`);
+      win.document.close();
+    }
+
+    function genChecklist() {
+      const { data, proyek } = _cekData || {};
+      if (!data || !data.length) { toast('⚠️ Tidak ada data'); return; }
+      const pkjOnly = data.filter(d => d._type !== 'komplain');
+      const kmpOnly = data.filter(d => d._type === 'komplain');
+      if (!pkjOnly.length && !kmpOnly.length) { toast('⚠️ Tidak ada data untuk checklist'); return; }
+      _printChecklist(pkjOnly, kmpOnly,
+        proyek || (data[0] && data[0].project) || 'Semua Proyek', _statusMap);
+    }
+
+    // helper for RAB print
+    function fmt2(n) {
+      const num = parseFloat(n) || 0;
+      return num.toLocaleString('id-ID');
+    }
+
+
+    // ═══════════════════════════════════════
+    // RAB / CHECKLIST MENU
+    // ═══════════════════════════════════════
+    let _rabData = null;
+
+    async function initRABChecklist() {
+      _projects = null;
+      _rabData = null;
+      await fillProjectSelect('rab-proyek', false);
+    }
+
+
+    async function _fetchRABData() {
+      const proyek = document.getElementById('rab-proyek').value;
+      if (!proyek) { toast('⚠️ Pilih proyek terlebih dahulu'); return null; }
+      const load = document.getElementById('rab-loading');
+      load.style.display = 'block';
+      lockUI('Memuat data...');
+      try {
+        if (TEST_MODE) {
+          await delay(350);
+          const pkjData = DEMO_DATA.filter(d => d.project === proyek)
+            .map(d => ({ ...d, _type: 'pekerjaan' }));
+          const kmpData = DEMO_KOMPLAIN.filter(d => d.project === proyek)
+            .map(d => ({ ...d, _type: 'komplain' }));
+          return { pkjData, kmpData, proyek };
+        }
+        const p = new URLSearchParams({ project: proyek });
+        const [rPkj, rKmp] = await Promise.allSettled([
+          fetch(`${EP.getPekerj}?${p}`),
+          fetch(`${EP.getKomplain}?${p}`)
+        ]);
+        let pkjData = [], kmpData = [];
+        if (rPkj.status === 'fulfilled' && rPkj.value.ok) {
+          const j = await rPkj.value.json();
+          pkjData = (Array.isArray(j) ? j : (j.data || [])).filter(d => d && d.id)
+            .map(d => ({ ...d, _type: 'pekerjaan' }));
+        }
+        if (rKmp.status === 'fulfilled' && rKmp.value.ok) {
+          const j = await rKmp.value.json();
+          kmpData = (Array.isArray(j) ? j : (j.data || [])).filter(d => d && !d._empty)
+            .map(d => ({ ...d, _type: 'komplain' }));
+        }
+        return { pkjData, kmpData, proyek };
+      } catch(e) {
+        toast('⚠️ Gagal memuat data: ' + (e.message || ''));
+        return null;
+      } finally {
+        load.style.display = 'none';
+        unlockUI();
+      }
+    }
+
+    async function genRABFromMenu() {
+      if (!document.getElementById('rab-proyek').value) { toast('⚠️ Pilih proyek terlebih dahulu'); return; }
+      const win = window.open('', '_blank', 'width=850,height=700');
+      const res = await _fetchRABData();
+      if (!res) { if (win) win.close(); return; }
+      const { pkjData, proyek } = res;
+      if (!pkjData.length) { if (win) win.close(); toast('⚠️ Tidak ada data pekerjaan untuk proyek ini'); return; }
+      _printRAB(pkjData, proyek, win);
+    }
+
+    async function genChecklistFromMenu() {
+      if (!document.getElementById('rab-proyek').value) { toast('⚠️ Pilih proyek terlebih dahulu'); return; }
+      const win = window.open('', '_blank', 'width=700,height=650');
+      const res = await _fetchRABData();
+      if (!res) { if (win) win.close(); return; }
+      const { pkjData, kmpData, proyek } = res;
+      if (!pkjData.length && !kmpData.length) { if (win) win.close(); toast('⚠️ Tidak ada data untuk proyek ini'); return; }
+      _printChecklist(pkjData, kmpData, proyek, {}, win);
+    }
+
+    // ═══════════════════════════════════════
+    // SERVICE WORKER REGISTRATION
+    // ═══════════════════════════════════════
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW failed:', err));
+      });
+    }
+  </script>
+</body>
+
+</html>

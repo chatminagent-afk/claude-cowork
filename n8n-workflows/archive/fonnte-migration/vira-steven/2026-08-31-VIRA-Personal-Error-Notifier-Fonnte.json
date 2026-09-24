@@ -1,0 +1,269 @@
+{
+  "name": "VIRA Personal — Error Notifier (Fonnte)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0e79ac4a-5d45-4fd9-94c2-d0fe64fcb68e",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "bbb2b83d-9be3-491d-89f3-3247e193843c",
+      "name": "Read CONFIG",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Susun notifikasi error untuk Steven + ambil admin_phone dari CONFIG.\n//\n// PERBAIKAN LEWAT MIGRASI FONNTE.\n// Dulu kredensial pengirim ikut dibaca dari CONFIG, jadi kalau \"Read CONFIG\"\n// gagal (onError: continueRegularOutput) notifikasi jatuh ke kredensial\n// PLACEHOLDER dan hampir pasti gagal terkirim -- jaring pengaman terakhir\n// justru bolong tepat saat paling dibutuhkan.\n// Sekarang autentikasi Fonnte memakai n8n Credential (Header Auth) di node\n// HTTP, yang TIDAK bergantung pada sheet sama sekali. Sisa ketergantungan\n// CONFIG di sini hanya admin_phone, dan itu pun punya konstanta cadangan di\n// bawah -- jadi notifikasi tetap terkirim walau CONFIG tidak terbaca.\n\nconst e = $('Error Trigger').first().json;\nconst wfName = e.workflow?.name || 'VIRA Steven';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = String(e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\n// Kalau Read CONFIG gagal (onError: continueRegularOutput), outputnya adalah\n// 1 item berisi { error: ... }, bukan rows CONFIG -- jadi cfgRows akan kosong\n// dan configOk otomatis false.\nconst cfgRows = $input.all().map(i => i.json).filter(r => r && r.key !== undefined);\nconst cfg = {};\nfor (const r of cfgRows) {\n  const k = String(r.key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value : '';\n}\n\n// CONFIG terbaca atau tidak. Sesudah migrasi, ini TIDAK lagi menentukan\n// berhasil-tidaknya pengiriman -- hanya menentukan apakah admin_phone datang\n// dari sheet atau dari konstanta cadangan.\nconst configOk = cfgRows.length > 0;\n\n// 2026-08-28: admin_phone kini dibaca dari CONFIG (dulu hardcode '6285171701168').\n// Fallback tetap ada supaya notifikasi tidak hilang total kalau CONFIG gagal dibaca.\nconst ADMIN_FALLBACK = '6285171701168';\nconst adminPhone = String(cfg.admin_phone || '').trim() || ADMIN_FALLBACK;\nconst adminFromConfig = Boolean(String(cfg.admin_phone || '').trim());\n\nlet text = `🚨 [VIRA Personal] EKSEKUSI GAGAL\\nWorkflow: ${wfName}\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}\\n${url}\\n\\n⚠️ Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nif (!configOk) {\n  text += `\\n\\n⚠️ CONFIG tidak terbaca -- notifikasi ini TETAP terkirim (token Fonnte ada di n8n Credential, bukan di sheet), tapi admin_phone memakai konstanta cadangan ${ADMIN_FALLBACK}. Cek tab CONFIG di sheet VIRA Personal.`;\n}\n\nreturn [{ json: {\n  notif_text: text,\n  admin_phone: adminPhone,\n  config_ok: configOk,\n  admin_from_config: adminFromConfig\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "d73351c8-9e2e-49b4-acf3-8e4b282aef66",
+      "name": "Compose Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "target",
+              "value": "={{ $json.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {},
+        "contentType": "form-urlencoded",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "24dadc70-fe36-44fd-a26e-38acdc2b4941",
+      "name": "Notify Admin Error",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fonnteVIRAPERS01",
+          "name": "Fonnte - VIRA Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Jaring pengaman terakhir (sudah diperkuat)\nWorkflow ini SENGAJA tidak dipasangi `errorWorkflow` miliknya sendiri (tidak boleh notif error tentang dirinya sendiri secara sirkular) — kalau workflow ini gagal, tidak ada lapisan di baliknya.\n\n**Yang berubah setelah migrasi ke Fonnte:**\n- Token pengirim TIDAK lagi dibaca dari sheet. Autentikasi memakai n8n Credential **Fonnte - VIRA Personal** (Header Auth) di node `Notify Admin Error`. Jadi kalau **Read CONFIG** gagal, notifikasi **tetap terkirim** — hanya `admin_phone` yang jatuh ke konstanta cadangan `6285171701168`, dan isi pesan menyebutkannya.\n- `Check Fonnte Response` menangkap pola \"HTTP 200 tapi `status:false`\" (objek maupun array), lalu melempar error supaya jalur **email fallback** ikut jalan.\n\n**Sisa risiko:** kalau `Notify Admin Error` gagal total (jaringan/Fonnte down), notifikasi WA hilang — tapi jalur email fallback masih jalan lewat `Build Fallback Payload` → `Call Global Email Fallback`.\n\n**Pemantauan:** cek log eksekusi workflow ini di n8n secara berkala, dan pastikan tab CONFIG punya baris `admin_phone`.",
+        "height": 340,
+        "width": 620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "6676c613-6b7a-446b-ab1a-1829e80f0986",
+      "name": "Sticky Note - Titik Lemah"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fonnte membalas HTTP 200 walau gagal (device disconnect, nomor salah, kuota\n// habis), dan bentuk responsnya bisa objek ATAU array. n8n menganggap HTTP 200\n// sebagai sukses -> tanpa node ini tidak ada error -> jalur fallback email tidak\n// pernah jalan -> notifikasi hilang tanpa jejak.\n// Node ini sengaja throw supaya jalur fallback email ikut jalan.\nconst input = $input.first();\nlet r = input.json;\n\nif (typeof r === 'string') {\n  try { r = JSON.parse(r); } catch (e) { r = null; }\n}\nconst rd = Array.isArray(r)\n  ? (r[0] && typeof r[0] === 'object' ? r[0] : {})\n  : (r && typeof r === 'object' ? r : {});\n\nconst isSuccess = rd.status === true || rd.status === 'true';\n\nif (!isSuccess) {\n  throw new Error('Fonnte API gagal: ' + JSON.stringify(rd).slice(0, 500));\n}\n\nreturn [input];\n"
+      },
+      "id": "vp-err-check-kirimi",
+      "name": "Check Fonnte Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// Rangkai payload untuk GLOBAL - Email Fallback Notifier.\n// Dipanggil saat node Fonnte gagal (HTTP error ATAU response 200-tapi-gagal).\n// ============================================================\nconst TENANT = 'VIRA-PERSONAL';\n\n// Catatan: nilai source di bawah SENGAJA tetap 'kirimi_fallback'. Itu konstanta\n// protokol antar-workflow (dibaca GLOBAL - Email Fallback Notifier), bukan\n// referensi ke API Kirimi. Versi Fonnte email fallback menerima keduanya.\n\nconst et = $('Error Trigger').first().json || {};\nconst composed = $('Compose Notif').first().json || {};\nconst notif = composed.notif_text || '';\nconst f = $input.first().json || {};\n\nconst reason = f.error?.message || f.error || f.message ||\n               'Fonnte API tidak mengembalikan status sukses';\n\nreturn [{\n  json: {\n    source: 'kirimi_fallback',\n    tenant: TENANT,\n\n    notif_text: notif,\n\n    fail_node: 'Notify Admin Error (Fonnte)',\n    fail_reason: String(reason).slice(0, 600),\n    // Nama baru + nama lama dikirim berbarengan supaya \"GLOBAL - Email Fallback\n    // Notifier\" versi LAMA maupun versi Fonnte sama-sama bisa membacanya.\n    fonnte_response: JSON.stringify(f).slice(0, 800),\n    kirimi_response: JSON.stringify(f).slice(0, 800),\n\n    // Sesudah migrasi Fonnte, CONFIG gagal dibaca TIDAK lagi membuat WA pasti\n    // gagal (token ada di n8n Credential). Flag ini tetap dikirim supaya email\n    // bisa menyebut admin_phone memakai konstanta cadangan.\n    config_ok: composed.config_ok === true,\n    admin_from_config: composed.admin_from_config === true,\n\n    notifier_wf_name: $workflow.name,\n    notifier_wf_id: $workflow.id,\n    notifier_exec_id: $execution.id,\n\n    orig_wf_name: et.workflow?.name || '-',\n    orig_wf_id: et.workflow?.id || '',\n    orig_exec_id: et.execution?.id || '-',\n    orig_exec_url: et.execution?.url || '',\n    orig_node: et.execution?.error?.node?.name || et.execution?.lastNodeExecuted || '-',\n    orig_error: String(et.execution?.error?.message || '-').slice(0, 600)\n  }\n}];"
+      },
+      "id": "vp-err-build-fallback",
+      "name": "Build Fallback Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xGsl3M3tONsHPDgT9lOWF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xGsl3M3tONsHPDgT9lOWF",
+          "cachedResultName": "GLOBAL - Email Fallback Notifier"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "vp-err-call-fallback",
+      "name": "Call Global Email Fallback",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        224
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG": {
+      "main": [
+        [
+          {
+            "node": "Compose Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin Error": {
+      "main": [
+        [
+          {
+            "node": "Check Fonnte Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Fallback Payload": {
+      "main": [
+        [
+          {
+            "node": "Call Global Email Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Fonnte Response": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Build Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "xGsl3M3tONsHPDgT9lOWF"
+  },
+  "tags": [
+    {
+      "updatedAt": "2026-08-15T00:00:00.000Z",
+      "createdAt": "2026-08-15T00:00:00.000Z",
+      "id": "uFkh64Z3DrxyMFaWVlgbm",
+      "name": "vira-steven"
+    }
+  ]
+}

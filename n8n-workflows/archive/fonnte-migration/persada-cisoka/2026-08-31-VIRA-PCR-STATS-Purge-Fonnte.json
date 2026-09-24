@@ -1,0 +1,414 @@
+{
+  "name": "VIRA-PCR - STATS Purge (Fonnte)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 2 1 */3 *"
+            }
+          ]
+        }
+      },
+      "id": "71050f83-1f2c-43a8-87cd-cc12ab9b05bc",
+      "name": "Every 3 months 02:30 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1328,
+        192
+      ],
+      "notes": "1 Jan / 1 Apr / 1 Jul / 1 Okt, 02:30 WIB (timezone workflow = Asia/Jakarta). 4x setahun. Digeser 30 menit dari workflow Archive (02:00) dan 30 menit sebelum MSG_BUFFER Cleanup (03:00)."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1863977253,
+          "mode": "list",
+          "cachedResultName": "CONFIG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=1863977253"
+        },
+        "options": {}
+      },
+      "id": "65772a44-68fa-4eb6-b85d-2afd7be161d3",
+      "name": "Read CONFIG PRG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1104,
+        192
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PARSE CONFIG PRG\n// Token Fonnte tidak pernah ditulis plaintext di node - selalu dibaca\n// dari tab CONFIG (pola sama dengan \"Parse Config FU\" di workflow Follow-up).\n// ====================================================================\nconst rows = $input.all().map(i => i.json);\n\nconst cfg = {};\nfor (const r of rows) {\n  const k = String(r.key || r.Key || '').trim();\n  if (!k) continue;\n  const v = (r.value !== undefined && r.value !== null)\n    ? r.value\n    : ((r.Value !== undefined && r.Value !== null) ? r.Value : '');\n  cfg[k] = v;\n}\n\nconst num = (k, d) => { const n = Number(cfg[k]); return Number.isFinite(n) ? n : d; };\n// Sheets kadang mengembalikan nomor telepon sebagai angka (\"628228...212.0\").\n// Buang ekor desimalnya DULU, baru sisakan digit.\nconst digits = v => String(v === undefined || v === null ? '' : v)\n  .trim().replace(/\\.0+$/, '').replace(/\\D/g, '');\nconst YES = ['Y', 'YA', 'YES', 'TRUE', '1'];\n\n// Ambang retensi. Default 90 hari = \"3 bulan tidak membalas VIRA\".\n// Ubah lewat CONFIG key `stats_purge_retention_days` tanpa menyentuh kode.\nlet retentionDays = num('stats_purge_retention_days', 90);\nif (retentionDays < 7) retentionDays = 7;      // lantai keras: jangan pernah hapus lead seminggu terakhir\nif (retentionDays > 3650) retentionDays = 3650;\n\n// CONFIG `stats_purge_dry_run` = Y  ->  hitung dan laporkan saja, sheet TIDAK disentuh.\n// Pakai ini untuk run pertama supaya kelihatan dulu berapa baris yang akan hilang.\nconst dryRun = YES.indexOf(String(cfg.stats_purge_dry_run || '').trim().toUpperCase()) !== -1;\n\n// Laporan housekeeping ini untuk Steven, bukan untuk admin klien.\nconst reportPhone = digits(cfg.maintenance_phone) || digits(cfg.admin_phone);\n\nreturn [{ json: {\n  config: {\n    // Token Fonnte (menggantikan kirimi user_code/secret/device_id).\n    fonnte_token: String(cfg.fonnte_token || '').trim(),\n    report_phone: reportPhone,\n    retention_days: retentionDays,\n    dry_run: dryRun,\n  },\n  now_epoch: Math.floor(Date.now() / 1000),\n} }];\n"
+      },
+      "id": "28568a7a-292b-46dd-ae00-5312c6e2ae38",
+      "name": "Parse Config PRG",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 824508993,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=824508993"
+        },
+        "options": {}
+      },
+      "id": "c4017bc5-b8a0-4280-afc4-f4373effde4d",
+      "name": "Read STATS (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -656,
+        192
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "notes": "Baca seluruh STATS. Nomor baris asli sheet ikut terbawa sebagai kolom row_number - itu yang dipakai untuk menghapus."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PLAN PURGE - retensi STATS 3 bulan (Persada Cisoka Residence)\n//\n// ATURAN TUNGGAL (keputusan Steven, 2026-08-27):\n//   Hapus baris kalau `last_reply_ts` lebih tua dari retention_days (default 90).\n//   TIDAK ADA PENGECUALIAN. bot_mode = OFF, survey_status = SCHEDULED,\n//   flag_survey = Y, dan nomor admin/tim sendiri SEMUANYA ikut terhapus\n//   kalau last_reply_ts-nya sudah lewat ambang.\n//\n// PERHATIAN 1 - baris dengan last_reply_ts KOSONG atau bukan angka JUGA DIHAPUS.\n//   Kosong dibaca sebagai \"belum pernah dibalas VIRA sama sekali\". Artinya lead\n//   hasil impor telemarketer yang belum sempat dibalas akan ikut hilang.\n//   Ini pilihan sadar, bukan bug. Kalau berubah pikiran, ubah nilai\n//   KEEP_WHEN_EMPTY di bawah jadi true.\n//\n// PERHATIAN 2 - penghapusan PERMANEN, tidak ada arsip. Baris yang hilang\n//   membawa serta lead_source, unit_interest, budget_range, riwayat survey,\n//   dan follow_up_count. Backup sheet dulu sebelum run pertama, atau set\n//   CONFIG `stats_purge_dry_run` = Y untuk melihat dampaknya lebih dulu.\n//\n// Nomor baris yang dihapus adalah nomor baris yang BENAR-BENAR dibaca run ini,\n// bukan \"baris 2..N\" - jadi lead yang masuk setelah node Read tidak ikut kena.\n// ====================================================================\n\nconst KEEP_WHEN_EMPTY = false;   // true = baris tanpa last_reply_ts dibiarkan hidup\n\nconst base = $('Parse Config PRG').first().json;\nconst cfg = base.config;\nconst now = base.now_epoch;\nconst cutoff = now - cfg.retention_days * 86400;\n\nconst fmtWIB = (epoch) => new Intl.DateTimeFormat('sv-SE', {\n  timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', minute: '2-digit', hour12: false,\n}).format(new Date(epoch * 1000));\n\nconst cutoffLabel = fmtWIB(cutoff);\nconst runAt = fmtWIB(now);\n\n// Periode: workflow jalan tanggal 1 Jan/Apr/Jul/Okt, jadi yang dibersihkan\n// adalah kuartal KEMARIN. Dihitung dari H-1 supaya tidak salah lompat.\nconst pParts = new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit',\n}).formatToParts(new Date((now - 86400) * 1000));\nconst pYear = (pParts.find(x => x.type === 'year') || {}).value;\nconst pMonth = Number((pParts.find(x => x.type === 'month') || {}).value || 1);\nconst periode = pYear + '-Q' + Math.ceil(pMonth / 3);\n\n// last_reply_ts ditulis sebagai epoch DETIK (Math.floor(Date.now()/1000)).\n// Kalau suatu saat ada nilai milidetik, normalkan dulu supaya tidak dibaca\n// sebagai tahun 55.000-an dan luput dari penghapusan.\nfunction replyTs(r) {\n  let n = Number(String(r.last_reply_ts === undefined || r.last_reply_ts === null ? '' : r.last_reply_ts).trim());\n  if (!Number.isFinite(n) || n <= 0) return 0;\n  if (n > 1e12) n = Math.floor(n / 1000);\n  return n;\n}\n\nconst emptyOut = extra => [{ json: Object.assign({\n  periode, runAt, cutoffLabel,\n  retentionDays: cfg.retention_days, dryRun: cfg.dry_run,\n  totalDataRows: 0, purgeCount: 0, keepCount: 0, toDeleteCount: 0,\n  blocks: [], blockCount: 0, purgeRows: [],\n  reasons: { lewat_ambang: 0, tanpa_timestamp: 0 },\n}, extra) }];\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && typeof r === 'object'\n            && r.row_number !== undefined\n            && Number(r.row_number) >= 2);\n\nif (!rows.length) {\n  console.log('STATS kosong / hanya header - tidak ada yang dihapus.');\n  return emptyOut({ report: '[VIRA-PCR] STATS Purge - ' + periode + '\\n\\nSTATS kosong, tidak ada yang dihapus.' });\n}\n\n// Guard skema: pastikan yang terbaca benar-benar tab STATS.\n// Ini BUKAN pengecualian baris - ini penjaga supaya workflow tidak menghapus\n// isi tab yang salah kalau gid/skema berubah. Lebih baik gagal berisik.\nconst sample = rows[0];\nconst REQUIRED = ['No WA', 'last_reply_ts'];\nconst missing = REQUIRED.filter(c => !(c in sample));\nif (missing.length) {\n  throw new Error('Kolom wajib tidak ada di sheet yang terbaca: ' + missing.join(', ')\n    + '. Tab yang terbaca kemungkinan bukan STATS, atau skemanya berubah. PENGHAPUSAN DIBATALKAN.');\n}\n\nconst purgeRowNums = [];\nconst purgeRows = [];\nconst reasons = { lewat_ambang: 0, tanpa_timestamp: 0 };\n\nfor (const r of rows) {\n  const ts = replyTs(r);\n  let hapus = false;\n\n  if (!ts) {\n    // Belum pernah dibalas VIRA sama sekali.\n    if (!KEEP_WHEN_EMPTY) { hapus = true; reasons.tanpa_timestamp++; }\n  } else if (ts < cutoff) {\n    hapus = true; reasons.lewat_ambang++;\n  }\n\n  if (!hapus) continue;\n\n  purgeRowNums.push(Number(r.row_number));\n  purgeRows.push({\n    row: Number(r.row_number),\n    no_wa: String(r['No WA'] || '').trim(),\n    nama: String(r.Nama || r.nama_lengkap || '').trim(),\n    last_reply: ts ? fmtWIB(ts) : '(kosong)',\n  });\n}\n\n// --- Blok penghapusan ----------------------------------------------\n// Nomor baris dikelompokkan jadi blok kontigu lalu diurutkan MENURUN.\n// Menghapus dari bawah ke atas membuat nomor baris di atasnya tetap valid\n// setelah blok di bawahnya hilang.\npurgeRowNums.sort((a, b) => a - b);\nconst blocks = [];\nfor (const n of purgeRowNums) {\n  const last = blocks[blocks.length - 1];\n  if (last && n === last.startRow + last.count) last.count++;\n  else blocks.push({ startRow: n, count: 1 });\n}\nblocks.reverse();\n\nconst purgeCount = purgeRowNums.length;\nconst keepCount = rows.length - purgeCount;\nconst toDeleteCount = cfg.dry_run ? 0 : purgeCount;\n\n// --- Laporan WA ------------------------------------------------------\nconst lines = [];\nlines.push('[VIRA-PCR] STATS Purge - ' + periode);\nif (cfg.dry_run) lines.push('*** DRY RUN - sheet TIDAK disentuh ***');\nlines.push('');\nlines.push('Ambang    : ' + cfg.retention_days + ' hari tanpa balasan VIRA');\nlines.push('Batas     : last_reply_ts sebelum ' + cutoffLabel + ' WIB');\nlines.push('Dibaca    : ' + rows.length + ' baris data');\nlines.push('');\nif (!purgeCount) {\n  lines.push('Tidak ada baris yang perlu dihapus.');\n} else {\n  lines.push((cfg.dry_run ? 'AKAN dihapus : ' : 'Dihapus      : ') + purgeCount + ' baris (' + blocks.length + ' blok)');\n  lines.push('Sisa di STATS: ' + keepCount + ' baris');\n  lines.push('');\n  lines.push('Rincian:');\n  lines.push('- last_reply_ts lewat ambang : ' + reasons.lewat_ambang);\n  lines.push('- last_reply_ts kosong       : ' + reasons.tanpa_timestamp);\n  lines.push('');\n  lines.push('Nomor yang hilang:');\n  lines.push(purgeRows.slice(0, 20).map(x => '- ' + (x.no_wa || '(tanpa nomor)') + ' | ' + x.last_reply).join('\\n')\n    + (purgeRows.length > 20 ? '\\n- +' + (purgeRows.length - 20) + ' lagi' : ''));\n  lines.push('');\n  lines.push('Tanpa arsip - baris ini tidak bisa dikembalikan.');\n}\nconst report = lines.join('\\n');\n\nconsole.log('STATS purge ' + periode + ': ' + rows.length + ' baris dibaca | '\n  + purgeCount + ' kandidat hapus dalam ' + blocks.length + ' blok | ' + keepCount + ' tetap tinggal'\n  + (cfg.dry_run ? ' | DRY RUN, tidak menghapus.' : '.'));\nif (purgeCount && purgeCount === rows.length) {\n  console.warn('PERHATIAN: SEMUA baris data kena kriteria hapus. Cek dulu apakah kolom last_reply_ts benar terisi sebelum membiarkan ini jalan.');\n}\nif (blocks.length > 40) {\n  console.warn('PERHATIAN: ' + blocks.length + ' blok hapus - mendekati kuota tulis Google Sheets (60/menit). '\n    + 'Node Delete sudah retry otomatis, tapi pantau hasilnya.');\n}\n\nreturn [{ json: {\n  periode, runAt, cutoffLabel,\n  retentionDays: cfg.retention_days,\n  dryRun: cfg.dry_run,\n  totalDataRows: rows.length,\n  purgeCount,\n  keepCount,\n  toDeleteCount,\n  blocks,\n  blockCount: blocks.length,\n  reasons,\n  purgeRows,\n  report,\n} }];\n"
+      },
+      "id": "fb172056-0e7d-4de3-9b1c-9f2977a637d4",
+      "name": "Plan purge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        192
+      ],
+      "notes": "Satu-satunya kriteria: last_reply_ts lebih tua dari retention_days. Tanpa pengecualian. Baris tanpa last_reply_ts ikut dihapus."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "purge-count-gt-zero",
+              "leftValue": "={{ $json.toDeleteCount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bbd9dcf2-9fdb-4420-9b15-34120b9b1f27",
+      "name": "IF Ada Yang Dihapus",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        192
+      ],
+      "notes": "toDeleteCount = 0 kalau tidak ada kandidat ATAU sedang dry run -> langsung lapor, sheet tidak disentuh sama sekali."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keluarkan satu item per blok. Node Delete jalan sekali per item, jadi urutan\n// item = urutan penghapusan - dan blocks sudah diurutkan MENURUN di Plan purge\n// supaya penghapusan berjalan dari bawah ke atas.\nconst plan = $('Plan purge').first().json;\nconst blocks = plan.blocks || [];\n\nif (!blocks.length) {\n  console.log('Tidak ada blok untuk dihapus.');\n  return [];\n}\n\nconsole.log('Menghapus ' + blocks.length + ' blok (bawah -> atas): '\n  + blocks.map(b => b.startRow + '..' + (b.startRow + b.count - 1)).join(', '));\nreturn blocks.map(b => ({ json: b }));\n"
+      },
+      "id": "061c2248-8bd6-41c1-aa36-927103ca8cef",
+      "name": "Split purge blocks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 824508993,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=824508993"
+        },
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "37240ac4-97ad-4ad6-9390-86c85cdf340f",
+      "name": "Purge STATS rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "notes": "Satu item = satu blok. Urut menurun (bawah -> atas) supaya nomor baris di atasnya tetap valid. PERMANEN - tidak ada arsip."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ciutkan lagi jadi 1 item supaya notifikasi WA terkirim sekali, bukan sekali per blok.\nconst plan = $('Plan purge').first().json;\nconsole.log('STATS bersih: ' + plan.purgeCount + ' baris dihapus permanen, '\n  + plan.keepCount + ' baris tetap tinggal.');\nreturn [{ json: plan }];\n"
+      },
+      "id": "5c9bd153-6a39-4a89-9147-26fee4393497",
+      "name": "Collapse after purge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "target",
+              "value": "=6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Plan purge').first().json.report }}"
+            }
+          ]
+        },
+        "options": {},
+        "contentType": "form-urlencoded",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "id": "79f5034e-6139-4ea9-b72b-41a6787be2a5",
+      "name": "Notify Maintenance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        192
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "PERIKSA SEBELUM AKTIF: target notifikasi = 6285155202354. Nomor itu juga terdaftar sebagai device Fonnte 'Work' milik Steven. Kalau credential workflow ini menunjuk device tersebut, notifikasi jadi kirim-ke-diri-sendiri. Pakai device lain, atau ganti target ke 6285171701168.",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fonntePERSADA001",
+          "name": "Fonnte - Persada Cisoka"
+        }
+      },
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "content": "## Alur - hapus permanen, tanpa arsip\n\nBaca CONFIG -> baca STATS -> hitung baris yang `last_reply_ts`-nya lebih tua dari 90 hari -> hapus blok baris dari BAWAH ke ATAS -> lapor ke WA.\n\n**Tidak ada pengecualian.** `bot_mode = OFF`, `survey_status = SCHEDULED`, `flag_survey = Y`, dan nomor admin/tim ikut terhapus kalau lewat ambang. Baris dengan `last_reply_ts` kosong juga dihapus.\n\n**Tidak ada arsip.** Baris yang hilang tidak bisa dikembalikan.",
+        "height": 320,
+        "width": 480,
+        "color": 3
+      },
+      "id": "37bda5f6-c3e3-40ed-a534-285529bfe4d8",
+      "name": "Sticky Alur",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Sebelum diaktifkan\n\n1. **Backup tab STATS** (Duplicate sheet) - ini satu-satunya jaring pengaman.\n2. Run pertama sebaiknya DRY RUN: isi CONFIG `stats_purge_dry_run` = `Y`, Execute Workflow manual, baca laporan WA-nya. Kalau angkanya masuk akal, ubah ke `N`.\n3. Pastikan workflow **STATS Archive 3bulan** (2026-08-25) tetap NON-AKTIF - cron-nya di tanggal yang sama, kalau dua-duanya hidup keduanya menghapus baris.\n\n### CONFIG yang dipakai\n| key | default | fungsi |\n|---|---|---|\n| `stats_purge_retention_days` | 90 | ambang hari, clamp 7-3650 |\n| `stats_purge_dry_run` | (kosong = N) | `Y` = hitung saja, tidak menghapus |\n| `maintenance_phone` | fallback `admin_phone` | tujuan laporan |\n\nJadwal: **02:30 WIB, 1 Jan / 1 Apr / 1 Jul / 1 Okt** (4x setahun).",
+        "height": 420,
+        "width": 560,
+        "color": 5
+      },
+      "id": "3a920731-87e1-4a1a-aa5c-cc50cc6443a1",
+      "name": "Sticky Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        384
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 3 months 02:30 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG PRG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG PRG": {
+      "main": [
+        [
+          {
+            "node": "Parse Config PRG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config PRG": {
+      "main": [
+        [
+          {
+            "node": "Read STATS (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS (all)": {
+      "main": [
+        [
+          {
+            "node": "Plan purge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan purge": {
+      "main": [
+        [
+          {
+            "node": "IF Ada Yang Dihapus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Ada Yang Dihapus": {
+      "main": [
+        [
+          {
+            "node": "Split purge blocks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Maintenance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split purge blocks": {
+      "main": [
+        [
+          {
+            "node": "Purge STATS rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Purge STATS rows": {
+      "main": [
+        [
+          {
+            "node": "Collapse after purge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse after purge": {
+      "main": [
+        [
+          {
+            "node": "Notify Maintenance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "xGsl3M3tONsHPDgT9lOWF"
+  },
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "tags": []
+}

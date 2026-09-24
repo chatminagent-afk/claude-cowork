@@ -1,0 +1,35 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "={{ $(\u0027Bootstrap Config\u0027).first().json.sheet_id }}",
+                                          "mode":  "id"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  "ABOUT_SAM",
+                                         "mode":  "name"
+                                     },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -15056,
+                     2544
+                 ],
+    "id":  "fed665b7-acd4-4bf3-bf2b-6e9b5128e101",
+    "name":  "Read ABOUT Data",
+    "executeOnce":  true,
+    "retryOnFail":  true,
+    "waitBetweenTries":  3000,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

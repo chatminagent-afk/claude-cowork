@@ -1,0 +1,148 @@
+{
+  "name": "VIRA - MSG_BUFFER Cleanup (harian 03:00 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "dd3f6244-5c81-40c4-b8a4-4bc4b93b38d0",
+      "name": "Every day 03:00 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "4d67c82c-eee6-4799-8b12-aa62751bc53d",
+      "name": "Read MSG_BUFFER (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PICK EXPIRED BLOCK — MSG_BUFFER housekeeping\n// MSG_BUFFER bersifat append-only => ts naik seiring nomor baris =>\n// baris kadaluarsa (paling lama) SELALU blok kontigu di bagian atas\n// (mulai baris 2). Jadi cukup 1x delete range (hemat kuota API).\n//\n// RETENTION_MS HARUS > MAX_AGE_MS (30 mnt) di node \"Cek_user_status\".\n// Baris > 30 mnt tidak pernah dipakai untuk merge, jadi 2 jam aman.\n// ====================================================================\nconst RETENTION_MS = 2 * 60 * 60 * 1000; // 2 jam\nconst cutoff = Date.now() - RETENTION_MS;\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.row_number !== undefined && Number(r.row_number) >= 2)\n  .sort((a, b) => Number(a.row_number) - Number(b.row_number)); // menaik (atas -> bawah)\n\nif (!rows.length) {\n  console.log('🧹 MSG_BUFFER kosong / hanya header — tidak ada yang dihapus.');\n  return [];\n}\n\n// Hitung run kontigu baris kadaluarsa mulai dari baris teratas.\n// Berhenti di baris pertama yang MASIH segar atau ts-nya tidak valid\n// (defensif: jangan pernah hapus baris yang tak bisa dipastikan umurnya).\nlet count = 0;\nfor (const r of rows) {\n  const ts = Number(r.ts);\n  const valid = Number.isFinite(ts) && ts > 0;\n  if (valid && ts < cutoff) {\n    count++;\n  } else {\n    if (!valid) {\n      console.warn(`⚠️ Baris ${r.row_number} ts tidak valid (\"${r.ts}\") — stop, tidak hapus lebih jauh.`);\n    }\n    break;\n  }\n}\n\nif (count === 0) {\n  console.log('🧹 Tidak ada baris berumur > 2 jam — buffer sudah ramping.');\n  return [];\n}\n\nconst startRow = Number(rows[0].row_number); // normalnya 2\nconsole.log(`🧹 Hapus ${count} baris kadaluarsa: baris ${startRow}..${startRow + count - 1}.`);\nreturn [{ json: { startRow, count } }];\n"
+      },
+      "id": "b2401914-b76e-42b4-9e91-d0130e230373",
+      "name": "Pick expired block (>2h)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "toDelete": "rows",
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "62f98532-7287-4927-993a-af6fe88a31fc",
+      "name": "Delete expired rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Every day 03:00 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read MSG_BUFFER (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MSG_BUFFER (all)": {
+      "main": [
+        [
+          {
+            "node": "Pick expired block (>2h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick expired block (>2h)": {
+      "main": [
+        [
+          {
+            "node": "Delete expired rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  },
+  "pinData": {}
+}

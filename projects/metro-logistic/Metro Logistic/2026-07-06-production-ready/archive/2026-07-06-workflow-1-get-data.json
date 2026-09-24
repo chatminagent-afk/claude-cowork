@@ -1,0 +1,189 @@
+{
+  "name": "WF1 - Get Data Tracking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "tracking-get",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-get",
+      "name": "Webhook GET tracking-get",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "tracking-get"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read",
+      "name": "Baca Sheet Tracking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_ARCHIVE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Archive",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read-archive",
+      "name": "Baca Sheet Archive",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        580,
+        300
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "notes": "Fallback pelacakan resi yang sudah diarsipkan + tidak menghalangi mode 30-hari."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF1 - Node Code: susun response pencarian resi.\n// [UPDATE 2026-07-06]\n//   MODE A (ada param resi): cari di sheet Tracking; bila tidak ketemu,\n//     fallback cari di sheet Archive (resi lama tetap bisa dilacak).\n//   MODE B (param resi KOSONG): kembalikan seluruh resi di Tracking yang\n//     Timestamp_Update-nya dalam 30 hari terakhir (dipakai tombol\n//     \"Terapkan Filter\" tanpa pencarian di frontend).\n// - Parse Riwayat_Posisi_JSON dengan try/catch (aman dari JSON korup).\n// - Resi tak ditemukan di mana pun => { no_resi, found:false }.\n// ============================================================\n\n// Rows dari kedua node sebelumnya. Dengan alwaysOutputData, sheet kosong\n// menghasilkan satu item {} — baris tanpa No_Resi diabaikan di bawah.\nconst rows = $items('Baca Sheet Tracking').map(i => i.json);\nconst rowsArchive = $items('Baca Sheet Archive').map(i => i.json);\n\n// Ambil query dari webhook. n8n menaruh query di .query.\nconst webhookData = $items('Webhook GET tracking-get')[0].json;\nconst query = webhookData.query || {};\nconst resiParamRaw = query.resi || '';\n\n// Split daftar resi berdasarkan koma, normalisasi, buang yang kosong.\nconst daftarResi = String(resiParamRaw)\n  .split(',')\n  .map(r => r.trim().toUpperCase())\n  .filter(r => r.length > 0);\n\n// Susun satu entri response dari satu row sheet (parse riwayat aman).\nfunction buildEntri(row, resiFallback, dariArsip) {\n  let riwayat = [];\n  let riwayatError = false;\n  const raw = row.Riwayat_Posisi_JSON;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    try {\n      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;\n      riwayat = Array.isArray(parsed) ? parsed : [];\n      if (!Array.isArray(parsed)) riwayatError = true;\n    } catch (e) {\n      riwayat = [];\n      riwayatError = true;\n    }\n  }\n  const entri = {\n    no_resi: String(row.No_Resi || resiFallback),\n    found: true,\n    pengirim: row.Pengirim || '',\n    penerima: row.Penerima || '',\n    status_terakhir: row.Status_Terakhir || '',\n    timestamp_update: row.Timestamp_Update || '',\n    riwayat: riwayat\n  };\n  if (riwayatError) entri.riwayat_error = true;\n  if (dariArsip) entri.arsip = true;\n  return entri;\n}\n\n// ── MODE B: tanpa param resi → semua resi Tracking 30 hari terakhir ──\nif (daftarResi.length === 0) {\n  const now = Date.now();\n  const AMBANG_MS = 30 * 24 * 60 * 60 * 1000;\n  const hasil = [];\n  for (const row of rows) {\n    if (!String(row.No_Resi || '').trim()) continue;\n    const t = Date.parse(row.Timestamp_Update);\n    if (isNaN(t) || (now - t) > AMBANG_MS) continue;\n    hasil.push(buildEntri(row, row.No_Resi, false));\n  }\n  // Terbaru dulu, batasi 100 baris agar respons tetap ringan.\n  hasil.sort((a, b) => Date.parse(b.timestamp_update) - Date.parse(a.timestamp_update));\n  const dibatasi = hasil.slice(0, 100);\n  return [{ json: { results: dibatasi, data: dibatasi, total: dibatasi.length, cakupan: 'terbaru-30-hari' } }];\n}\n\n// ── MODE A: pencarian per resi ──\n// Index rows berdasarkan No_Resi (uppercase) untuk lookup cepat.\nconst indexResi = {};\nfor (const row of rows) {\n  const key = String(row.No_Resi || '').trim().toUpperCase();\n  if (key) indexResi[key] = row;\n}\nconst indexArsip = {};\nfor (const row of rowsArchive) {\n  const key = String(row.No_Resi || '').trim().toUpperCase();\n  if (key) indexArsip[key] = row;\n}\n\nconst hasil = [];\nfor (const resi of daftarResi) {\n  const row = indexResi[resi];\n  if (row) {\n    hasil.push(buildEntri(row, resi, false));\n    continue;\n  }\n  // Fallback: cari di Archive (resi lama yang sudah dipindah WF3).\n  const rowArsip = indexArsip[resi];\n  if (rowArsip) {\n    hasil.push(buildEntri(rowArsip, resi, true));\n    continue;\n  }\n  hasil.push({ no_resi: resi, found: false });\n}\n\n// Kembalikan satu item berisi array hasil (dipakai node Respond).\nreturn [{ json: { results: hasil, data: hasil, total: hasil.length } }];\n"
+      },
+      "id": "code-build-response",
+      "name": "Code Susun Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1060,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook GET tracking-get": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Tracking": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Susun Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Archive": {
+      "main": [
+        [
+          {
+            "node": "Code Susun Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "metro-logistik-fase-a"
+  }
+}

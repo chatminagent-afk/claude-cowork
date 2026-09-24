@@ -1,0 +1,972 @@
+<meta charset="utf-8">
+<title>VIRA — Pitch Deck</title>
+
+<!--
+  template.html — kerangka deck VIRA, dirender jadi PDF oleh buat_deck.py
+
+  Sintaks:
+    {{field}}                    ganti dengan isi field dari brief
+    {{field|cadangan}}           pakai cadangan kalau field kosong
+    data-butuh="a,b"             slide DIBUANG kalau salah satu field kosong
+                                 (tidak berlaku untuk slide di daftar "wajib")
+    JIKA:f / LAIN / /JIKA        blok kondisional (tulis dalam kurung komentar HTML):
+                                 bagian sebelum LAIN dipakai kalau f terisi, bagian
+                                 sesudahnya kalau kosong. LAIN boleh dihilangkan.
+    <!--ULANG:nama--> … <!--/ULANG-->   blok diulang per item
+
+  Urutan slide dikunci — lihat README.md bagian "Struktur slide".
+  Halaman 1920x1080 px @96dpi = 1440x810 pt, sama dengan deck Scholars & Persada.
+-->
+
+<style>
+  @page { size: 1920px 1080px; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { background: #1e1e1e; }
+  body {
+    font-family: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  .slide {
+    width: 1440px; height: 810px; zoom: 1.333333; position: relative; overflow: hidden;
+    padding: 78px 96px; display: flex; flex-direction: column;
+    page-break-after: always; break-after: page;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+
+  /* ── tiga tema slide ── */
+  .terang {
+    background:
+      radial-gradient(60% 70% at 78% 18%, #cfe0f2 0%, rgba(207,224,242,0) 62%),
+      radial-gradient(52% 62% at 92% 72%, #f6e2cf 0%, rgba(246,226,207,0) 60%),
+      radial-gradient(48% 58% at 12% 88%, #e4ecf5 0%, rgba(228,236,245,0) 64%),
+      #eef2f7;
+    color: #2e2e2e;
+  }
+  .gelap {
+    background:
+      radial-gradient(46% 58% at 82% 22%, #3d4a5c 0%, rgba(61,74,92,0) 64%),
+      radial-gradient(40% 52% at 16% 84%, #4a4038 0%, rgba(74,64,56,0) 62%),
+      #2b2b2b;
+    color: #f4f4f4;
+  }
+  .pembatas { align-items: center; justify-content: center; text-align: center; }
+  .pembatas .besar { font-size: 92px; font-weight: 800; letter-spacing: .02em; }
+  .pembatas .kecil { margin-top: 22px; font-size: 27px; color: #5f5f5f; max-width: 900px; }
+  .gelap.pembatas .kecil { color: #c3c3c3; }
+
+  .garis-atas {
+    position: absolute; left: 96px; right: 96px; top: 62px;
+    border-top: 1px solid rgba(46,46,46,.28);
+  }
+  .gelap .garis-atas { border-top-color: rgba(255,255,255,.22); }
+  .kredit {
+    position: absolute; right: 96px; top: 30px; text-align: right;
+    font-size: 15px; line-height: 1.45; color: #5c5c5c;
+  }
+  .gelap .kredit { color: #b9b9b9; }
+  .judul-bagian { font-size: 40px; font-weight: 700; letter-spacing: .06em; margin-bottom: 34px; }
+  .judul-spasi { letter-spacing: .16em; }
+  .ilustrasi { position: absolute; left: 96px; bottom: 40px; font-size: 13px; color: #8a8a8a; font-style: italic; }
+  .gelap .ilustrasi { color: #9a9a9a; }
+
+  /* ── cover ── */
+  .cover-judul { font-size: 104px; line-height: 1.02; font-weight: 400; }
+  .cover-judul b { font-weight: 800; display: block; }
+  .cover-tagline { margin-top: 22px; font-size: 26px; font-style: italic; color: #5c5c5c; }
+  .cover-untuk {
+    margin-top: 54px; font-size: 22px; letter-spacing: .05em; color: #3f3f3f;
+    border-left: 3px solid #7ea8d4; padding-left: 18px; line-height: 1.55;
+  }
+  .cover-untuk b { font-weight: 800; }
+
+  /* ── kutipan ── */
+  .kutipan { font-size: 40px; line-height: 1.5; font-weight: 400; max-width: 1080px; }
+  .kutipan-sumber { margin-top: 34px; font-size: 21px; color: #5f5f5f; line-height: 1.5; }
+  .kutipan-sumber b { font-weight: 700; color: #2e2e2e; }
+
+  /* ── agenda ── */
+  .agenda { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 70px; margin-top: 8px; }
+  .agenda-baris { display: flex; gap: 20px; align-items: baseline; padding: 11px 0;
+                  border-bottom: 1px solid rgba(46,46,46,.14); }
+  .agenda-no { font-size: 20px; font-weight: 800; color: #7ea8d4; width: 38px; flex: 0 0 38px; }
+  .agenda-teks { font-size: 22px; }
+
+  /* ── daftar poin ── */
+  .poin { display: flex; gap: 24px; padding: 17px 0; border-bottom: 1px solid rgba(255,255,255,.12); }
+  .poin:last-child { border-bottom: 0; }
+  .bulat { flex: 0 0 18px; width: 18px; height: 18px; border-radius: 50%; background: #a8c8e8; margin-top: 7px; }
+  .poin-judul { font-size: 25px; font-weight: 700; text-transform: uppercase; }
+  .poin-isi { font-size: 18px; line-height: 1.5; color: #c2c2c2; margin-top: 6px; }
+
+  /* ── konteks bisnis ── */
+  .konteks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 56px; margin-top: 6px; }
+  .kartu { background: rgba(255,255,255,.55); border-radius: 14px; padding: 24px 28px;
+           border-left: 4px solid #7ea8d4; }
+  .kartu-label { font-size: 13px; letter-spacing: .17em; text-transform: uppercase;
+                 color: #7a8a9b; font-weight: 700; margin-bottom: 9px; }
+  .kartu-isi { font-size: 20px; line-height: 1.5; color: #333; }
+
+  /* ── grid fitur ── */
+  .fitur-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px 40px; margin-top: 6px; }
+  .fitur-kotak { }
+  .fitur-nama { font-size: 22px; font-weight: 700; line-height: 1.3; }
+  .fitur-nama::before { content: "✔"; color: #2f7d4f; font-weight: 800; margin-right: 9px; }
+  .gelap .fitur-nama::before { color: #7fd6a0; }
+  .fitur-isi { font-size: 16px; line-height: 1.5; color: #5c5c5c; margin-top: 7px; }
+  .gelap .fitur-isi { color: #c2c2c2; }
+  .baru { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .1em;
+          background: #7ea8d4; color: #fff; border-radius: 4px; padding: 2px 7px; margin-left: 8px;
+          vertical-align: middle; }
+
+  /* ── slide klien ── */
+  .klien-kepala { display: flex; align-items: center; gap: 26px; margin-bottom: 30px; }
+  .klien-logo { height: 80px; width: 80px; object-fit: contain; background: #fff;
+                border-radius: 14px; padding: 9px; }
+  .klien-nama { font-size: 40px; font-weight: 800; }
+  .klien-sektor { font-size: 17px; color: #6b6b6b; letter-spacing: .1em;
+                  text-transform: uppercase; margin-top: 5px; }
+  .klien-kolom { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+  .klien-garis { width: 60px; height: 4px; background: #7ea8d4; margin-bottom: 26px; }
+
+  /* ── tabel ── */
+  table.harga { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.harga thead th { background: #333; color: #fff; padding: 10px 18px; font-weight: 700; font-size: 17px; }
+  table.harga thead th:first-child { text-align: left; border-radius: 6px 0 0 0; }
+  table.harga thead th:last-child { border-radius: 0 6px 0 0; }
+  table.harga .harga-angka { display: block; font-size: 14px; font-weight: 600; opacity: .88; margin-top: 4px; }
+  table.harga td { padding: 4px 18px; border-bottom: 1px solid rgba(46,46,46,.14); }
+  table.harga td:first-child { text-align: left; }
+  table.harga td:not(:first-child) { text-align: center; width: 185px; }
+  table.harga tr.setup td { font-weight: 700; background: rgba(126,168,212,.16); }
+  .coret { text-decoration: line-through; opacity: .55; margin-right: 6px; }
+  .gratis, .ya { color: #2f7d4f; font-weight: 700; }
+  .tidak { color: #c07a7a; font-weight: 700; }
+  .catatan-kaki { margin-top: 11px; font-size: 14px; font-style: italic; color: #6b6b6b; }
+
+  /* ── mockup WhatsApp ──────────────────────────────────────────────────────
+     Meniru WhatsApp gelap seperti mockup di deck Persada: status bar, header
+     ber-avatar, latar doodle, gelembung berwaktu, bar input.
+
+     SUDUT PANDANG. Teleponnya milik PELANGGAN — header memuat nama bisnis klien,
+     persis seperti tampilan di HP pelanggan. Jadi:
+        .masuk  = pesan pelanggan (masuk ke VIRA)  -> KANAN, biru, centang ganda
+        .keluar = balasan VIRA                     -> KIRI, abu
+     Nama kelasnya sengaja tetap masuk/keluar supaya cocok dengan data brief;
+     yang dibalik cuma sisi tampilannya.
+
+     Gelembung ditumpuk dari BAWAH (justify-content:flex-end) seperti WhatsApp
+     sungguhan. Efek sampingnya menguntungkan: percakapan yang kepanjangan
+     terpotong di ATAS — terbaca sebagai chat yang sudah di-scroll, bukan sebagai
+     pesan terakhir yang raib. Gelembung terakhir selalu terlihat, dan itu yang
+     diperiksa buat_deck.py di PDF akhir. */
+  .mockup { display: flex; gap: 50px; align-items: flex-start; }
+  .mockup-teks { flex: 1; padding-top: 10px; }
+  .fitur-baris { margin-bottom: 26px; }
+
+  .wa { width: 352px; flex: 0 0 352px; height: 566px; background: #0b141a;
+        border: 8px solid #15181b; border-radius: 30px; overflow: hidden;
+        display: flex; flex-direction: column;
+        box-shadow: 0 14px 34px rgba(24,36,52,.28); }
+
+  .wa-status { display: flex; align-items: center; gap: 5px; padding: 7px 14px 4px;
+               background: #111b21; color: #e9edef; font-size: 11px; font-weight: 700; }
+  .wa-status .isi { flex: 1; }
+  .wa-status svg { fill: #e9edef; }
+  .wa-baterai { border: 1.3px solid #e9edef; border-radius: 3.5px; padding: 0 3px;
+                font-size: 8.5px; font-weight: 800; margin-left: 1px; }
+
+  .wa-kepala { display: flex; align-items: center; gap: 9px; padding: 7px 12px 8px;
+               background: #1f2c33; }
+  .wa-panah { color: #d5dbdf; font-size: 15px; line-height: 1; margin-right: -2px; }
+  .wa-foto { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%;
+             background: #8d6e4a; color: #fff; font-size: 14px; font-weight: 700;
+             display: flex; align-items: center; justify-content: center; }
+  .wa-siapa { min-width: 0; }
+  .wa-nama { font-size: 13.5px; font-weight: 600; color: #e9edef; line-height: 1.2;
+             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 155px; }
+  .wa-hadir { font-size: 10px; color: #8696a0; margin-top: 1px; }
+  .wa-alat { margin-left: auto; display: flex; gap: 12px; align-items: center; flex: 0 0 auto; }
+  .wa-alat svg { fill: #d5dbdf; }
+
+  .wa-isi { flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
+            padding: 8px 8px 4px; overflow: hidden; background-color: #0b141a;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='118' height='118' viewBox='0 0 118 118'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.05' stroke-width='1.5' stroke-linecap='round'%3E%3Ccircle cx='19' cy='21' r='6.5'/%3E%3Cpath d='M45 13h16v11h-9l-4 5v-5h-3z'/%3E%3Cpath d='M84 16l6 10-6 10-6-10z'/%3E%3Cpath d='M104 44v10M99 49h10'/%3E%3Cpath d='M11 60h13v9H11z'/%3E%3Ccircle cx='58' cy='63' r='8'/%3E%3Cpath d='M92 56c5.5 0 9 3.6 9 8s-3.5 8-9 8'/%3E%3Cpath d='M22 92l7 7 7-7'/%3E%3Cpath d='M55 94h18M55 100h12'/%3E%3Ccircle cx='99' cy='97' r='5.5'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 128px 128px; }
+
+  .wa-chip { align-self: center; background: #182229; color: #8696a0; font-size: 9.5px;
+             font-weight: 700; letter-spacing: .04em; padding: 4px 11px; border-radius: 7px;
+             margin-bottom: 8px; }
+  .wa-kunci { align-self: center; background: #182229; color: #f5d98a; font-size: 9px;
+              line-height: 1.45; text-align: center; padding: 6px 11px; border-radius: 7px;
+              margin-bottom: 9px; max-width: 88%; }
+  .wa-belum { align-self: center; color: #8696a0; font-size: 9.5px; font-weight: 700;
+              letter-spacing: .03em; margin: 2px 0 8px; }
+
+  .gel { max-width: 81%; padding: 6px 9px 5px; border-radius: 8px; font-size: 12.5px;
+         line-height: 1.42; margin-bottom: 6px; color: #e9edef; }
+  .gel .waktu { float: right; font-size: 9px; color: #8696a0; margin: 4px 0 -1px 9px;
+                white-space: nowrap; }
+  .masuk { background: #005c9e; margin-left: auto; border-top-right-radius: 3px; }
+  .masuk .waktu { color: #bcd9ef; }
+  .masuk .waktu::after { content: " ✓✓"; color: #79c8f7; letter-spacing: -1.5px;
+                         margin-left: 3px; }
+  .keluar { background: #202c33; border-top-left-radius: 3px; }
+  /* gelembung yang BARU di layar ini — dikotaki merah, sama seperti deck Persada */
+  .sorot { outline: 2px solid #e0453f; outline-offset: 2px; }
+  .wa.padat .gel { font-size: 11.5px; padding: 5px 8px 4px; margin-bottom: 5px; line-height: 1.36; }
+
+  .wa-input { display: flex; align-items: center; gap: 7px; padding: 6px 8px 4px;
+              background: #0b141a; }
+  .wa-ketik { flex: 1; display: flex; align-items: center; gap: 7px; background: #1f2c33;
+              border-radius: 18px; padding: 7px 10px; color: #8696a0; font-size: 11.5px; }
+  .wa-ketik .teks { flex: 1; }
+  .wa-ketik svg, .wa-mic svg { fill: #8696a0; }
+  .wa-mic { width: 29px; height: 29px; flex: 0 0 29px; border-radius: 50%; background: #00a884;
+            display: flex; align-items: center; justify-content: center; }
+  .wa-mic svg { fill: #0b141a; }
+  .wa-garis { width: 92px; height: 3px; border-radius: 3px; background: #3c464c;
+              margin: 3px auto 6px; }
+
+  /* notifikasi WA ke admin — gelembung tunggal tanpa rangka telepon */
+  .notif { background: #0b141a; border-radius: 12px; padding: 13px; max-width: 330px; }
+  .notif .gel { max-width: 100%; font-size: 12px; }
+  .notif b { color: #7cc7f5; font-weight: 700; }
+
+  /* baris Google Sheets — bukti data tercatat, gaya spreadsheet */
+  .sheet { width: 100%; border-collapse: collapse; font-size: 11.5px; background: #fff;
+           border-radius: 5px; overflow: hidden; box-shadow: 0 3px 12px rgba(30,45,65,.14); }
+  .sheet th { background: #1f5a63; color: #fff; font-weight: 700; text-align: left;
+              padding: 7px 9px; white-space: nowrap; }
+  .sheet td { padding: 7px 9px; color: #2e2e2e; border-top: 1px solid #dfe5ea;
+              white-space: nowrap; }
+  .sheet .baru-td { color: #1f7a4d; font-weight: 700; }
+
+  .lampiran { background: #202c33; border-radius: 8px; padding: 6px; margin-bottom: 6px;
+              max-width: 74%; font-size: 11px; }
+  .lampiran.masuk { background: #005c9e; margin-left: auto; }
+  .lampiran .berkas { background: #2a3942; border-radius: 6px; padding: 17px 10px;
+                      text-align: center; font-size: 11.5px; color: #a8c7dc; font-weight: 700; }
+  .lampiran.masuk .berkas { background: #0a4c80; color: #cfe6f8; }
+
+  /* ── mock dashboard ── */
+  .dash { background: #0f1622; border-radius: 16px; padding: 22px 24px; color: #e8eef6;
+          border: 1px solid #223044; }
+  .dash-atas { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .dash-atas img { width: 30px; height: 30px; border-radius: 7px; }
+  .dash-judul { font-size: 17px; font-weight: 700; }
+  .dash-tenant { margin-left: auto; font-size: 13px; color: #8fa6c0; }
+  .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .kpi-kotak { background: #16202f; border-radius: 11px; padding: 13px 15px; border: 1px solid #223044; }
+  .kpi-label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: #8fa6c0; }
+  .kpi-angka { font-size: 26px; font-weight: 800; margin-top: 5px; }
+  .kpi-angka span { font-size: 13px; font-weight: 600; color: #6fd39a; margin-left: 6px; }
+  .bar-baris { display: flex; align-items: flex-end; gap: 9px; height: 108px; margin-top: 6px; }
+  .bar { flex: 1; background: linear-gradient(180deg,#3b82f6,#1e4fa8); border-radius: 5px 5px 0 0; }
+  .bar-label { display: flex; gap: 9px; margin-top: 7px; font-size: 10px; color: #7d90a8; }
+  .bar-label span { flex: 1; text-align: center; }
+
+  /* ── advantages ── */
+  .adv-nomor { font-size: 21px; font-weight: 800; letter-spacing: .22em; color: #7ea8d4; margin-bottom: 10px; }
+  .adv-judul { font-size: 54px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
+  .adv-sub { font-size: 25px; font-weight: 700; color: #3f3f3f; margin-bottom: 20px; }
+  .gelap .adv-sub { color: #dcdcdc; }
+  .adv-isi { font-size: 20px; line-height: 1.62; color: #4a4a4a; max-width: 1010px; }
+  .gelap .adv-isi { color: #cfcfcf; }
+  .hitung { margin-top: 22px; background: rgba(126,168,212,.17); border-left: 4px solid #7ea8d4;
+            border-radius: 0 12px 12px 0; padding: 18px 24px; font-size: 21px; line-height: 1.6; }
+  .hitung b { font-weight: 800; }
+  .hitung .asumsi { display: block; margin-top: 7px; font-size: 14px; font-style: italic; color: #6b7c8d; }
+  .kutip-kecil { margin-top: auto; font-size: 17px; font-style: italic; color: #6b6b6b; }
+
+  /* ── implementation ── */
+  .lini { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin-top: 14px; }
+  .lini-kolom { border-top: 3px solid #7ea8d4; padding-top: 18px; }
+  .lini-hari { font-size: 23px; font-weight: 800; letter-spacing: .14em; margin-bottom: 14px; }
+  .lini-item { font-size: 18px; line-height: 1.65; color: #4a4a4a; }
+  .lini-item::before { content: "— "; color: #7ea8d4; }
+
+  /* ── risiko ── */
+  .risiko-blok { margin-bottom: 24px; }
+  .risiko-label { font-size: 19px; font-weight: 800; margin-bottom: 7px; }
+  .risiko-isi { font-size: 18px; line-height: 1.6; color: #cfcfcf; max-width: 1130px; }
+
+  /* ── garansi & penutup ── */
+  .garansi-judul { font-size: 66px; font-weight: 800; line-height: 1.12; }
+  .garansi-isi { margin-top: 26px; font-size: 24px; line-height: 1.6; color: #4a4a4a; max-width: 1050px; }
+  .penutup-besar { font-size: 96px; font-weight: 800; line-height: 1.05; letter-spacing: .04em; }
+  .kontak { margin-top: auto; font-size: 21px; line-height: 1.7; }
+  .kontak b { font-weight: 700; }
+</style>
+
+
+<!--
+  Rangka telepon dipakai di lima slide. Ditulis sekali di sini, disisipkan dengan
+  <!~~PAKAI:nama~~> supaya kalau bar statusnya diperbaiki, semua telepon ikut berubah
+  dan tidak ada satu pun yang tertinggal versi lama.
+-->
+<!-- jam tiap layar ditulis di slidenya sendiri — tiap slide momen yang berbeda -->
+<!--DEF:wa_ikon--><span class="isi"></span>
+        <svg width="11" height="11" viewBox="0 0 24 24"><path d="M12 21l-9-12c5.2-4 12.8-4 18 0z"/></svg>
+        <svg width="12" height="11" viewBox="0 0 24 24"><path d="M2 20h3v-6H2zm5.5 0h3V9h-3zM13 20h3V4h-3zm5.5 0h3V11h-3z"/></svg>
+        <span class="wa-baterai">100</span></div>
+<!--/DEF-->
+<!--DEF:wa_kepala-->
+      <div class="wa-kepala"><span class="wa-panah">&#8592;</span>
+        <div class="wa-foto">{{inisial_bisnis|C}}</div>
+        <div class="wa-siapa"><div class="wa-nama">{{nama_bisnis|Customer Service}}</div>
+          <div class="wa-hadir">online</div></div>
+        <div class="wa-alat">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11z"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24"><path d="M6.6 10.8a15 15 0 006.6 6.6l2.2-2.2a1 1 0 011-.2 11 11 0 003.5.6 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11 11 0 00.6 3.5 1 1 0 01-.3 1z"/></svg>
+          <svg width="4" height="15" viewBox="0 0 6 24"><circle cx="3" cy="5" r="2"/><circle cx="3" cy="12" r="2"/><circle cx="3" cy="19" r="2"/></svg>
+        </div></div>
+<!--/DEF-->
+<!--DEF:wa_input-->
+      <div class="wa-input"><div class="wa-ketik">
+          <svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-3.5 7a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm7 0a1.5 1.5 0 110 3 1.5 1.5 0 010-3zM12 18c-2.6 0-4.8-1.7-5.5-4h11c-.7 2.3-2.9 4-5.5 4z"/></svg>
+          <span class="teks">Message</span>
+          <svg width="13" height="13" viewBox="0 0 24 24"><path d="M16.5 6v11a4.5 4.5 0 01-9 0V5a3 3 0 016 0v11a1.5 1.5 0 01-3 0V6H9v10a3 3 0 006 0V5a4.5 4.5 0 00-9 0v12a6 6 0 0012 0V6z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24"><path d="M9 3l-1.5 2H4a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2h-3.5L15 3zm3 5a5 5 0 110 10 5 5 0 010-10z"/></svg>
+        </div>
+        <div class="wa-mic"><svg width="14" height="14" viewBox="0 0 24 24"><path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 006 6.9V22h2v-3.1A7 7 0 0019 12z"/></svg></div>
+      </div>
+      <div class="wa-garis"></div>
+<!--/DEF-->
+
+
+<!-- ═══ 1. COVER — CUSTOM ═══ -->
+<section class="slide terang" data-id="cover">
+  <div class="garis-atas"></div>
+  <div class="kredit">Presented by :<br><b>Steven Leroy</b></div>
+  <div style="margin-top:auto;margin-bottom:auto">
+    <div class="cover-judul">The Future of<b>Customer Service.</b></div>
+    <div class="cover-tagline">“{{tagline|Respon cepat, konversi maksimal}}”</div>
+    <!--JIKA:nama_bisnis--><div class="cover-untuk">Disusun khusus untuk<br><b>{{nama_bisnis}}</b>{{industri_frasa}}</div><!--/JIKA-->
+  </div>
+</section>
+
+
+<!-- ═══ 2. AGENDA ═══ -->
+<section class="slide terang" data-id="agenda">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian judul-spasi">A g e n d a</div>
+  <div class="agenda">
+    <div class="agenda-baris"><div class="agenda-no">01</div><div class="agenda-teks">Introduction</div></div>
+    <div class="agenda-baris"><div class="agenda-no">02</div><div class="agenda-teks">Pain Points</div></div>
+    <div class="agenda-baris"><div class="agenda-no">03</div><div class="agenda-teks">Solutions</div></div>
+    <div class="agenda-baris"><div class="agenda-no">04</div><div class="agenda-teks">Features</div></div>
+    <div class="agenda-baris"><div class="agenda-no">05</div><div class="agenda-teks">Flow &amp; Case Study</div></div>
+    <div class="agenda-baris"><div class="agenda-no">06</div><div class="agenda-teks">Packages Comparison</div></div>
+    <div class="agenda-baris"><div class="agenda-no">07</div><div class="agenda-teks">Investment</div></div>
+    <div class="agenda-baris"><div class="agenda-no">08</div><div class="agenda-teks">Advantages</div></div>
+    <div class="agenda-baris"><div class="agenda-no">09</div><div class="agenda-teks">Disclaimer</div></div>
+    <div class="agenda-baris"><div class="agenda-no">10</div><div class="agenda-teks">Implementation</div></div>
+  </div>
+</section>
+
+
+<!-- ═══ 3. KUTIPAN WANI SABU ═══ -->
+<section class="slide terang" data-id="kutipan-wani-sabu">
+  <div class="garis-atas"></div>
+  <div style="margin-top:auto;margin-bottom:auto">
+    <div class="kutipan">“Customer Service adalah garda terdepan sekaligus wajah dari sebuah
+      perusahaan. Kepercayaan nasabah dimulai dari bagaimana kita melayani mereka.”</div>
+    <div class="kutipan-sumber">— <b>Wani Sabu</b><br>Head of Contact Center &amp; Digital Services at BCA</div>
+  </div>
+</section>
+
+
+<!-- ═══ 4. KONTEKS BISNIS — CUSTOM (tambahan) ═══ -->
+<section class="slide terang" data-id="konteks-bisnis-custom" data-butuh="deskripsi_bisnis">
+  <div class="garis-atas"></div>
+  <div class="kredit">Dari obrolan kita di WhatsApp</div>
+  <div class="judul-bagian">Yang aku tangkap soal {{nama_bisnis|bisnis kamu}}</div>
+  <div class="konteks">
+    <!--ULANG:konteks-->
+    <div class="kartu">
+      <div class="kartu-label">{{.label}}</div>
+      <div class="kartu-isi">{{.isi}}</div>
+    </div>
+    <!--/ULANG-->
+  </div>
+</section>
+
+
+<!-- ═══ 5. PAIN POINTS — CUSTOM ═══ -->
+<section class="slide gelap" data-id="pain-points" data-butuh="masalah_utama">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian judul-spasi">P a i n&nbsp; P o i n t s</div>
+  <div>
+    <!--ULANG:pain_list-->
+    <div class="poin">
+      <div class="bulat"></div>
+      <div>
+        <div class="poin-judul">{{.judul}}</div>
+        <div class="poin-isi">{{.isi}}</div>
+      </div>
+    </div>
+    <!--/ULANG-->
+  </div>
+</section>
+
+
+<!-- ═══ 6. TITLE VIRA ═══ -->
+<section class="slide gelap pembatas" data-id="title-vira">
+  <div class="besar" style="font-size:118px;letter-spacing:.1em">VIRA</div>
+  <div class="kecil" style="margin-top:18px;font-size:29px">A Premium 24/7 AI WhatsApp Assistant System</div>
+</section>
+
+
+<!-- ═══ 7. WHY #1 ═══ -->
+<section class="slide terang pembatas" data-id="why-1">
+  <div class="besar">WHY?</div>
+  <div class="kecil">Kenapa harus memilih VIRA dibanding chatbot mainstream?</div>
+</section>
+
+
+<!-- ═══ 8. CORE FEATURES ═══ -->
+<section class="slide terang" data-id="core-features">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">Core Features</div>
+  <div class="fitur-grid">
+    <div class="fitur-kotak"><div class="fitur-nama">WhatsApp Auto-Reply 24/7</div>
+      <div class="fitur-isi">Jawab pesan pelanggan secara instan, bahkan di luar jam kerja.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Natural Language Processing</div>
+      <div class="fitur-isi">Jawab pertanyaan kompleks dengan bahasa natural yang luwes.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">FAQ Handling</div>
+      <div class="fitur-isi">Menjawab pertanyaan umum dengan cepat.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">{{nama_fitur_aksi|Automated Lead Capture}}</div>
+      <div class="fitur-isi">{{aksi_utama|Booking}} tercatat otomatis ke Google Sheets, tervalidasi, lalu tim (manusia) dinotifikasi.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Automated Follow Up</div>
+      <div class="fitur-isi">Otomatis follow up calon pelanggan yang belum melanjutkan ke {{aksi_utama|langkah berikutnya}}.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Google Sheets Sync</div>
+      <div class="fitur-isi">Sinkronisasi data pelanggan ke sistem bisnis.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Basic Analytics</div>
+      <div class="fitur-isi">Hitung jumlah chat &amp; konversi dasar untuk monitoring performa.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Call Redirection</div>
+      <div class="fitur-isi">Klien yang minta ditelepon diarahkan ke nomor resmi.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Traffic Source Recognition</div>
+      <div class="fitur-isi">Leads (IG/FB/Google) terdeteksi otomatis dari template pesan pertama.</div></div>
+  </div>
+</section>
+
+
+<!-- ═══ 9. FLOW UI — LAYAR 1: PEMBUKA & FAQ — CUSTOM ═══ -->
+<section class="slide terang" data-id="flow-ui">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">The Flow</div>
+  <div class="mockup">
+    <div class="wa {{kelas_telepon}}">
+      <div class="wa-status"><span>13.52</span><!--PAKAI:wa_ikon-->
+<!--PAKAI:wa_kepala-->
+      <div class="wa-isi">
+        <div class="wa-chip">HARI INI</div>
+        <div class="wa-kunci">🔒 Pesan dan panggilan dienkripsi end-to-end.</div>
+        <!--ULANG:chat1-->
+        <div class="gel {{.arah}} {{.sorot}}">{{.teks}}<span class="waktu">{{.jam}}</span></div>
+        <!--/ULANG-->
+      </div>
+<!--PAKAI:wa_input-->
+    </div>
+    <div class="mockup-teks">
+      <div class="fitur-baris"><div class="fitur-nama">WhatsApp Auto-Reply 24/7</div>
+        <div class="fitur-isi">Jawab pesan pelanggan secara instan, bahkan di luar jam kerja.</div></div>
+      <div class="fitur-baris"><div class="fitur-nama">FAQ Handling</div>
+        <div class="fitur-isi">Menjawab pertanyaan umum dengan cepat dan akurat.</div></div>
+      <div class="fitur-baris"><div class="fitur-nama">Natural Language Processing</div>
+        <div class="fitur-isi">Jawab pertanyaan kompleks dengan bahasa natural yang luwes.</div></div>
+      <div class="fitur-baris"><div class="fitur-nama">Traffic Source Recognition</div>
+        <div class="fitur-isi">Leads dari {{sumber_prospek|Instagram/Facebook/Google}} terdeteksi otomatis dari pesan pertamanya.</div></div>
+    </div>
+  </div>
+  <div class="ilustrasi">Ilustrasi tampilan — menggambarkan rencana implementasi, bukan produk final.</div>
+</section>
+
+
+<!-- ═══ 10. FLOW UI — LAYAR 2: PERCAKAPAN BERLANJUT SAMPAI TERCATAT — CUSTOM ═══ -->
+<section class="slide terang" data-id="flow-ui-aksi">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">The Flow — {{nama_fitur_aksi|Automated Lead Capture}}</div>
+  <div class="mockup">
+    <div class="wa {{kelas_telepon}}">
+      <div class="wa-status"><span>14.06</span><!--PAKAI:wa_ikon-->
+<!--PAKAI:wa_kepala-->
+      <div class="wa-isi">
+        <!--ULANG:chat2-->
+        <div class="gel {{.arah}} {{.sorot}}">{{.teks}}<span class="waktu">{{.jam}}</span></div>
+        <!--/ULANG-->
+      </div>
+<!--PAKAI:wa_input-->
+    </div>
+    <div class="mockup-teks">
+      <div class="fitur-baris"><div class="fitur-nama">{{nama_fitur_aksi|Automated Lead Capture}}</div>
+        <div class="fitur-isi">{{alur_setelah_chat|Chat masuk sampai closing}} — tercatat otomatis ke Google Sheets, tervalidasi, lalu tim (manusia) dinotifikasi.</div></div>
+      <table class="sheet">
+        <tr><th>no_wa</th><th>nama</th><th>tanggal</th><th>jam</th><th>{{kolom_aksi|kebutuhan}}</th><th>status</th><th>sumber</th></tr>
+        <tr><td>628xxxxxxxxxx</td><td>Budi Santoso</td><td>12/09/2026</td><td>10:00</td>
+            <td>{{aksi_utama|Booking}}</td><td class="baru-td">TERJADWAL</td><td>{{sumber_prospek|Instagram}}</td></tr>
+      </table>
+      <div class="fitur-baris" style="margin-top:26px"><div class="fitur-nama">Notify Tim (Human)</div>
+        <div class="fitur-isi">Begitu tercatat, tim langsung dapat notifikasi WhatsApp berisi ringkasannya.</div></div>
+      <div class="notif">
+        <div class="gel keluar">🔔 <b>[VIRA] {{aksi_besar|LEAD}} BARU</b><br>
+          Nama: Budi Santoso<br>No WA: 628xxxxxxxxxx<br>Jadwal: 12 Sep 2026, 10:00<br>
+          Sumber: {{sumber_prospek|Instagram}}<span class="waktu">10.04</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ilustrasi">Ilustrasi tampilan — menggambarkan rencana implementasi, bukan produk final.</div>
+</section>
+
+
+<!-- ═══ 11. FLOW UI — UNKNOWN FAQ ═══ -->
+<section class="slide terang" data-id="flow-ui-unknown">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">The Flow — Unknown FAQ</div>
+  <div class="mockup">
+    <div class="wa">
+      <div class="wa-status"><span>14.14</span><!--PAKAI:wa_ikon-->
+<!--PAKAI:wa_kepala-->
+      <div class="wa-isi">
+        <!--ULANG:chat_unknown-->
+        <div class="gel {{.arah}} {{.sorot}}">{{.teks}}<span class="waktu">{{.jam}}</span></div>
+        <!--/ULANG-->
+      </div>
+<!--PAKAI:wa_input-->
+    </div>
+    <div class="mockup-teks">
+      <div class="fitur-baris"><div class="fitur-nama">Unknown FAQ</div>
+        <div class="fitur-isi">Kalau pertanyaannya belum ada di base knowledge, VIRA tidak mengarang.
+          Dia tetap menjawab sopan, mengirim notifikasi ke tim, dan mencatat pertanyaannya
+          supaya jawabannya bisa ditambahkan.</div></div>
+      <table class="sheet" style="margin-bottom:24px">
+        <tr><th>pertanyaan</th><th>user</th><th>tanggal</th><th>status</th></tr>
+        <tr><td>{{unknown_ringkas|Pertanyaan di luar base knowledge}}</td><td>628xxxxxxxxxx</td>
+            <td>12/09/2026</td><td class="baru-td">MENUNGGU JAWABAN</td></tr>
+      </table>
+      <div class="notif">
+        <div class="gel keluar">🔔 <b>[VIRA] UNKNOWN</b><br>
+          Dari: 628xxxxxxxxxx<br>
+          Pertanyaan: {{unknown_ringkas|Pertanyaan di luar base knowledge}}<span class="waktu">10.12</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="ilustrasi">Ilustrasi tampilan — menggambarkan rencana implementasi, bukan produk final.</div>
+</section>
+
+
+<!-- ═══ 12. FLOW UI — FOLLOW UP & CALL REDIRECTION ═══ -->
+<section class="slide terang" data-id="flow-ui-followup">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">The Flow — Follow Up &amp; Call Redirection</div>
+  <div class="mockup" style="gap:38px">
+    <div class="wa">
+      <div class="wa-status"><span>09.21</span><!--PAKAI:wa_ikon-->
+<!--PAKAI:wa_kepala-->
+      <div class="wa-isi">
+        <!--ULANG:chat_followup_awal-->
+        <div class="gel {{.arah}}">{{.teks}}<span class="waktu">{{.jam}}</span></div>
+        <!--/ULANG-->
+        <div class="wa-belum">2 PESAN BELUM DIBACA</div>
+        <!--ULANG:chat_followup-->
+        <div class="gel {{.arah}} sorot">{{.teks}}<span class="waktu">{{.jam}}</span></div>
+        <!--/ULANG-->
+      </div>
+<!--PAKAI:wa_input-->
+    </div>
+    <div class="mockup-teks" style="padding-top:36px">
+      <div class="fitur-baris"><div class="fitur-nama">Automated Follow Up</div>
+        <div class="fitur-isi">Calon pelanggan yang berhenti di tengah jalan disapa lagi otomatis
+          dalam rentang waktu yang kamu tentukan — tanpa perlu diingat manual.</div></div>
+      <div class="fitur-baris"><div class="fitur-nama">Call Redirection</div>
+        <div class="fitur-isi">Yang minta ditelepon diarahkan ke nomor tim, bukan dibiarkan menggantung.</div></div>
+    </div>
+    <div class="wa">
+      <div class="wa-status"><span>15.38</span><!--PAKAI:wa_ikon-->
+<!--PAKAI:wa_kepala-->
+      <div class="wa-isi">
+        <!--ULANG:chat_call-->
+        <div class="gel {{.arah}} {{.sorot}}">{{.teks}}<span class="waktu">{{.jam}}</span></div>
+        <!--/ULANG-->
+      </div>
+<!--PAKAI:wa_input-->
+    </div>
+  </div>
+  <div class="ilustrasi">Ilustrasi tampilan — menggambarkan rencana implementasi, bukan produk final.</div>
+</section>
+
+
+<!-- ═══ 10. SCALE BEYOND LIMITS ═══ -->
+<section class="slide gelap pembatas" data-id="scale-beyond-limits">
+  <div class="besar">Scale Beyond Limits</div>
+  <div class="kecil">Because your business deserves more than just an auto-reply.</div>
+</section>
+
+
+<!-- ═══ 11. PREMIUM FEATURES ═══ -->
+<section class="slide terang" data-id="premium-features">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">Premium Features</div>
+  <div class="fitur-grid">
+    <div class="fitur-kotak"><div class="fitur-nama">Advanced Insights</div>
+      <div class="fitur-isi">Laporan konversi, peak time, dan daily report.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Send Media<span class="baru">BARU</span></div>
+      <div class="fitur-isi">Mengirim brosur, katalog, price list, atau dokumen langsung di dalam chat.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Analyze Photo<span class="baru">BARU</span></div>
+      <div class="fitur-isi">Membaca foto atau tangkapan layar yang dikirim pelanggan, lalu menjawab sesuai isinya.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Custom Persona</div>
+      <div class="fitur-isi">Gaya bicara sesuai brand — ramah, profesional, atau playful.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Monthly Persona Update</div>
+      <div class="fitur-isi">Gaya komunikasi AI diperbarui tiap bulan agar tetap relevan.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Priority Support</div>
+      <div class="fitur-isi">Dukungan teknis lebih cepat dan diprioritaskan.</div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Global Language Capability</div>
+      <div class="fitur-isi">Memahami dan merespons berbagai bahasa secara natural, tanpa setting manual. <i>(Add-on)</i></div></div>
+    <div class="fitur-kotak"><div class="fitur-nama">Custom Needs</div>
+      <div class="fitur-isi">Menyesuaikan kebutuhan spesifik owner — ditinjau lebih dulu bersama.</div></div>
+  </div>
+</section>
+
+
+<!-- ═══ 12. FLOW UI PREMIUM + DASHBOARD ═══ -->
+<section class="slide terang" data-id="flow-ui-premium-dashboard">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">Premium — Send Media, Analyze Photo &amp; Dashboard</div>
+  <div class="mockup" style="gap:44px">
+    <div class="wa" style="width:330px;flex:0 0 330px;height:520px">
+      <div class="wa-status"><span>16.40</span><!--PAKAI:wa_ikon-->
+<!--PAKAI:wa_kepala-->
+      <div class="wa-isi">
+        <div class="gel masuk">Ada price list-nya nggak kak?<span class="waktu">16.38</span></div>
+        <div class="gel keluar">Ini price list-nya ya kak, aku kirim langsung di sini.<span class="waktu">16.38</span></div>
+        <div class="lampiran"><div class="berkas">📄 price-list.pdf</div></div>
+        <div class="lampiran masuk"><div class="berkas">🖼️ foto dari pelanggan</div></div>
+        <div class="gel keluar">Dari fotonya, itu {{contoh_analisa|tipe yang sedang kamu tanyakan}}. Aku jelaskan ya.<span class="waktu">16.40</span></div>
+      </div>
+<!--PAKAI:wa_input-->
+    </div>
+    <div style="flex:1">
+      <div class="dash">
+        <div class="dash-atas">
+          <img src="aset/viralogo-mark.png" alt="">
+          <div class="dash-judul">VIRA Dashboard</div>
+          <div class="dash-tenant">{{nama_bisnis|Customer Service}}</div>
+        </div>
+        <div class="kpi">
+          <!--JIKA:volume_bulanan--><div class="kpi-kotak"><div class="kpi-label">Chat masuk</div>
+            <div class="kpi-angka">{{volume_bulanan}}<span>/bln</span></div></div><!--LAIN--><div class="kpi-kotak"><div class="kpi-label">Status</div>
+            <div class="kpi-angka" style="font-size:21px">Aktif</div></div><!--/JIKA-->
+          <div class="kpi-kotak"><div class="kpi-label">Dibalas &lt; 1 mnt</div>
+            <div class="kpi-angka">24/7</div></div>
+          <div class="kpi-kotak"><div class="kpi-label">Peak time</div>
+            <div class="kpi-angka" style="font-size:21px">20–23</div></div>
+          <div class="kpi-kotak"><div class="kpi-label">Sumber teratas</div>
+            <div class="kpi-angka" style="font-size:19px">{{channel_utama|WhatsApp}}</div></div>
+        </div>
+        <div class="bar-baris">
+          <div class="bar" style="height:44%"></div><div class="bar" style="height:61%"></div>
+          <div class="bar" style="height:38%"></div><div class="bar" style="height:78%"></div>
+          <div class="bar" style="height:55%"></div><div class="bar" style="height:92%"></div>
+          <div class="bar" style="height:70%"></div>
+        </div>
+        <div class="bar-label"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span>
+          <span>Jum</span><span>Sab</span><span>Min</span></div>
+      </div>
+      <div class="fitur-isi" style="margin-top:18px;font-size:17px">
+        Laporan konversi, peak time, dan daily report — bisa dibuka sendiri kapan saja,
+        tanpa perlu menanyakan ke siapa pun.
+      </div>
+    </div>
+  </div>
+  <div class="ilustrasi">Ilustrasi tampilan — angka pada dashboard hanya contoh.</div>
+</section>
+
+
+<!-- ═══ 13. COMPARISON ═══ -->
+<section class="slide terang" data-id="comparison">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian" style="margin-bottom:20px">Comparison</div>
+  <table class="harga">
+    <thead><tr><th>Features</th><th>Basic</th><th>Premium</th><th>Add Ons</th></tr></thead>
+    <tbody>
+      <tr><td>WhatsApp Auto-Reply</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>FAQ</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Natural Language Processing</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Basic Analytics (Chat Count)</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Google Sheets Sync</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>{{nama_fitur_aksi|Automated Lead Capture}}</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Automated Follow Up</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Call Redirection</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Traffic Source Recognition</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Send Media</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Analyze Photo</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Advanced Insights (Conversion %, Peak Time, Daily Report)</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Custom Persona</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Priority Support</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Monthly Persona Update</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Global Language Capability</td><td class="tidak">✘</td><td class="tidak">✘</td><td>Add On</td></tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- ═══ 14. TITLE INVESTMENT ═══ -->
+<section class="slide gelap pembatas" data-id="title-investment">
+  <div class="besar">Investment</div>
+</section>
+
+
+<!-- ═══ 15. INVESTMENT TABLE ═══ -->
+<section class="slide terang" data-id="investment-table">
+  <div class="garis-atas"></div>
+  <table class="harga" style="margin-top:24px">
+    <thead>
+      <tr>
+        <th>Features</th>
+        <th>Basic<span class="harga-angka">IDR 3.000.000/month</span></th>
+        <th>Premium<span class="harga-angka">IDR 5.000.000/month</span></th>
+        <th>Add Ons</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="setup">
+        <td>One-Time System Setup &amp; Integration</td>
+        <td><span class="coret">IDR 3.000.000</span><span class="gratis">Free</span></td>
+        <td><span class="coret">IDR 3.000.000</span><span class="gratis">Free</span></td>
+        <td>—</td>
+      </tr>
+      <tr><td>WhatsApp Auto-Reply</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>FAQ</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Natural Language Processing</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Basic Analytics (Chat Count)</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Google Sheets Sync</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>{{nama_fitur_aksi|Automated Lead Capture}}</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Automated Follow Up</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Call Redirection</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Traffic Source Recognition</td><td class="ya">✔</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Send Media</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Analyze Photo</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Advanced Insights (Conversion %, Peak Time, Daily Report)</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Custom Persona</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Priority Support</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Monthly Persona Update</td><td class="tidak">✘</td><td class="ya">✔</td><td></td></tr>
+      <tr><td>Global Language Capability</td><td class="tidak">✘</td><td class="tidak">✘</td><td>IDR 999.000/month</td></tr>
+    </tbody>
+  </table>
+  <div class="catatan-kaki">*Price exclude API Token Billing</div>
+</section>
+
+
+<!-- ═══ 16. TITLE KLIEN ═══ -->
+<section class="slide gelap pembatas" data-id="title-klien">
+  <div class="besar" style="font-size:70px">Siapa saja yang<br>sudah pakai VIRA?</div>
+</section>
+
+
+<!-- ═══ 17. THE SCHOLARS ═══ -->
+<section class="slide terang" data-id="the-scholars">
+  <div class="garis-atas"></div>
+  <div class="kredit">Sudah berjalan</div>
+  <div class="klien-garis"></div>
+  <div class="klien-kepala">
+    <img class="klien-logo" src="aset/logo_thescholars.jpg" alt="">
+    <div><div class="klien-nama">The Scholars</div>
+      <div class="klien-sektor">Platform Edukasi</div></div>
+  </div>
+  <div class="klien-kolom">
+    <div><div class="kartu-label">Ceritanya</div>
+      <div class="kartu-isi">Pertanyaan calon murid dan orang tua masuk lewat Instagram dan
+        WhatsApp, sering di luar jam kerja. Pertanyaan yang sama berulang tiap hari, dan
+        pendaftaran kelas dicatat manual satu per satu.</div></div>
+    <div><div class="kartu-label">Yang dituju</div>
+      <div class="kartu-isi">Calon murid bisa tanya-jawab soal program dan langsung mendaftar
+        kelas lewat WhatsApp kapan pun, tanpa menunggu jam kerja admin — sementara adminnya
+        fokus ke hal yang benar-benar butuh penilaian manusia.</div></div>
+  </div>
+</section>
+
+
+<!-- ═══ 18. PERSADA CISOKA ═══ -->
+<section class="slide terang" data-id="persada-cisoka">
+  <div class="garis-atas"></div>
+  <div class="kredit">Sudah berjalan</div>
+  <div class="klien-garis"></div>
+  <div class="klien-kepala">
+    <img class="klien-logo" src="aset/logo_persada.jpg" alt="">
+    <div><div class="klien-nama">Persada Cisoka Residence</div>
+      <div class="klien-sektor">Developer Properti</div></div>
+  </div>
+  <div class="klien-kolom">
+    <div><div class="kartu-label">Ceritanya</div>
+      <div class="kartu-isi">Leads properti mahal. Calon pembeli sering chat tengah malam
+        sepulang kerja — telat dibalas berarti mereka keburu lirik developer sebelah.
+        Follow-up manual satu per satu gampang terlewat.</div></div>
+    <div><div class="kartu-label">Yang dituju</div>
+      <div class="kartu-isi">VIRA membimbing calon pembeli sampai menjadwalkan survey unit.
+        Yang belum survey difollow-up otomatis oleh AI yang memahami isi percakapannya —
+        bukan template yang dikirim sama rata ke semua orang.</div></div>
+  </div>
+</section>
+
+
+<!-- ═══ 19. WHY #2 ═══ -->
+<section class="slide terang pembatas" data-id="why-2">
+  <div class="besar">WHY?</div>
+  <div class="kecil">Kenapa bisnis Anda harus menggunakan VIRA?</div>
+</section>
+
+
+<!-- ═══ 20. TITLE ADVANTAGES ═══ -->
+<section class="slide gelap pembatas" data-id="title-advantages">
+  <div class="besar">Advantages &amp; ROI</div>
+</section>
+
+
+<!-- ═══ 21. #1 TIME FREEDOM — CUSTOM ═══ -->
+<section class="slide terang" data-id="1-time-freedom" data-butuh="volume_angka">
+  <div class="garis-atas"></div>
+  <div class="adv-nomor">#1</div>
+  <div class="adv-judul">Time Freedom</div>
+  <div class="adv-sub">Buy Your Time</div>
+  <div class="adv-isi">Setiap chat yang masuk menuntut perhatian: dibaca, dipahami, dibalas,
+    lalu diingat untuk ditindaklanjuti. Yang paling mahal bukan waktunya — tapi fokus yang
+    terpotong tiap kali notifikasi muncul.</div>
+  <div class="hitung">
+    {{volume_angka}} chat per hari × ±5 menit ≈ <b>{{jam_harian}} jam per hari</b><br>
+    {{jam_harian}} jam × 30 hari = <b>{{jam_bulanan}} jam per bulan</b> yang bisa dialihkan ke
+    hal yang menghasilkan closing lebih besar.
+    <span class="asumsi">Asumsi ±5 menit per chat (baca, balas, catat). Angka chat harian
+      berasal dari obrolan kita.</span>
+  </div>
+  <div class="adv-isi" style="margin-top:20px">Bisa dialihkan ke: <b>Strategi Marketing</b> — optimasi kanal iklan yang paling efektif · <b>Follow-Up Leads Lama</b> — menghidupkan lagi leads yang sempat mati · <b>Negosiasi &amp; Closing</b> — fokus ke yang siap deal.</div>
+  <div class="kutip-kecil">“The most precious resource we all have is time.” — Steve Jobs</div>
+</section>
+
+
+<!-- ═══ 22. #2 ZERO LEAKING PROFIT — CUSTOM ═══ -->
+<section class="slide gelap" data-id="2-zero-leaking-profit" data-butuh="industri">
+  <div class="garis-atas"></div>
+  <div class="adv-nomor">#2</div>
+  <div class="adv-judul">Zero Leaking Profit</div>
+  <div class="adv-sub">Balas Kapan Pun, Bukan Cuma Jam Kerja</div>
+  <div class="adv-isi">{{target_pelanggan|Calon pelanggan}} tidak selalu chat di jam kerja.
+    Banyak yang baru sempat menghubungi malam hari, sepulang kerja, atau saat libur — persis
+    ketika minatnya sedang paling tinggi.<br><br>
+    VIRA membalas dalam hitungan menit, 24/7. Tidak ada lagi chat yang masuk tengah malam lalu
+    baru terbaca besok siang, saat minatnya sudah dingin.<br><br>
+    <b>Respons lebih cepat → {{aksi_utama|langkah berikutnya}} lebih cepat terjadi → closing lebih cepat.</b><br><b style="letter-spacing:.04em">Faster Response &gt;&gt;&gt; More Impact.</b></div>
+</section>
+
+
+<!-- ═══ 23. #3 SCALABILITY — CUSTOM ═══ -->
+<section class="slide terang" data-id="3-scalability" data-butuh="volume_angka">
+  <div class="garis-atas"></div>
+  <div class="adv-nomor">#3</div>
+  <div class="adv-judul">Scalability<br>without Complexity</div>
+  <div class="adv-sub">Ready untuk Grow More</div>
+  <div class="adv-isi">Kalau bisnis makin ramai, solusi biasanya menambah orang. Dengan VIRA,
+    volume chat naik tidak berarti biaya ikut naik.</div>
+  <div class="hitung">
+    Chat naik dari <b>{{volume_angka}}</b> ke <b>{{volume_x2}}</b> per hari — VIRA tetap
+    menangani, dengan biaya yang sama.
+    <span class="asumsi">Menambah admin biasanya {{biaya_admin_frasa|berkisar Rp4–6 juta per orang per bulan}}.</span>
+  </div>
+</section>
+
+
+<!-- ═══ 24. #4 BRAND TRUST ═══ -->
+<section class="slide gelap" data-id="4-brand-trust">
+  <div class="garis-atas"></div>
+  <div class="adv-nomor">#4</div>
+  <div class="adv-judul">Brand Trust</div>
+  <div class="adv-sub">Standar Layanan</div>
+  <div class="adv-isi">Respons instan membuat calon pelanggan merasa lebih aman sejak pesan
+    pertama. Untuk keputusan yang butuh pertimbangan, kepercayaan di awal chat sering menentukan
+    apakah mereka lanjut serius — atau pindah ke tempat lain.<br><br>
+    <b>Target: Kepercayaan.</b> Orang lebih berminat commit ke tempat yang pelayanannya seamless
+    dan fast response sejak awal.</div>
+</section>
+
+
+<!-- ═══ 25. TITLE DISCLAIMER ═══ -->
+<section class="slide gelap pembatas" data-id="title-disclaimer">
+  <div class="besar">Disclaimer</div>
+</section>
+
+
+<!-- ═══ 26. RISIKO ═══ -->
+<section class="slide gelap" data-id="risiko">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">Risiko Teknis &amp; Cara VIRA Menanganinya</div>
+  <div class="risiko-blok">
+    <div class="risiko-label">Risiko yang mungkin terjadi — kecil, tapi nyata</div>
+    <div class="risiko-isi">Sewaktu-waktu server AI atau jalur WhatsApp API bisa mengalami
+      gangguan sementara. Ini terjadi pada semua sistem digital, termasuk aplikasi besar, dan
+      bukan sesuatu yang bisa dijamin 100% tidak akan pernah terjadi oleh penyedia mana pun.</div>
+  </div>
+  <div class="risiko-blok">
+    <div class="risiko-label">Bagaimana VIRA menanganinya</div>
+    <div class="risiko-isi">Sistem dilengkapi deteksi otomatis. Saat ada gangguan yang membuat
+      pesan gagal diproses, notifikasi langsung terkirim ke saya secara real-time. VIRA tidak
+      diam-diam berhenti bekerja tanpa ada yang tahu — kecuali bila gangguan terjadi pada API
+      WhatsApp, sehingga pesannya memang tidak pernah masuk ke sistem.</div>
+  </div>
+  <div class="risiko-blok">
+    <div class="risiko-label">Jalur eskalasi cepat</div>
+    <div class="risiko-isi">Kalau terjadi gangguan, tim Anda bisa langsung menghubungi saya
+      untuk penanganan — tanpa antre tiket, tanpa perantara.</div>
+  </div>
+</section>
+
+
+<!-- ═══ 27. IMPLEMENTATION ═══ -->
+<section class="slide terang" data-id="implementation">
+  <div class="garis-atas"></div>
+  <div class="judul-bagian">Implementation</div>
+  <div class="lini">
+    <div class="lini-kolom"><div class="lini-hari">Day 1</div>
+      <div class="lini-item">Menyiapkan No WhatsApp</div>
+      <div class="lini-item">Explore Knowledge</div>
+      <div class="lini-item">Membuat Database</div></div>
+    <div class="lini-kolom"><div class="lini-hari">Day 15</div>
+      <div class="lini-item">Set Up Workflow</div>
+      <div class="lini-item">Finishing Database</div>
+      <div class="lini-item">Integrasi ke Workflow</div></div>
+    <div class="lini-kolom"><div class="lini-hari">Day 30</div>
+      <div class="lini-item">Testing Workflow</div>
+      <div class="lini-item">Training No WhatsApp</div>
+      <div class="lini-item">Finalisasi No WhatsApp</div>
+      <div class="lini-item">Finalisasi Workflow</div>
+      <div class="lini-item">Finalisasi Database</div></div>
+    <div class="lini-kolom"><div class="lini-hari">Day 31</div>
+      <div class="lini-item">Go Live 🟢</div>
+      <div class="lini-item">Maintenance</div></div>
+  </div>
+  <div class="hitung" style="margin-top:34px">{{catatan_implementasi|Timeline dimulai setelah nomor WhatsApp dan bahan pengetahuan siap.}}</div>
+</section>
+
+
+<!-- ═══ 28. GARANSI ═══ -->
+<section class="slide terang" data-id="garansi">
+  <div class="garis-atas"></div>
+  <div style="margin-top:auto;margin-bottom:auto">
+    <div class="garansi-judul">100% Satisfaction<br>Guarantee</div>
+    <div class="garansi-isi">If you feel that VIRA has not made a significant impact on your business,
+      we will continue to adjust and optimize the system at no extra cost until it perfectly
+      fits your business needs.</div>
+  </div>
+</section>
+
+
+<!-- ═══ 29. LET'S START ═══ -->
+<section class="slide terang" data-id="let-s-start">
+  <div class="garis-atas"></div>
+  <div class="kredit">Presented by :<br><b>Steven Leroy</b></div>
+  <div style="margin-top:auto"><div class="penutup-besar">L e t ’ s<br>S t a r t</div></div>
+  <div class="kontak">
+    Thank you for your time &amp; attention<br>
+    <b>+6285155202354</b><br>
+    chatminagent@gmail.com
+  </div>
+</section>

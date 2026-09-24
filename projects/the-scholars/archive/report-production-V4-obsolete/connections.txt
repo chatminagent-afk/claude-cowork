@@ -1,0 +1,57 @@
+Webhook --(out0)--> If From Group
+IF Unknown --(out0)--> Record to UNKNOWN
+Chat Counter --(out0)--> Read User STATS
+Extract & Prepare Data --(out0)--> Read STATS
+Process Counter & Merge Data --(out0)--> Update to STATS
+Record to UNKNOWN --(out0)--> Wait2
+Read STATS --(out0)--> Process Counter & Merge Data
+Wait1 --(out0)--> Reply Chat Kirimi
+Wait2 --(out0)--> Notify Admin Unknown
+Reply Chat Kirimi --(out0)--> Check API Response
+Reply Chat Kirimi --(out1)--> Notify Admin API Error
+Check API Response --(out0)--> Extract & Prepare Data
+Check API Response --(out0)--> Delete_Pending_Msg
+Check API Response --(out0)--> Update STATS - Greeting Flag
+Check API Response --(out1)--> Notify Admin API Error
+Read STATS for HITL --(out0)--> HITL Check
+HITL Check --(out0)--> Wait3
+IF Send GForm --(out0)--> Query LINKS for GForm
+Send GForm Link --(out0)--> Update GForm Sent TS1
+Read User STATS --(out0)--> Resolve User Row
+IF Bot Mode Active --(out0)--> Rate Limiter LID
+IF Bot Mode Active --(out1)--> Delete_Pending_Msg_Bot_Off
+Query LINKS for GForm --(out0)--> Pick GForm Link
+Cek_user_status --(out0)--> Preprocess - Context Detection
+Update STATS - Greeting Flag --(out0)--> IF Update Greeting
+IF Update Greeting --(out0)--> Update Greeting
+IF From Me --(out0)--> IF (Whitelist)
+Wait3 --(out0)--> Re-Read STATS Debounce
+Update Buffer --(out0)--> Read STATS for HITL
+Re-Read STATS Debounce --(out0)--> IF_Chat_Debounce
+IF_Chat_Debounce --(out0)--> Read MSG_BUFFER
+Preprocess - Context Detection --(out0)--> Read FAQ
+IF Talk To Sam --(out0)--> Notify Talk to Sam
+Notify Talk to Sam --(out0)--> Update row in sheet
+IF (Whitelist) --(out0)--> Chat Counter
+Read FAQ --(out0)--> Read PROGRAM Data
+FAQ Retrieve --(out0)--> AI Agent
+Notify Admin API Error --(out0)--> Delete_Pending_Msg_Error
+Process All --(out0)--> IF Send GForm
+Process All --(out0)--> IF Unknown
+Process All --(out0)--> Wait1
+Process All --(out0)--> IF Talk To Sam
+AI Agent --(out0)--> Process All
+AI Agent --(out1)--> Reply Error
+Read PROGRAM Data --(out0)--> Read ABOUT Data
+Read ABOUT Data --(out0)--> Read LINKS Data
+Read LINKS Data --(out0)--> FAQ Retrieve
+Pick GForm Link --(out0)--> IF GForm Resolved
+IF GForm Resolved --(out0)--> Send GForm Link
+IF GForm Resolved --(out1)--> Send GForm Clarify
+Rate Limiter LID --(out0)--> Append MSG_BUFFER
+Reply Error --(out0)--> Delete_Pending_Msg_Bot_Off1
+Resolve User Row --(out0)--> IF Bot Mode Active
+Append MSG_BUFFER --(out0)--> Update Buffer
+Append MSG_BUFFER --(out1)--> Notify User Error
+Read MSG_BUFFER --(out0)--> Cek_user_status
+If From Group --(out0)--> IF From Me

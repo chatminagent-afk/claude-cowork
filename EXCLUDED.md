@@ -1,0 +1,415 @@
+# Yang TIDAK ada di repo ini
+
+Backup file-file ini secara terpisah (Google Drive / harddisk eksternal / password manager).
+
+## Data kontak/pelanggan (banyak nomor HP) — backup terpisah (25)
+
+- `Persada Cisoka Residence/workflow/arsip/2026-07-16/2026-07-16-Persada-Cisoka-Database.xlsx`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-17/2026-07-17-PCR_Database-pre-enrichment.xlsx`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-20/PCR_Database_BACKUP_2026-07-20.xlsx`
+- `Persada Cisoka Residence/workflow/production/PCR_Database.xlsx`
+- `TIM Interior/v1/TIM Interior.xlsx`
+- `TIM Interior/v2/TIM_Interior_v2.xlsx`
+- `TIM Interior/v3/TIM_Interior_V3.xlsx`
+- `TIM Interior/v3/_arsip/2026-06-10-TIM-Interior-v2-OLD.xlsx`
+- `TIM Interior/v3/_arsip/2026-06-10-TIM_Interior_V3-before-fix.xlsx`
+- `TIM Interior/v3/_arsip/webform_v3_final_2026-06-10.zip`
+- `TIM Interior/v4/2026-06-13-TIM-Interior-v4.xlsx`
+- `TIM Interior/v4/2026-06-13-webform-v4-kategoriRAB.zip`
+- `TIM Interior/v4/arsip/TIM Interior.xlsx`
+- `VIRA/VIRA Dashboard/2026-07-28-production/demo/VIRA-Dashboard-DEMO.html`
+- `VIRA/VIRA Dashboard/arsip/The_Scholars_Database.xlsx`
+- `VIRA/VIRA Dashboard/arsip/database.json`
+- `VIRA/VIRA Steven/arsip/docs/WhatsApp All Contacts Steven Work.csv`
+- `VIRA/VIRA Steven/docs/2026-09-05-whatsapp-contacts-clean.xlsx`
+- `VIRA/VIRA Steven/sheet/VIRA Database.xlsx`
+- `the scholars/archive/The_Scholars_Database 25 jun.xlsx`
+- `the scholars/archive/report-production-V4-obsolete/The_Scholars_Database.xlsx`
+- `the scholars/client-materials/WhatsApp Chat - Samuel Oscar the scholars.zip`
+- `the scholars/client-materials/exclude phone number from vira.xlsx`
+- `the scholars/mock booking/The_Scholars_Database.xlsx`
+- `the scholars/report/patch/live production/The_Scholars_Database.xlsx`
+
+## Daftar kontak (3)
+
+- `Persada Cisoka Residence/data dari telemarketer/Chat WhatsApp dengan mahmoud/Pak Dadang PCR.vcf`
+- `the scholars/archive/vira/VIRA/from Sam/WhatsApp Chat - +62 815-2383-3182/00000022-Zoe.vcf`
+- `the scholars/report/refrence history original reply from Sam/WhatsApp Chat - +62 815-2383-3182/00000022-Zoe.vcf`
+
+## Gambar mentah reels (51)
+
+- `VIRA/reels/18 ags/10 prod/10 prod-Cover.jpg`
+- `VIRA/reels/18 ags/11 prod/11 prod vira-Cover.jpg`
+- `VIRA/reels/18 ags/6 prod/6 - PROD/6 - PROD-Cover.jpg`
+- `VIRA/reels/18 ags/7 PROD/7 PROD-Cover.jpg`
+- `VIRA/reels/18 ags/8 PROD/8 PROD-Cover.jpg`
+- `VIRA/reels/18 ags/9 PROD/9 PROD-Cover.jpg`
+- `VIRA/reels/25 ags/prod/12 PROD/12-Cover.jpg`
+- `VIRA/reels/25 ags/prod/13 PROD/13 PROD-Cover.jpg`
+- `VIRA/reels/25 ags/prod/14 (PROD)/14 (PROD)-Cover.jpg`
+- `VIRA/reels/25 ags/prod/15 prod/15 prod-Cover.jpg`
+- `VIRA/reels/25 ags/prod/16 prod/16 prod-Cover.jpg`
+- `VIRA/reels/25 ags/prod/17 prod/17 prod-Cover.jpg`
+- `VIRA/reels/9 ags/1/1 prod/1 prod-Cover.jpg`
+- `VIRA/reels/9 ags/2/2 prod/2 prod-Cover.jpg`
+- `VIRA/reels/9 ags/3/3 prod/3 prod-Cover.jpg`
+- `VIRA/reels/9 ags/4/4 prod/4 prod-Cover.jpg`
+- `VIRA/reels/9 ags/5/5 prod/5 prod-Cover.jpg`
+- `VIRA/reels/9 sep/18 prod/18 prod-Cover.jpg`
+- `VIRA/reels/9 sep/19/19-Cover.jpg`
+- `VIRA/reels/9 sep/20 prod/20 prod-Cover.jpg`
+- `VIRA/reels/9 sep/21/21-Cover.jpg`
+- `VIRA/reels/b-roll/ChatGPT Image Aug 9, 2026, 10_45_54 PM.png`
+- `VIRA/reels/b-roll/ChatGPT Image Aug 9, 2026, 11_02_01 PM.png`
+- `VIRA/reels/b-roll/VIRA screen.png`
+- `VIRA/reels/b-roll/WhatsApp Image 2026-03-12 at 8.10.43 PM.jpeg`
+- `VIRA/reels/b-roll/WhatsApp Image 2026-03-12 at 8.25.26 PM.jpeg`
+- `VIRA/reels/b-roll/WhatsApp Image 2026-03-12 at 8.27.24 PM.jpeg`
+- `VIRA/reels/b-roll/ai.jpg`
+- `VIRA/reels/b-roll/black bar.png`
+- `VIRA/reels/b-roll/botpress.png`
+- `VIRA/reels/b-roll/chatfuel.png`
+- `VIRA/reels/b-roll/claude logo.png`
+- `VIRA/reels/b-roll/claude max.png`
+- `VIRA/reels/b-roll/copilot.png`
+- `VIRA/reels/b-roll/dialogflow.png`
+- `VIRA/reels/b-roll/heading-1701836377.png`
+- `VIRA/reels/b-roll/manychat.png`
+- `VIRA/reels/b-roll/mekari.png`
+- `VIRA/reels/b-roll/n8n.png`
+- `VIRA/reels/b-roll/ntu.jpg`
+- `VIRA/reels/b-roll/yellow ai.jpg`
+- `VIRA/reels/santuy/1/s1/s1 - cover.jpg`
+- `VIRA/reels/santuy/2/2-Cover.jpg`
+- `VIRA/reels/santuy/3/3-Cover.jpg`
+- `VIRA/reels/santuy/6/santuy 6-Cover.jpg`
+- `VIRA/reels/santuy/84372ac4-fb5a-46f9-b5e8-3d9b8b7214c6-Cover.jpg`
+- `VIRA/reels/santuy/9ac051c6-80f2-4a42-b78b-589058c8ae93-Cover.jpg`
+- `VIRA/reels/santuy/santuy 5/santuy 5-Cover.jpg`
+- `VIRA/reels/santuy/santuy 6-Cover.jpg`
+- `VIRA/reels/santuy/santuy 7/santuy 7-Cover.jpg`
+- `VIRA/reels/santuy/santuy 8/santuy 8-Cover.jpg`
+
+## Kredensial/key/config lokal (10)
+
+- `Kertas/.claude/settings.local.json`
+- `Metro Logistic/Metro Logistic/.claude/settings.local.json`
+- `Persada Cisoka Residence/.claude/settings.local.json`
+- `Persada Cisoka Residence/workflow/google service account/vira-persada-ab518094997a.json`
+- `VIRA/.claude/settings.local.json`
+- `VIRA/VIRA Dashboard/2026-07-28-production/docs/KREDENSIAL-JANGAN-DIBAGIKAN.txt`
+- `VIRA/vira-506713-9304db011c49.json`
+- `desktop.ini`
+- `the scholars/.claude/settings.local.json`
+- `the scholars/archive/vira/VIRA/vira-495316-97babf33ce57.json`
+
+## Media (video/audio) — backup ke Drive/harddisk (110)
+
+- `Persada Cisoka Residence/data dari telemarketer/Media/Video tipe 36 72 atau tipe 36 81.mp4` — media (7 MB) — backup ke Drive/harddisk
+- `Persada Cisoka Residence/data dari telemarketer/Media/tipe 30 60 subsidi - video eksterior.mp4` — media (8 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9293.MOV` — media (20 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9295.MOV` — media (426 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9296.MOV` — media (118 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9297.MOV` — media (82 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9298.MOV` — media (67 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9299.MOV` — media (67 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9300.MOV` — media (81 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9301.MP4` — media (14 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9306.MOV` — media (992 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9308.MOV` — media (386 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9309.MOV` — media (273 MB) — backup ke Drive/harddisk
+- `VIRA/reels/17 sep/raw/IMG_9310.MOV` — media (649 MB) — backup ke Drive/harddisk
+- `VIRA/reels/18 ags/10 prod/10 prod.mp4` — media (40 MB) — backup ke Drive/harddisk
+- `VIRA/reels/18 ags/11 prod/11 prod vira.mp4` — media (37 MB) — backup ke Drive/harddisk
+- `VIRA/reels/18 ags/6 prod/6 - PROD/6 - PROD.mp4` — media (56 MB) — backup ke Drive/harddisk
+- `VIRA/reels/18 ags/7 PROD/7 PROD.mp4` — media (42 MB) — backup ke Drive/harddisk
+- `VIRA/reels/18 ags/8 PROD/8 PROD.mp4` — media (60 MB) — backup ke Drive/harddisk
+- `VIRA/reels/18 ags/9 PROD/9 PROD.mp4` — media (54 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/12.MP4` — media (22 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/13.MP4` — media (19 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/14.MP4` — media (18 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/15.MP4` — media (20 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/16.MP4` — media (35 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/17.MP4` — media (26 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/prod/12 PROD/12.mp4` — media (48 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/prod/13 PROD/13 PROD.mp4` — media (46 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/prod/14 (PROD)/14 (PROD).mp4` — media (44 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/prod/15 prod/15 prod.mp4` — media (46 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/prod/16 prod/16 prod.mp4` — media (68 MB) — backup ke Drive/harddisk
+- `VIRA/reels/25 ags/prod/17 prod/17 prod.mp4` — media (44 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 ags/1/1 prod/1 prod.mp4` — media (42 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 ags/2/2 prod/2 prod.mp4` — media (104 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 ags/3/3 prod/3 prod.mp4` — media (63 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 ags/3/3.mp4` — media (69 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 ags/4/4 prod/4 prod.mp4` — media (70 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 ags/5/5 prod/5 prod.mp4` — media (48 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 sep/18 prod/18 prod.mp4` — media (66 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 sep/19/19.mp4` — media (82 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 sep/20 prod/20 prod.mp4` — media (89 MB) — backup ke Drive/harddisk
+- `VIRA/reels/9 sep/21/21.mp4` — media (45 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/2026-09-17 12-20-34.mkv` — media (3 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/2026-09-17 12-32-44.mkv` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/30s timer.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/60s countdown.mp4` — media (4 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- 63 Stunning Easy Crafts for Adults-pin-id-300122762691755747.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- 63 Stunning Easy Crafts for Adults-pin-id-876161302522418111.mp4` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- 9 Minimal bridal shower decor ideas that make everyday moments look more intentional memorable and beautifully styled for begin.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Explore Smart clean girl makeup looks for a polished look people will notice with enough variety to inspire your next creative.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- From beginner to obsessed Build these fresh mindset reminder ideas that turn ordinary ideas into scroll-stopping inspiration wi.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- From beginner to obsessed Recreate these elegant nail design ideas that help you get the look without the stress with smart ste.mp4` — media (5 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Local village life inspiration with charm and useful ideas for beginners with postcard energy-pin-id-1004865735616938900.mp4` — media (6 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Minimal Instagram Growth Tips Worth Trying-pin-id-1099722802738262347.mp4` — media (11 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Minimal strong woman quotes for people who love beauty for simple living for quiet confidence-pin-id-20688479533736043.mp4` — media (7 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Minimal strong woman quotes for people who love beauty for simple living for quiet confidence-pin-id-28077197671657865.mp4` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Minimal summer outfit inspiration that bring together comfort beauty and useful ideas you will actually try for anyone who want.mp4` — media (19 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Need fresh inspiration Bookmark these simple invitation suite ideas that feel luxe without spending a fortune with smart steps (1).mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Need fresh inspiration Bookmark these simple invitation suite ideas that feel luxe without spending a fortune with smart steps.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Need fresh inspiration Pin these clever paint project ideas youll want to recreate this weekend using simple ideas you can actu.mp4` — media (8 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Neutral Outfit Ideas Ideas Youll Keep Coming Back To 52642-pin-id-152559506124190333.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Recreate these dreamy valentine aesthetic tips that bring style function and personality together with realistic ideas for busy.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Refined clean girl makeup ideas that are perfect when you want something stylish modern and easy to copy for busy people who st.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Save these easy core workout tips youll want to recreate this weekend with aesthetic touches that photograph beautifully and cr (1).mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Save these easy core workout tips youll want to recreate this weekend with aesthetic touches that photograph beautifully and cr (2).mp4` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Save these easy core workout tips youll want to recreate this weekend with aesthetic touches that photograph beautifully and cr.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- See these 31 Creative cozy apartment decor ideas that look expensive while staying practical realistic and beginner friendly fo.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Steal these budget-friendly social media plan ideas to make your next project easier and prettier for a stylish result that sti.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Tailor-made alteration hacks with charm and practical value with easy charm for everyday tailoring j-pin-id-772297036131351526.mp4` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Try Cozy fall outfit ideas for a polished look people will notice designed for people who want results that look intentional-pi.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Unique Pinterest Marketing Tips for Men-pin-id-15973773675274170.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Unique small bedroom decor ideas that are trending right now and still timeless enough to save for later for creators who love.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/From Klickpin.com- Upgrade these dreamy kids craft ideas that feel luxe without spending a fortune with smart steps cute details and cozy vibes sa.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/I asked Fable 5 to make me a lyric video.mp4` — media (4 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/IMG_0054.MOV` — media (10 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/IMG_0652.MOV` — media (141 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/IMG_0653.MOV` — media (146 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/IMG_9911.MOV` — media (244 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/Introducing agent view in Claude Code.mp4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/VID_20260713_021139_703.mp4` — media (35 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/VIRA mock 1.mkv` — media (5 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/VIRA mock 2.mkv` — media (6 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/VIRA refrence.mp4` — media (11 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/WhatsApp Video 2026-03-12 at 8.24.09 PM.mp4` — media (3 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/WhatsApp Video 2026-03-12 at 8.33.17 PM.mp4` — media (33 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/WhatsApp Video 2026-03-12 at 9.15.19 PM.mp4` — media (25 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/call 1.MOV` — media (178 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/call 2.MOV` — media (315 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/simulation.mp4` — media (31 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/vidssave.com 2026 _The Odyssey_ ,  The Bow (SFX, Sound Effect) 720P.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/working vira-1.mp4` — media (45 MB) — backup ke Drive/harddisk
+- `VIRA/reels/b-roll/working.mp4` — media (33 MB) — backup ke Drive/harddisk
+- `VIRA/reels/music/Echo Sax End - [Original] - by Caleb Arredondo.mp3` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/music/QKThr.mp3` — media (3 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/1/s1/1.mp4` — media (18 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/1/v15044gf0000d7idcmnog65oh8iei6j0.MP4` — media (1 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/2/2.mp4` — media (26 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/3/3.mp4` — media (20 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/4/me at 3 am.mp4` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/6/santuy 6.mp4` — media (9 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/santuy 5/santuy 5.mp4` — media (123 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/santuy 6(1).mp4` — media (9 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/santuy 6(2).mp4` — media (9 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/santuy 6.mp4` — media (9 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/santuy 7/santuy 7.mp4` — media (9 MB) — backup ke Drive/harddisk
+- `VIRA/reels/santuy/santuy 8/santuy 8.mp4` — media (36 MB) — backup ke Drive/harddisk
+- `VIRA/reels/sfx/Best Sound Effects __That Will make Your Videos More Engaging🚀.mp3` — media (2 MB) — backup ke Drive/harddisk
+- `VIRA/reels/sfx/Riser Sound Effect.mp3` — media (0 MB) — backup ke Drive/harddisk
+- `VIRA/reels/sfx/vidssave.com 2026 Viral Sound Effects For Free 🔥 _ Free Sound Effects For YouTube  For Gaming video 256KBPS.webm` — media (0 MB) — backup ke Drive/harddisk
+- `the scholars/archive/vira/On Boarding/quickcall.mkv` — media (744 MB) — backup ke Drive/harddisk
+
+## File terlalu besar (>15 MB PDF/zip, >25 MB teks) — backup ke Drive/harddisk (8)
+
+- `BCA/BIC 2026/PPT FLAZZBIES.pdf` — terlalu besar (22 MB) — backup ke Drive/harddisk
+- `Persada Cisoka Residence/arsip/2026-07-16/VIRA for Persada Cisoka Residence.pdf` — terlalu besar (117 MB) — backup ke Drive/harddisk
+- `Persada Cisoka Residence/data dari telemarketer/WhatsApp Unknown 2026-07-16 at 8.03.11 PM.zip` — terlalu besar (17 MB) — backup ke Drive/harddisk
+- `TIM Interior/v3/RAPI.pdf` — terlalu besar (67 MB) — backup ke Drive/harddisk
+- `TIM Interior/v3/The Future of Team Coordination.pdf` — terlalu besar (68 MB) — backup ke Drive/harddisk
+- `TIM Interior/v4/RAPI.pdf` — terlalu besar (67 MB) — backup ke Drive/harddisk
+- `TIM Interior/v5/RAPI.pdf` — terlalu besar (67 MB) — backup ke Drive/harddisk
+- `the scholars/archive/vira/On Boarding/On Boarding VIRA The Scholars.pdf` — terlalu besar (56 MB) — backup ke Drive/harddisk
+
+## Tipe file tidak dicakup (backup/lock/skill lama) (9)
+
+- `TIM Interior/v3/ziyDRHIa`
+- `TIM Interior/v4/arsip/ziMy2Ego`
+- `TIM Interior/v4/ziVTid5g`
+- `TIM Interior/v5/ziwaeL0r`
+- `VIRA/VIRA Dashboard/2026-07-28-production/app revamp.zip.bak-2026-09-06`
+- `VIRA/VIRA Dashboard/2026-07-28-production/n8n/src/tenants.js.bak-2026-08-28`
+- `VIRA/VIRA Steven/arsip/docs/2026-08-28-panduan-deploy-VIRA-Personal.md.bak-versi-panjang`
+- `VIRA/VIRA Steven/deck/caption-deck.txt.lama-2026-09-22`
+- `VIRA/VIRA Steven/landing/2026-09-23-index-pre-animation.html.bak`
+
+## Workflow n8n — sudah ada di n8n-workflows/ (148)
+
+- `Fallback VIRA Error Email Notifier/2026-08-03-email-fallback-patch-notifier.json`
+- `Fallback VIRA Error Email Notifier/2026-08-03-email-fallback-workflow.json`
+- `Fallback VIRA Error Email Notifier/arsip/2026-08-03-GLOBAL-email-fallback-notifier.json`
+- `Fallback VIRA Error Email Notifier/arsip/2026-08-03-email-node-alternatives.json`
+- `Fallback VIRA Error Email Notifier/arsip/2026-08-03-patch-notifier-fallback-nodes.json`
+- `Persada Cisoka Residence/arsip/2026-08-31-Follow-up-AI-Powered.BACKUP.json`
+- `Persada Cisoka Residence/snippets/2026-07-23-import-nodes-3-media2.json`
+- `Persada Cisoka Residence/workflow/2026-08-25-stats-archive/2026-08-25-VIRA-PCR-STATS-Archive-3bulan.json`
+- `Persada Cisoka Residence/workflow/2026-08-27-stats-purge/2026-08-27-VIRA-PCR-STATS-Purge-3bulan.json`
+- `Persada Cisoka Residence/workflow/2026-09-10-VIRA-PCR-AI-Powered-V1.4-fix-tanggal-survey-tanpa-sumber.json`
+- `Persada Cisoka Residence/workflow/2026-09-10-VIRA-PCR-AI-Powered-V1.5-fix-ganti-jadwal-survey.json`
+- `Persada Cisoka Residence/workflow/2026-09-13-Follow-up-AI-Powered-fix-notif-berulang.json`
+- `Persada Cisoka Residence/workflow/2026-09-16-Follow-up-AI-Powered-fallback-template.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-15/2026-07-15-VIRA-PCR-buffer-cleanup.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-15/2026-07-15-VIRA-PCR-error-notifier.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-15/2026-07-15-VIRA-PCR-main.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-16/2026-07-16-VIRA-PCR-buffer-cleanup.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-16/2026-07-16-VIRA-PCR-error-notifier.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-07-16/2026-07-16-VIRA-PCR-main.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-08-08-VIRA-PCR-Main-V2.1 (not used).json`
+- `Persada Cisoka Residence/workflow/arsip/2026-08-21-VIRA-PCR-fix-retrieval-clean.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-08-21-VIRA-PCR-fix-retrieval.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-08-27-Follow-up-AI-Powered-sebelum-fix-nama.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-08-27-VIRA-PCR-Follow-up-pre-konteks-AI.json`
+- `Persada Cisoka Residence/workflow/arsip/2026-08-27-VIRA-PCR-pre-konteks-AI.json`
+- `Persada Cisoka Residence/workflow/arsip/VIRA PCR.json`
+- `Persada Cisoka Residence/workflow/arsip/patch V.1.3/2026-07-19-VIRA-PCR-MSG-BUFFER-Cleanup-V1.3.json`
+- `Persada Cisoka Residence/workflow/arsip/patch V.1.3/2026-07-19-VIRA-PCR-Main-V1.3.json`
+- `Persada Cisoka Residence/workflow/arsip/patch V.1.3/2026-07-20-import-node-4-check-media-api.json`
+- `Persada Cisoka Residence/workflow/arsip/patch V.1.3/2026-07-20-import-nodes-2-notif-survey-ai-fault.json`
+- `Persada Cisoka Residence/workflow/arsip/patch V.1.3/VIRA-PCR Main V1.3.json`
+- `Persada Cisoka Residence/workflow/followup/2026-07-24-VIRA-PCR Follow-up.backup.json`
+- `Persada Cisoka Residence/workflow/production/Follow-up AI Powered.json`
+- `Persada Cisoka Residence/workflow/production/VIRA PCR AI Powered.json`
+- `Persada Cisoka Residence/workflow/production/VIRA-PCR - MSG_BUFFER Cleanup (harian 03_00 WIB).json`
+- `Persada Cisoka Residence/workflow/production/VIRA-PCR - STATS Purge (last_reply_ts _ 90 hari, tiap 3 bulan).json`
+- `Persada Cisoka Residence/workflow/production/VIRA-PCR Error Notifier.json`
+- `VIRA/VIRA Dashboard/2026-07-28-production/n8n/VIRA Dashboard API.json`
+- `VIRA/VIRA Dashboard/2026-07-28-production/n8n/VIRA-Dashboard-API.json`
+- `VIRA/VIRA Dashboard/2026-08-26-dash-audit-cleanup/2026-08-26-VIRA-Dashboard-DASH_AUDIT-Cleanup.json`
+- `VIRA/VIRA Dashboard/arsip/2026-06-29-VIRA-toggle-nodes-snippet.json`
+- `VIRA/VIRA Dashboard/arsip/2026-06-29-VIRA-with-global-toggle.json`
+- `VIRA/VIRA Dashboard/arsip/2026-07-07-patch-V4-compat/2026-07-07-VIRA-V4-global-toggle-plus-race-fix.json`
+- `VIRA/VIRA Dashboard/arsip/n8n-dashboard-webhook-workflow.json`
+- `VIRA/VIRA Dashboard/arsip/n8n-vira-toggle-workflow.json`
+- `VIRA/VIRA Steven/arsip/2026-08-16-VIRA-Steven-Main-SEBELUM-perbaikan.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-08-15-VIRA-Steven-Buffer-Cleanup.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-08-15-VIRA-Steven-Error-Notifier.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-08-15-VIRA-Steven-Followup.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-08-15-VIRA-Steven-Main.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-08-28-VIRA-Personal-Main.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-08-30-VIRA-Personal-Main.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-09-03-VIRA-Personal-Main-patched deepseek.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-09-03-VIRA-Personal-Main-patched.json`
+- `VIRA/VIRA Steven/arsip/workflow/2026-09-04-VIRA-Personal-Main-patched.json`
+- `VIRA/VIRA Steven/arsip/workflow/VIRA Personal — Main.json`
+- `VIRA/VIRA Steven/workflow/2026-08-28-VIRA-Personal-Buffer-Cleanup.json`
+- `VIRA/VIRA Steven/workflow/2026-08-28-VIRA-Personal-Error-Notifier.json`
+- `VIRA/VIRA Steven/workflow/2026-08-28-VIRA-Personal-Followup.json`
+- `VIRA/VIRA Steven/workflow/2026-08-28-VIRA-Personal-STATS-Cleanup.json`
+- `VIRA/VIRA Steven/workflow/2026-09-04-VIRA-Personal-Main-patched-v2.json`
+- `VIRA/VIRA Steven/workflow/2026-09-05-VIRA-Personal-Main-v3.json`
+- `VIRA/VIRA Steven/workflow/2026-09-06-VIRA-Personal-Main-v3.1.json`
+- `VIRA/VIRA Steven/workflow/2026-09-06-VIRA-Personal-Main-v3.2.json`
+- `VIRA/VIRA Steven/workflow/2026-09-06-VIRA-Personal-Main-v3.3.json`
+- `VIRA/VIRA Steven/workflow/2026-09-06-VIRA-Personal-Main-v3.4.json`
+- `VIRA/VIRA Steven/workflow/2026-09-06-VIRA-Personal-Main-v3.5.json`
+- `VIRA/VIRA Steven/workflow/2026-09-07-VIRA-Personal-Main-v3.6.json`
+- `VIRA/VIRA Steven/workflow/2026-09-14-VIRA-Personal-Main-v3.8.json`
+- `VIRA/VIRA Steven/workflow/2026-09-15-VIRA-Personal-Main-v3.9.json`
+- `VIRA/VIRA Steven/workflow/2026-09-18-VIRA-Personal-Main-v3.10.json`
+- `VIRA/VIRA Steven/workflow/2026-09-22-VIRA-Personal-Followup-v2.json`
+- `VIRA/VIRA Steven/workflow/2026-09-22-VIRA-Personal-Main-v3.11.json`
+- `VIRA/VIRA Steven/workflow/2026-09-23-VIRA-Eval-Balasan-sementara.json`
+- `VIRA/VIRA Steven/workflow/2026-09-23-VIRA-Personal-Main-v3.12.json`
+- `VIRA/VIRA Steven/workflow/2026-09-23-VIRA-Personal-Main-v3.13.json`
+- `VIRA/VIRA Steven/workflow/VIRA Personal — Main.json`
+- `VIRA/live production/2026-08-28-GLOBAL-Sheet-Cleanup.json`
+- `VIRA/live production/2026-08-28-GLOBAL-VIRA-Error-Notifier.json`
+- `VIRA/live production/GLOBAL - Email Fallback Notifier.json`
+- `VIRA/live production/VIRA Dashboard - DASH_AUDIT Cleanup (tiap 3 bulan, 02_00 WIB).json`
+- `VIRA/live production/VIRA Dashboard API.json`
+- `migrasi-fonnte-2026-08-31/global/2026-08-31-GLOBAL-Email-Fallback-Notifier-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/global/2026-08-31-GLOBAL-Sheet-Cleanup-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/global/2026-08-31-GLOBAL-VIRA-Error-Notifier-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/persada-cisoka/2026-08-31-PCR-Follow-up-AI-Powered-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/persada-cisoka/2026-08-31-VIRA-PCR-AI-Powered-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/persada-cisoka/2026-08-31-VIRA-PCR-Error-Notifier-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/persada-cisoka/2026-08-31-VIRA-PCR-STATS-Purge-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/the-scholars/2026-08-31-TS-STATS-Cleanup-v3-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/the-scholars/2026-08-31-VIRA-TS-Error-Notifier-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/the-scholars/2026-08-31-VIRA-TS-Fonnte-v2.json`
+- `migrasi-fonnte-2026-08-31/vira-steven/2026-08-31-VIRA-Personal-Error-Notifier-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/vira-steven/2026-08-31-VIRA-Personal-Followup-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/vira-steven/2026-08-31-VIRA-Personal-Main-Fonnte.json`
+- `migrasi-fonnte-2026-08-31/vira-steven/2026-08-31-VIRA-Personal-STATS-Cleanup-Fonnte.json`
+- `the scholars/archive/VIRA 15 juni.json`
+- `the scholars/archive/VIRA V2.json`
+- `the scholars/archive/VIRA V3 live 23 jun.json`
+- `the scholars/archive/VIRA V3.1 fixing greeting Y & unknown.json`
+- `the scholars/archive/enhancement mock booking/VIRA_MockBooking_Generator_Payment_v2.json`
+- `the scholars/archive/enhancement mock booking/VIRA_MockBooking_Generator_Payment_v3.json`
+- `the scholars/archive/report-production-V4-obsolete/2026-07-02-VIRA_V4-error-workflow.json`
+- `the scholars/archive/report-production-V4-obsolete/2026-07-03-VIRA_MSG_BUFFER-cleanup.json`
+- `the scholars/archive/report-production-V4-obsolete/2026-08-08-VIRA-V4-retryable.json`
+- `the scholars/archive/report-production-V4-obsolete/VIRA V4.json`
+- `the scholars/archive/vira/VIRA/VIRA.json`
+- `the scholars/archive/vira/VIRA/VIRA_Follow_Up.json`
+- `the scholars/mass production/VIRA_TEMPLATE_v1.json`
+- `the scholars/mock booking/VIRA_MockBooking_Generator_Payment.json`
+- `the scholars/mock booking/VIRA_Mock_Booking_And_Generator.json`
+- `the scholars/report/patch/2026-06-19-VIRA-V3.json`
+- `the scholars/report/patch/2026-06-21-VIRA-V3.1.json`
+- `the scholars/report/patch/2026-06-21-VIRA-V3.2.json`
+- `the scholars/report/patch/2026-06-21-VIRA-V3.3.json`
+- `the scholars/report/patch/2026-06-21-VIRA-V3.4.json`
+- `the scholars/report/patch/2026-06-21-VIRA-V3.5.json`
+- `the scholars/report/patch/2026-07-02-VIRA-V4.json`
+- `the scholars/report/patch/2026-08-11-VIRA-V4-guardrail-transfer.json`
+- `the scholars/report/patch/2026-08-12-VIRA-V4-r1-status-batch.json`
+- `the scholars/report/patch/2026-08-12-VIRA-V4-r2-status-batch.json`
+- `the scholars/report/patch/2026-08-12-VIRA-V4-r3-status-batch.json`
+- `the scholars/report/patch/2026-08-12-VIRA-V4-r4-status-batch.json`
+- `the scholars/report/patch/2026-08-13-VIRA-V4-r5-link-guard.json`
+- `the scholars/report/patch/2026-08-14-VIRA-V4-r6-link-guard-wa-channel.json`
+- `the scholars/report/patch/2026-08-19-VIRA-STATS-cleanup-3bulan.json`
+- `the scholars/report/patch/2026-08-19-VIRA-V6-media-skill.json`
+- `the scholars/report/patch/2026-08-26-VIRA-WF-A-topic-harvester.json`
+- `the scholars/report/patch/2026-08-26-VIRA-WF-B-monthly-rollup.json`
+- `the scholars/report/patch/2026-08-26-VIRA-r7-drop-duplicate-links-read.json`
+- `the scholars/report/patch/2026-08-26-VIRA-r8-cache-static-tabs.json`
+- `the scholars/report/patch/2026-08-27-VIRA-STATS-cleanup-3bulan-v2.json`
+- `the scholars/report/patch/2026-08-27-VIRA-STATS-cleanup-3bulan-v3.json`
+- `the scholars/report/patch/2026-08-27-VIRA-r9-cache-static-tabs-fix.json`
+- `the scholars/report/patch/2026-08-31-GLOBAL-Send-WA-failover.json`
+- `the scholars/report/patch/2026-08-31-VIRA-TS-Fonnte.json`
+- `the scholars/report/patch/2026-08-31-cek-ip-egress-n8n.json`
+- `the scholars/report/patch/V4 Fable/2026-07-02-VIRA_V4-error-workflow.json`
+- `the scholars/report/patch/V4 Fable/2026-07-03-VIRA_MSG_BUFFER-cleanup.json`
+- `the scholars/report/patch/V4 Fable/VIRA V4.json`
+- `the scholars/report/patch/VIRA TS.json`
+- `the scholars/report/patch/live production/Monthly Rollup (WF-B).json`
+- `the scholars/report/patch/live production/Monthly-Rollup-WF-B.json`
+- `the scholars/report/patch/live production/STATS Cleanup TS (tiap 3 bulan, 00_01 WIB).json`
+- `the scholars/report/patch/live production/Topic Harvester (WF-A).json`
+- `the scholars/report/patch/live production/VIRA - MSG_BUFFER Cleanup (harian 03_00 WIB).json`
+- `the scholars/report/patch/live production/VIRA TS Error Notifier.json`
+- `the scholars/report/patch/live production/VIRA TS.json`
+
+## Zip berisi secret (1)
+
+- `TIM Interior/v4/2026-06-13-worker-view-v4.zip`
+
+## Zip duplikat folder di sebelahnya (16)
+
+- `BCA/Power Automate Ci Lenny/arsip/OtomasiStatusUAT_20260611154001.zip`
+- `Kertas/pwa.zip`
+- `Metro Logistic/Metro Logistic/2026-07-06-production-ready/app-publik.zip`
+- `Persada Cisoka Residence/data dari telemarketer/Chat WhatsApp dengan Cost. Herawati.zip`
+- `Persada Cisoka Residence/data dari telemarketer/Chat WhatsApp dengan Siti Yulianamuhamad Muhdi.zip`
+- `Persada Cisoka Residence/data dari telemarketer/Chat WhatsApp dengan mahmoud.zip`
+- `TIM Interior/v1/webform tim interior.zip`
+- `TIM Interior/v2/webform v2.zip`
+- `TIM Interior/v3/_arsip/webform_v3_final/webform v3.zip`
+- `TIM Interior/v3/webform v3 enhance.zip`
+- `TIM Interior/v3/worker-view.zip`
+- `TIM Interior/v4/2026-06-13-webform-v4.zip`
+- `TIM Interior/v5/webform.zip`
+- `VIRA/N8N mobile dashboard/archive/pages-direct-upload.zip`
+- `VIRA/VIRA Dashboard/2026-07-28-production/app revamp.zip`
+- `the scholars/mock booking/mock-booking-html.zip`
+

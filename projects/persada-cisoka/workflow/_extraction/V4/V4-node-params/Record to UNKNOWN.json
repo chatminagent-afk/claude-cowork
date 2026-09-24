@@ -1,0 +1,91 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "operation":  "append",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+                                          "mode":  "list",
+                                          "cachedResultName":  "The_Scholars_Database",
+                                          "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  333957366,
+                                         "mode":  "list",
+                                         "cachedResultName":  "UNKNOWN",
+                                         "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=333957366"
+                                     },
+                       "columns":  {
+                                       "mappingMode":  "defineBelow",
+                                       "value":  {
+                                                     "Pertanyaan":  "={{ $(\u0027Cek_user_status\u0027).first().json.user_message_final }}",
+                                                     "User":  "={{ $(\u0027Resolve User Row\u0027).first().json.resolved_key }}",
+                                                     "Tanggal":  "={{ new Date().toLocaleString(\u0027id-ID\u0027, {timeZone: \u0027Asia/Jakarta\u0027}) }}",
+                                                     "message":  "={{ $(\u0027Process All\u0027).item.json.cleanOutput }}"
+                                                 },
+                                       "matchingColumns":  [
+
+                                                           ],
+                                       "schema":  [
+                                                      {
+                                                          "id":  "Pertanyaan",
+                                                          "displayName":  "Pertanyaan",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "User",
+                                                          "displayName":  "User",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "Tanggal",
+                                                          "displayName":  "Tanggal",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "message",
+                                                          "displayName":  "message",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      }
+                                                  ],
+                                       "attemptToConvertTypes":  false,
+                                       "convertFieldsToString":  false
+                                   },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     752,
+                     3136
+                 ],
+    "id":  "46d9bdc1-b54b-4e27-b1da-0223280b6d4d",
+    "name":  "Record to UNKNOWN",
+    "retryOnFail":  true,
+    "waitBetweenTries":  2000,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

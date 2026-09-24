@@ -1,0 +1,411 @@
+{
+  "name": "VIRA Dashboard — Toggle & Sync API",
+  "nodes": [
+
+    {
+      "id": "wh-getdata",
+      "name": "Webhook — GET Data",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "vira-getdata",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "webhookId": "vira-getdata"
+    },
+
+    {
+      "id": "read-stats",
+      "name": "Read STATS",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [240, 0],
+      "parameters": {
+        "operation": "read",
+        "documentId": { "__rl": true, "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "STATS", "mode": "name" },
+        "options": {}
+      },
+      "credentials": { "googleSheetsOAuth2Api": { "id": "3gTKMbD8lJDLbRqR", "name": "Google Service Account thescholars" } }
+    },
+
+    {
+      "id": "agg-stats",
+      "name": "Aggregate STATS",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [480, 0],
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "STATS",
+        "options": {}
+      }
+    },
+
+    {
+      "id": "read-mock",
+      "name": "Read MOCK Booking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [720, 0],
+      "parameters": {
+        "operation": "read",
+        "documentId": { "__rl": true, "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "MOCK_INTERVIEW_BOOKING", "mode": "name" },
+        "options": {}
+      },
+      "credentials": { "googleSheetsOAuth2Api": { "id": "3gTKMbD8lJDLbRqR", "name": "Google Service Account thescholars" } }
+    },
+
+    {
+      "id": "agg-mock",
+      "name": "Aggregate MOCK",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [960, 0],
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "MOCK_INTERVIEW_BOOKING",
+        "options": {}
+      }
+    },
+
+    {
+      "id": "read-unknown",
+      "name": "Read UNKNOWN",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1200, 0],
+      "parameters": {
+        "operation": "read",
+        "documentId": { "__rl": true, "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "UNKNOWN", "mode": "name" },
+        "options": {}
+      },
+      "credentials": { "googleSheetsOAuth2Api": { "id": "3gTKMbD8lJDLbRqR", "name": "Google Service Account thescholars" } }
+    },
+
+    {
+      "id": "agg-unknown",
+      "name": "Aggregate UNKNOWN",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1440, 0],
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "UNKNOWN",
+        "options": {}
+      }
+    },
+
+    {
+      "id": "read-config-get",
+      "name": "Read CONFIG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1680, 0],
+      "parameters": {
+        "operation": "read",
+        "documentId": { "__rl": true, "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "CONFIG", "mode": "name" },
+        "options": {}
+      },
+      "credentials": { "googleSheetsOAuth2Api": { "id": "3gTKMbD8lJDLbRqR", "name": "Google Service Account thescholars" } }
+    },
+
+    {
+      "id": "agg-config",
+      "name": "Aggregate CONFIG",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [1920, 0],
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "CONFIG",
+        "options": {}
+      }
+    },
+
+    {
+      "id": "code-build-response",
+      "name": "Build DB Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2160, 0],
+      "parameters": {
+        "jsCode": "// Retrieve aggregated arrays from previous nodes\nconst stats   = $('Aggregate STATS').first().json.STATS || [];\nconst mock    = $('Aggregate MOCK').first().json.MOCK_INTERVIEW_BOOKING || [];\nconst unknown = $('Aggregate UNKNOWN').first().json.UNKNOWN || [];\nconst config  = $('Aggregate CONFIG').first().json.CONFIG || [];\n\n// Determine VIRA global status from CONFIG\nconst viraEntry = config.find(c => String(c.Key || '').trim() === 'VIRA_STATUS');\nconst globalStatus = viraEntry ? String(viraEntry.Value || 'ON').trim().toUpperCase() : 'ON';\n\nreturn [{\n  json: {\n    ok: true,\n    globalStatus,\n    database: {\n      STATS: stats,\n      MOCK_INTERVIEW_BOOKING: mock,\n      UNKNOWN: unknown,\n      CONFIG: config\n    }\n  }\n}];"
+      }
+    },
+
+    {
+      "id": "respond-getdata",
+      "name": "Respond — Data",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2400, 0],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Access-Control-Allow-Headers", "value": "Content-Type" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "id": "wh-toggle-user",
+      "name": "Webhook — Toggle User",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 400],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vira-toggle-user",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "webhookId": "vira-toggle-user"
+    },
+
+    {
+      "id": "code-parse-toggle-user",
+      "name": "Parse Toggle User Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 400],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst rawWA = String(body.wa || '').replace(/\\.0$/, '').replace(/[^0-9]/g, '');\nconst mode  = String(body.mode || 'ON').trim().toUpperCase() === 'OFF' ? 'OFF' : 'ON';\n\nif (!rawWA) {\n  return [{ json: { ok: false, error: 'MISSING_WA', wa: '', mode, message: 'wa field is required' } }];\n}\n\nreturn [{ json: { ok: true, wa: rawWA, mode } }];"
+      }
+    },
+
+    {
+      "id": "if-wa-valid",
+      "name": "WA Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [480, 400],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": false, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+
+    {
+      "id": "update-bot-mode",
+      "name": "Update bot_mode in STATS",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [720, 320],
+      "parameters": {
+        "operation": "update",
+        "documentId": { "__rl": true, "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "STATS", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Parse Toggle User Payload').first().json.wa }}",
+            "bot_mode": "={{ $('Parse Toggle User Payload').first().json.mode }}"
+          },
+          "matchingColumns": ["No WA"],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": { "googleSheetsOAuth2Api": { "id": "3gTKMbD8lJDLbRqR", "name": "Google Service Account thescholars" } }
+    },
+
+    {
+      "id": "respond-toggle-user-ok",
+      "name": "Respond — Toggle User OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [960, 320],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, wa: $('Parse Toggle User Payload').first().json.wa, bot_mode: $('Parse Toggle User Payload').first().json.mode, message: 'Bot mode updated in Google Sheets' }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "id": "respond-toggle-user-fail",
+      "name": "Respond — WA Invalid",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 520],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: $json.error || 'INVALID_WA', message: $json.message || 'Invalid or missing WA number' }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      }
+    },
+
+    {
+      "id": "wh-toggle-global",
+      "name": "Webhook — Toggle Global",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [0, 800],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vira-toggle-global",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "webhookId": "vira-toggle-global"
+    },
+
+    {
+      "id": "code-parse-toggle-global",
+      "name": "Parse Toggle Global Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 800],
+      "parameters": {
+        "jsCode": "const body   = $input.first().json.body || $input.first().json;\nconst status = String(body.status || 'ON').trim().toUpperCase() === 'OFF' ? 'OFF' : 'ON';\nreturn [{ json: { status } }];"
+      }
+    },
+
+    {
+      "id": "update-vira-status",
+      "name": "Update VIRA_STATUS in CONFIG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [480, 800],
+      "parameters": {
+        "operation": "update",
+        "documentId": { "__rl": true, "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE", "mode": "id" },
+        "sheetName": { "__rl": true, "value": "CONFIG", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Key": "VIRA_STATUS",
+            "Value": "={{ $('Parse Toggle Global Payload').first().json.status }}"
+          },
+          "matchingColumns": ["Key"],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": { "googleSheetsOAuth2Api": { "id": "3gTKMbD8lJDLbRqR", "name": "Google Service Account thescholars" } }
+    },
+
+    {
+      "id": "respond-toggle-global",
+      "name": "Respond — Toggle Global OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 800],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, status: $('Parse Toggle Global Payload').first().json.status, message: 'Global VIRA status updated in Google Sheets' }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      }
+    }
+
+  ],
+
+  "connections": {
+
+    "Webhook — GET Data": {
+      "main": [[{ "node": "Read STATS", "type": "main", "index": 0 }]]
+    },
+    "Read STATS": {
+      "main": [[{ "node": "Aggregate STATS", "type": "main", "index": 0 }]]
+    },
+    "Aggregate STATS": {
+      "main": [[{ "node": "Read MOCK Booking", "type": "main", "index": 0 }]]
+    },
+    "Read MOCK Booking": {
+      "main": [[{ "node": "Aggregate MOCK", "type": "main", "index": 0 }]]
+    },
+    "Aggregate MOCK": {
+      "main": [[{ "node": "Read UNKNOWN", "type": "main", "index": 0 }]]
+    },
+    "Read UNKNOWN": {
+      "main": [[{ "node": "Aggregate UNKNOWN", "type": "main", "index": 0 }]]
+    },
+    "Aggregate UNKNOWN": {
+      "main": [[{ "node": "Read CONFIG", "type": "main", "index": 0 }]]
+    },
+    "Read CONFIG": {
+      "main": [[{ "node": "Aggregate CONFIG", "type": "main", "index": 0 }]]
+    },
+    "Aggregate CONFIG": {
+      "main": [[{ "node": "Build DB Response", "type": "main", "index": 0 }]]
+    },
+    "Build DB Response": {
+      "main": [[{ "node": "Respond — Data", "type": "main", "index": 0 }]]
+    },
+
+    "Webhook — Toggle User": {
+      "main": [[{ "node": "Parse Toggle User Payload", "type": "main", "index": 0 }]]
+    },
+    "Parse Toggle User Payload": {
+      "main": [[{ "node": "WA Valid?", "type": "main", "index": 0 }]]
+    },
+    "WA Valid?": {
+      "main": [
+        [{ "node": "Update bot_mode in STATS", "type": "main", "index": 0 }],
+        [{ "node": "Respond — WA Invalid", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update bot_mode in STATS": {
+      "main": [[{ "node": "Respond — Toggle User OK", "type": "main", "index": 0 }]]
+    },
+
+    "Webhook — Toggle Global": {
+      "main": [[{ "node": "Parse Toggle Global Payload", "type": "main", "index": 0 }]]
+    },
+    "Parse Toggle Global Payload": {
+      "main": [[{ "node": "Update VIRA_STATUS in CONFIG", "type": "main", "index": 0 }]]
+    },
+    "Update VIRA_STATUS in CONFIG": {
+      "main": [[{ "node": "Respond — Toggle Global OK", "type": "main", "index": 0 }]]
+    }
+
+  },
+
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

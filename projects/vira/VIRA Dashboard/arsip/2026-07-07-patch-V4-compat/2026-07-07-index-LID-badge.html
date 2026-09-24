@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0f766e" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>VIRA Control — The Scholars</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f1f5f9; --card:#fff; --ink:#0f172a; --muted:#64748b;
+    --teal:#0f766e; --teal-d:#115e59; --green:#16a34a; --red:#dc2626;
+    --amber:#d97706; --line:#e2e8f0; --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.04);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--ink);padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+  header{background:var(--teal);color:#fff;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;
+    position:sticky;top:0;z-index:10;box-shadow:var(--shadow)}
+  header h1{margin:0;font-size:18px;font-weight:700;letter-spacing:.2px}
+  header .sub{font-size:12px;opacity:.85;margin-top:2px}
+  main{padding:16px;max-width:640px;margin:0 auto}
+  .card{background:var(--card);border-radius:16px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  .hidden{display:none!important}
+  h2{font-size:15px;margin:0 0 12px}
+  .muted{color:var(--muted);font-size:13px}
+  /* nav */
+  nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:20}
+  nav button{background:none;border:0;color:var(--muted);font-size:11px;display:flex;flex-direction:column;
+    align-items:center;gap:3px;padding:4px 14px;cursor:pointer}
+  nav button.active{color:var(--teal);font-weight:700}
+  nav button .ic{font-size:20px}
+  /* big toggle */
+  .statwrap{text-align:center;padding:10px 0}
+  .pill{display:inline-block;padding:6px 16px;border-radius:999px;font-weight:700;font-size:14px}
+  .pill.on{background:#dcfce7;color:#15803d}
+  .pill.off{background:#fee2e2;color:#b91c1c}
+  .pill.unk{background:#e2e8f0;color:#475569}
+  .switch{display:inline-flex;align-items:center;gap:14px;margin-top:18px;cursor:pointer;user-select:none}
+  .track{width:78px;height:42px;border-radius:999px;background:#cbd5e1;position:relative;transition:.25s}
+  .track.on{background:var(--green)}
+  .knob{position:absolute;top:4px;left:4px;width:34px;height:34px;border-radius:50%;background:#fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.25);transition:.25s}
+  .track.on .knob{left:40px}
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;
+    padding:12px 16px;font-size:14px;font-weight:600;cursor:pointer;width:100%}
+  .btn.primary{background:var(--teal);color:#fff}
+  .btn.ghost{background:#f1f5f9;color:var(--ink)}
+  .btn.danger{background:var(--red);color:#fff}
+  .btn.sm{width:auto;padding:8px 14px;font-size:13px;border-radius:10px}
+  input[type=text],input[type=password],input[type=search]{width:100%;padding:13px 14px;border:1px solid var(--line);
+    border-radius:12px;font-size:15px;outline:none}
+  input:focus{border-color:var(--teal)}
+  /* user list */
+  .urow{display:flex;align-items:center;justify-content:space-between;padding:12px 4px;border-bottom:1px solid var(--line)}
+  .urow:last-child{border-bottom:0}
+  .uinfo{min-width:0}
+  .uinfo .wa{font-weight:600;font-size:14px}
+  .uinfo .nm{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+  .lidtag{display:inline-block;margin-left:6px;padding:2px 7px;border-radius:999px;background:#fef3c7;color:#92400e;
+    font-size:10px;font-weight:700;vertical-align:1px}
+  .mini{width:50px;height:28px;border-radius:999px;background:#cbd5e1;position:relative;transition:.2s;flex:0 0 auto;cursor:pointer}
+  .mini.on{background:var(--green)}
+  .mini .k{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}
+  .mini.on .k{left:25px}
+  /* metrics */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .metric{background:var(--card);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+  .metric .v{font-size:24px;font-weight:800;color:var(--teal)}
+  .metric .l{font-size:12px;color:var(--muted);margin-top:2px}
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;
+    justify-content:center;z-index:50;padding:24px}
+  .modal{background:#fff;border-radius:18px;padding:22px;max-width:360px;width:100%;text-align:center}
+  .modal .ic{font-size:42px;margin-bottom:8px}
+  .modal h3{margin:6px 0}
+  .modal p{color:var(--muted);font-size:14px;margin:6px 0 18px}
+  .modal .row{display:flex;gap:10px}
+  .spin{width:34px;height:34px;border:4px solid #e2e8f0;border-top-color:var(--teal);border-radius:50%;
+    margin:8px auto;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;
+    padding:11px 18px;border-radius:12px;font-size:13px;z-index:60;opacity:0;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1}
+  canvas{max-width:100%}
+</style>
+</head>
+<body>
+
+<!-- ===== PIN GATE ===== -->
+<div id="gate" class="overlay">
+  <div class="modal">
+    <div class="ic">🔒</div>
+    <h3>VIRA Control</h3>
+    <p>Masukkan PIN untuk membuka dashboard.</p>
+    <input id="pinInput" type="password" inputmode="numeric" placeholder="PIN" />
+    <div id="pinErr" class="muted" style="color:var(--red);margin:8px 0 0;min-height:16px"></div>
+    <div style="margin-top:14px"><button class="btn primary" onclick="submitPin()">Masuk</button></div>
+  </div>
+</div>
+
+<header>
+  <h1>VIRA Control Panel</h1>
+  <div class="sub">The Scholars · WhatsApp Bot</div>
+</header>
+
+<main id="app" class="hidden">
+
+  <!-- ===== TAB: GLOBAL ===== -->
+  <section id="tab-global">
+    <div class="card statwrap">
+      <h2>Status VIRA (Global)</h2>
+      <div id="gStatusPill" class="pill unk">Memuat…</div>
+      <div class="switch" onclick="askGlobalToggle()">
+        <span class="muted">OFF</span>
+        <div id="gTrack" class="track"><div class="knob"></div></div>
+        <span class="muted">ON</span>
+      </div>
+      <p class="muted" style="margin-top:18px">Saat <b>OFF</b>, VIRA berhenti membalas semua user (flow n8n berhenti tepat setelah whitelist). Gunakan saat kamu mau handle manual sementara.</p>
+    </div>
+  </section>
+
+  <!-- ===== TAB: PER-USER ===== -->
+  <section id="tab-user" class="hidden">
+    <div class="card">
+      <h2>Toggle per User</h2>
+      <input id="searchWA" type="search" inputmode="numeric" placeholder="🔍 Cari nomor WA…" oninput="debouncedSearch()" />
+      <div class="muted" style="margin-top:8px" id="userMeta">Memuat daftar user…</div>
+    </div>
+    <div class="card" style="padding:6px 14px"><div id="userList"></div></div>
+  </section>
+
+  <!-- ===== TAB: DASHBOARD ===== -->
+  <section id="tab-dash" class="hidden">
+    <div class="grid">
+      <div class="metric"><div class="v" id="mUsers">–</div><div class="l">Total user dihandle VIRA</div></div>
+      <div class="metric"><div class="v" id="mChats">–</div><div class="l">Total balasan chat VIRA</div></div>
+      <div class="metric"><div class="v" id="mOn">–</div><div class="l">Bot aktif (ON)</div></div>
+      <div class="metric"><div class="v" id="mOff">–</div><div class="l">Manual (OFF)</div></div>
+      <div class="metric"><div class="v" id="mPeak">–</div><div class="l">Jam tersibuk</div></div>
+      <div class="metric"><div class="v" id="mConv">–</div><div class="l">Konversi GForm</div></div>
+    </div>
+    <div class="card"><h2>User baru per hari</h2><canvas id="chartDay" height="160"></canvas></div>
+    <div class="card"><h2>Distribusi jam chat user</h2><canvas id="chartHour" height="160"></canvas></div>
+    <div class="card"><h2>Status user</h2><canvas id="chartStatus" height="160"></canvas></div>
+    <div class="muted" id="dashMeta" style="text-align:center;margin-bottom:20px"></div>
+  </section>
+</main>
+
+<nav id="nav" class="hidden">
+  <button class="active" data-tab="global" onclick="switchTab('global')"><span class="ic">⚡</span>Global</button>
+  <button data-tab="user" onclick="switchTab('user')"><span class="ic">👤</span>Per User</button>
+  <button data-tab="dash" onclick="switchTab('dash')"><span class="ic">📊</span>Dashboard</button>
+</nav>
+
+<div id="toast" class="toast"></div>
+<div id="modalRoot"></div>
+
+<script>
+/* ============ KONFIGURASI ============ */
+// Ganti dengan URL Web App Apps Script kamu (…/exec)
+const API_URL = "PASTE_APPS_SCRIPT_WEB_APP_URL_HERE";
+/* ===================================== */
+
+let PIN = "";
+let usersCache = [];
+
+/* ---------- API helper (text/plain → tanpa preflight CORS) ---------- */
+async function api(action, params = {}) {
+  if (!API_URL || API_URL.indexOf("PASTE_") === 0) {
+    return { ok:false, error:"NO_API_URL", message:"API_URL belum diisi di index.html." };
+  }
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(Object.assign({ action, pin: PIN, by: "Sam" }, params))
+    });
+    if (!res.ok) return { ok:false, error:"HTTP_"+res.status, message:"Server membalas "+res.status+"." };
+    return await res.json();
+  } catch (e) {
+    return { ok:false, error:"NETWORK", message:"Tidak bisa terhubung ke server. Cek koneksi / URL." };
+  }
+}
+
+/* ---------- PIN gate ---------- */
+async function submitPin() {
+  const v = document.getElementById("pinInput").value.trim();
+  const err = document.getElementById("pinErr");
+  if (!v) { err.textContent = "PIN tidak boleh kosong."; return; }
+  PIN = v;
+  err.textContent = "";
+  document.getElementById("pinInput").disabled = true;
+  // validasi dengan memanggil getStatus
+  const r = await api("getStatus");
+  if (r.ok) {
+    localStorage.setItem("vira_pin", PIN);
+    document.getElementById("gate").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("nav").classList.remove("hidden");
+    renderGlobal(r.status);
+    loadUsers();
+  } else {
+    document.getElementById("pinInput").disabled = false;
+    err.textContent = (r.error === "BAD_PIN") ? "PIN salah, coba lagi." : (r.message || "Gagal.");
+    PIN = "";
+  }
+}
+document.getElementById("pinInput").addEventListener("keydown", e=>{ if(e.key==="Enter") submitPin(); });
+
+/* ---------- Tabs ---------- */
+function switchTab(t) {
+  ["global","user","dash"].forEach(x=>{
+    document.getElementById("tab-"+x).classList.toggle("hidden", x!==t);
+  });
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active", b.dataset.tab===t));
+  if (t==="dash") loadDashboard();
+  if (t==="user" && !usersCache.length) loadUsers();
+}
+
+/* ---------- GLOBAL toggle ---------- */
+let globalStatus = "ON";
+function renderGlobal(status){
+  globalStatus = status;
+  const pill = document.getElementById("gStatusPill");
+  const track = document.getElementById("gTrack");
+  pill.textContent = status === "ON" ? "AKTIF (ON)" : "NONAKTIF (OFF)";
+  pill.className = "pill " + (status==="ON"?"on":"off");
+  track.classList.toggle("on", status==="ON");
+}
+function askGlobalToggle(){
+  const target = globalStatus === "ON" ? "OFF" : "ON";
+  confirmModal({
+    icon: target==="OFF" ? "⏸️" : "▶️",
+    title: target==="OFF" ? "Matikan VIRA?" : "Nyalakan VIRA?",
+    body: target==="OFF"
+      ? "VIRA akan BERHENTI membalas semua user sampai dinyalakan lagi."
+      : "VIRA akan kembali membalas user secara otomatis.",
+    okText: target==="OFF" ? "Ya, matikan" : "Ya, nyalakan",
+    danger: target==="OFF",
+    onOk: ()=>doGlobalToggle(target)
+  });
+}
+async function doGlobalToggle(target){
+  loadingModal(target==="OFF" ? "Mematikan VIRA…" : "Menyalakan VIRA…");
+  const r = await api("setGlobalStatus", { status: target });
+  closeModal();
+  if (r.ok) {
+    renderGlobal(r.status);
+    successModal("Berhasil", "Status VIRA sekarang: " + r.status);
+  } else {
+    failModal(r);
+  }
+}
+
+/* ---------- PER-USER ---------- */
+let searchTimer=null;
+function debouncedSearch(){ clearTimeout(searchTimer); searchTimer=setTimeout(runSearch,350); }
+async function runSearch(){
+  const q = document.getElementById("searchWA").value.trim();
+  if (!q){ loadUsers(); return; }
+  document.getElementById("userMeta").textContent = "Mencari…";
+  const r = await api("searchUser", { q });
+  if (r.ok){ usersCache = r.users; renderUsers(r.users, `${r.total} hasil untuk "${q}"`); }
+  else failToast(r);
+}
+async function loadUsers(){
+  document.getElementById("userMeta").textContent = "Memuat daftar user…";
+  const r = await api("listUsers", { limit: 300 });
+  if (r.ok){ usersCache = r.users; renderUsers(r.users, `${r.total} user · tampil ${r.users.length} (paling aktif dulu)`); }
+  else { document.getElementById("userMeta").textContent = r.message || "Gagal memuat."; }
+}
+/* LID = identifier internal WhatsApp (>=15 digit), bukan nomor HP yang bisa dihubungi manual */
+function isLid(wa){ return String(wa ?? "").replace(/\D/g,"").length >= 15; }
+function renderUsers(list, meta){
+  document.getElementById("userMeta").textContent = meta;
+  const el = document.getElementById("userList");
+  if (!list.length){ el.innerHTML = '<div class="muted" style="padding:18px;text-align:center">Tidak ada user.</div>'; return; }
+  el.innerHTML = list.map(u=>`
+    <div class="urow">
+      <div class="uinfo">
+        <div class="wa">${u.wa}${isLid(u.wa)?'<span class="lidtag" title="LID — bukan nomor HP, tidak bisa dihubungi manual di luar bot">LID</span>':''}</div>
+        <div class="nm">${u.nama? u.nama : "—"} · ${u.counter} chat</div>
+      </div>
+      <div class="mini ${u.bot_mode==='ON'?'on':''}" onclick="askUserToggle('${u.wa}','${u.bot_mode}')"><div class="k"></div></div>
+    </div>`).join("");
+}
+function askUserToggle(wa, current){
+  const target = current === "ON" ? "OFF" : "ON";
+  confirmModal({
+    icon: "👤",
+    title: (target==="OFF"?"Matikan":"Nyalakan") + " bot untuk user ini?",
+    body: `Nomor: ${wa}\nBot akan ${target==="OFF"?"berhenti membalas (handle manual)":"kembali membalas otomatis"}.`,
+    okText: "Ya, set " + target,
+    danger: target==="OFF",
+    onOk: ()=>doUserToggle(wa, target)
+  });
+}
+async function doUserToggle(wa, target){
+  loadingModal("Menyimpan…");
+  const r = await api("setUserMode", { wa, mode: target });
+  closeModal();
+  if (r.ok){
+    const u = usersCache.find(x=>x.wa===wa); if(u) u.bot_mode = r.bot_mode;
+    renderUsers(usersCache, document.getElementById("userMeta").textContent);
+    successToast("User " + wa + " → " + r.bot_mode);
+  } else failModal(r);
+}
+
+/* ---------- DASHBOARD ---------- */
+let charts={};
+async function loadDashboard(){
+  document.getElementById("dashMeta").textContent = "Memuat data…";
+  const r = await api("getStats");
+  if (!r.ok){ document.getElementById("dashMeta").textContent = r.message || "Gagal memuat data."; return; }
+  const s = r.summary;
+  document.getElementById("mUsers").textContent = s.totalUsers.toLocaleString("id");
+  document.getElementById("mChats").textContent = s.totalChats.toLocaleString("id");
+  document.getElementById("mOn").textContent = s.botOn.toLocaleString("id");
+  document.getElementById("mOff").textContent = s.botOff.toLocaleString("id");
+  document.getElementById("mPeak").textContent = (s.peakHour==null?"–":(String(s.peakHour).padStart(2,"0")+":00"));
+  document.getElementById("mConv").textContent = s.gformConversion + "%";
+  document.getElementById("dashMeta").textContent = "Diperbarui " + s.generatedAt + " WIB · GForm terkirim " + s.gformSent + " · terisi " + s.gformFilled;
+
+  drawBar("chartDay", r.perDay.map(d=>d.date.slice(5)), r.perDay.map(d=>d.count), "User baru");
+  drawBar("chartHour", r.perHour.map(h=>String(h.hour).padStart(2,"0")), r.perHour.map(h=>h.count), "Jumlah user");
+  drawDonut("chartStatus", r.statusDist);
+}
+function drawBar(id, labels, data, label){
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type:"bar",
+    data:{ labels, datasets:[{ label, data, backgroundColor:"#0f766e", borderRadius:5 }]},
+    options:{ plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, ticks:{precision:0} } } }
+  });
+}
+function drawDonut(id, dist){
+  if (charts[id]) charts[id].destroy();
+  const labels = Object.keys(dist), data = labels.map(k=>dist[k]);
+  const colors = ["#0f766e","#16a34a","#d97706","#dc2626","#6366f1","#0891b2","#64748b","#db2777"];
+  charts[id] = new Chart(document.getElementById(id), {
+    type:"doughnut",
+    data:{ labels, datasets:[{ data, backgroundColor: labels.map((_,i)=>colors[i%colors.length]) }]},
+    options:{ plugins:{legend:{position:"bottom"}} }
+  });
+}
+
+/* ---------- MODAL & TOAST ---------- */
+function confirmModal({icon,title,body,okText,danger,onOk}){
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = `<div class="overlay"><div class="modal">
+    <div class="ic">${icon}</div><h3>${title}</h3><p style="white-space:pre-line">${body}</p>
+    <div class="row">
+      <button class="btn ghost" onclick="closeModal()">Batal</button>
+      <button class="btn ${danger?'danger':'primary'}" id="okBtn">${okText}</button>
+    </div></div></div>`;
+  document.getElementById("okBtn").onclick = onOk;
+}
+function loadingModal(msg){
+  document.getElementById("modalRoot").innerHTML =
+    `<div class="overlay"><div class="modal"><div class="spin"></div><p>${msg}</p></div></div>`;
+}
+function successModal(title, body){
+  document.getElementById("modalRoot").innerHTML = `<div class="overlay"><div class="modal">
+    <div class="ic">✅</div><h3>${title}</h3><p>${body}</p>
+    <button class="btn primary" onclick="closeModal()">OK</button></div></div>`;
+}
+function failModal(r){
+  const code = r.error ? `<br><span class="muted">Kode: ${r.error}</span>` : "";
+  document.getElementById("modalRoot").innerHTML = `<div class="overlay"><div class="modal">
+    <div class="ic">⚠️</div><h3>Gagal</h3>
+    <p>${r.message || "Terjadi kesalahan."}${code}<br><br>Coba lagi. Jika tetap gagal, hubungi developer.</p>
+    <button class="btn danger" onclick="closeModal()">Tutup</button></div></div>`;
+}
+function closeModal(){ document.getElementById("modalRoot").innerHTML = ""; }
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2600); }
+function successToast(m){ toast("✅ " + m); }
+function failToast(r){ toast("⚠️ " + (r.message||"Gagal")); }
+
+/* ---------- Auto-login kalau PIN tersimpan ---------- */
+window.addEventListener("load", async ()=>{
+  const saved = localStorage.getItem("vira_pin");
+  if (saved){
+    PIN = saved;
+    const r = await api("getStatus");
+    if (r.ok){
+      document.getElementById("gate").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+      document.getElementById("nav").classList.remove("hidden");
+      renderGlobal(r.status); loadUsers();
+    } else { PIN=""; localStorage.removeItem("vira_pin"); }
+  }
+});
+
+/* ---------- Service worker (PWA) ---------- */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>

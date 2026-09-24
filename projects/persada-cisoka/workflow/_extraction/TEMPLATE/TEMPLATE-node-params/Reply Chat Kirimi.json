@@ -1,0 +1,42 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $(\u0027Chat Counter\u0027).item.json.user_wa }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ $(\u0027Process All\u0027).item.json.cleanOutput }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   },
+                       "authentication":  "genericCredentialType",
+                       "genericAuthType":  "httpCustomAuth"
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     -13584,
+                     2768
+                 ],
+    "id":  "68dd97dc-1f1c-4347-9ac4-ca7272bc5c8b",
+    "name":  "Reply Chat Kirimi",
+    "alwaysOutputData":  true,
+    "retryOnFail":  true,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput",
+    "credentials":  {
+                        "httpCustomAuth":  {
+                                               "id":  "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+                                               "name":  "Kirimi Custom Auth (REPLACE per client)"
+                                           }
+                    }
+}

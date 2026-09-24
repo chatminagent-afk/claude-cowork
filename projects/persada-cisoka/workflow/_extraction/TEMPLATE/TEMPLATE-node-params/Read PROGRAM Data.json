@@ -1,0 +1,35 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "={{ $(\u0027Bootstrap Config\u0027).first().json.sheet_id }}",
+                                          "mode":  "id"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  "PROGRAM",
+                                         "mode":  "name"
+                                     },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -15280,
+                     2544
+                 ],
+    "id":  "d35ae0c1-1a52-499d-8c62-a64b7ff4f647",
+    "name":  "Read PROGRAM Data",
+    "executeOnce":  true,
+    "retryOnFail":  true,
+    "waitBetweenTries":  3000,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

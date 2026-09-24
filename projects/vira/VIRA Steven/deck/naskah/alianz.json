@@ -1,0 +1,37 @@
+{
+  "_catatan": "Gelembung slide The Flow untuk Alianz. Yang MASUK adalah calon nasabah yang chat ke VIRA milik Alianz. Balasan VIRA hanya bicara soal PROSES - tidak menyebut premi, angka, atau jadwal yang tidak ada di brief. Alurnya mengikuti alur_setelah_chat: tanya harga & benefit -> ketemu -> closing.",
+  "gelembung": [
+    {
+      "arah": "masuk",
+      "teks": "Halo, saya lihat iklannya di Instagram. Ada asuransi untuk keluarga?"
+    },
+    {
+      "arah": "keluar",
+      "teks": "Halo kak, ada. Biar aku carikan yang paling pas, ini untuk berapa orang dan usianya sekitar berapa ya?"
+    },
+    {
+      "arah": "masuk",
+      "teks": "berdua sama istri, umur 30an. preminya berapa ya?"
+    },
+    {
+      "arah": "keluar",
+      "teks": "Baik kak. Untuk usia 30-an berdua, preminya menyesuaikan manfaat yang diambil, jadi aku siapkan dulu pilihannya biar kakak bisa bandingkan."
+    },
+    {
+      "arah": "masuk",
+      "teks": "benefitnya apa aja?"
+    },
+    {
+      "arah": "keluar",
+      "teks": "Aku kirimkan ringkasan manfaat tiap pilihannya sekarang ya kak."
+    },
+    {
+      "arah": "masuk",
+      "teks": "oke, kalau mau tanya lebih detail gimana?"
+    },
+    {
+      "arah": "keluar",
+      "teks": "Paling enak dijelaskan langsung kak. Aku carikan waktu yang cocok, lalu aku teruskan ke tim untuk dikonfirmasi jadwalnya."
+    }
+  ]
+}

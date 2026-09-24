@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vira-landing",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8973", "--directory", "VIRA Steven/landing"],
+      "port": 8973
+    }
+  ]
+}

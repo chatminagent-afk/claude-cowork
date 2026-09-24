@@ -1,0 +1,14 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "// ============================================================\n// HUMAN-IN-THE-LOOP CHECK (V4: No WA primer, lid backup)\n// bot_mode = \u0027OFF\u0027 -\u003e Sam handle manual -\u003e stop.\n// ============================================================\nconst cc = $(\u0027Chat Counter\u0027).first().json;\nconst digits = v =\u003e String(v ?? \u0027\u0027).replace(/\\D/g, \u0027\u0027);\nconst phone = digits(cc.user_phone);\nconst lid = digits(cc.user_lid);\n\nconst statsRows = $(\u0027Read STATS for HITL\u0027).all()\n  .map(r =\u003e r.json)\n  .filter(r =\u003e r \u0026\u0026 Object.keys(r).length \u003e 0);\n\nlet userRow = null;\nif (phone) userRow = statsRows.find(r =\u003e digits(r[\u0027No WA\u0027]) === phone) || null;\nif (!userRow \u0026\u0026 lid) {\n  userRow = statsRows.find(r =\u003e digits(r[\u0027lid\u0027]) === lid)\n         || statsRows.find(r =\u003e digits(r[\u0027No WA\u0027]) === lid)\n         || null;\n}\n\nconst botMode = userRow ? String(userRow[\u0027bot_mode\u0027] || \u0027\u0027).trim().toUpperCase() : \u0027\u0027;\n\nif (botMode === \u0027OFF\u0027) {\n  console.log(`👨‍💼 HITL AKTIF — Sam sedang handle manual, bot berhenti.`);\n  return [];\n}\n\nconsole.log(`🤖 Bot mode AKTIF (bot_mode=\"${botMode}\") — lanjut.`);\nreturn [$input.first()];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -2736,
+                     2720
+                 ],
+    "id":  "de1f9d33-8b7b-40c8-8c9b-376c051efd9f",
+    "name":  "HITL Check",
+    "alwaysOutputData":  false
+}

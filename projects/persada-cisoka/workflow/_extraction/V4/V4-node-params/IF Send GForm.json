@@ -1,0 +1,37 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  2
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "646a34ae-8ed3-4e40-8fd4-3352cb675a62",
+                                                                 "leftValue":  "={{ $json.isSendGForm === true }}",
+                                                                 "rightValue":  true,
+                                                                 "operator":  {
+                                                                                  "type":  "boolean",
+                                                                                  "operation":  "true",
+                                                                                  "name":  "filter.operator.true"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.2,
+    "position":  [
+                     528,
+                     2000
+                 ],
+    "id":  "ee89311e-d43a-45ab-8d53-e740d9dec941",
+    "name":  "IF Send GForm"
+}

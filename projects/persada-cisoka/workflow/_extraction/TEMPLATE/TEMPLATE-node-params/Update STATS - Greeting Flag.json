@@ -1,0 +1,13 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "// ====================================================================\n// UPDATE GREETING FLAG - ROBUST ALTERNATIVE\n// ====================================================================\n// This version uses pattern matching instead of exact keywords\n// More flexible and covers any future variations\n\nconst processedData = $(\u0027Process All\u0027).first().json;\nconst cleanOutput = (processedData.cleanOutput || \u0027\u0027).toLowerCase();\nconst shouldAskStatus = $(\u0027Cek_user_status\u0027).first().json.should_ask_status || false;\nconst chatCounter = $(\u0027Chat Counter\u0027).first().json;\n\n// Check if output is asking about parent vs student\n// Pattern: mentions both \"orang tua\" (or variants) AND \"anak\" (or variants) in question form\nconst hasParentReference = /orang\\s*tua|ortu|bapak|ibu/.test(cleanOutput);\nconst hasStudentReference = /anak|murid|calon/.test(cleanOutput);\nconst isQuestion = /\\?|ya\\s*$/.test(cleanOutput); // Ends with ? or \"ya\"\n\nconst isStatusQuestion = hasParentReference \u0026\u0026 hasStudentReference \u0026\u0026 isQuestion;\n\n// Alternative check: looks like first contact greeting\nconst hasGreeting = /halo|hai|terima kasih/.test(cleanOutput);\nconst isLikelyStatusQuestion = hasGreeting \u0026\u0026 isStatusQuestion;\n\n// Update flag if this is status question\nif (shouldAskStatus) {\n  console.log(`📝 [GREETING SENT] Marking greeting_sent = Y for user ${chatCounter.user_wa}`);\n  console.log(`📝 Detected status question pattern in: ${cleanOutput.substring(0, 100)}...`);\n  console.log(`   Pattern matched: hasParent=${hasParentReference}, hasStudent=${hasStudentReference}, isQuestion=${isQuestion}`);\n  \n  return [{\n    json: {\n      user_wa: chatCounter.user_wa,\n      user_lid: chatCounter.user_lid,\n      greeting_sent: \u0027Y\u0027,\n      update_needed: true\n    }\n  }];\n} else {\n  console.log(\u0027ℹ️ Not a status question\u0027);\n  console.log(`   shouldAskStatus: ${shouldAskStatus}`);\n  console.log(`   hasParentRef: ${hasParentReference}, hasStudentRef: ${hasStudentReference}, isQuestion: ${isQuestion}`);\n  console.log(`   Output: ${cleanOutput.substring(0, 100)}`);\n  \n  return [{\n    json: {\n      update_needed: false\n    }\n  }];\n}"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -13360,
+                     3056
+                 ],
+    "id":  "bd4f8ae6-ea9e-49a3-be18-0e5cac87e783",
+    "name":  "Update STATS - Greeting Flag"
+}

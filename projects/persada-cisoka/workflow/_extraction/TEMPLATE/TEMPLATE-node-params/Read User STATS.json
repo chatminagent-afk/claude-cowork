@@ -1,0 +1,43 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "={{ $(\u0027Bootstrap Config\u0027).first().json.sheet_id }}",
+                                          "mode":  "id"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  "STATS",
+                                         "mode":  "name"
+                                     },
+                       "filtersUI":  {
+                                         "values":  [
+                                                        {
+                                                            "lookupColumn":  "No WA",
+                                                            "lookupValue":  "={{ $json.user_wa }}"
+                                                        }
+                                                    ]
+                                     },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -17968,
+                     2640
+                 ],
+    "id":  "d8c6f03f-83f1-406a-a3c2-41c2217771d2",
+    "name":  "Read User STATS",
+    "alwaysOutputData":  true,
+    "executeOnce":  false,
+    "retryOnFail":  true,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

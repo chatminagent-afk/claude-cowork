@@ -1,0 +1,90 @@
+<!doctype html><meta charset="utf-8"><title>QA deep link notifier</title>
+<body style="font:13px/1.6 ui-monospace,monospace;background:#0b0d11;color:#e6e8ee;padding:16px">
+<pre id="out">menjalankan…</pre>
+<script>
+const CODE = {"SCHOLARS": "// Susun notifikasi error untuk admin\n// 2026-08-09: + deep link ke n8n mobile dashboard supaya bisa retry dari HP\n//             tanpa membuka UI n8n.\nconst DASH = 'https://n8n.chatminagent.workers.dev';\n\nconst e = $input.first().json;\nconst wfName = e.workflow?.name || 'VIRA';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = (e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\n// Link hanya dibuat kalau execution id benar-benar ada. Error Trigger TIDAK\n// mengirim execution.id kalau errornya terjadi di node trigger — tanpa penjagaan\n// ini, link-nya jadi \".../#/e/-\" yang cuma bikin bingung.\nconst dashUrl = /^\\d+$/.test(String(execId)) ? `${DASH}/#/e/${execId}` : '';\n\nconst text = `\\u{1F6A8} [${wfName}] EKSEKUSI GAGAL\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}`\n  + (dashUrl ? `\\n\\n\\u{1F4F1} Retry dari HP:\\n${dashUrl}` : '')\n  + `\\n\\n\\u{1F5A5}\\uFE0F Buka di n8n:\\n${url}`\n  + `\\n\\n\\u26A0\\uFE0F Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nreturn [{ json: { notif_text: text } }];\n", "PCR": "// Susun notifikasi error untuk admin\n// 2026-08-09: + deep link ke n8n mobile dashboard supaya bisa retry dari HP\n//             tanpa membuka UI n8n.\nconst DASH = 'https://n8n.chatminagent.workers.dev';\n\nconst e = $input.first().json;\nconst wfName = e.workflow?.name || 'VIRA';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = (e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\n// Link hanya dibuat kalau execution id benar-benar ada. Error Trigger TIDAK\n// mengirim execution.id kalau errornya terjadi di node trigger — tanpa penjagaan\n// ini, link-nya jadi \".../#/e/-\" yang cuma bikin bingung.\nconst dashUrl = /^\\d+$/.test(String(execId)) ? `${DASH}/#/e/${execId}` : '';\n\nconst text = `\\u{1F6A8} [PCR ${wfName}] EKSEKUSI GAGAL\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}`\n  + (dashUrl ? `\\n\\n\\u{1F4F1} Retry dari HP:\\n${dashUrl}` : '')\n  + `\\n\\n\\u{1F5A5}\\uFE0F Buka di n8n:\\n${url}`\n  + `\\n\\n\\u26A0\\uFE0F Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nreturn [{ json: { notif_text: text } }];\n", "EMAIL": "// ============================================================\n// GLOBAL EMAIL FALLBACK - normalisasi payload + compose email\n// Menerima 2 bentuk input:\n//   A) direct  : dipanggil Execute Workflow dari Error Notifier\n//                saat Kirimi gagal  -> d.source === 'kirimi_fallback'\n//   B) error   : dipicu sebagai Error Workflow n8n (lapis 2)\n// ============================================================\n\n// >>> WAJIB DIGANTI: base URL instance n8n, TANPA trailing slash <<<\nconst N8N_BASE = 'https://n8n.srv1270416.hstgr.cloud';\nconst DASH_BASE = 'https://n8n.chatminagent.workers.dev';   // n8n mobile dashboard\n\nconst d = $input.first().json || {};\nconst direct = d.source === 'kirimi_fallback';\n\n// ---- tenant / penanda klien ----\nconst hay = String(direct ? (d.tenant || d.notifier_wf_name || '') : (d.workflow?.name || '')).toLowerCase();\nlet tenant = 'VIRA-?';\nif (hay.includes('pcr') || hay.includes('persada')) tenant = 'VIRA-PCR';\nelse if (hay.includes('scholar') || hay.includes('v4')) tenant = 'VIRA-SCHOLARS';\n\n// ---- notifier yang gagal ----\nconst notifierWf   = direct ? (d.notifier_wf_name || '-') : (d.workflow?.name || '-');\nconst notifierWfId = direct ? (d.notifier_wf_id || '')    : (d.workflow?.id || '');\nconst notifierExec = direct ? (d.notifier_exec_id || '')  : (d.execution?.id || '');\nconst failNode     = direct ? (d.fail_node || 'Notify Admin Error (Kirimi)') : (d.execution?.error?.node?.name || d.execution?.lastNodeExecuted || '-');\nconst failReason   = String(direct ? (d.fail_reason || 'unknown error') : (d.execution?.error?.message || 'unknown error')).slice(0, 600);\nconst kirimiResp   = String(d.kirimi_response || '').slice(0, 800);\n\n// ---- error aslinya (hanya tersedia di jalur direct) ----\nconst origWf   = direct ? (d.orig_wf_name || '-') : '-';\nconst origWfId = direct ? (d.orig_wf_id || '')    : '';\nconst origExec = direct ? (d.orig_exec_id || '-') : '-';\nconst origNode = direct ? (d.orig_node || '-')    : '-';\nconst origErr  = String(direct ? (d.orig_error || '-') : '-').slice(0, 600);\n\nconst mkUrl = (wfId, execId) => (wfId && execId && execId !== '-') ? `${N8N_BASE}/workflow/${wfId}/executions/${execId}` : '';\nconst origUrl     = (direct && d.orig_exec_url) ? d.orig_exec_url : mkUrl(origWfId, origExec);\nconst notifierUrl = mkUrl(notifierWfId, notifierExec);\n\n// Deep link dashboard: yang perlu di-retry adalah execution ASLI yang gagal,\n// bukan execution notifier-nya.\nconst dashUrl = /^\\d+$/.test(String(origExec)) ? `${DASH_BASE}/#/e/${origExec}` : '';\n\nconst waText = String(d.notif_text || '').trim();\nconst ts = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'medium' });\n\nconst headline = origWf !== '-' ? origWf : notifierWf;\nconst headExec = origExec !== '-' ? origExec : (notifierExec || '-');\nconst subject = `\\u{1F6A8} [${tenant}] WA ALERT GAGAL TERKIRIM - ${headline} #${headExec}`;\n\n// ---------------- plain text ----------------\nconst textBody = [\n  `[${tenant}] WA ALERT GAGAL TERKIRIM`,\n  `Waktu: ${ts} WIB`,\n  '',\n  '--- 1. ISI ALERT YANG GAGAL DIKIRIM KE WA ---',\n  waText || '(tidak tersedia - buka execution notifier di bawah, lihat input node Error Trigger)',\n  '',\n  '--- 2. KENAPA WA-NYA GAGAL ---',\n  `Notifier : ${notifierWf}`,\n  `Node     : ${failNode}`,\n  `Sebab    : ${failReason}`,\n  kirimiResp ? `Response : ${kirimiResp}` : '',\n  notifierUrl ? `Execution notifier: ${notifierUrl}` : '',\n  '',\n  '--- 3. ERROR ASLINYA ---',\n  `Workflow : ${origWf}`,\n  `Node     : ${origNode}`,\n  `Error    : ${origErr}`,\n  origUrl ? `Execution: ${origUrl}` : '',\n  dashUrl ? `Retry dari HP: ${dashUrl}` : '',\n  '',\n  'Ada kemungkinan pesan user TIDAK terbalas. Cek & balas manual.'\n].filter(Boolean).join('\\n');\n\n// ---------------- html ----------------\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst row = (k, v) => `<tr><td style=\"padding:5px 12px 5px 0;color:#5f6368;white-space:nowrap;vertical-align:top\">${k}</td><td style=\"padding:5px 0;word-break:break-word\"><code style=\"font:13px ui-monospace,Consolas,monospace\">${esc(v)}</code></td></tr>`;\nconst btn = (url, label, bg) => url ? `<a href=\"${url}\" style=\"display:inline-block;padding:10px 18px;margin:6px 8px 0 0;background:${bg};color:#fff;text-decoration:none;border-radius:6px;font:600 13px system-ui\">${label}</a>` : '';\nconst h3 = (t) => `<h3 style=\"margin:22px 0 8px;font:700 14px system-ui;color:#202124\">${t}</h3>`;\n\nconst html = `<div style=\"font:14px/1.6 system-ui,'Segoe UI',Arial,sans-serif;color:#202124;max-width:680px\">\n  <div style=\"background:#d93025;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0\">\n    <div style=\"font-size:18px;font-weight:700\">\\u{1F6A8} ${tenant} &mdash; WA ALERT GAGAL TERKIRIM</div>\n    <div style=\"font-size:12px;opacity:.9;margin-top:2px\">${ts} WIB</div>\n  </div>\n  <div style=\"border:1px solid #dadce0;border-top:0;padding:18px 20px 24px;border-radius:0 0 8px 8px\">\n    <p style=\"margin:0\">Email ini terkirim karena <b>notifikasi WhatsApp lewat Kirimi tidak berhasil dikirim</b>. Isi alert aslinya ada di bawah.</p>\n\n    ${h3('1. Isi alert yang gagal dikirim ke WA')}\n    <pre style=\"background:#f1f3f4;border:1px solid #dadce0;border-radius:6px;padding:12px;white-space:pre-wrap;word-break:break-word;font:13px/1.55 ui-monospace,Consolas,monospace;margin:0\">${esc(waText || '(tidak tersedia \\u2014 buka execution notifier di bawah, lihat input node Error Trigger)')}</pre>\n\n    ${h3('2. Kenapa WA-nya gagal')}\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      ${row('Notifier', notifierWf)}\n      ${row('Node', failNode)}\n      ${row('Sebab', failReason)}\n      ${kirimiResp ? row('Response', kirimiResp) : ''}\n    </table>\n\n    ${h3('3. Error aslinya')}\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      ${row('Workflow', origWf)}\n      ${row('Node', origNode)}\n      ${row('Error', origErr)}\n      ${row('Execution', origExec)}\n    </table>\n\n    <div style=\"margin-top:18px\">\n      ${btn(dashUrl, '\\u{1F4F1} Retry dari HP', '#1a73e8')}\n      ${btn(origUrl, '\\u2192 Buka execution yang error', '#d93025')}\n      ${btn(notifierUrl, '\\u2192 Buka execution notifier', '#5f6368')}\n    </div>\n\n    <p style=\"margin:22px 0 0;padding:12px 14px;background:#fef7e0;border-left:4px solid #f9ab00;border-radius:4px\">\n      \\u26A0\\uFE0F Ada kemungkinan pesan user <b>TIDAK terbalas</b>. Cek &amp; balas manual.\n    </p>\n  </div>\n</div>`;\n\nreturn [{ json: { tenant, subject, html, text: textBody } }];"};
+const AsyncFunction = Object.getPrototypeOf(async function(){}).constructor;
+const DASH = 'https://n8n.chatminagent.workers.dev';
+const L = []; let fail = 0;
+const ok = (n, c, d) => { if (!c) fail++; L.push((c ? '[PASS] ' : '[FAIL] ') + n + (c ? '' : '  ->  ' + d)); };
+
+function mkInput(json) { return { first: () => ({ json }) }; }
+
+(async () => {
+  // ---------- sintaks ----------
+  L.push('=== SINTAKS ===');
+  for (const k of Object.keys(CODE)) {
+    try { new AsyncFunction('$input', CODE[k]); ok(k + ' parse', true); }
+    catch (e) { ok(k + ' parse', false, e.name + ': ' + e.message); }
+  }
+
+  // ---------- WA notifier ----------
+  L.push(''); L.push('=== NOTIFIER WA ===');
+  const errPayload = {
+    workflow: { name: 'VIRA V4', id: 'TW-E4ZbJgEzRSbsUcST5W' },
+    execution: {
+      id: '23443',
+      url: 'https://n8n.srv1270416.hstgr.cloud/workflow/TW-E4/executions/23443',
+      lastNodeExecuted: 'Send WA + Verify (Kirimi)',
+      error: { message: 'Kirimi HTTP gagal setelah 3 percobaan: connect ETIMEDOUT',
+               node: { name: 'Send WA + Verify (Kirimi)' } }
+    }
+  };
+  // kasus tepi: error di node trigger -> n8n TIDAK mengirim execution.id/url
+  const triggerPayload = { workflow: { name: 'VIRA V4' }, execution: { error: { message: 'boom' } } };
+
+  for (const k of ['SCHOLARS', 'PCR']) {
+    const fn = new AsyncFunction('$input', CODE[k]);
+    const r1 = (await fn(mkInput(errPayload)))[0].json.notif_text;
+    ok(k + ' A1 memuat deep link dashboard yang benar', r1.includes(DASH + '/#/e/23443'), r1.slice(0, 200));
+    ok(k + ' A2 tetap memuat link UI n8n', r1.includes('n8n.srv1270416.hstgr.cloud'), '');
+    ok(k + ' A3 memuat nama node & pesan error', r1.includes('Send WA + Verify (Kirimi)') && r1.includes('ETIMEDOUT'), '');
+    ok(k + ' A4 memuat nomor execution', r1.includes('Execution: 23443'), '');
+    ok(k + ' A5 emoji tampil (bukan escape mentah)', r1.includes('\u{1F6A8}') && !r1.includes('\\u{1F6A8}'), JSON.stringify(r1.slice(0,12)));
+    ok(k + ' A6 peringatan lama dipertahankan', r1.includes('TIDAK terbalas'), '');
+
+    const r2 = (await fn(mkInput(triggerPayload)))[0].json.notif_text;
+    ok(k + ' B1 tanpa execution id: TIDAK ada link dashboard rusak', !r2.includes('/#/e/'), r2.slice(0, 160));
+    ok(k + ' B2 tanpa execution id: tetap terkirim (ada teks)', r2.length > 40 && r2.includes('EKSEKUSI GAGAL'), '');
+  }
+
+  // ---------- email ----------
+  L.push(''); L.push('=== EMAIL FALLBACK ===');
+  const fnE = new AsyncFunction('$input', CODE.EMAIL);
+  const direct = {
+    source: 'kirimi_fallback', tenant: 'VIRA-PCR',
+    notifier_wf_name: 'VIRA-PCR Error Notifier', notifier_wf_id: 'rBsq', notifier_exec_id: '999',
+    fail_node: 'Notify Admin Error', fail_reason: 'ECONNREFUSED',
+    kirimi_response: '{"status":false}',
+    orig_wf_name: 'VIRA-PCR Main V1.3', orig_wf_id: '4ytjVjLQzpcBrp7c',
+    orig_exec_id: '23443', orig_node: 'Send WA + Verify (Kirimi)', orig_error: 'timeout',
+    notif_text: 'isi alert WA yang gagal'
+  };
+  const e1 = (await fnE(mkInput(direct)))[0].json;
+  ok('E1 tombol Retry dari HP ada di HTML', e1.html.includes(DASH + '/#/e/23443'), '');
+  ok('E2 baris Retry ada di plain text', e1.text.includes('Retry dari HP: ' + DASH + '/#/e/23443'), '');
+  ok('E3 N8N_BASE sudah terisi (bukan placeholder)', !e1.html.includes('GANTI-DENGAN-URL') && e1.html.includes('n8n.srv1270416.hstgr.cloud'), '');
+  ok('E4 tenant terdeteksi PCR', e1.tenant === 'VIRA-PCR', e1.tenant);
+  ok('E5 subject tetap format lama', /WA ALERT GAGAL TERKIRIM/.test(e1.subject), e1.subject);
+  ok('E6 isi alert WA tetap disertakan', e1.text.includes('isi alert WA yang gagal'), '');
+
+  // lapis 2: dipicu sebagai Error Workflow, tidak ada orig_exec_id
+  const lapis2 = { workflow: { name: 'VIRA Error Notifier' }, execution: { id: '555', error: { message: 'x' } } };
+  const e2 = (await fnE(mkInput(lapis2)))[0].json;
+  ok('E7 lapis-2 tanpa orig exec: TIDAK ada tombol dashboard rusak', !e2.html.includes('/#/e/'), '');
+  ok('E8 lapis-2 tetap menghasilkan email', !!e2.subject && !!e2.html, '');
+  // Perilaku BAWAAN (tidak diubah patch ini): workflow Scholars bernama
+  // "VIRA Error Notifier" — tanpa kata 'scholar'/'v4' — jadi tenant tidak
+  // terdeteksi dan jatuh ke 'VIRA-?'. Dicatat sebagai temuan, bukan regresi.
+  ok('E9 lapis-2 tenant = VIRA-? (perilaku bawaan, bukan regresi)', e2.tenant === 'VIRA-?', e2.tenant);
+  ok('E10 nama workflow tetap terbaca di isi email (penanda klien cadangan)',
+     e2.text.includes('VIRA Error Notifier'), e2.text.slice(0, 200));
+
+  L.push(''); L.push(fail ? ('>>> ' + fail + ' GAGAL') : '>>> SEMUA LOLOS');
+  document.getElementById('out').textContent = L.join('\n');
+  window.__NQA = { fail, lines: L };
+})().catch(e => {
+  document.getElementById('out').textContent = 'FATAL: ' + (e && e.stack || e);
+  window.__NQA = { fail: 99, lines: ['FATAL ' + e] };
+});
+</script>

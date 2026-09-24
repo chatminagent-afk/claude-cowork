@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIRA Dashboard — Self Test</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:24px; background:#0b0d11; color:#e8eaed;
+         font:14px/1.55 ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { color:#8b93a1; margin-bottom:20px; }
+  #summary { position:sticky; top:0; background:#0b0d11; padding:12px 0 16px;
+             border-bottom:1px solid #232833; margin-bottom:16px; z-index:2; }
+  .big { font-size:26px; font-weight:700; }
+  .ok { color:#30d158; } .bad { color:#ff453a; } .warn { color:#ff9f0a; }
+  .grp { margin:20px 0 6px; color:#8b93a1; text-transform:uppercase;
+         letter-spacing:.08em; font-size:11px; border-top:1px solid #232833; padding-top:14px; }
+  .row { display:flex; gap:10px; padding:3px 0; align-items:baseline; }
+  .tag { flex:0 0 52px; font-weight:700; font-size:11px; }
+  .msg { flex:1; }
+  .why { color:#ff8a80; font-size:12px; padding-left:62px; white-space:pre-wrap; }
+  code { background:#1a1f28; padding:1px 5px; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<h1>VIRA Dashboard — Self Test</h1>
+<div class="sub">Menguji modul asli di <code>n8n/src/</code> dan fungsi murni di <code>app/js/</code>.
+Data uji sintetis dengan nama kolom asli dari kedua spreadsheet produksi.</div>
+
+<div id="summary" class="big">menjalankan…</div>
+<div id="out"></div>
+
+<!-- modul server-side yang sesungguhnya (yang di-inline ke Code node n8n) -->
+<script src="../n8n/src/tenants.js"></script>
+<script src="../n8n/src/auth.js"></script>
+<script src="../n8n/src/build-payload.js"></script>
+<script src="../n8n/src/insight.js"></script>
+
+<!-- fungsi murni frontend (app.js sengaja TIDAK dimuat: ia menyentuh DOM) -->
+<script src="../app%20revamp/js/config.js" onerror="window.__noFrontend=1"></script>
+<script src="../app%20revamp/js/api.js" onerror="window.__noFrontend=1"></script>
+<script src="../app%20revamp/js/charts.js" onerror="window.__noFrontend=1"></script>
+<script src="../app%20revamp/js/render.js" onerror="window.__noFrontend=1"></script>
+
+<script>
+'use strict';
+
+/* ------------------------------------------------------ mini test runner */
+const OUT = document.getElementById('out');
+let PASS = 0, FAIL = 0, GROUP = '';
+const FAILURES = [];
+
+function group(name) {
+  GROUP = name;
+  const d = document.createElement('div');
+  d.className = 'grp'; d.textContent = name;
+  OUT.appendChild(d);
+}
+function record(good, msg, why) {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.innerHTML = '<span class="tag ' + (good ? 'ok' : 'bad') + '">' +
+                  (good ? 'PASS' : 'GAGAL') + '</span>';
+  const m = document.createElement('span');
+  m.className = 'msg'; m.textContent = msg;
+  row.appendChild(m);
+  OUT.appendChild(row);
+  if (good) { PASS++; }
+  else {
+    FAIL++; FAILURES.push(GROUP + ' :: ' + msg + (why ? ' -> ' + why : ''));
+    if (why) {
+      const w = document.createElement('div');
+      w.className = 'why'; w.textContent = why;
+      OUT.appendChild(w);
+    }
+  }
+}
+function ok(cond, msg, why) { record(!!cond, msg, cond ? '' : (why || '')); }
+function eq(actual, expected, msg) {
+  const a = JSON.stringify(actual), b = JSON.stringify(expected);
+  record(a === b, msg, a === b ? '' : 'dapat ' + a + ', harusnya ' + b);
+}
+function near(actual, expected, msg) {
+  record(actual === expected, msg,
+         actual === expected ? '' : 'dapat ' + actual + ', harusnya ' + expected);
+}
+function throws(fn, msg) {
+  let threw = false;
+  try { fn(); } catch (e) { threw = true; }
+  record(threw, msg, threw ? '' : 'tidak melempar error');
+}
+
+/* ------------------------------------------------------------- utilities */
+async function getText(url) {
+  const r = await fetch(url, { cache: 'no-store' });
+  if (!r.ok) throw new Error(url + ' -> HTTP ' + r.status);
+  return r.text();
+}
+async function getJson(url) { return JSON.parse(await getText(url)); }
+
+const enc = new TextEncoder();
+async function hmacHex(secret, msg) {
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(msg));
+  return Array.from(new Uint8Array(sig))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+async function sha256Hex(msg) {
+  const d = await crypto.subtle.digest('SHA-256', enc.encode(msg));
+  return Array.from(new Uint8Array(d))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ========================================================== SUITE ======= */
+async function run() {
+  const manifest = await getJson('fixtures/manifest.json');
+  const NOW = manifest.now_ms;
+  const FX = {
+    thescholars: await getJson('fixtures/thescholars.json'),
+    persada: await getJson('fixtures/persada.json')
+  };
+  const buildPy = await getText('../n8n/build_workflow.py');
+  const SECRET = buildPy.match(/^HMAC_SECRET\s*=\s*'([^']+)'/m)[1];
+
+  /* ---------------------------------------------------------------- 1 -- */
+  group('1. Parsing nilai sel');
+
+  eq(vdParseDate('21/07/2026').key, '2026-07-21', 'tanggal en-GB dd/mm/yyyy');
+  eq(vdParseDate('5/1/2026').key, '2026-01-05', 'tanggal satu digit');
+  eq(vdParseDate('2026-07-21').key, '2026-07-21', 'tanggal ISO');
+  eq(vdParseDate('2026-07-21T09:30:00Z').key, '2026-07-21', 'ISO dengan waktu');
+  eq(vdParseDate(1785207600).key, '2026-07-28', 'epoch detik');
+  eq(vdParseDate('1785207600000').key, '2026-07-28', 'epoch milidetik');
+  ok(vdParseDate('31/13/2026') === null, 'bulan 13 ditolak');
+  ok(vdParseDate('') === null, 'string kosong -> null');
+  ok(vdParseDate(null) === null, 'null -> null');
+  ok(vdParseDate('bukan tanggal') === null, 'teks acak -> null');
+
+  near(vdParseHour('14:32:05'), 14, 'jam dari HH:MM:SS');
+  near(vdParseHour('09:15'), 9, 'jam dari HH:MM');
+  ok(vdParseHour('25:00:00') === null, 'jam 25 ditolak');
+  ok(vdParseHour('') === null, 'jam kosong -> null');
+
+  ok(vdBotOn('ON') === true, 'bot_mode ON aktif');
+  ok(vdBotOn('') === true, 'bot_mode kosong dianggap aktif (sama seperti workflow)');
+  ok(vdBotOn('OFF') === false, 'bot_mode OFF nonaktif');
+  ok(vdBotOn(' off ') === false, 'bot_mode off huruf kecil + spasi tetap nonaktif');
+  ok(vdBotOn('HUMAN') === true, 'nilai tak dikenal tidak mematikan bot');
+
+  near(vdInt('1.234'), 1234, 'Counter "1.234" dibaca 1234 (titik = pemisah ribuan)');
+  near(vdInt(''), 0, 'Counter kosong -> 0');
+  near(vdInt(42), 42, 'Counter numerik');
+  near(vdNum('12,5'), 125, 'vdNum membuang koma');
+
+  near(vdEpochAuto('1785207600'), 1785207600000, 'epoch detik -> ms');
+  near(vdEpochAuto('1785207600000'), 1785207600000, 'epoch ms tetap ms');
+  ok(vdEpochAuto('') === null, 'epoch kosong -> null');
+
+  eq(vdRowGet({ 'pending_survey_tanggal ': '01/08/2026' }, 'pending_survey_tanggal'),
+     '01/08/2026', 'kolom dengan trailing space tetap terbaca');
+  eq(vdPick({ a: '', b: 'x' }, ['a', 'b']), 'x', 'vdPick ambil kolom terisi pertama');
+  eq(vdPick({ a: '', b: '' }, ['a', 'b']), '', 'vdPick semua kosong -> ""');
+
+  eq(vdNonEmptyRows([{ a: '', row_number: 5 }, { a: 'x' }]).length, 1,
+     'baris yang hanya berisi row_number dibuang');
+
+  const dist = vdDistribution(['A', 'A', 'B', 'C, D', 'C'], 6);
+  eq(dist.labels[0], 'A', 'distribusi urut dari terbanyak');
+  ok(dist.labels.indexOf('D') !== -1, 'nilai multi-value dipisah koma');
+  const many = vdDistribution(['a','b','c','d','e','f','g','h'], 3);
+  eq(many.labels[3], 'Lainnya', 'sisa digabung jadi "Lainnya"');
+
+  /* ---------------------------------------------------------------- 2 -- */
+  group('2. Normalisasi payload — dua tenant, satu bentuk');
+
+  const ids0 = () => ['thescholars', 'persada'];
+  const P = {};
+  for (const id of ['thescholars', 'persada']) {
+    P[id] = vdBuildPayload(VIRA_TENANTS[id], FX[id], { nowMs: NOW, cached: false });
+  }
+
+  for (const id of ['thescholars', 'persada']) {
+    const p = P[id];
+    ok(p.ok === true, id + ': payload ok');
+    eq(p.tenant.id, id, id + ': tenant id benar');
+    ok(p.kpis.length >= 7, id + ': minimal 7 KPI');
+    ok(p.charts.length >= 4, id + ': minimal 4 chart');
+    ok(p.leads.rows.length > 0, id + ': ada baris lead');
+    ok(p.tables.length >= 2, id + ': ada tabel tambahan');
+
+    const total = p.kpis.find(k => k.id === 'total_leads').value;
+    const on = p.kpis.find(k => k.id === 'bot_on').value;
+    const off = p.kpis.find(k => k.id === 'bot_off').value;
+    near(on + off, total, id + ': bot_on + bot_off = total lead');
+    near(p.leads.rows.length, total, id + ': jumlah baris = KPI total lead');
+
+    const daily = p.charts.find(c => c.id === 'daily');
+    near(daily.labels.length, 90, id + ': tren harian 90 titik');
+    near(daily.series[0].data.length, 90, id + ': deret tren sepanjang label');
+    const hourly = p.charts.find(c => c.id === 'hourly');
+    near(hourly.labels.length, 24, id + ': chart jam 24 batang');
+
+    // KPI rangeAware harus monoton: 7 <= 30 <= 90
+    p.kpis.filter(k => k.rangeAware).forEach(k => {
+      ok(k.values['7'] <= k.values['30'] && k.values['30'] <= k.values['90'],
+         id + ': KPI ' + k.id + ' monoton naik terhadap rentang',
+         JSON.stringify(k.values));
+    });
+
+    // tidak ada kebocoran identitas mentah di luar kolom yang memang dipakai
+    const blob = JSON.stringify(p);
+    ok(blob.indexOf('BEGIN PRIVATE KEY') === -1, id + ': tidak ada private key di payload');
+    ok(blob.indexOf(VIRA_TENANTS[id].sheetId) === -1,
+       id + ': spreadsheet ID TIDAK ikut terkirim ke client');
+  }
+
+  // inti requirement "UI sama untuk produk berbeda"
+  const univKpi = ['total_leads','new_leads','active_leads','chat_volume',
+                   'bot_on','bot_off','unanswered'];
+  univKpi.forEach(id => {
+    ok(P.thescholars.kpis.some(k => k.id === id) && P.persada.kpis.some(k => k.id === id),
+       'KPI universal "' + id + '" ada di kedua tenant');
+  });
+  ['daily','hourly','botmode'].forEach(id => {
+    ok(P.thescholars.charts.some(c => c.id === id) && P.persada.charts.some(c => c.id === id),
+       'chart universal "' + id + '" ada di kedua tenant');
+  });
+  const shape = p => Object.keys(p).sort().join(',');
+  eq(shape(P.thescholars), shape(P.persada), 'bentuk top-level payload identik');
+  // Kunci kolom harus identik supaya frontend bisa buta terhadap tenant.
+  // Tipe boleh berbeda (mis. status survey pantas jadi badge, kelas jadi teks)
+  // selama masih dari kosakata yang sama — di situlah letak keluwesannya.
+  const colKeys = p => p.leads.columns.map(c => c.key).join('|');
+  eq(colKeys(P.thescholars), colKeys(P.persada),
+     'kunci kolom lead identik di kedua tenant');
+  const VOCAB = ['text', 'int', 'date', 'wa', 'badge', 'toggle'];
+  ids0().forEach(id => {
+    const bad = P[id].leads.columns.filter(c => VOCAB.indexOf(c.type) === -1);
+    ok(bad.length === 0, id + ': semua tipe kolom dari kosakata yang dikenal frontend',
+       JSON.stringify(bad));
+    P[id].tables.forEach(t => {
+      const badT = t.columns.filter(c => VOCAB.indexOf(c.type) === -1);
+      ok(badT.length === 0, id + ': tabel "' + t.id + '" memakai tipe yang dikenal',
+         JSON.stringify(badT));
+    });
+  });
+  ok(P.thescholars.leads.columns[2].label !== P.persada.leads.columns[2].label,
+     'label kolom memang berbeda per tenant (bukan disamakan paksa)');
+
+  /* ---------------------------------------------------------------- 3 -- */
+  group('3. Kasus tepi data nyata');
+
+  const S = P.thescholars.leads.rows;
+  const onlyLid = S.find(r => r.key === '199988877766655');
+  ok(!!onlyLid, 'lead tanpa No WA tetap muncul lewat lid');
+  ok(onlyLid && onlyLid.is_lid === true, 'lead lid ditandai is_lid');
+  eq(onlyLid && onlyLid.bot_mode, 'OFF', 'bot_mode "off" huruf kecil terbaca OFF');
+
+  const lidInWa = S.find(r => r.key === '288776655443322');
+  ok(!!lidInWa, 'baris lama dengan lid di kolom No WA tetap terbaca');
+  ok(lidInWa && lidInWa.is_lid === true, '15+ digit ditandai LID');
+  near(lidInWa && lidInWa.counter, 1234, 'Counter berformat ribuan dibaca benar');
+  eq(lidInWa && lidInWa.first_chat, '', 'tanggal tidak valid jadi string kosong, bukan NaN');
+
+  ok(!S.some(r => r.key === ''), 'tidak ada lead dengan key kosong');
+  ok(!S.some(r => r.nama === undefined), 'tidak ada field undefined di baris lead');
+
+  const oldLead = S.find(r => r.key === '62899000111');
+  ok(!!oldLead, 'lead lama (200 hari) tetap ada di direktori');
+  const newK = P.thescholars.kpis.find(k => k.id === 'new_leads');
+  ok(newK.values['90'] < P.thescholars.leads.rows.length,
+     'lead di luar 90 hari tidak dihitung sebagai lead baru');
+
+  const hourly = P.thescholars.charts.find(c => c.id === 'hourly');
+  const hourTotal = hourly.series[0].data.reduce((a, b) => a + b, 0);
+  ok(hourTotal < S.length, 'lead dengan jam tidak valid tidak masuk chart jam');
+
+  const evTable = P.persada.tables.find(t => t.id === 'events');
+  ok(!!evTable, 'tabel EVENTS terbentuk');
+  ok(evTable.rows.every(r => /^\d{4}-\d{2}-\d{2}$/.test(r.ts) || r.ts === ''),
+     'EVENTS.ts satuan campur (detik & milidetik) dinormalisasi ke tanggal',
+     JSON.stringify(evTable.rows.map(r => r.ts).slice(0, 5)));
+
+  /* ---------------------------------------------------------------- 4 -- */
+  group('4. Token sesi & isolasi tenant');
+
+  const nowSec = Math.floor(NOW / 1000);
+  async function mint(username, tenant, ttl) {
+    const u = VIRA_USERS[username];
+    const claims = vaBuildClaims(u, tenant, nowSec, ttl === undefined ? 43200 : ttl, 'n1');
+    const payload = vaEncodeClaims(claims);
+    return payload + '.' + await hmacHex(SECRET, payload);
+  }
+  // Meniru urutan yang dilakukan node Check Token di n8n.
+  async function verify(token, atSec) {
+    const parts = vaSplitToken(token);
+    if (!parts) return 'TOKEN_MALFORMED';
+    const calc = await hmacHex(SECRET, parts.payload);
+    if (!vaSafeEqual(calc, parts.sig)) return 'TOKEN_BAD_SIGNATURE';
+    const claims = vaDecodeClaims(parts.payload);
+    const res = vaCheckClaims(claims, atSec === undefined ? nowSec : atSec,
+                              VIRA_TENANTS, VIRA_USERS);
+    return res.ok ? 'OK:' + claims.t : res.reason;
+  }
+
+  eq(await verify(await mint('sam', 'thescholars')), 'OK:thescholars',
+     'token owner valid untuk tenant miliknya');
+  eq(await verify(await mint('steven', 'persada')), 'OK:persada',
+     'super boleh tenant mana pun yang terdaftar');
+
+  // Serangan utama yang harus digagalkan: mengganti tenant di dalam token.
+  const samTok = await mint('sam', 'thescholars');
+  const parts = vaSplitToken(samTok);
+  const forgedClaims = vaDecodeClaims(parts.payload);
+  forgedClaims.t = 'persada';
+  const forgedPayload = vaEncodeClaims(forgedClaims);
+  eq(await verify(forgedPayload + '.' + parts.sig), 'TOKEN_BAD_SIGNATURE',
+     'mengganti tenant di payload -> tanda tangan tidak cocok');
+
+  // Bahkan kalau penyerang bisa menandatangani ulang, registry tetap menolak.
+  const resigned = forgedPayload + '.' + await hmacHex(SECRET, forgedPayload);
+  eq(await verify(resigned), 'TENANT_FORBIDDEN',
+     'klaim tenant di luar hak akun ditolak walau tanda tangan sah');
+
+  eq(await verify(await mint('sam', 'thescholars', -10)), 'TOKEN_EXPIRED',
+     'token kedaluwarsa ditolak');
+  eq(await verify(await mint('sam', 'thescholars'), nowSec + 999999), 'TOKEN_EXPIRED',
+     'token ditolak setelah lewat masa berlaku');
+
+  const wrongSig = parts.payload + '.' + 'f'.repeat(64);
+  eq(await verify(wrongSig), 'TOKEN_BAD_SIGNATURE', 'tanda tangan asal ditolak');
+
+  ok(vaSplitToken('') === null, 'token kosong ditolak');
+  ok(vaSplitToken('abc') === null, 'token tanpa titik ditolak');
+  ok(vaSplitToken('abc.') === null, 'token tanpa tanda tangan ditolak');
+  ok(vaSplitToken('abc.xyz') === null, 'tanda tangan bukan hex 64 ditolak');
+  ok(vaSplitToken('a b.' + 'a'.repeat(64)) === null, 'payload dengan spasi ditolak');
+  ok(vaDecodeClaims('!!!') === null, 'payload rusak -> null, tidak melempar');
+
+  // Nama tampilan memuat em dash ("Sam — The Scholars"). btoa mentah akan
+  // gagal di karakter itu; vaB64uEncode harus lolos lewat jalur UTF-8.
+  const utf8 = 'Sam — The Scholars ✓ Persada Cisoka';
+  eq(vaB64uDecode(vaB64uEncode(utf8)), utf8, 'base64url bolak-balik untuk teks non-ASCII');
+  ok(/^[A-Za-z0-9\-_]+$/.test(vaB64uEncode(utf8)),
+     'hasil base64url aman untuk URL (tanpa +, /, =)');
+  Object.keys(VIRA_USERS).forEach(k => {
+    const cl = vaBuildClaims(VIRA_USERS[k], VIRA_USERS[k].tenants[0], nowSec, 60, 'n');
+    const back = vaDecodeClaims(vaEncodeClaims(cl));
+    eq(back.d, VIRA_USERS[k].display, 'klaim akun "' + k + '" utuh setelah encode-decode');
+  });
+
+  ok(vaSafeEqual('abc', 'abc') === true, 'vaSafeEqual sama -> true');
+  ok(vaSafeEqual('abc', 'abd') === false, 'vaSafeEqual beda -> false');
+  ok(vaSafeEqual('abc', 'abcd') === false, 'vaSafeEqual panjang beda -> false');
+
+  ok(vaCanUseTenant(VIRA_USERS.sam, 'persada') === false,
+     'owner The Scholars tidak boleh tenant lain');
+  ok(vaCanUseTenant(VIRA_USERS.steven, 'persada') === true, 'super boleh tenant lain');
+
+  // Password
+  const u = VIRA_USERS.sam;
+  ok(await sha256Hex(u.salt + ':' + 'salah') !== u.hash, 'password salah tidak cocok');
+  ok(/^[a-f0-9]{64}$/.test(u.hash), 'hash tersimpan berbentuk sha256 hex');
+  ok(u.salt.length >= 16, 'salt minimal 8 byte');
+  Object.keys(VIRA_USERS).forEach(k => {
+    const uu = VIRA_USERS[k];
+    ok(uu.salt !== VIRA_USERS[Object.keys(VIRA_USERS)[0]].salt || k === Object.keys(VIRA_USERS)[0],
+       'salt akun "' + k + '" unik');
+  });
+
+  // Lockout
+  const st = {};
+  const cfg = VIRA_SETTINGS;
+  for (let i = 0; i < cfg.loginMaxFail; i++) vaLoginFail(st, 'x', nowSec, cfg);
+  ok(vaLoginGate(st, 'x', nowSec, cfg).blocked === true,
+     'terkunci setelah ' + cfg.loginMaxFail + ' percobaan gagal');
+  ok(vaLoginGate(st, 'x', nowSec + cfg.loginWindowSec + 1, cfg).blocked === false,
+     'kunci terbuka setelah jendela waktu habis');
+  vaLoginOk(st, 'x');
+  ok(vaLoginGate(st, 'x', nowSec, cfg).blocked === false, 'login berhasil mereset hitungan');
+
+  // CORS
+  eq(vaCorsOrigin('https://jahat.example', VIRA_SETTINGS.corsOrigins),
+     VIRA_SETTINGS.corsOrigins[0], 'origin asing tidak dipantulkan balik');
+  eq(vaCorsOrigin(VIRA_SETTINGS.corsOrigins[1], VIRA_SETTINGS.corsOrigins),
+     VIRA_SETTINGS.corsOrigins[1], 'origin terdaftar dipantulkan apa adanya');
+  ok(VIRA_SETTINGS.corsOrigins.indexOf('*') === -1, 'allowlist CORS tidak memuat wildcard');
+
+  /* ---------------------------------------------------------------- 5 -- */
+  group('5. Konfigurasi tenant');
+
+  Object.keys(VIRA_TENANTS).forEach(id => {
+    const t = VIRA_TENANTS[id];
+    ok(t.tabs.indexOf('CONFIG') === -1,
+       id + ': tab CONFIG tidak pernah dibaca (memuat private key di Persada)');
+    ok(t.tabs.indexOf(t.statsTab) !== -1, id + ': statsTab termasuk yang dibaca');
+    ok(/^[A-Za-z0-9_-]{30,}$/.test(t.sheetId), id + ': sheetId berbentuk wajar');
+    ok(t.leadColumns.some(c => c.type === 'toggle'), id + ': ada kolom toggle bot_mode');
+    ok(t.leadColumns.length === VIRA_TENANTS.thescholars.leadColumns.length,
+       id + ': jumlah kolom lead sama di semua tenant');
+  });
+  const ids = Object.keys(VIRA_TENANTS);
+  ok(new Set(ids.map(i => VIRA_TENANTS[i].sheetId)).size === ids.length,
+     'tiap tenant menunjuk spreadsheet berbeda');
+
+  /* ---------------------------------------------------------------- 6 -- */
+  group('6. Fungsi murni frontend');
+
+  if (!window.VDRender || !window.VDCharts || !window.VDApi) {
+    ok(false, 'VDRender / VDCharts / VDApi tersedia',
+       'frontend belum lengkap — file app/js/*.js belum mengekspos fungsi murni');
+  } else {
+    const R = window.VDRender, C = window.VDCharts;
+
+    const kpi = { id: 'x', value: 5, rangeAware: true, values: { '7': 1, '30': 5, '90': 9 } };
+    near(R.kpiValue(kpi, 7), 1, 'kpiValue mengikuti rentang 7');
+    near(R.kpiValue(kpi, 90), 9, 'kpiValue mengikuti rentang 90');
+    near(R.kpiValue({ value: 3 }, 7), 3, 'KPI non-rangeAware abaikan rentang');
+
+    const ch = { rangeAware: true, labels: ['a','b','c','d'],
+                 series: [{ name: 's', data: [1,2,3,4] }] };
+    const sl = R.sliceChart(ch, 2);
+    eq(sl.labels, ['c','d'], 'sliceChart memotong label dari belakang');
+    eq(sl.series[0].data, [3,4], 'sliceChart memotong data selaras label');
+    const nosl = R.sliceChart({ labels:['a','b'], series:[{data:[1,2]}] }, 1);
+    eq(nosl.labels, ['a','b'], 'chart non-rangeAware tidak dipotong');
+
+    const rows = [
+      { key:'628111', nama:'Andi', bot_mode:'ON',  counter:5 },
+      { key:'628222', nama:'Budi', bot_mode:'OFF', counter:12 },
+      { key:'628333', nama:'Citra',bot_mode:'ON',  counter:1 }
+    ];
+    near(R.filterLeads(rows, { q:'budi' }).length, 1, 'filter nama tidak peka huruf besar-kecil');
+    near(R.filterLeads(rows, { q:'222' }).length, 1, 'filter berdasarkan potongan nomor');
+    near(R.filterLeads(rows, { botMode:'OFF' }).length, 1, 'filter status bot');
+    near(R.filterLeads(rows, {}).length, 3, 'filter kosong mengembalikan semua');
+    near(R.filterLeads(rows, { q:'  ' }).length, 3, 'query spasi diabaikan');
+
+    eq(R.sortLeads(rows, 'counter', 'desc').map(r => r.counter), [12,5,1], 'urut angka menurun');
+    eq(R.sortLeads(rows, 'nama', 'asc').map(r => r.nama), ['Andi','Budi','Citra'], 'urut teks naik');
+    near(rows[0].counter, 5, 'sortLeads tidak mengubah array asli');
+
+    // paginate: 1-based, mengembalikan metadata, dan MENJEPIT halaman
+    // di luar jangkauan ke halaman terakhir (bukan menampilkan layar kosong).
+    const pg = R.paginate([1,2,3,4,5], 2, 2);
+    eq(pg.rows, [3,4], 'paginate halaman ke-2 (1-based)');
+    near(pg.pages, 3, 'paginate menghitung jumlah halaman');
+    near(pg.total, 5, 'paginate melaporkan total baris');
+    const pgOver = R.paginate([1,2,3], 9, 2);
+    near(pgOver.page, 2, 'halaman di luar jangkauan dijepit ke halaman terakhir');
+    ok(pgOver.rows.length > 0, 'halaman terjepit tetap menampilkan data, bukan layar kosong');
+    const pgEmpty = R.paginate([], 1, 2);
+    eq(pgEmpty.rows, [], 'data kosong -> tidak ada baris');
+    near(pgEmpty.pages, 1, 'data kosong tetap dilaporkan 1 halaman');
+
+    eq(R.fmtInt(1234567), '1.234.567', 'angka diformat gaya Indonesia');
+    eq(R.fmtInt(0), '0', 'nol diformat benar');
+    eq(R.fmtDate(''), '—', 'tanggal kosong ditampilkan sebagai strip');
+
+    ok(typeof C.linePath([1,2,3], 100, 50) === 'string', 'linePath menghasilkan string SVG');
+    ok(C.linePath([], 100, 50) === '' || typeof C.linePath([], 100, 50) === 'string',
+       'linePath aman untuk data kosong');
+    ok(Array.isArray(C.donutArcs([1,1,2])), 'donutArcs menghasilkan array');
+    near(C.donutArcs([]).length, 0, 'donut tanpa data -> tidak ada juring');
+    const sc7 = C.niceScale(7);
+    ok(sc7.max >= 7, 'niceScale membulatkan batas atas melewati nilai maksimum');
+    ok(sc7.ticks[0] === 0, 'sumbu dimulai dari nol (tidak memotong batang)');
+    ok(sc7.ticks[sc7.ticks.length - 1] === sc7.max, 'tick terakhir = batas atas');
+    ok(sc7.ticks.every((v, i, a) => i === 0 || v > a[i - 1]), 'tick menaik');
+    ok(C.niceScale(0).max > 0, 'niceScale(0) tetap positif (hindari bagi nol)');
+    ok(C.niceScale(100).max >= 100, 'niceScale untuk nilai bulat besar');
+
+    ok(typeof VDApi.setBaseUrl === 'function' && typeof VDApi.call === 'function',
+       'VDApi punya setBaseUrl & call');
+  }
+
+  /* ---------------------------------------------------------------- 7 -- */
+  group('7. Tambah lead — normalisasi nomor');
+
+  // Bentuk-bentuk yang benar-benar diketik orang Indonesia.
+  eq(vdNormalizeWa('081234567890'), '6281234567890', '08… menjadi 62…');
+  eq(vdNormalizeWa('81234567890'), '6281234567890', '8… menjadi 62…');
+  eq(vdNormalizeWa('6281234567890'), '6281234567890', '62… dibiarkan');
+  eq(vdNormalizeWa('+62 812-3456-7890'), '6281234567890', 'plus, spasi, strip dibuang');
+  eq(vdNormalizeWa('  0812 3456 7890  '), '6281234567890', 'spasi di ujung & tengah');
+  eq(vdNormalizeWa('006281234567890'), '6281234567890', 'awalan internasional 00 dibuang');
+
+  // Yang harus ditolak, bukan ditebak.
+  eq(vdNormalizeWa(''), '', 'kosong ditolak');
+  eq(vdNormalizeWa('   '), '', 'spasi saja ditolak');
+  eq(vdNormalizeWa('abcd'), '', 'huruf saja ditolak');
+  eq(vdNormalizeWa('0812'), '', 'terlalu pendek ditolak');
+  eq(vdNormalizeWa('62812345678901234'), '', 'terlalu panjang ditolak');
+  eq(vdNormalizeWa(null), '', 'null ditolak');
+  eq(vdNormalizeWa(undefined), '', 'undefined ditolak');
+
+  // Nomor luar negeri berawalan 8 TIDAK boleh diberi awalan 62.
+  // +86 138 0013 8000 (13 digit) — kalau aturan "8 di depan" tidak dibatasi
+  // panjangnya, ini akan tersimpan sebagai 62861380013800 dan pesan mendarat
+  // di nomor orang lain.
+  eq(vdNormalizeWa('8613800138000'), '8613800138000', 'nomor +86 tidak diberi awalan 62');
+
+  /* ---------------------------------------------------------------- 8 -- */
+  group('8. Tambah lead — validasi permintaan');
+
+  const TP = VIRA_TENANTS.thescholars;
+
+  eq(vdPrepareAddLead(TP, { key: '081234567890', nama: 'Budi', mode: 'ON' }),
+     { ok: true, key: '6281234567890', nama: 'Budi', mode: 'ON' },
+     'permintaan sah diterima & dinormalkan');
+
+  eq(vdPrepareAddLead(TP, { key: ' 0812 3456 7890 ', nama: '  Budi  ', mode: 'off' }).mode,
+     'OFF', 'mode huruf kecil dinaikkan jadi OFF');
+  eq(vdPrepareAddLead(TP, { key: '081234567890', nama: '  Budi  ', mode: 'OFF' }).nama,
+     'Budi', 'nama di-trim');
+
+  ok(vdPrepareAddLead(TP, { key: '081234567890', mode: 'MAYBE' }).error === 'BAD_REQUEST',
+     'mode selain ON/OFF ditolak');
+  ok(vdPrepareAddLead(TP, { key: '081234567890' }).error === 'BAD_REQUEST',
+     'mode kosong ditolak');
+  ok(vdPrepareAddLead(TP, { key: '', mode: 'ON' }).error === 'BAD_REQUEST',
+     'nomor kosong ditolak');
+  ok(vdPrepareAddLead(TP, { key: '0812', mode: 'ON' }).error === 'BAD_NUMBER',
+     'nomor terlalu pendek ditolak sebagai BAD_NUMBER');
+  ok(vdPrepareAddLead(TP, { key: '081234567890', nama: 'x'.repeat(81), mode: 'ON' })
+       .error === 'BAD_REQUEST', 'nama lebih dari 80 karakter ditolak');
+  ok(vdPrepareAddLead(TP, { key: '081234567890', nama: 'x'.repeat(80), mode: 'ON' }).ok === true,
+     'nama tepat 80 karakter diterima');
+  ok(vdPrepareAddLead(null, { key: '081234567890', mode: 'ON' }).error === 'TENANT_UNKNOWN',
+     'tenant tidak dikenal ditolak');
+
+  // Pesan galat harus menyebut nomor yang diketik, bukan istilah teknis.
+  ok(vdPrepareAddLead(TP, { key: '0812', mode: 'ON' }).message.indexOf('0812') !== -1,
+     'pesan BAD_NUMBER menyebut nomor yang diketik');
+
+  /* ---------------------------------------------------------------- 9 -- */
+  group('9. Tambah lead — pagar sebelum menulis');
+
+  const HDR = { 'No WA': '', 'Nama': '', 'lid': '', 'bot_mode': '', 'Counter': '' };
+  function sheet(rows) { return rows.map(r => Object.assign({}, HDR, r)); }
+
+  const ROWS = sheet([
+    { 'No WA': '6281111111111', 'Nama': 'Ani', 'bot_mode': 'ON', 'Counter': 5, row_number: 2 },
+    { 'No WA': '', 'lid': '1234567890123456', 'Nama': 'Tanpa Nomor', 'bot_mode': 'OFF', row_number: 3 },
+    { 'No WA': '6282222222222', 'Nama': 'Cakra', 'bot_mode': 'OFF', 'Counter': 1, row_number: 4 }
+  ]);
+
+  ok(vdCheckAddLead(TP, ROWS, '6289999999999', 'STATS').ok === true,
+     'nomor baru diizinkan');
+
+  const dup = vdCheckAddLead(TP, ROWS, '6281111111111', 'STATS');
+  ok(dup.error === 'DUPLICATE', 'nomor yang sudah ada ditolak');
+  ok(dup.message.indexOf('Ani') !== -1, 'pesan duplikat menyebut nama pemilik nomor');
+
+  ok(vdCheckAddLead(TP, ROWS, '1234567890123456', 'STATS').error === 'DUPLICATE',
+     'cocok lewat lid juga dianggap duplikat');
+
+  // Sheet kosong / gagal dibaca: menulis buta ke sini adalah cara paling
+  // mudah merusak tab produksi, jadi harus ditolak.
+  ok(vdCheckAddLead(TP, [], 'STATS').error === 'SHEET_UNREADABLE',
+     'sheet kosong ditolak, bukan diappend');
+  ok(vdCheckAddLead(TP, [{ row_number: 2 }, { row_number: 3 }], 'STATS')
+       .error === 'SHEET_UNREADABLE', 'baris hantu (hanya row_number) dianggap gagal baca');
+  ok(vdCheckAddLead(TP, null, 'STATS').error === 'SHEET_UNREADABLE',
+     'rows null ditangani, tidak melempar');
+
+  /* Node pembaca memakai onError:continueRegularOutput. Kalau pembacaan gagal,
+   * n8n meneruskan item kendali kita sendiri ke sini. Item itu punya banyak
+   * key, jadi tanpa penyaringan ia dikira baris sheet dan pemeriksaan header
+   * akan menuduh SHEET_SCHEMA — menunjuk sheet yang sebenarnya baik-baik saja.
+   * Ini yang terjadi di produksi 2026-09-06. */
+  const CTRL = [{
+    _route: 'ok', _cors: 'https://x', _claims: { u: 'sam', t: 'thescholars' },
+    doc_id: 'abc', tab: 'STATS', audit_tab: 'DASH_AUDIT',
+    key: '6289999999999', nama: '', mode: 'OFF'
+  }];
+  const ctrlRes = vdCheckAddLead(TP, CTRL, '6289999999999', 'STATS');
+  eq(ctrlRes.error, 'SHEET_UNREADABLE',
+     'baca gagal -> SHEET_UNREADABLE, bukan SHEET_SCHEMA yang menyesatkan');
+  ok(ctrlRes.message.indexOf('credential') !== -1,
+     'pesannya mengarahkan ke credential node pembaca');
+
+  // Campuran: item kendali bocor bersama baris asli -> baris aslinya menang.
+  ok(vdCheckAddLead(TP, CTRL.concat(ROWS), '6289999999999', 'STATS').ok === true,
+     'item kendali diabaikan kalau baris sheet asli tetap ada');
+
+
+  // Header meleset satu spasi -> node Sheets akan membuat kolom baru.
+  const BAD_HDR = [{ 'No WA': '628111', 'Nama ': 'Ani', 'bot_mode': 'ON', 'Counter': 1 }];
+  const schema = vdCheckAddLead(TP, BAD_HDR, '6289999999999', 'STATS');
+  ok(schema.error === 'SHEET_SCHEMA', 'header "Nama " (spasi di ujung) ditolak');
+  ok(schema.message.indexOf('Nama') !== -1, 'pesan SHEET_SCHEMA menyebut kolom yang hilang');
+  ok(schema.message.indexOf('Header yang terbaca') !== -1,
+     'pesan SHEET_SCHEMA menyebut header yang benar-benar ada');
+  ok(schema.message.indexOf('"Nama "') !== -1,
+     'header bermasalah ditampilkan dalam tanda kutip supaya spasinya kelihatan');
+
+  const noCounter = [{ 'No WA': '628111', 'Nama': 'Ani', 'bot_mode': 'ON' }];
+  ok(vdCheckAddLead(TP, noCounter, '6289999999999', 'STATS').error === 'SHEET_SCHEMA',
+     'kolom Counter hilang ditolak');
+
+  // Keempat kolom yang ditulis harus ada di SEMUA tenant, kalau tidak jalur
+  // add_lead diam-diam mati untuk tenant itu.
+  Object.keys(VIRA_TENANTS).forEach(id => {
+    const t = VIRA_TENANTS[id];
+    const cols = [].concat(t.map.wa, t.map.nama, t.map.bot_mode, t.map.counter);
+    ok(cols.indexOf('No WA') !== -1 && cols.indexOf('Nama') !== -1 &&
+       cols.indexOf('bot_mode') !== -1 && cols.indexOf('Counter') !== -1,
+       id + ': map memakai keempat kolom yang ditulis add_lead');
+  });
+
+  /* --------------------------------------------------------------- 10 -- */
+  group('10. Tambah lead — sel & baris hasil');
+
+  eq(vdAddLeadCells({ key: '6281234567890', nama: 'Budi', mode: 'OFF' }),
+     { 'No WA': '6281234567890', 'Nama': 'Budi', 'bot_mode': 'OFF', 'Counter': 0 },
+     'sel yang ditulis persis empat kolom');
+  eq(vdAddLeadCells({ key: '6281234567890', nama: '', mode: 'ON' })['Nama'],
+     '6281234567890', 'nama kosong diisi nomornya sendiri');
+
+  const cells = vdAddLeadCells({ key: '6281234567890', nama: 'Budi', mode: 'OFF' });
+  const newRow = vdAddLeadRow(TP, cells);
+
+  // Baris hasil add_lead harus punya BENTUK yang sama persis dengan baris
+  // hasil `stats`. Kalau berbeda, tabel akan menampilkan sel kosong yang aneh
+  // sampai pengguna memuat ulang.
+  const statsRow = (P.thescholars.leads.rows || [])[0];
+  eq(Object.keys(newRow).sort(), Object.keys(statsRow).sort(),
+     'kunci baris add_lead identik dengan baris dari stats');
+
+  eq(newRow.key, '6281234567890', 'key baris = nomor');
+  eq(newRow.wa, '6281234567890', 'wa terisi');
+  eq(newRow.nama, 'Budi', 'nama terisi');
+  eq(newRow.bot_mode, 'OFF', 'bot_mode OFF terbawa');
+  eq(newRow.counter, 0, 'counter mulai dari 0');
+  eq(newRow.is_lid, false, 'nomor 13 digit tidak salah dikira LID');
+  eq(newRow.first_chat, '', 'tanggal chat pertama dibiarkan kosong');
+
+  eq(vdAddLeadRow(TP, vdAddLeadCells({ key: '6281234567890', nama: '', mode: 'ON' })).bot_mode,
+     'ON', 'bot_mode ON terbawa');
+
+  // Baris baru harus bisa langsung disaring & diurut oleh frontend.
+  if (window.VDRender) {
+    const R2 = window.VDRender;
+    eq(R2.filterLeads([newRow], { botMode: 'off' }).length, 1,
+       'baris baru (OFF) lolos saringan Manual');
+    eq(R2.filterLeads([newRow], { botMode: 'on' }).length, 0,
+       'baris baru (OFF) tidak lolos saringan Bot aktif');
+    // Bug lama: filterLeads menjanjikan "0812" menemukan "62812…" tapi hanya
+    // mencocokkan substring mentah, jadi tidak pernah cocok. Bot menyimpan
+    // semua nomor dalam bentuk 62…, jadi ini kena setiap lead, bukan hanya
+    // yang baru ditambahkan.
+    eq(R2.filterLeads([newRow], { q: '0812' }).length, 1,
+       'baris baru ditemukan dengan pencarian 08… (nol di depan)');
+    eq(R2.filterLeads([newRow], { q: '62812' }).length, 1,
+       'baris baru ditemukan dengan pencarian 62…');
+    eq(R2.filterLeads([newRow], { q: '812345' }).length, 1,
+       'baris baru ditemukan dengan potongan tengah nomor');
+    eq(R2.filterLeads([newRow], { q: '0899' }).length, 0,
+       'nomor lain tidak ikut tersaring');
+    eq(R2.filterLeads([newRow], { q: 'budi' }).length, 1,
+       'pencarian nama tetap jalan (tidak case-sensitive)');
+    eq(R2.rowIdent(newRow), '6281234567890', 'identitas kartu memakai nomor');
+
+    ok(R2.isHighlighted(newRow, { highlightKey: '6281234567890' }) === true,
+       'sorotan menyala untuk key yang cocok');
+    ok(R2.isHighlighted(newRow, { highlightKey: '6289999999999' }) === false,
+       'sorotan mati untuk key lain');
+    ok(R2.isHighlighted(newRow, {}) === false, 'tanpa highlightKey tidak menyala');
+    ok(R2.isHighlighted({}, { highlightKey: '' }) === false, 'key kosong tidak menyala');
+  }
+
+  /* --------------------------------------------------------------- 11 -- */
+  group('11. Regresi — vdLeadRow tidak mengubah keluaran stats');
+
+  // vdBuildPayload dipecah supaya vdLeadRow bisa dipakai ulang jalur add_lead.
+  // Pemeriksaan ini memastikan pemecahan itu tidak menggeser apa pun.
+  ['thescholars', 'persada'].forEach(id => {
+    const rows = P[id].leads.rows;
+    ok(rows.length > 0, id + ': direktori lead tetap terisi');
+    ok(rows.every(r => r.key !== '' && r.key !== undefined),
+       id + ': setiap baris punya key');
+    ok(rows.every(r => r.bot_mode === 'ON' || r.bot_mode === 'OFF'),
+       id + ': bot_mode selalu ON atau OFF');
+    ok(rows.every(r => Object.prototype.toString.call(r.detail) === '[object Array]'),
+       id + ': setiap baris punya array detail');
+  });
+
+  // vdLeadRow dipanggil langsung harus menghasilkan baris yang sama dengan
+  // yang keluar dari vdBuildPayload untuk baris mentah yang sama.
+  const rawStats = FX.thescholars.STATS.filter(
+    r => String(r['No WA'] || '').trim() !== '' || String(r['lid'] || '').trim() !== '');
+  if (rawStats.length) {
+    const direct = vdLeadRow(VIRA_TENANTS.thescholars, rawStats[0]);
+    eq(direct.lead, P.thescholars.leads.rows[0],
+       'vdLeadRow langsung == baris pertama dari vdBuildPayload');
+  }
+  ok(vdLeadRow(VIRA_TENANTS.thescholars, { 'Nama': 'Tanpa Identitas' }) === null,
+     'baris tanpa wa maupun lid dikembalikan null');
+
+  /* --------------------------------------------------------------- 12 -- */
+  group('12. Rekomendasi AI — dashboard membaca kolom sheet');
+
+  /* Dashboard TIDAK memanggil AI. Ia membaca kolom ai_insight_json yang diisi
+   * WF-B. Semua pemeriksaan di bawah menyangkut jalur baca itu. */
+
+  const SPEC = VIRA_TENANTS.thescholars.monthlySummary;
+  eq(SPEC.insightCol, 'ai_insight_json', 'kolom sumber terdaftar di profil tenant');
+
+  const GOOD_ITEMS = [
+    { judul: 'Buka kelas IELTS', alasan: 'IELTS topik terbesar bulan ini.',
+      aksi: 'Umumkan kelas IELTS ke lead yang menanyakannya.',
+      dampak: 'tinggi', dasar: ['IELTS: 34 user'] },
+    { judul: 'Geser sesi ke Rabu', alasan: 'Rabu hari paling ramai.',
+      aksi: 'Pindahkan sesi konsultasi ke Rabu sore.',
+      dampak: 'sedang', dasar: ['Rabu: 21 lead'] }
+  ];
+  function cell(v) {
+    return { ai_insight_json: typeof v === 'string' ? v : JSON.stringify(v) };
+  }
+
+  const B = vdInsightFromMonthly(SPEC,
+    cell({ model: 'claude-sonnet-4-6', generated_at: 1756000000000, items: GOOD_ITEMS }),
+    'Agustus 2026');
+  ok(!!B, 'sel berisi objek terbaca');
+  eq(B.id, 'ai_insight', 'id blok tetap');
+  eq(B.items.length, 2, 'dua rekomendasi terbaca');
+  ok(B.title.indexOf('Agustus 2026') !== -1, 'judul menyebut bulan sumber');
+  ok(B.hint.indexOf('SARAN') !== -1, 'penjelasan menegaskan ini saran, bukan fakta');
+  ok(B.hint.indexOf('rekap bulanan') !== -1,
+     'penjelasan menyebut kapan dihitung, bukan tiap buka dashboard');
+  eq(B.model, 'claude-sonnet-4-6', 'model ikut terbaca');
+  eq(B.generated_at, 1756000000000, 'waktu pembuatan ikut terbaca');
+  eq(B.items[0].dasar, ['IELTS: 34 user'], 'angka pendukung ikut');
+
+  // Sel diisi tangan sebagai array telanjang juga harus terbaca.
+  const BA = vdInsightFromMonthly(SPEC, cell(GOOD_ITEMS), 'Agustus 2026');
+  ok(!!BA && BA.items.length === 2, 'array telanjang tetap terbaca');
+  eq(BA.model, '', 'array telanjang: model kosong, bukan undefined');
+
+  // Apa pun yang tidak beres -> null, bukan kartu setengah jadi.
+  ok(vdInsightFromMonthly(SPEC, {}, 'Agustus 2026') === null, 'kolom belum ada -> null');
+  ok(vdInsightFromMonthly(SPEC, cell(''), 'Agustus 2026') === null, 'sel kosong -> null');
+  ok(vdInsightFromMonthly(SPEC, { ai_insight_json: '{rusak' }, 'x') === null,
+     'JSON rusak -> null');
+  ok(vdInsightFromMonthly(SPEC, cell({ items: [] }), 'x') === null, 'items kosong -> null');
+  ok(vdInsightFromMonthly(SPEC, cell({ hasil: 'salah bentuk' }), 'x') === null,
+     'kunci items tidak ada -> null');
+  ok(vdInsightFromMonthly(SPEC, null, 'x') === null, 'baris null ditangani');
+  ok(vdInsightFromMonthly(null, cell(GOOD_ITEMS), 'x') === null, 'spec null ditangani');
+
+  // Header ber-trailing-space tetap terbaca (vdRowGet toleran).
+  ok(!!vdInsightFromMonthly(SPEC,
+       { 'ai_insight_json ': JSON.stringify(GOOD_ITEMS) }, 'x'),
+     'kolom dengan spasi di ujung tetap terbaca');
+
+  /* --------------------------------------------------------------- 13 -- */
+  group('13. Rekomendasi AI — pembersihan butir & integrasi payload');
+
+  eq(vdInsightItems(null), [], 'masukan null -> array kosong');
+  eq(vdInsightItems('bukan array'), [], 'masukan bukan array -> array kosong');
+  eq(vdInsightItems([{ judul: 'Ada judul' }]).length, 0, 'butir tanpa aksi dibuang');
+  eq(vdInsightItems([{ aksi: 'Ada aksi' }]).length, 0, 'butir tanpa judul dibuang');
+  eq(vdInsightItems([{ judul: 'A', aksi: 'a' }, { judul: 'B' }]).length, 1,
+     'butir separuh dibuang, butir utuh tetap dipakai');
+  eq(vdInsightItems(Array.from({ length: 9 },
+       (_, i) => ({ judul: 'J' + i, aksi: 'A' + i }))).length, 4,
+     'maksimal 4 rekomendasi');
+
+  const T1 = vdInsightItems([{ judul: 'A', aksi: 'a', dampak: 'MAHA PENTING' }])[0];
+  eq(T1.dampak, 'sedang', 'dampak di luar daftar jatuh ke sedang');
+  eq(T1.dasar, [], 'dasar kosong tetap array');
+  eq(vdInsightItems([{ judul: 'A', aksi: 'a', dampak: 'TINGGI' }])[0].dampak, 'tinggi',
+     'dampak huruf besar tetap dikenali');
+
+  const L = vdInsightItems([{ judul: 'x'.repeat(400), aksi: 'y'.repeat(900),
+    alasan: 'z'.repeat(900), dasar: ['a', 'b', 'c', 'd', 'e', 'f'] }])[0];
+  ok(L.judul.length <= 120, 'judul kepanjangan dipotong');
+  ok(L.aksi.length <= 400, 'aksi kepanjangan dipotong');
+  ok(L.alasan.length <= 400, 'alasan kepanjangan dipotong');
+  ok(L.dasar.length <= 4, 'angka pendukung dibatasi 4');
+
+  // Integrasi: payload membawa insights hanya kalau kolomnya terisi.
+  const FX2 = JSON.parse(JSON.stringify(FX.thescholars));
+  const msRows = FX2.MONTHLY_SUMMARY;
+  msRows[msRows.length - 1].ai_insight_json =
+    JSON.stringify({ model: 'claude-sonnet-4-6', generated_at: 1, items: GOOD_ITEMS });
+  const P2 = vdBuildPayload(VIRA_TENANTS.thescholars, FX2, { nowMs: NOW });
+  eq(P2.insights.length, 1, 'payload membawa satu blok insights saat kolom terisi');
+  eq(P2.insights[0].items.length, 2, 'butirnya ikut sampai ke payload');
+  eq(P.thescholars.insights, [],
+     'tanpa kolom terisi, insights kosong sehingga kartunya disembunyikan');
+  eq(P.persada.insights, [],
+     'tenant tanpa ringkasan bulanan tetap punya insights kosong, bukan undefined');
+
+  /* -------------------------------------------------------------- 13b -- */
+  group('13b. Sisi WF-B — fakta bulan sasaran');
+
+  const PROF = VIRA_TENANTS.thescholars;
+  const ROLLUP_TOPICS = [
+    { topic: 'ielts_english_test', users: 34, messages: 61, pct: 22.4 },
+    { topic: 'syarat_usia_kelas', users: 12, messages: 20, pct: 7.9 }
+  ];
+
+  // TOPIC_LOG: last_ts berupa epoch MILIDETIK (dikonfirmasi dari WF-A).
+  // 2026-08-05 17:30 UTC = Rabu 6 Agustus 00:30 WIB -> harus jatuh di KAMIS?
+  // Tidak: 5 Agustus 17:30 UTC + 7 jam = 6 Agustus 00:30 WIB, dan 6 Agustus
+  // 2026 adalah hari Kamis. Kasus ini yang membuktikan pergeseran WIB dipakai.
+  const TS_RABU_SIANG = Date.UTC(2026, 7, 5, 4, 0);    // Rabu 11:00 WIB
+  const TS_LEWAT_TENGAH = Date.UTC(2026, 7, 5, 17, 30); // Kamis 00:30 WIB
+  const LOG = [
+    { bulan: '2026-08', last_ts: String(TS_RABU_SIANG) },
+    { bulan: '2026-08', last_ts: String(TS_RABU_SIANG) },
+    { bulan: '2026-08', last_ts: String(TS_LEWAT_TENGAH) },
+    { bulan: '2026-07', last_ts: String(TS_RABU_SIANG) }   // bulan lain: diabaikan
+  ];
+
+  const PROGRAM_ROWS = [
+    { 'Nama Program': 'IELTS Prep', 'Target Peserta': 'SMA kelas 11-12',
+      'Harga': '3.500.000', 'Nama Batch': 'Batch 4', 'Tanggal Mulai': '01/10/2026',
+      'Kuota': '3', 'Deadline Daftar': '20/09/2026', 'Status': 'Buka' },
+    { 'Nama Program': '', 'Status': 'Buka' }   // tanpa nama: dibuang
+  ];
+  const UNKNOWN_ROWS = [
+    { 'Pertanyaan': 'Ada kelas untuk anak SD?', 'Tanggal': '12/08/2026' },
+    { 'Pertanyaan': 'Bisa cicil?', 'Tanggal': '03/07/2026' },   // bulan lain
+    { 'Pertanyaan': '', 'Tanggal': '12/08/2026' }               // kosong
+  ];
+  const FAQ_ROWS = [
+    { 'Kategori': 'Umum', 'Pertanyaan': 'Berapa biayanya?', 'Jawaban': 'Tergantung program.' },
+    { 'Pertanyaan': 'Tanpa jawaban', 'Jawaban': '' }            // bukan FAQ sungguhan
+  ];
+
+  const FACTS = vdInsightFacts({
+    bulan: 'Agustus 2026', bulanKey: '2026-08',
+    bisnis: PROF.aiContext, klien: PROF.name,
+    catatan_cakupan: 'Berdasarkan percakapan yang ditangani VIRA.',
+    total_user: 21, total_pesan: 137,
+    topik: ROLLUP_TOPICS, labelMap: PROF.topicLabels,
+    topicLogRows: LOG, programRows: PROGRAM_ROWS,
+    unknownRows: UNKNOWN_ROWS, faqRows: FAQ_ROWS
+  });
+
+  ok(!!FACTS, 'fakta terbentuk dari hasil rollup');
+  eq(FACTS.periode, 'Agustus 2026', 'periode terbawa');
+  ok(FACTS.catatan_periode.indexOf('hanya mencakup Agustus 2026') !== -1,
+     'catatan periode menegaskan jendela waktunya');
+  eq(FACTS.ringkasan.user_unik, 21, 'user unik bulan itu terbawa');
+  eq(FACTS.topik[0].topik, 'IELTS / tes bahasa Inggris',
+     'id topik diterjemahkan ke label yang enak dibaca');
+
+  /* ---- BUG 1: satuan harus ikut, supaya model tidak menebak "pesan" ---- */
+  eq(FACTS.hari.satuan, 'percakapan topik', 'sebaran hari menyatakan satuannya');
+  eq(FACTS.jam.satuan, 'percakapan topik', 'sebaran jam menyatakan satuannya');
+  eq(FACTS.jam.zona, 'WIB', 'zona waktu jam dinyatakan');
+
+  /* ---- BUG 2: jendela waktu tidak boleh campur ---- */
+  eq(FACTS.hari.nilai.reduce((a, b) => a + b.n, 0), 3,
+     'hanya baris bulan sasaran yang dihitung (baris Juli diabaikan)');
+
+  /* ---- pergeseran WIB ---- */
+  const byDay = {};
+  FACTS.hari.nilai.forEach(x => { byDay[x.label] = x.n; });
+  eq(byDay['Rabu'], 2, 'dua percakapan Rabu siang masuk ke Rabu');
+  eq(byDay['Kamis'], 1,
+     'percakapan 17:30 UTC jatuh di Kamis WIB, bukan Rabu — pergeseran +7 jam dipakai');
+
+  const byHour = {};
+  FACTS.jam.nilai.forEach(x => { byHour[x.label] = x.n; });
+  eq(byHour['11'], 2, 'jam dibaca dalam WIB (04:00 UTC = 11:00 WIB)');
+  eq(byHour['00'], 1, 'jam lewat tengah malam WIB terhitung benar');
+  eq(byHour['04'], 0, 'jam UTC mentah TIDAK dipakai');
+
+  /* ---- katalog program ---- */
+  eq(FACTS.program.length, 1, 'baris program tanpa nama dibuang');
+  eq(FACTS.program[0].program, 'IELTS Prep', 'nama program terbawa');
+  eq(FACTS.program[0].kuota, '3', 'kuota terbawa — ini yang bikin saran bisa spesifik');
+  eq(FACTS.program[0].deadline, '20/09/2026', 'deadline terbawa');
+
+  /* ---- pertanyaan belum terjawab, bulan sasaran saja ---- */
+  eq(FACTS.belum_terjawab, ['Ada kelas untuk anak SD?'],
+     'hanya pertanyaan bulan sasaran, yang kosong dibuang');
+
+  /* ---- FAQ: baris tanpa Jawaban bukan FAQ ----
+   * Tab UNKNOWN juga berkolom "Pertanyaan"; kalau baris tanpa jawaban ikut
+   * masuk, model akan mengira pertanyaan yang BELUM terjawab sudah ada
+   * jawabannya dan berhenti menyarankannya. */
+  eq(FACTS.faq_sudah_ada, ['Berapa biayanya?'],
+     'hanya FAQ yang benar-benar punya jawaban');
+
+  /* ---- tanpa data pendukung, jangan mengaku punya ---- */
+  const F_MIN = vdInsightFacts({ bulan: 'Agustus 2026', bulanKey: '2026-08',
+    topik: ROLLUP_TOPICS, labelMap: PROF.topicLabels });
+  ok(!!F_MIN, 'tanpa tab pendukung fakta tetap terbentuk');
+  ok(F_MIN.hari === null, 'tanpa TOPIC_LOG tidak ada sebaran hari yang diklaim');
+  eq(F_MIN.program, [], 'tanpa PROGRAM daftarnya kosong, bukan undefined');
+
+  ok(vdInsightFacts({ bulan: 'x', topik: [] }) === null,
+     'bulan tanpa topik menghasilkan null, jadi AI tidak dipanggil');
+  ok(vdInsightFacts({}) === null, 'masukan kosong menghasilkan null');
+
+  /* --------------------------------------------------------------- 13c -- */
+  group('13c. Prompt — pagar untuk pemilik usaha');
+
+  const BODY = vdInsightBody(FACTS, 'claude-sonnet-4-6');
+  eq(BODY.model, 'claude-sonnet-4-6', 'model terpasang di badan permintaan');
+  ok(BODY.max_tokens >= 3000 && BODY.max_tokens <= 8000,
+     'max_tokens cukup untuk 4 saran, tapi tetap berbatas');
+  ok(BODY.temperature <= 0.3, 'temperature rendah, analisis bukan karangan');
+
+  const SYS = BODY.system;
+  ok(SYS.indexOf('PEMILIK USAHA') !== -1, 'pembacanya dinyatakan: pemilik usaha');
+  ok(SYS.indexOf('KEPUTUSAN USAHA') !== -1, 'keluarannya diminta berupa keputusan usaha');
+  ok(SYS.indexOf('jadwal jaga, standby, shift') !== -1,
+     'saran jadwal standby dilarang secara eksplisit');
+  ok(SYS.indexOf('menulis FAQ, skrip jawaban') !== -1,
+     'saran menulis FAQ/skrip dilarang secara eksplisit');
+  ok(SYS.indexOf('menyetel bot') !== -1, 'saran menyetel bot dilarang');
+  ok(SYS.indexOf('Dilarang mengarang angka') !== -1, 'mengarang angka dilarang');
+  ok(SYS.indexOf('SATUAN') !== -1, 'satuan wajib dipakai apa adanya');
+  ok(SYS.indexOf('faq_sudah_ada') !== -1, 'dilarang menyarankan yang sudah ada di FAQ');
+  ok(SYS.indexOf('sebaran harinya rata') !== -1,
+     'dilarang menyebut hari kalau sebarannya rata');
+  ok(BODY.messages[0].content.indexOf('Agustus 2026') !== -1, 'pesan menyebut periodenya');
+
+  // Data pribadi lead tidak boleh ikut ke prompt.
+  const BODY_TXT = JSON.stringify(BODY);
+  const waList = P.thescholars.leads.rows.slice(0, 25)
+    .map(r => String(r.wa || r.key)).filter(v => v.length > 6);
+  ok(waList.every(w => BODY_TXT.indexOf(w) === -1),
+     'tidak ada nomor WhatsApp lead yang ikut ke prompt');
+  const namaList = P.thescholars.leads.rows.slice(0, 25)
+    .map(r => String(r.nama || '')).filter(v => v.length > 3 && !/^\d+$/.test(v));
+  ok(namaList.every(n => BODY_TXT.indexOf(n) === -1),
+     'tidak ada nama lead yang ikut ke prompt');
+
+  /* --------------------------------------------------------------- 13d -- */
+  group('13d. Membaca balasan & perjalanan ke kartu');
+
+  function reply(obj) { return { content: [{ text: JSON.stringify(obj) }] }; }
+  const ITEMS = [
+    { judul: 'Buka batch IELTS berikutnya', alasan: 'IELTS topik terbesar.',
+      aksi: 'Umumkan Batch 4 ke 34 lead yang menanyakannya.',
+      dampak: 'tinggi', dasar: ['IELTS: 34 user', 'Batch 4 kuota 3'] }
+  ];
+  const R1 = vdInsightParse(reply({ items: ITEMS }), 'claude-sonnet-4-6');
+  ok(!!R1, 'balasan wajar terbaca');
+  eq(R1.items.length, 1, 'butirnya tersimpan');
+  eq(R1.model, 'claude-sonnet-4-6', 'model dicatat untuk ditulis ke sel');
+  ok(R1.generated_at > 0, 'waktu pembuatan dicatat');
+
+  const FENCED = '```json\n' + JSON.stringify({ items: ITEMS }) + '\n```';
+  ok(!!vdInsightParse({ content: [{ text: FENCED }] }, 'm'),
+     'balasan berpagar kode tetap terbaca');
+  ok(vdInsightParse(null, 'm') === null, 'balasan null menghasilkan null');
+  ok(vdInsightParse({ content: [{ text: 'maaf saya tidak bisa' }] }, 'm') === null,
+     'balasan tanpa JSON menghasilkan null');
+  ok(vdInsightParse({ content: [{ text: '{"items":[' }] }, 'm') === null,
+     'JSON terpotong menghasilkan null');
+  ok(vdInsightParse(reply({ items: [] }), 'm') === null,
+     'items kosong menghasilkan null');
+
+  /* ---- balasan TERPOTONG (kejadian nyata 2026-09-06) ----
+   * max_tokens habis di tengah butir keempat. Membuang seluruh balasan berarti
+   * tiga butir sempurna ikut hilang dan bulan itu tanpa rekomendasi sampai
+   * bulan berikutnya. */
+  const TIGA = [
+    { judul: 'Buka Batch 6 Junior', alasan: 'Batch 5 sudah Closed.',
+      aksi: 'Putuskan tanggal Batch 6.', dampak: 'tinggi', dasar: ['Batch 5: Closed'] },
+    { judul: 'Hubungi peminat ASEAN', alasan: 'Topik terbanyak kedua.',
+      aksi: 'Kontak 9 user minggu ini.', dampak: 'tinggi', dasar: ['9 user'] },
+    { judul: 'Rapikan webinar', alasan: 'Banyak yang gagal masuk.',
+      aksi: 'Putuskan platform berikutnya.', dampak: 'sedang', dasar: ['9 pesan'] }
+  ];
+  const POTONG = '{"items":[' +
+    TIGA.map(x => JSON.stringify(x)).join(',') +
+    ',{"judul":"Butir keempat","alasan":"Kalimat ini terpotong di tengah karena';
+  const CUT = vdInsightParse({ content: [{ text: POTONG }], stop_reason: 'max_tokens' },
+                             'claude-sonnet-4-6');
+  ok(!!CUT, 'balasan terpotong tidak dibuang seluruhnya');
+  eq(CUT.items.length, 3, 'tiga butir utuh diselamatkan, yang terpotong ditinggalkan');
+  eq(CUT.items[0].judul, 'Buka Batch 6 Junior', 'butir pertama utuh');
+  eq(CUT.truncated, true, 'ditandai terpotong supaya kelihatan di log');
+
+  // Kutipan berisi kurung/tanda kutip tidak boleh mengacaukan penghitungan.
+  const TRICKY = '{"items":[{"judul":"Kutip \\"kurung { } di dalam\\"",' +
+    '"aksi":"Lakukan A","dampak":"tinggi","dasar":["x"]},{"judul":"Terpotong';
+  const TR = vdInsightParse({ content: [{ text: TRICKY }] }, 'm');
+  ok(!!TR && TR.items.length === 1,
+     'kurung di dalam tanda kutip tidak mengacaukan pemungutan butir');
+
+  ok(vdInsightParse({ content: [{ text: '{"items":[{"judul":"Cuma judul' }] }, 'm') === null,
+     'kalau tidak ada satu pun butir utuh, hasilnya tetap null');
+
+  eq(vdInsightBody(FACTS, 'm').max_tokens, 4000,
+     'jatah token dinaikkan supaya balasan tidak terpotong sejak awal');
+  ok(vdInsightBody(FACTS, 'm').system.indexOf('RINGKAS') !== -1,
+     'model diminta ringkas, bukan hanya diberi jatah lebih besar');
+
+  const ROUND = vdInsightFromMonthly(SPEC, cell(R1), 'Agustus 2026');
+  ok(!!ROUND, 'hasil WF-B terbaca kembali oleh dashboard');
+  eq(ROUND.items, R1.items, 'tidak ada butir yang hilang saat dibaca ulang');
+  eq(ROUND.title, 'AI Insight dari Topik — Agustus 2026', 'judul kartu sesuai konfigurasi');
+
+  /* --------------------------------------------------------------- 13e -- */
+  group('13e. Sebaran hari & jam — perhitungan dasar');
+
+  eq(VD_DOW_LABELS, ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'],
+     'label hari tetap, Senin lebih dulu');
+  eq(vdDowCounts([]), [0,0,0,0,0,0,0], 'daftar kosong menghasilkan tujuh nol');
+  eq(vdDowCounts(null), [0,0,0,0,0,0,0], 'masukan null ditangani');
+  eq(vdDowCounts([null, undefined]), [0,0,0,0,0,0,0], 'nilai kosong diabaikan');
+  eq(vdDowCounts([Date.UTC(2026, 7, 5)])[2], 1, 'tanggal Rabu masuk ke kolom Rabu');
+  eq(vdDowCounts([Date.UTC(2026, 7, 9)])[6], 1, 'Minggu ada di ujung, bukan di depan');
+
+  eq(vdHourCounts([]).length, 24, 'histogram jam selalu 24 kolom');
+  eq(vdHourCounts([0, 0, 23])[0], 2, 'jam 00 terhitung benar');
+  eq(vdHourCounts([24, -1, 99]).reduce((a, b) => a + b, 0), 0,
+     'jam di luar 0..23 diabaikan, bukan dipaksa masuk');
+  eq(vdHourLabels()[0], '00', 'label jam dua digit');
+
+  const T0 = Date.UTC(2026, 7, 5, 4, 0);
+  eq(vdWibShift([T0])[0] - T0, 7 * 3600 * 1000, 'pergeseran WIB tepat 7 jam');
+  eq(vdWibShift([T0, 0, -5, 'x', null]).length, 1,
+     'epoch tidak sah (0, negatif, huruf, null) dibuang saat digeser');
+  eq(vdWibHours([Date.UTC(2026, 7, 5, 4, 0)]), [11], '04:00 UTC dibaca 11:00 WIB');
+  eq(vdWibHours([Date.UTC(2026, 7, 5, 17, 30)]), [0], '17:30 UTC dibaca 00:30 WIB');
+
+  group('14. Chart hari — dasar saran yang menyebut hari');
+
+  ['thescholars', 'persada'].forEach(id => {
+    const w = P[id].charts.find(c => c.id === 'weekday');
+    ok(!!w, id + ': chart hari ada');
+    eq(w.labels, ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
+       id + ': tujuh hari, Senin lebih dulu');
+    eq(w.series[0].data.length, 7, id + ': tujuh angka');
+    ok(w.series[0].data.every(n => typeof n === 'number' && n >= 0),
+       id + ': semua angka bulat non-negatif');
+    ok(!w.rangeAware, id + ': tidak mengikuti filter rentang (dijelaskan di hint)');
+  });
+
+  // Total sebaran hari harus sama dengan jumlah lead yang punya tanggal chat
+  // terakhir terbaca — kalau tidak, ada lead yang hilang atau dihitung dobel.
+  const wTS = P.thescholars.charts.find(c => c.id === 'weekday');
+  const totalHari = wTS.series[0].data.reduce((a, b) => a + b, 0);
+  const punyaTanggal = P.thescholars.leads.rows.filter(r => r.last_chat !== '').length;
+  eq(totalHari, punyaTanggal, 'jumlah sebaran hari == lead dengan tanggal chat terakhir');
+
+  /* --------------------------------------------------------------- 15 -- */
+  group('15. Simpan payload untuk UAT end-to-end');
+
+  for (const id of ['thescholars', 'persada']) {
+    try {
+      const r = await fetch('/_save/payload-' + id + '.json', {
+        method: 'POST', headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify(P[id])
+      });
+      const j = await r.json();
+      ok(j.ok === true, 'payload-' + id + '.json tersimpan (' + j.bytes + ' byte)');
+    } catch (e) {
+      ok(false, 'menyimpan payload-' + id + '.json', e.message);
+    }
+  }
+
+  /* ------------------------------------------------------------ ringkas */
+  const s = document.getElementById('summary');
+  s.className = 'big ' + (FAIL ? 'bad' : 'ok');
+  s.textContent = FAIL
+    ? FAIL + ' GAGAL dari ' + (PASS + FAIL) + ' pemeriksaan'
+    : 'SEMUA LOLOS — ' + PASS + ' pemeriksaan';
+  window.__QA__ = { pass: PASS, fail: FAIL, total: PASS + FAIL, failures: FAILURES };
+  document.title = (FAIL ? 'GAGAL ' + FAIL : 'LOLOS ' + PASS) + ' — VIRA Self Test';
+}
+
+run().catch(e => {
+  const s = document.getElementById('summary');
+  s.className = 'big bad';
+  s.textContent = 'ERROR: ' + e.message;
+  window.__QA__ = { pass: PASS, fail: FAIL + 1, total: PASS + FAIL + 1,
+                    failures: FAILURES.concat(['runner: ' + e.message + '\n' + e.stack]) };
+  document.title = 'ERROR — VIRA Self Test';
+});
+</script>
+</body>
+</html>

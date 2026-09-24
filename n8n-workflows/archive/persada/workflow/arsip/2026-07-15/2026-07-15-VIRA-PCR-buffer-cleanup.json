@@ -1,0 +1,144 @@
+{
+  "name": "VIRA-PCR - MSG_BUFFER Cleanup (harian 03:00 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "88386dbd-3d74-4590-bc5e-393e50baadd2",
+      "name": "Every day 03:00 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "PASTE_PCR_GOOGLE_SHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "199604fe-4e1c-4b2c-a902-cf0d12ab2fa4",
+      "name": "Read MSG_BUFFER (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PICK EXPIRED BLOCK — MSG_BUFFER housekeeping\n// MSG_BUFFER bersifat append-only => ts naik seiring nomor baris =>\n// baris kadaluarsa (paling lama) SELALU blok kontigu di bagian atas\n// (mulai baris 2). Jadi cukup 1x delete range (hemat kuota API).\n//\n// RETENTION_MS HARUS > MAX_AGE_MS (30 mnt) di node \"Cek_user_status\".\n// Baris > 30 mnt tidak pernah dipakai untuk merge, jadi 2 jam aman.\n// ====================================================================\nconst RETENTION_MS = 2 * 60 * 60 * 1000; // 2 jam\nconst cutoff = Date.now() - RETENTION_MS;\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.row_number !== undefined && Number(r.row_number) >= 2)\n  .sort((a, b) => Number(a.row_number) - Number(b.row_number)); // menaik (atas -> bawah)\n\nif (!rows.length) {\n  console.log('🧹 MSG_BUFFER kosong / hanya header — tidak ada yang dihapus.');\n  return [];\n}\n\n// Hitung run kontigu baris kadaluarsa mulai dari baris teratas.\n// Berhenti di baris pertama yang MASIH segar atau ts-nya tidak valid\n// (defensif: jangan pernah hapus baris yang tak bisa dipastikan umurnya).\nlet count = 0;\nfor (const r of rows) {\n  const ts = Number(r.ts);\n  const valid = Number.isFinite(ts) && ts > 0;\n  if (valid && ts < cutoff) {\n    count++;\n  } else {\n    if (!valid) {\n      console.warn(`⚠️ Baris ${r.row_number} ts tidak valid (\"${r.ts}\") — stop, tidak hapus lebih jauh.`);\n    }\n    break;\n  }\n}\n\nif (count === 0) {\n  console.log('🧹 Tidak ada baris berumur > 2 jam — buffer sudah ramping.');\n  return [];\n}\n\nconst startRow = Number(rows[0].row_number); // normalnya 2\nconsole.log(`🧹 Hapus ${count} baris kadaluarsa: baris ${startRow}..${startRow + count - 1}.`);\nreturn [{ json: { startRow, count } }];\n"
+      },
+      "id": "c52231b7-5a19-4556-8201-fb4366525e53",
+      "name": "Pick expired block (>2h)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "PASTE_PCR_GOOGLE_SHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "toDelete": "rows",
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "78898ff1-f286-43d2-baa9-f15c0e8ee0d8",
+      "name": "Delete expired rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    }
+  ],
+  "connections": {
+    "Every day 03:00 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read MSG_BUFFER (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MSG_BUFFER (all)": {
+      "main": [
+        [
+          {
+            "node": "Pick expired block (>2h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick expired block (>2h)": {
+      "main": [
+        [
+          {
+            "node": "Delete expired rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  },
+  "pinData": {}
+}

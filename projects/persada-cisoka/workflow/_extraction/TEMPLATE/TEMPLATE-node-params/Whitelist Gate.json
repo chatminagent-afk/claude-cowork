@@ -1,0 +1,13 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "// ============================================================\n// WHITELIST GATE  (ENGINE) — config-driven, anti-bug LID\n// whitelist_enabled=false -\u003e semua user lewat (mode produksi publik).\n// whitelist_enabled=true  -\u003e hanya nomor di whitelist_numbers (uji).\n// Pencocokan tahan format: bandingkan digit dari `from` DAN `originLid`.\n// ============================================================\nconst cfg = $(\u0027Parse Config\u0027).first().json.config || {};\nconst body = ($input.first().json.body) || ($(\u0027Parse Config\u0027).first().json.body) || {};\n\nif (!cfg.whitelist_enabled) {\n  return [$input.first()];\n}\n\nconst list = (cfg.whitelist_numbers || []).map(x =\u003e String(x).replace(/\\D/g, \u0027\u0027)).filter(Boolean);\nconst fromDigits = String(body.from || \u0027\u0027).replace(/\\D/g, \u0027\u0027);\nconst lidDigits  = String(body.originLid || \u0027\u0027).replace(/\\D/g, \u0027\u0027);\n\nconst allowed = list.some(w =\u003e w \u0026\u0026 (w === fromDigits || w === lidDigits ||\n  (fromDigits \u0026\u0026 fromDigits.endsWith(w)) || (w.endsWith(fromDigits) \u0026\u0026 fromDigits.length \u003e= 6)));\n\nif (!allowed) {\n  console.log(`⛔ WHITELIST: ${fromDigits || lidDigits || \u0027unknown\u0027} tidak di whitelist — stop.`);\n  return [];\n}\nconsole.log(`✅ WHITELIST OK: ${fromDigits || lidDigits}`);\nreturn [$input.first()];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -18176,
+                     2480
+                 ],
+    "id":  "fa69804c408d665a",
+    "name":  "Whitelist Gate"
+}

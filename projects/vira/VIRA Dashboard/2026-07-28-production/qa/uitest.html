@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIRA Dashboard — UI Test</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:24px; background:#0b0d11; color:#e8eaed;
+         font:14px/1.55 ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { color:#8b93a1; margin-bottom:20px; }
+  #summary { position:sticky; top:0; background:#0b0d11; padding:12px 0 16px;
+             border-bottom:1px solid #232833; margin-bottom:16px; font-size:26px; font-weight:700; z-index:2; }
+  .ok { color:#30d158; } .bad { color:#ff453a; }
+  .grp { margin:20px 0 6px; color:#8b93a1; text-transform:uppercase;
+         letter-spacing:.08em; font-size:11px; border-top:1px solid #232833; padding-top:14px; }
+  .row { display:flex; gap:10px; padding:3px 0; }
+  .tag { flex:0 0 52px; font-weight:700; font-size:11px; }
+  .why { color:#ff8a80; font-size:12px; padding-left:62px; white-space:pre-wrap; }
+  #sandbox { position:absolute; left:-99999px; top:0; width:1000px; }
+</style>
+</head>
+<body>
+
+<h1>VIRA Dashboard — UI Test</h1>
+<div class="sub">
+  Menguji pembangun DOM di <code>app/js/render.js</code> dan <code>charts.js</code> secara langsung.
+  <b>Lapis ini yang dulu tidak ada</b> — dan di situlah bug toggle bolak-balik lolos:
+  uji fungsi murni tidak pernah menyentuh event listener.
+</div>
+
+<div id="summary">menjalankan…</div>
+<div id="out"></div>
+<div id="sandbox"></div>
+
+<script src="../app%20revamp/js/config.js"></script>
+<script src="../app%20revamp/js/charts.js"></script>
+<script src="../app%20revamp/js/render.js"></script>
+
+<script>
+'use strict';
+
+var OUT = document.getElementById('out');
+var SB = document.getElementById('sandbox');
+var PASS = 0, FAIL = 0, GROUP = '', FAILURES = [];
+
+function group(n){ GROUP=n; var d=document.createElement('div'); d.className='grp'; d.textContent=n; OUT.appendChild(d); }
+function rec(good,msg,why){
+  var r=document.createElement('div'); r.className='row';
+  r.innerHTML='<span class="tag '+(good?'ok':'bad')+'">'+(good?'PASS':'GAGAL')+'</span>';
+  var m=document.createElement('span'); m.textContent=msg; r.appendChild(m); OUT.appendChild(r);
+  if(good){PASS++;} else {FAIL++; FAILURES.push(GROUP+' :: '+msg+(why?' -> '+why:''));
+    if(why){var w=document.createElement('div'); w.className='why'; w.textContent=why; OUT.appendChild(w);} }
+}
+function ok(c,m,w){ rec(!!c,m,c?'':(w||'')); }
+function eq(a,b,m){ var x=JSON.stringify(a),y=JSON.stringify(b); rec(x===y,m,x===y?'':'dapat '+x+', harusnya '+y); }
+
+/** Klik sungguhan lewat event, bukan pemanggilan fungsi langsung. */
+function click(el){ el.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})); }
+
+function mount(node){ SB.innerHTML=''; SB.appendChild(node); return node; }
+
+var R = window.VDRender, C = window.VDCharts;
+
+/* ===================================================================== 1 == */
+group('1. REGRESI — toggle bot_mode harus bisa bolak-balik');
+
+(function () {
+  if (!R || !R.leadTable) { ok(false,'VDRender tersedia','render.js gagal dimuat'); return; }
+
+  var row = { key:'628111', wa:'628111', nama:'Uji', bot_mode:'ON', counter:1,
+              last_chat:'2026-07-01', segment:'', stage:'', detail:[] };
+  var cols = [
+    { key:'wa', label:'No WA', type:'wa' },
+    { key:'bot_mode', label:'Bot', type:'toggle' }
+  ];
+  var sent = [];
+  var rowClicks = 0;
+
+  var table = R.leadTable(cols, [row], { sortKey:'', sortDir:'desc' }, {
+    onSort: function(){},
+    onRow: function(){ rowClicks++; },
+    // Meniru persis yang dilakukan app.js setelah server menjawab.
+    onToggle: function (r, next, sw) {
+      sent.push(next);
+      r.bot_mode = next;
+      R.setSwitch(sw, next);
+    }
+  });
+  mount(table);
+
+  var sw = table.querySelector('button[role=switch]');
+  ok(!!sw, 'switch terbentuk di kolom bertipe toggle');
+  eq(sw.getAttribute('aria-checked'), 'true', 'kondisi awal ON tergambar benar');
+
+  click(sw);
+  eq(sent[0], 'OFF', 'klik ke-1 pada bot aktif meminta OFF');
+  eq(sw.getAttribute('aria-checked'), 'false', 'tampilan switch ikut mati');
+  eq(row.bot_mode, 'OFF', 'model ikut diperbarui');
+
+  click(sw);
+  eq(sent[1], 'ON', 'klik ke-2 meminta ON — INI bug yang dilaporkan');
+  eq(sw.getAttribute('aria-checked'), 'true', 'switch menyala kembali');
+
+  click(sw);
+  eq(sent[2], 'OFF', 'klik ke-3 meminta OFF lagi (arah sebaliknya juga pulih)');
+
+  click(sw); click(sw);
+  eq(sent, ['OFF','ON','OFF','ON','OFF'], 'lima klik berturut-turut berselang-seling rapi');
+
+  ok(rowClicks === 0, 'klik switch tidak ikut membuka drawer baris',
+     rowClicks + ' kali drawer terpicu');
+
+  // Terkunci selama request berjalan
+  sw.disabled = true;
+  var before = sent.length;
+  click(sw);
+  ok(sent.length === before, 'switch yang dikunci mengabaikan klik');
+  sw.disabled = false;
+
+  // Baris yang datang dalam keadaan OFF harus meminta ON di klik pertama
+  var row2 = { key:'628222', bot_mode:'OFF' };
+  var sent2 = [];
+  var t2 = R.leadTable(cols, [row2], {}, { onToggle:function(r,n,s){ sent2.push(n); r.bot_mode=n; R.setSwitch(s,n);} });
+  mount(t2);
+  var sw2 = t2.querySelector('button[role=switch]');
+  eq(sw2.getAttribute('aria-checked'), 'false', 'baris yang OFF tergambar mati');
+  click(sw2);
+  eq(sent2[0], 'ON', 'baris OFF meminta ON di klik pertama');
+  click(sw2);
+  eq(sent2[1], 'OFF', 'lalu OFF lagi');
+
+  // bot_mode kosong = aktif (konsisten dengan kedua workflow)
+  var row3 = { key:'628333', bot_mode:'' };
+  var sent3 = [];
+  var t3 = R.leadTable(cols, [row3], {}, { onToggle:function(r,n,s){ sent3.push(n); r.bot_mode=n; R.setSwitch(s,n);} });
+  mount(t3);
+  click(t3.querySelector('button[role=switch]'));
+  eq(sent3[0], 'OFF', 'bot_mode kosong dianggap aktif, klik meminta OFF');
+
+  // Pembatalan: model TIDAK berubah -> klik berikutnya tetap arah yang sama
+  var row4 = { key:'628444', bot_mode:'ON' };
+  var sent4 = [];
+  var t4 = R.leadTable(cols, [row4], {}, { onToggle:function(r,n){ sent4.push(n); /* dibatalkan: model tak diubah */ } });
+  mount(t4);
+  var sw4 = t4.querySelector('button[role=switch]');
+  click(sw4); click(sw4);
+  eq(sent4, ['OFF','OFF'], 'kalau dibatalkan, arah permintaan tetap sama');
+  eq(sw4.getAttribute('aria-checked'), 'true', 'switch tidak bergerak saat dibatalkan');
+
+  // Kegagalan server: app.js mengembalikan model & tampilan -> arah tetap
+  var row5 = { key:'628555', bot_mode:'ON' };
+  var sent5 = [];
+  var t5 = R.leadTable(cols, [row5], {}, { onToggle:function(r,n,s){
+    sent5.push(n); R.setSwitch(s,n); r.bot_mode=n;              // optimistic
+    R.setSwitch(s,'ON'); r.bot_mode='ON';                        // rollback
+  }});
+  mount(t5);
+  var sw5 = t5.querySelector('button[role=switch]');
+  click(sw5); click(sw5);
+  eq(sent5, ['OFF','OFF'], 'setelah rollback, klik berikutnya meminta arah yang sama');
+  eq(sw5.getAttribute('aria-checked'), 'true', 'switch kembali ke posisi semula setelah gagal');
+}());
+
+/* ===================================================================== 2 == */
+group('2. Fungsi status bot');
+
+ok(R.isBotOn({bot_mode:'ON'}) === true, 'ON = aktif');
+ok(R.isBotOn({bot_mode:''}) === true, 'kosong = aktif');
+ok(R.isBotOn({bot_mode:'OFF'}) === false, 'OFF = nonaktif');
+ok(R.isBotOn({bot_mode:' off '}) === false, 'huruf kecil + spasi tetap nonaktif');
+ok(R.isBotOn({bot_mode:'OFF '}) === false, 'spasi di ujung tidak membuat bot tampak aktif');
+ok(R.isBotOn({}) === true, 'field tidak ada = aktif');
+eq(R.nextMode({bot_mode:'ON'}), 'OFF', 'nextMode dari ON');
+eq(R.nextMode({bot_mode:'OFF'}), 'ON', 'nextMode dari OFF');
+eq(R.nextMode({bot_mode:''}), 'OFF', 'nextMode dari kosong');
+eq(R.nextMode({bot_mode:' off '}), 'ON', 'nextMode dari " off " (berspasi) tetap ON');
+
+// Ketiga tempat yang membaca bot_mode harus sepakat, termasuk untuk nilai
+// berspasi. Kalau berbeda, filter "Manual" bisa menampilkan baris yang
+// switch-nya terlihat menyala.
+(function(){
+  ['OFF',' off ','off'].forEach(function(v){
+    var rows=[{key:'a',bot_mode:v}];
+    ok(R.filterLeads(rows,{botMode:'off'}).length===1, 'filter Manual menangkap bot_mode "'+v+'"');
+    ok(R.filterLeads(rows,{botMode:'on'}).length===0, 'filter Bot aktif menolak bot_mode "'+v+'"');
+    var sw=R.toggleSwitch({bot_mode:v},{});
+    eq(sw.getAttribute('aria-checked'),'false','switch tergambar mati untuk bot_mode "'+v+'"');
+  });
+  ['ON',' on ','',' '].forEach(function(v){
+    var rows=[{key:'a',bot_mode:v}];
+    ok(R.filterLeads(rows,{botMode:'on'}).length===1, 'filter Bot aktif menangkap bot_mode "'+v+'"');
+  });
+}());
+
+(function(){
+  var sw = R.toggleSwitch({bot_mode:'ON'}, {});
+  R.setSwitch(sw,'OFF');
+  ok(sw.className.indexOf('on') === -1, 'setSwitch OFF membuang kelas .on');
+  eq(sw.getAttribute('aria-checked'),'false','setSwitch OFF menyetel aria-checked');
+  R.setSwitch(sw,'ON');
+  ok(sw.className.indexOf('on') !== -1, 'setSwitch ON mengembalikan kelas .on');
+  ok(/aktif/.test(sw.getAttribute('aria-label')), 'aria-label ikut berubah');
+}());
+
+/* ===================================================================== 3 == */
+group('3. Sel tabel — tiap tipe & keamanan');
+
+(function(){
+  var mk = function(row,col){ return R.cell(row,col,{}); };
+  eq(mk({a:'halo'},{key:'a',type:'text'}).textContent, 'halo', 'tipe text');
+  eq(mk({a:1234},{key:'a',type:'int'}).textContent, '1.234', 'tipe int diformat Indonesia');
+  eq(mk({a:''},{key:'a',type:'text'}).textContent, '—', 'sel kosong ditampilkan sebagai strip, bukan blank');
+  ok(mk({a:''},{key:'a',type:'text'}).className.indexOf('dim') !== -1, 'sel kosong diberi kelas redup');
+  ok(mk({a:'2026-07-21'},{key:'a',type:'date'}).textContent.length > 0, 'tipe date terisi');
+  eq(mk({a:''},{key:'a',type:'date'}).textContent, '—', 'tanggal kosong jadi strip');
+
+  var wa = mk({wa:'628121000000', is_lid:false},{key:'wa',type:'wa'});
+  ok(wa.textContent.indexOf('628121000000') !== -1, 'tipe wa menampilkan nomor');
+  var lid = mk({wa:'199988877766655', is_lid:true},{key:'wa',type:'wa'});
+  ok(/LID/i.test(lid.textContent), 'baris LID diberi penanda');
+
+  var badge = mk({s:'SCHEDULED'},{key:'s',type:'badge'});
+  ok(badge.querySelector('*') !== null || badge.textContent === 'SCHEDULED', 'tipe badge ter-render');
+
+  // XSS: nilai dari server tidak boleh jadi HTML
+  var xss = mk({a:'<img src=x onerror=alert(1)><b>bold</b>'},{key:'a',type:'text'});
+  mount(xss);
+  ok(xss.querySelectorAll('img,b').length === 0, 'markup di data tidak dieksekusi jadi elemen');
+  ok(xss.textContent.indexOf('<img') !== -1, 'markup ditampilkan sebagai teks apa adanya');
+
+  var xssBadge = mk({a:'<b>x</b>'},{key:'a',type:'badge'});
+  mount(xssBadge);
+  ok(xssBadge.querySelectorAll('b').length === 0, 'badge juga aman dari markup');
+}());
+
+/* ===================================================================== 4 == */
+group('4. Tabel lead');
+
+(function(){
+  var cols=[{key:'nama',label:'Nama',type:'text'},{key:'counter',label:'Chat',type:'int'}];
+  var rows=[{key:'1',nama:'Andi',counter:5},{key:'2',nama:'Budi',counter:9}];
+  var sorted=[];
+  var opened=[];
+  var t=R.leadTable(cols,rows,{sortKey:'counter',sortDir:'desc'},{
+    onSort:function(k){sorted.push(k);}, onRow:function(r){opened.push(r.key);}
+  });
+  mount(t);
+  // Kolom yang sedang jadi acuan urut diberi penanda arah (▼/▲) — dibuang
+  // dulu supaya yang diuji adalah labelnya, bukan indikatornya.
+  var labels = [].map.call(t.querySelectorAll('thead th'), function (x) {
+    return x.textContent.replace(/[▼▲]/g, '').trim();
+  });
+  eq(labels, ['Nama','Chat'], 'label kolom mengikuti deskriptor server');
+  ok(/[▼▲]/.test(t.querySelectorAll('thead th')[1].textContent),
+     'kolom yang sedang diurutkan menampilkan arah urut');
+  ok(!/[▼▲]/.test(t.querySelectorAll('thead th')[0].textContent),
+     'kolom lain tidak menampilkan arah urut');
+  eq(t.querySelectorAll('tbody tr').length, 2, 'jumlah baris benar');
+
+  var th=t.querySelectorAll('thead th')[1];
+  click(th.querySelector('button') || th);
+  eq(sorted, ['counter'], 'klik header memicu pengurutan kolom itu');
+
+  click(t.querySelectorAll('tbody tr')[1]);
+  eq(opened, ['2'], 'klik baris membuka detail baris yang benar');
+
+  var empty=R.leadTable(cols,[],{},{});
+  mount(empty);
+  ok(empty.textContent.length > 0, 'tabel kosong menampilkan sesuatu, bukan blank');
+}());
+
+/* ===================================================================== 5 == */
+group('5. Tabel tambahan, detail, KPI');
+
+(function(){
+  var s=R.simpleTable({id:'x',title:'Judul',total:3,columns:[{key:'a',label:'A',type:'text'}],
+                       rows:[{a:'1'},{a:'2'},{a:'3'}],empty:'kosong'});
+  mount(s);
+  ok(/Judul/.test(s.textContent),'judul tabel tampil');
+  eq(s.querySelectorAll('tbody tr').length,3,'baris tabel tambahan');
+  ok(/3/.test(s.textContent),'jumlah total baris ditampilkan');
+
+  var se=R.simpleTable({id:'y',title:'Kosong',columns:[{key:'a',label:'A'}],rows:[],empty:'Belum ada data uji.'});
+  mount(se);
+  ok(/Belum ada data uji/.test(se.textContent),'empty state memakai teks dari server');
+  eq(se.querySelectorAll('tbody tr').length,0,'tidak ada baris saat kosong');
+
+  // detailList menerima BARIS lead, lalu membaca row.detail — bukan array.
+  var d=R.detailList({detail:[{label:'Sumber',value:'Instagram'},{label:'Unit',value:'Tipe 36/72'}]});
+  mount(d);
+  ok(/Instagram/.test(d.textContent) && /Tipe 36\/72/.test(d.textContent),'detail menampilkan pasangan label-nilai');
+  ok(/Sumber/.test(d.textContent),'label detail ikut tampil');
+  var de=R.detailList({detail:[]});
+  mount(de);
+  ok(de.textContent.trim().length>0,'lead tanpa detail tetap memberi keterangan, bukan drawer kosong');
+  var dn=R.detailList({});
+  mount(dn);
+  ok(dn.textContent.trim().length>0,'baris tanpa field detail sama sekali tidak membuat error');
+  var dx=R.detailList({detail:[{label:'X',value:'<b>bold</b>'}]});
+  mount(dx);
+  ok(dx.querySelectorAll('b').length===0,'nilai detail aman dari markup');
+
+  var k=R.kpiCard({id:'a',label:'Total Lead',value:63,tone:'blue',sub:'81% dari total',hint:'penjelasan'},30);
+  mount(k);
+  ok(/Total Lead/.test(k.textContent),'label KPI tampil');
+  ok(/63/.test(k.textContent),'nilai KPI tampil');
+  ok(/81%/.test(k.textContent),'sub-teks KPI tampil');
+
+  var kpiSpec={id:'b',label:'Lead Baru',rangeAware:true,value:5,values:{'7':1,'30':5,'90':9}};
+  eq(R.kpiValue(kpiSpec,7),1,'kpiValue rentang 7');
+  eq(R.kpiValue(kpiSpec,90),9,'kpiValue rentang 90');
+  var val=function(card){ return card.querySelector('.metric-val').textContent.trim(); };
+  eq(val(R.kpiCard(kpiSpec,7)),'1','kartu KPI menampilkan nilai rentang 7');
+  eq(val(R.kpiCard(kpiSpec,30)),'5','kartu KPI menampilkan nilai rentang 30');
+  eq(val(R.kpiCard(kpiSpec,90)),'9','kartu KPI menampilkan nilai rentang 90');
+  eq(val(R.kpiCard({id:'c',label:'Tetap',value:1234},7)),'1.234',
+     'KPI non-rangeAware mengabaikan rentang dan tetap diformat');
+}());
+
+/* ===================================================================== 6 == */
+group('6. Chart');
+
+(function(){
+  var host=document.createElement('div'); host.style.width='600px'; mount(host);
+  var charts=[
+    {id:'l',type:'line',title:'Garis',labels:['a','b','c'],series:[{name:'s',data:[1,5,3],color:'blue'}]},
+    {id:'b',type:'bar',title:'Batang',labels:['a','b'],series:[{name:'s',data:[2,7],color:'purple'}]},
+    {id:'d',type:'doughnut',title:'Donat',labels:['x','y'],series:[{name:'s',data:[3,1],color:['green','orange']}]},
+    {id:'z',type:'doughnut',title:'Nol',labels:['x','y'],series:[{name:'s',data:[0,0],color:'palette'}]}
+  ];
+  var cards=R.chartGrid(host,charts,30);
+  ok(cards.length===4,'satu kartu per chart',cards.length);
+  ok(host.querySelectorAll('svg').length>=3,'chart berisi data menggambar SVG',
+     host.querySelectorAll('svg').length);
+  ok(/Garis/.test(host.textContent)&&/Donat/.test(host.textContent),'judul chart tampil');
+  var zeroCard=cards[3];
+  ok(zeroCard.textContent.length>0,'chart bernilai nol tetap menampilkan sesuatu');
+
+  ok(C.isEmptyData([{data:[0,0]}])===true,'isEmptyData mengenali seluruh nol');
+  ok(C.isEmptyData([{data:[0,1]}])===false,'isEmptyData tahu ada isi');
+  ok(C.seriesMax([{data:[1,9,3]}])===9,'seriesMax benar');
+  ok(typeof C.linePath([1,2,3],100,50)==='string','linePath menghasilkan string');
+  ok(C.donutArcs([1,1,2]).length===3,'donutArcs satu juring per nilai');
+  ok(C.niceScale(7).max>=7,'niceScale membulatkan ke atas');
+}());
+
+/* ------------------------------------------------------------------ akhir */
+var s=document.getElementById('summary');
+s.className=FAIL?'bad':'ok';
+s.textContent=FAIL?(FAIL+' GAGAL dari '+(PASS+FAIL)+' pemeriksaan'):('SEMUA LOLOS — '+PASS+' pemeriksaan');
+window.__UITEST__={pass:PASS,fail:FAIL,total:PASS+FAIL,failures:FAILURES};
+document.title=(FAIL?'GAGAL '+FAIL:'LOLOS '+PASS)+' — VIRA UI Test';
+SB.innerHTML='';
+</script>
+</body>
+</html>

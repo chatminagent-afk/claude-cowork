@@ -1,0 +1,115 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "list",
+          "cachedResultName": "CONFIG"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Key",
+              "lookupValue": "VIRA_STATUS"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -18304,
+        2480
+      ],
+      "id": "vira-readcfg-0001",
+      "name": "Read VIRA Config",
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "vira-active-cond-1",
+              "leftValue": "={{ String($json.Value).trim().toUpperCase() }}",
+              "rightValue": "ON",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -18304,
+        2620
+      ],
+      "id": "vira-ifactive-0001",
+      "name": "IF VIRA Active"
+    }
+  ],
+  "connections": {
+    "IF (Whitelist)": {
+      "main": [
+        [
+          {
+            "node": "Read VIRA Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read VIRA Config": {
+      "main": [
+        [
+          {
+            "node": "IF VIRA Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF VIRA Active": {
+      "main": [
+        [
+          {
+            "node": "Chat Counter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  }
+}

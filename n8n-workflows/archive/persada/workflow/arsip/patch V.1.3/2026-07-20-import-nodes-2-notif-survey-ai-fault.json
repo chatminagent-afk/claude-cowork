@@ -1,0 +1,110 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a2f00001-2026-0720-8000-000000000001",
+              "leftValue": "={{ $('Process All').first().json.surveyNeedsAdminAlert }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        1952
+      ],
+      "id": "a2f00001-0000-4000-8000-2026072000a2",
+      "name": "IF Survey AI Fault"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"⚠️ [PCR] TAG SURVEY DITOLAK SISTEM (AI-fault)\\nAlasan: \" + $('Process All').first().json.surveyRejectReason + \"\\nUser: \" + $('Chat Counter').first().json.user_wa + \" (\" + ($('Chat Counter').first().json.user_name || '-') + \")\" + \"\\nPesan: \" + String($('Process All').first().json.original_message || '').slice(0, 300) + \"\\n\\nOutput AI:\\n\" + String($('Process All').first().json.aiOutputRaw || '').slice(0, 500) + \"\\n\\n⚠️ Survey TIDAK tercatat padahal user mungkin merasa sudah dijadwalkan. Cek & follow-up manual.\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        1952
+      ],
+      "id": "a2f00002-0000-4000-8000-2026072000a2",
+      "name": "Notify Admin Survey Fault"
+    },
+    {
+      "parameters": {
+        "content": "## WIRING (register #2)\n1. `Process All` output -> `IF Survey AI Fault` (koneksi PARALEL ke-7, jangan menyela jalur reply)\n2. `IF Survey AI Fault` output **true** -> `Notify Admin Survey Fault` (sudah tersambung saat paste)\n3. Output false biarkan kosong\n\nHanya menyala utk reject kategori AI-FAULT (flag `surveyNeedsAdminAlert` dari Process All) - kasus normal 'slot belum lengkap' TIDAK dinotif.\n\nTes: di Process All, sementara tambahkan 'slot belum lengkap' ke array AI_FAULT_REASONS -> chat 'mau survey' tanpa tanggal -> notif masuk -> HAPUS lagi tambahannya.",
+        "height": 340,
+        "width": 440,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        1648
+      ],
+      "id": "a2f00003-0000-4000-8000-2026072000a2",
+      "name": "Sticky Note Reg2"
+    }
+  ],
+  "connections": {
+    "IF Survey AI Fault": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Survey Fault",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "pins": {}
+}

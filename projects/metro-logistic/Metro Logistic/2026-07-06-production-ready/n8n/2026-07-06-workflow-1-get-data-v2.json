@@ -1,0 +1,232 @@
+{
+  "name": "WF1 - Get Data Tracking (v2 Log_History)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "tracking-get",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-get",
+      "name": "Webhook GET tracking-get",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ],
+      "webhookId": "tracking-get"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read-tracking",
+      "name": "Baca Sheet Tracking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        420,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_ARCHIVE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Archive",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read-archive",
+      "name": "Baca Sheet Archive",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        620,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "alwaysOutputData": true,
+      "notes": "Fallback pelacakan resi yang sudah diarsipkan."
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Log_History",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read-log",
+      "name": "Baca Sheet Log_History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        820,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "alwaysOutputData": true,
+      "notes": "Sumber timeline (riwayat) per resi."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF1 - Node Code: susun response pencarian resi.\n// [ENHANCEMENT 2026-07-06] Timeline (riwayat) dibangun dari sheet\n//   Log_History (bukan lagi kolom JSON). Snapshot resi diambil dari\n//   sheet Tracking; bila tidak ada, fallback ke sheet Archive.\n//   MODE A (ada param resi): cari snapshot + rakit riwayat per resi.\n//   MODE B (param resi kosong): semua resi Tracking dgn Timestamp_Update\n//     <= 30 hari terakhir (maks 100, terbaru dulu).\n// ============================================================\n\nconst rowsTracking = $items('Baca Sheet Tracking').map(i => i.json)\n  .filter(r => String(r.No_Resi || '').trim() !== '');\nconst rowsArchive = $items('Baca Sheet Archive').map(i => i.json)\n  .filter(r => String(r.No_Resi || '').trim() !== '');\nconst rowsLog = $items('Baca Sheet Log_History').map(i => i.json)\n  .filter(r => String(r.No_Resi || '').trim() !== '');\n\n// Query dari webhook.\nconst webhookData = $items('Webhook GET tracking-get')[0].json;\nconst query = webhookData.query || {};\nconst resiParamRaw = query.resi || '';\nconst daftarResi = String(resiParamRaw)\n  .split(',').map(r => r.trim().toUpperCase()).filter(r => r.length > 0);\n\n// Kelompokkan Log_History per No_Resi (uppercase), urut waktu MENAIK.\nconst logByResi = {};\nfor (const r of rowsLog) {\n  const key = String(r.No_Resi || '').trim().toUpperCase();\n  if (!key) continue;\n  if (!logByResi[key]) logByResi[key] = [];\n  logByResi[key].push({\n    waktu: r.Timestamp_Update || '',\n    status: r.Status || '',\n    lokasi: r.Lokasi || '',\n    admin: r.Nama_Admin || ''\n  });\n}\nfor (const k in logByResi) {\n  logByResi[k].sort((a, b) => {\n    const ta = Date.parse(a.waktu), tb = Date.parse(b.waktu);\n    if (isNaN(ta) && isNaN(tb)) return 0;\n    if (isNaN(ta)) return -1;\n    if (isNaN(tb)) return 1;\n    return ta - tb;\n  });\n}\n\n// Bangun entri response dari satu snapshot row + riwayat dari Log_History.\nfunction buildEntri(snapshot, resiKey, dariArsip) {\n  const riwayat = logByResi[resiKey] ? logByResi[resiKey].slice() : [];\n  const entri = {\n    no_resi: String(snapshot.No_Resi || resiKey),\n    found: true,\n    status_terakhir: snapshot.Status_Terakhir || '',\n    timestamp_update: snapshot.Timestamp_Update || '',\n    riwayat: riwayat\n  };\n  if (dariArsip) entri.arsip = true;\n  return entri;\n}\n\n// ── MODE B: tanpa param resi → semua resi Tracking 30 hari terakhir ──\nif (daftarResi.length === 0) {\n  const now = Date.now();\n  const AMBANG_MS = 30 * 24 * 60 * 60 * 1000;\n  const hasil = [];\n  for (const row of rowsTracking) {\n    const key = String(row.No_Resi || '').trim().toUpperCase();\n    const t = Date.parse(row.Timestamp_Update);\n    if (isNaN(t) || (now - t) > AMBANG_MS) continue;\n    hasil.push(buildEntri(row, key, false));\n  }\n  hasil.sort((a, b) => Date.parse(b.timestamp_update) - Date.parse(a.timestamp_update));\n  const dibatasi = hasil.slice(0, 100);\n  return [{ json: { results: dibatasi, data: dibatasi, total: dibatasi.length, cakupan: 'terbaru-30-hari' } }];\n}\n\n// ── MODE A: pencarian per resi ──\nconst indexTracking = {};\nfor (const row of rowsTracking) {\n  const key = String(row.No_Resi || '').trim().toUpperCase();\n  if (key) indexTracking[key] = row;\n}\nconst indexArsip = {};\nfor (const row of rowsArchive) {\n  const key = String(row.No_Resi || '').trim().toUpperCase();\n  if (key) indexArsip[key] = row;\n}\n\nconst hasil = [];\nfor (const resi of daftarResi) {\n  if (indexTracking[resi]) {\n    hasil.push(buildEntri(indexTracking[resi], resi, false));\n    continue;\n  }\n  if (indexArsip[resi]) {\n    hasil.push(buildEntri(indexArsip[resi], resi, true));\n    continue;\n  }\n  hasil.push({ no_resi: resi, found: false });\n}\n\nreturn [{ json: { results: hasil, data: hasil, total: hasil.length } }];\n"
+      },
+      "id": "code-build-response",
+      "name": "Code Susun Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1260,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook GET tracking-get": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Tracking": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Archive": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Log_History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Log_History": {
+      "main": [
+        [
+          {
+            "node": "Code Susun Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Susun Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "metro-logistik-fase-a"
+  }
+}

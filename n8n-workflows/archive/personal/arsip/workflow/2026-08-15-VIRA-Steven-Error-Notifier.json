@@ -1,0 +1,172 @@
+{
+  "name": "VIRA Steven — Error Notifier",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0e79ac4a-5d45-4fd9-94c2-d0fe64fcb68e",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "bbb2b83d-9be3-491d-89f3-3247e193843c",
+      "name": "Read CONFIG",
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1500,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_ME_VIRA_STEVEN_GSA",
+          "name": "Google Service Account VIRA Steven"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Susun notifikasi error untuk Steven + ambil kredensial Kirimi dari CONFIG.\n//\n// TITIK LEMAH (baca sticky note di workflow ini): node \"Read CONFIG\" di atas\n// dipasangi onError: continueRegularOutput supaya kegagalan baca sheet TIDAK\n// menghentikan notifikasi ini secara diam-diam. Tapi kalau CONFIG memang gagal\n// dibaca, kita tidak punya kredensial Kirimi asli -- satu-satunya pilihan\n// adalah jatuh ke PLACEHOLDER di bawah, yang KEMUNGKINAN BESAR akan gagal\n// terkirim juga. Pesan yang disusun tetap menyebut kondisi ini secara eksplisit\n// (bukan gagal diam-diam), supaya kalau notifikasi ini sampai, Steven tahu ada\n// masalah ganda; kalau tidak sampai sama sekali, itulah sinyal untuk memantau\n// log eksekusi workflow ini secara manual.\nconst FALLBACK = {\n  kirimi_user_code: 'PLACEHOLDER_ISI_MANUAL',\n  kirimi_secret: 'PLACEHOLDER_ISI_MANUAL',\n  kirimi_device_id: 'PLACEHOLDER_ISI_MANUAL'\n};\n\nconst e = $('Error Trigger').first().json;\nconst wfName = e.workflow?.name || 'VIRA Steven';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = String(e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\n// Kalau Read CONFIG gagal (onError: continueRegularOutput), outputnya adalah\n// 1 item berisi { error: ... }, bukan rows CONFIG -- jadi cfgRows akan kosong\n// dan configOk otomatis false.\nconst cfgRows = $input.all().map(i => i.json).filter(r => r && r.key !== undefined);\nconst cfg = {};\nfor (const r of cfgRows) {\n  const k = String(r.key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value : '';\n}\n\nconst configOk = cfgRows.length > 0 && cfg.kirimi_user_code && cfg.kirimi_secret && cfg.kirimi_device_id\n  && !String(cfg.kirimi_user_code).includes('ISI MANUAL');\n\nconst creds = configOk ? {\n  user_code: String(cfg.kirimi_user_code).trim(),\n  secret: String(cfg.kirimi_secret).trim(),\n  device_id: String(cfg.kirimi_device_id).trim()\n} : {\n  user_code: FALLBACK.kirimi_user_code,\n  secret: FALLBACK.kirimi_secret,\n  device_id: FALLBACK.kirimi_device_id\n};\n\nlet text = `🚨 [VIRA Steven] EKSEKUSI GAGAL\\nWorkflow: ${wfName}\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}\\n${url}\\n\\n⚠️ Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nif (!configOk) {\n  text += `\\n\\n⚠️⚠️ CONFIG tidak terbaca / belum diisi -- notifikasi ini memakai kredensial PLACEHOLDER dan KEMUNGKINAN GAGAL TERKIRIM. Ini titik lemah jaring pengaman terakhir. Cek log eksekusi workflow \"VIRA Steven — Error Notifier\" secara manual dan pastikan tab CONFIG (kirimi_user_code/kirimi_secret/kirimi_device_id) sudah terisi.`;\n}\n\nreturn [{ json: {\n  notif_text: text,\n  admin_phone: '6285171701168',\n  kirimi_user_code: creds.user_code,\n  kirimi_secret: creds.secret,\n  kirimi_device_id: creds.device_id,\n  config_ok: configOk\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "d73351c8-9e2e-49b4-acf3-8e4b282aef66",
+      "name": "Compose Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $json.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $json.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $json.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "24dadc70-fe36-44fd-a26e-38acdc2b4941",
+      "name": "Notify Admin Error",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "content": "## Titik lemah: jaring pengaman terakhir\nWorkflow ini SENGAJA tidak dipasangi `errorWorkflow` miliknya sendiri (tidak boleh notif error tentang dirinya sendiri secara sirkular) — kalau workflow ini gagal, tidak ada lapisan di baliknya.\n\n**Rantai kegagalan yang mungkin:**\n- Kalau **Read CONFIG** gagal baca sheet (`onError: continueRegularOutput`, jadi eksekusi tetap lanjut), **Compose Notif** jatuh ke kredensial Kirimi **PLACEHOLDER** dan pesan kemungkinan besar **gagal terkirim** — tapi isi pesan (kalau berhasil terkirim) akan menyebut kondisi ini secara eksplisit.\n- Kalau **Notify Admin Error** sendiri gagal (Kirimi down / network), notifikasi hilang total tanpa jejak WA.\n\n**Saran pemantauan buat Steven:** cek log eksekusi workflow ini di n8n secara berkala (mis. mingguan, atau segera setelah insiden besar di workflow utama). Pastikan tab CONFIG (`kirimi_user_code` / `kirimi_secret` / `kirimi_device_id`) sudah terisi — bukan `<<ISI MANUAL>>` — supaya jalur asli (bukan placeholder) yang jalan.",
+        "height": 340,
+        "width": 620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "6676c613-6b7a-446b-ab1a-1829e80f0986",
+      "name": "Sticky Note - Titik Lemah"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG": {
+      "main": [
+        [
+          {
+            "node": "Compose Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "",
+  "id": "",
+  "tags": [
+    {
+      "updatedAt": "2026-08-15T00:00:00.000Z",
+      "createdAt": "2026-08-15T00:00:00.000Z",
+      "id": "uFkh64Z3DrxyMFaWVlgbm",
+      "name": "vira-steven"
+    }
+  ]
+}

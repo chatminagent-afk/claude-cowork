@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0f19" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>VIRA Performance & CRM Dashboard — The Scholars</title>
+
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="db-store.js"></script>
+
+<style>
+  :root {
+    --bg: #0b0f19;
+    --bg-gradient: radial-gradient(circle at 50% 0%, #1a233b 0%, #0b0f19 75%);
+    --glass-bg: rgba(255, 255, 255, 0.04);
+    --glass-bg-hover: rgba(255, 255, 255, 0.08);
+    --glass-card: rgba(18, 26, 43, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-light: rgba(255, 255, 255, 0.06);
+    --glass-blur: blur(24px) saturate(180%);
+    
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    
+    --apple-blue: #007aff;
+    --apple-green: #34c759;
+    --apple-red: #ff3b30;
+    --apple-amber: #ff9500;
+    --apple-purple: #af52de;
+    --apple-teal: #30b0c7;
+    
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-pill: 999px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-main);
+    min-height: 100vh;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+
+  /* App Header */
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11, 15, 25, 0.75);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    padding: calc(12px + env(safe-area-inset-top)) 20px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--apple-blue), var(--apple-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(0, 122, 255, 0.4);
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    margin: 0;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot.on { background: var(--apple-green); box-shadow: 0 0 10px var(--apple-green); }
+  .dot.off { background: var(--apple-red); box-shadow: 0 0 10px var(--apple-red); }
+
+  /* Main Container */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  /* Glass Cards */
+  .glass-card {
+    background: var(--glass-card);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    letter-spacing: -0.3px;
+  }
+
+  /* Filter Bar */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .filter-pill {
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .filter-pill:hover { background: rgba(255, 255, 255, 0.1); color: var(--text-main); }
+  .filter-pill.active {
+    background: var(--apple-blue);
+    border-color: var(--apple-blue);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+  }
+
+  .search-input-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 16px 10px 38px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .search-input:focus {
+    border-color: var(--apple-blue);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  /* Grid Layouts */
+  .grid-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .metric-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border-light);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .metric-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .metric-val {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-main);
+  }
+
+  .metric-val.blue { color: var(--apple-blue); }
+  .metric-val.green { color: var(--apple-green); }
+  .metric-val.red { color: var(--apple-red); }
+  .metric-val.amber { color: var(--apple-amber); }
+  .metric-val.purple { color: var(--apple-purple); }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  .grid-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 20px;
+  }
+
+  /* Table */
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  th {
+    padding: 12px 14px;
+    color: var(--text-muted);
+    font-weight: 600;
+    border-bottom: 1px solid var(--glass-border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--glass-border-light);
+    vertical-align: middle;
+  }
+
+  tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  /* iOS Switch */
+  .ios-switch {
+    width: 48px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.15);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.25s;
+    display: inline-block;
+  }
+
+  .ios-switch.on { background: var(--apple-green); }
+  
+  .ios-knob {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .ios-switch.on .ios-knob {
+    transform: translateX(20px);
+  }
+
+  /* Tag Badges */
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge.lid { background: rgba(255, 149, 0, 0.15); color: var(--apple-amber); }
+  .badge.confirmed { background: rgba(52, 199, 89, 0.15); color: var(--apple-green); }
+  .badge.rejected { background: rgba(255, 59, 48, 0.15); color: var(--apple-red); }
+  .badge.program { background: rgba(0, 122, 255, 0.15); color: var(--apple-blue); }
+
+  /* Navigation Bar (Sticky Bottom / Floating Pill) */
+  .bottom-nav {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 26, 43, 0.85);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-pill);
+    padding: 6px 12px;
+    display: flex;
+    gap: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .nav-btn {
+    background: none;
+    border: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { color: var(--text-main); }
+  .nav-btn.active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Drawer / Modal */
+  .drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .drawer {
+    width: 100%;
+    max-width: 480px;
+    background: #0f172a;
+    border-left: 1px solid var(--glass-border);
+    height: 100%;
+    padding: 24px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .drawer-overlay.open .drawer {
+    transform: translateX(0);
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: rgba(18, 26, 43, 0.9);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 300;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Utility classes */
+  .hidden { display: none !important; }
+  .btn {
+    padding: 10px 18px;
+    border-radius: var(--radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary { background: var(--apple-blue); color: #fff; }
+  .btn-primary:hover { background: #0066d6; }
+  .btn-ghost { background: rgba(255, 255, 255, 0.08); color: var(--text-main); }
+  .btn-ghost:hover { background: rgba(255, 255, 255, 0.15); }
+  
+  .wa-link {
+    color: var(--apple-green);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .wa-link:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .container { padding: 12px 10px; }
+    .grid-metrics { grid-template-columns: 1fr 1fr; }
+    .grid-charts { grid-template-columns: 1fr; }
+    .bottom-nav { width: 92%; justify-content: space-around; }
+    .nav-btn { padding: 8px 10px; font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+  <div class="brand">
+    <div class="brand-logo">V</div>
+    <div>
+      <h1 class="brand-title">VIRA Dashboard</h1>
+      <div class="brand-sub">The Scholars Performance & CRM</div>
+    </div>
+  </div>
+  
+  <div class="header-actions">
+    <div id="globalStatusBtn" class="status-badge" onclick="toggleGlobalStatus()" style="cursor:pointer; transition: opacity 0.2s;" title="Klik untuk toggle VIRA ON/OFF">
+      <span id="globalDot" class="dot on"></span>
+      <span id="globalStatusText">VIRA: ON</span>
+    </div>
+    
+    <button class="btn btn-ghost" style="padding: 6px 12px; font-size: 12px;" onclick="openSettingsDrawer()">
+      ⚙️ Config
+    </button>
+  </div>
+</header>
+
+<!-- ===== MAIN CONTENT CONTAINER ===== -->
+<main class="container">
+
+  <!-- GLOBAL FILTER BAR -->
+  <div class="glass-card" style="padding: 14px 18px; margin-bottom: 16px;">
+    <div class="filter-bar" style="margin-bottom: 0;">
+      <div class="search-input-wrap">
+        <span class="search-icon">🔍</span>
+        <input id="searchInput" type="search" class="search-input" placeholder="Search WA number, name..." oninput="onSearchInput()" />
+      </div>
+
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <span class="filter-pill active" data-date="all" onclick="setDateFilter('all')">All Time</span>
+        <span class="filter-pill" data-date="today" onclick="setDateFilter('today')">Today</span>
+        <span class="filter-pill" data-date="7d" onclick="setDateFilter('7d')">Last 7 Days</span>
+        <span class="filter-pill" data-date="30d" onclick="setDateFilter('30d')">Last 30 Days</span>
+      </div>
+
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <select id="botModeFilter" class="filter-pill" style="outline:none;" onchange="onFilterChange()">
+          <option value="all">Bot Mode: All</option>
+          <option value="ON">ON (Auto)</option>
+          <option value="OFF">OFF (HITL Manual)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 1: OVERVIEW & ANALYTICS ===== -->
+  <section id="tab-overview">
+    <!-- Executive KPI Grid -->
+    <div class="grid-metrics">
+      <div class="metric-card">
+        <div class="metric-label">Total Leads / Users</div>
+        <div class="metric-val blue" id="mTotalLeads">0</div>
+        <div class="metric-sub">In STATS database</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Total Chat Volume</div>
+        <div class="metric-val green" id="mTotalChats">0</div>
+        <div class="metric-sub">Processed replies</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Bot Active (ON)</div>
+        <div class="metric-val green" id="mBotOn">0</div>
+        <div class="metric-sub">Auto-reply enabled</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">HITL Manual (OFF)</div>
+        <div class="metric-val red" id="mBotOff">0</div>
+        <div class="metric-sub">Handled by Sam</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">GForm Conversion</div>
+        <div class="metric-val purple" id="mGformConv">0.0%</div>
+        <div class="metric-sub" id="mGformSub">Sent: 0 · Filled: 0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Mock Interview Bookings</div>
+        <div class="metric-val amber" id="mMockBookings">0</div>
+        <div class="metric-sub">Booked sessions</div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid-charts">
+      <div class="glass-card">
+        <div class="section-title">
+          <span>📈 Daily Lead Acquisition & Activity</span>
+        </div>
+        <canvas id="chartDailyTrend" height="200"></canvas>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">
+          <span>🔥 Peak Chat Hours Distribution</span>
+        </div>
+        <canvas id="chartHourly" height="200"></canvas>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">
+          <span>🎓 Program Interest Breakdown</span>
+        </div>
+        <canvas id="chartPrograms" height="200"></canvas>
+      </div>
+
+      <div class="glass-card">
+        <div class="section-title">
+          <span>🏫 Student Class Distribution (Kelas Anak)</span>
+        </div>
+        <canvas id="chartKelas" height="200"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAB 2: LEADS CRM DIRECTORY ===== -->
+  <section id="tab-crm" class="hidden">
+    <div class="glass-card">
+      <div class="section-title">
+        <span>👥 Leads Directory & HITL Controls</span>
+        <span class="brand-sub" id="crmMetaCount">0 leads</span>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>No. WhatsApp</th>
+              <th>Nama</th>
+              <th>Kelas Anak</th>
+              <th>Program Interest</th>
+              <th>Chats</th>
+              <th>Last Chat</th>
+              <th>Bot Mode</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="crmTableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAB 3: MOCK INTERVIEWS & SLOTS ===== -->
+  <section id="tab-mock" class="hidden">
+    <div class="glass-card">
+      <div class="section-title">
+        <span>🎯 Mock Interview Bookings</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Booking</th>
+              <th>Nama Anak / Orang Tua</th>
+              <th>No WA</th>
+              <th>Sekolah / Kelas</th>
+              <th>Target Uni & Jurusan</th>
+              <th>Sesi Interview</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="mockBookingTableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">
+        <span>📅 Available Slots Overview</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Slot ID</th>
+              <th>Tanggal</th>
+              <th>Waktu</th>
+              <th>Status Booked</th>
+              <th>Nama Pemesan</th>
+            </tr>
+          </thead>
+          <tbody id="mockSlotsTableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TAB 4: AI INSIGHTS & UNKNOWN QUESTIONS ===== -->
+  <section id="tab-insights" class="hidden">
+    <div class="glass-card">
+      <div class="section-title">
+        <span>🤖 Unhandled User Questions (For Bot Retraining)</span>
+        <span class="brand-sub" id="insightsCount">0 questions</span>
+      </div>
+      <p style="color:var(--text-muted); font-size:13px; margin-top:-6px; margin-bottom:14px;">
+        Questions asked by users that VIRA couldn't find in FAQ or knowledge base.
+      </p>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Tanggal</th>
+              <th>User LID / WA</th>
+              <th>Pertanyaan User</th>
+              <th>Balasan Default VIRA</th>
+            </tr>
+          </thead>
+          <tbody id="unknownTableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== STICKY BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-tab="overview" onclick="switchTab('overview')">
+    📊 Analytics
+  </button>
+  <button class="nav-btn" data-tab="crm" onclick="switchTab('crm')">
+    👥 Leads CRM
+  </button>
+  <button class="nav-btn" data-tab="mock" onclick="switchTab('mock')">
+    🎯 Mock Interview
+  </button>
+  <button class="nav-btn" data-tab="insights" onclick="switchTab('insights')">
+    💡 Retrain Bot
+  </button>
+</nav>
+
+<!-- ===== DRAWER / MODAL: LEAD DETAIL ===== -->
+<div id="leadDrawer" class="drawer-overlay" onclick="closeLeadDrawer(event)">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0; font-size:18px;">Lead Profile</h2>
+      <button class="btn btn-ghost" style="padding:4px 10px;" onclick="closeLeadDrawer()">✕</button>
+    </div>
+
+    <div id="leadDrawerContent">
+      <!-- Dynamic Lead Details -->
+    </div>
+  </div>
+</div>
+
+<!-- ===== DRAWER / MODAL: CONFIG & SETTINGS ===== -->
+<div id="settingsDrawer" class="drawer-overlay" onclick="closeSettingsDrawer(event)">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="margin:0; font-size:18px;">⚙️ Dashboard Config</h2>
+      <button class="btn btn-ghost" style="padding:4px 10px;" onclick="closeSettingsDrawer()">✕</button>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- n8n Section -->
+      <div class="glass-card" style="padding:16px; border-radius:14px;">
+        <h3 style="margin:0 0 4px; font-size:14px;">🔗 n8n Webhook Base URL</h3>
+        <p style="font-size:11px; color:var(--text-muted); margin:0 0 10px;">URL ini digunakan untuk live sync data &amp; toggle bot mode ke Google Sheets.<br>Contoh: <code style="color:var(--apple-blue)">https://n8n.yourdomain.com/webhook</code></p>
+        <input id="n8nUrlInput" type="url" class="search-input" style="padding-left:14px; margin-bottom:10px;" placeholder="https://n8n.yourdomain.com/webhook" />
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="saveN8nUrl()">💾 Simpan &amp; Sync</button>
+          <button class="btn btn-ghost" style="flex:1;" onclick="testN8nConnection()">🔌 Test Koneksi</button>
+        </div>
+        <div id="n8nStatus" style="margin-top:8px; font-size:12px; color:var(--text-muted);"></div>
+      </div>
+
+      <!-- Webhook Endpoints Info -->
+      <div class="glass-card" style="padding:16px; border-radius:14px;">
+        <h3 style="margin:0 0 10px; font-size:13px; color:var(--text-muted);">📡 Endpoint yang digunakan</h3>
+        <div style="display:flex; flex-direction:column; gap:6px; font-size:11px; color:var(--text-dim);">
+          <div><span style="color:var(--apple-green); font-weight:600;">GET</span> &nbsp;<code id="ep-getdata">/vira-getdata</code> — sync data</div>
+          <div><span style="color:var(--apple-blue); font-weight:600;">POST</span> <code id="ep-toggle-user">/vira-toggle-user</code> — toggle per user</div>
+          <div><span style="color:var(--apple-blue); font-weight:600;">POST</span> <code id="ep-toggle-global">/vira-toggle-global</code> — toggle global</div>
+        </div>
+      </div>
+
+      <hr style="border:0; border-top:1px solid var(--glass-border);" />
+
+      <!-- PWA Section -->
+      <div>
+        <h3 style="font-size:14px; margin:0 0 8px;">📱 Install sebagai App</h3>
+        <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px;">Install VIRA Control di home screen HP untuk akses 1-tap.</p>
+        <button id="pwaInstallBtn" class="btn btn-ghost" style="width:100%;" onclick="triggerPwaInstall()">📲 Add to Home Screen</button>
+      </div>
+
+      <!-- Sync Now -->
+      <button class="btn btn-ghost" style="width:100%;" onclick="manualSync()" id="syncNowBtn">🔄 Refresh Data Sekarang</button>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast" class="toast"></div>
+
+<!-- JS SCRIPT -->
+<script>
+  let charts = {};
+  let currentLead = null;
+  let deferredPrompt = null;
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    await ViraStore.init();
+    updateGlobalStatusUI();
+    renderAll();
+
+    // Load saved n8n URL into settings drawer
+    const savedN8n = ViraStore.getN8nUrl();
+    if (savedN8n) {
+      const inp = document.getElementById('n8nUrlInput');
+      if (inp) inp.value = savedN8n;
+    }
+  });
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+
+  function triggerPwaInstall() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    } else {
+      showToast('To install on iOS: Tap Share ➔ Add to Home Screen');
+    }
+  }
+
+  /* --- Navigation & Tabs --- */
+  function switchTab(tabId) {
+    ['overview', 'crm', 'mock', 'insights'].forEach(t => {
+      document.getElementById('tab-' + t).classList.toggle('hidden', t !== tabId);
+    });
+
+    document.querySelectorAll('.bottom-nav .nav-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabId);
+    });
+
+    renderAll();
+  }
+
+  /* --- Filters & Search --- */
+  function setDateFilter(range) {
+    document.querySelectorAll('[data-date]').forEach(el => {
+      el.classList.toggle('active', el.dataset.date === range);
+    });
+    ViraStore.setFilters({ dateRange: range });
+    renderAll();
+  }
+
+  let searchTimer = null;
+  function onSearchInput() {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const q = document.getElementById('searchInput').value;
+      ViraStore.setFilters({ searchQuery: q });
+      renderAll();
+    }, 250);
+  }
+
+  function onFilterChange() {
+    const bMode = document.getElementById('botModeFilter').value;
+    ViraStore.setFilters({ botMode: bMode });
+    renderAll();
+  }
+
+  /* --- Render All Views --- */
+  function renderAll() {
+    renderOverview();
+    renderCRM();
+    renderMockInterviews();
+    renderInsights();
+  }
+
+  /* --- Overview Tab Renderer --- */
+  function renderOverview() {
+    const m = ViraStore.getSummaryMetrics();
+    document.getElementById('mTotalLeads').textContent = m.totalLeads.toLocaleString('id');
+    document.getElementById('mTotalChats').textContent = m.totalChats.toLocaleString('id');
+    document.getElementById('mBotOn').textContent = m.botOn.toLocaleString('id');
+    document.getElementById('mBotOff').textContent = m.botOff.toLocaleString('id');
+    document.getElementById('mGformConv').textContent = m.gformConversion + '%';
+    document.getElementById('mGformSub').textContent = `Sent: ${m.gformSent} · Filled: ${m.gformFilled}`;
+    document.getElementById('mMockBookings').textContent = m.mockBookingsCount.toLocaleString('id');
+
+    renderDailyTrendChart();
+    renderHourlyChart();
+    renderProgramChart();
+    renderKelasChart();
+  }
+
+  function renderDailyTrendChart() {
+    const data = ViraStore.getDailyTrend();
+    const labels = data.map(d => d.date.slice(5));
+    const counts = data.map(d => d.count);
+
+    drawChart('chartDailyTrend', 'line', labels, [{
+      label: 'New Leads',
+      data: counts,
+      borderColor: '#007aff',
+      backgroundColor: 'rgba(0, 122, 255, 0.15)',
+      fill: true,
+      tension: 0.4
+    }]);
+  }
+
+  function renderHourlyChart() {
+    const data = ViraStore.getHourlyDistribution();
+    const labels = data.map(h => String(h.hour).padStart(2, '0') + ':00');
+    const counts = data.map(h => h.count);
+
+    drawChart('chartHourly', 'bar', labels, [{
+      label: 'Chat Volume',
+      data: counts,
+      backgroundColor: '#34c759',
+      borderRadius: 6
+    }]);
+  }
+
+  function renderProgramChart() {
+    const dist = ViraStore.getProgramDistribution();
+    const labels = Object.keys(dist);
+    const data = labels.map(k => dist[k]);
+
+    drawChart('chartPrograms', 'doughnut', labels, [{
+      data: data,
+      backgroundColor: ['#007aff', '#af52de', '#ff9500', '#64748b']
+    }]);
+  }
+
+  function renderKelasChart() {
+    const dist = ViraStore.getKelasDistribution();
+    const labels = Object.keys(dist);
+    const data = labels.map(k => dist[k]);
+
+    drawChart('chartKelas', 'doughnut', labels, [{
+      data: data,
+      backgroundColor: ['#007aff', '#30b0c7', '#34c759', '#ff9500', '#af52de', '#ff3b30', '#64748b']
+    }]);
+  }
+
+  function drawChart(id, type, labels, datasets) {
+    if (charts[id]) charts[id].destroy();
+    const ctx = document.getElementById(id).getContext('2d');
+    charts[id] = new Chart(ctx, {
+      type: type,
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: type === 'doughnut' || type === 'pie' } },
+        scales: (type === 'bar' || type === 'line') ? {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        } : {}
+      }
+    });
+  }
+
+  /* --- CRM Leads Renderer --- */
+  function renderCRM() {
+    const leads = ViraStore.getFilteredLeads();
+    document.getElementById('crmMetaCount').textContent = `${leads.length} leads`;
+
+    const tbody = document.getElementById('crmTableBody');
+    if (!leads.length) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--text-muted); padding:24px;">No matching leads found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = leads.map(l => {
+      const wa = ViraStore.normWA(l['No WA']);
+      const isLID = wa.length >= 15;
+      const mode = String(l['bot_mode'] || 'ON').trim().toUpperCase() === 'OFF' ? 'OFF' : 'ON';
+
+      return `
+        <tr>
+          <td>
+            <a href="https://wa.me/${wa}" target="_blank" class="wa-link">
+              📱 ${wa}
+            </a>
+            ${isLID ? `<span class="badge lid" style="margin-left:6px;">LID</span>` : ''}
+          </td>
+          <td style="font-weight:600;">${l['Nama'] || '—'}</td>
+          <td>${l['kelas_anak'] || '—'}</td>
+          <td>${l['program_interest'] ? `<span class="badge program">${l['program_interest']}</span>` : '—'}</td>
+          <td>${l['Counter'] || 0}</td>
+          <td style="color:var(--text-muted);">${l['Tanggal Chat Terakhir'] || l['Tanggal Chat Pertama'] || '—'}</td>
+          <td>
+            <div id="switch-${wa}" class="ios-switch ${mode === 'ON' ? 'on' : ''}" onclick="toggleLeadBotMode('${wa}', '${mode}')" title="Toggle bot mode — menulis ke Google Sheets via n8n">
+              <div class="ios-knob"></div>
+            </div>
+          </td>
+          <td>
+            <button class="btn btn-ghost" style="padding:4px 10px; font-size:11px;" onclick="openLeadDetail('${wa}')">View Profile</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function toggleLeadBotMode(wa, currentMode) {
+    const targetMode = currentMode === 'ON' ? 'OFF' : 'ON';
+    const switchEl = document.getElementById('switch-' + wa);
+
+    // Instant visual feedback (optimistic)
+    if (switchEl) {
+      switchEl.classList.toggle('on', targetMode === 'ON');
+      switchEl.style.opacity = '0.5';
+      switchEl.style.pointerEvents = 'none';
+    }
+
+    const res = await ViraStore.toggleUserMode(wa, targetMode);
+
+    if (switchEl) {
+      switchEl.style.opacity = '';
+      switchEl.style.pointerEvents = '';
+      // Update onclick to reflect new mode
+      switchEl.setAttribute('onclick', `toggleLeadBotMode('${wa}', '${targetMode}')`);
+    }
+
+    if (res.source === 'google-sheets') {
+      showToast(`✅ ${wa} → Bot ${targetMode} (tersimpan ke Google Sheets)`);
+    } else if (res.source === 'local-only' && res.warn) {
+      showToast(`⚠️ Bot ${targetMode} (n8n belum dikonfigurasi — hanya lokal)`);
+    } else if (!res.ok) {
+      // Revert on failure
+      if (switchEl) switchEl.classList.toggle('on', currentMode === 'ON');
+      showToast(`❌ Gagal: ${res.error || 'Cek koneksi n8n'}`);
+    } else {
+      showToast(`✅ Bot ${targetMode} tersimpan`);
+    }
+  }
+
+  function openLeadDetail(wa) {
+    const raw = ViraStore.getRawData();
+    const lead = (raw.STATS || []).find(l => ViraStore.normWA(l['No WA']) === wa);
+    if (!lead) return;
+
+    currentLead = lead;
+    const content = document.getElementById('leadDrawerContent');
+    const isLID = wa.length >= 15;
+
+    content.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h3 style="margin:0; font-size:20px;">${lead['Nama'] || 'Unknown Name'}</h3>
+            <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">
+              ${wa} ${isLID ? `<span class="badge lid">LID Number</span>` : ''}
+            </div>
+          </div>
+          <a href="https://wa.me/${wa}" target="_blank" class="btn btn-primary" style="padding:6px 14px; font-size:12px;">Chat WA</a>
+        </div>
+
+        <hr style="border:0; border-top:1px solid var(--glass-border);" />
+
+        <div class="grid-metrics" style="grid-template-columns:1fr 1fr; margin-bottom:0;">
+          <div class="metric-card">
+            <div class="metric-label">Kelas Anak</div>
+            <div class="metric-val" style="font-size:16px;">${lead['kelas_anak'] || 'Unspecified'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Program Interest</div>
+            <div class="metric-val" style="font-size:16px;">${lead['program_interest'] || 'Unspecified'}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Chat Count</div>
+            <div class="metric-val blue" style="font-size:20px;">${lead['Counter'] || 0}</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Bot Mode</div>
+            <div class="metric-val ${lead['bot_mode'] === 'OFF' ? 'red' : 'green'}" style="font-size:20px;">${lead['bot_mode'] || 'ON'}</div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-bottom:0;">
+          <div class="section-title" style="font-size:14px;">Engagement Timeline</div>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">First Chat: ${lead['Tanggal Chat Pertama'] || '—'}</p>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">Last Chat: ${lead['Tanggal Chat Terakhir'] || '—'}</p>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">Greeting Sent: ${lead['greeting_sent'] || 'No'}</p>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">GForm Sent: ${lead['gform_sent_ts'] ? 'Yes' : 'No'}</p>
+          <p style="font-size:12px; color:var(--text-muted); margin:4px 0;">GForm Filled: ${lead['gform_filled'] || 'No'}</p>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('leadDrawer').classList.add('open');
+  }
+
+  function closeLeadDrawer(e) {
+    if (!e || e.target === document.getElementById('leadDrawer')) {
+      document.getElementById('leadDrawer').classList.remove('open');
+    }
+  }
+
+  /* --- Mock Interviews Renderer --- */
+  function renderMockInterviews() {
+    const raw = ViraStore.getRawData();
+    const bookings = raw.MOCK_INTERVIEW_BOOKING || [];
+    const slots = raw.MOCK_SLOTS || [];
+
+    const bBody = document.getElementById('mockBookingTableBody');
+    if (!bookings.length) {
+      bBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:24px;">No mock interview bookings found.</td></tr>`;
+    } else {
+      bBody.innerHTML = bookings.map(b => {
+        const st = String(b['Status'] || '').toLowerCase();
+        const badgeCls = st === 'confirmed' ? 'confirmed' : (st === 'rejected' ? 'rejected' : 'program');
+        return `
+          <tr>
+            <td style="font-weight:600;">${b['ID Booking'] || '—'}</td>
+            <td>
+              <div style="font-weight:600;">${b['Nama Anak'] || '—'}</div>
+              <div style="font-size:11px; color:var(--text-muted);">Ortu: ${b['Nama Orang Tua'] || '—'}</div>
+            </td>
+            <td><a href="https://wa.me/${ViraStore.normWA(b['No WA Anak'])}" target="_blank" class="wa-link">📱 ${b['No WA Anak']}</a></td>
+            <td>${b['Sekolah'] || '—'} (Kelas ${b['Kelas'] || '—'})</td>
+            <td>${b['Target Uni Jurusan'] || '—'}</td>
+            <td>${b['Sesi'] || b['Tanggal'] || '—'}</td>
+            <td><span class="badge ${badgeCls}">${b['Status'] || 'Pending'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    const sBody = document.getElementById('mockSlotsTableBody');
+    if (!slots.length) {
+      sBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:24px;">No slots listed.</td></tr>`;
+    } else {
+      sBody.innerHTML = slots.map(s => `
+        <tr>
+          <td>${s['ID']}</td>
+          <td>${s['Tanggal']}</td>
+          <td>${s['JamMulai']} - ${s['JamSelesai']}</td>
+          <td>
+            ${s['Booked'] === 'Y' ? `<span class="badge confirmed">Booked</span>` : `<span class="badge program">Available</span>`}
+          </td>
+          <td>${s['NamaPemesan'] || '—'}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  /* --- AI Insights / Unknown Questions Renderer --- */
+  function renderInsights() {
+    const raw = ViraStore.getRawData();
+    const unknown = raw.UNKNOWN || [];
+    document.getElementById('insightsCount').textContent = `${unknown.length} questions`;
+
+    const uBody = document.getElementById('unknownTableBody');
+    if (!unknown.length) {
+      uBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted); padding:24px;">No unhandled questions recorded.</td></tr>`;
+    } else {
+      uBody.innerHTML = unknown.map(u => `
+        <tr>
+          <td style="color:var(--text-muted); white-space:nowrap;">${u['Tanggal'] || '—'}</td>
+          <td><span class="badge lid">${u['User'] || '—'}</span></td>
+          <td style="font-weight:600; color:#fff;">${u['Pertanyaan'] || u['message'] || '—'}</td>
+          <td style="color:var(--text-muted); font-size:12px;">${u['message'] || 'Default Bot Apology'}</td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  /* --- Global Status Switch Handler --- */
+  async function toggleGlobalStatus() {
+    const current = ViraStore.getGlobalStatus();
+    const target  = current === 'ON' ? 'OFF' : 'ON';
+
+    const btn = document.getElementById('globalStatusBtn');
+    if (btn) { btn.style.opacity = '0.5'; btn.style.pointerEvents = 'none'; }
+
+    const res = await ViraStore.setGlobalStatus(target);
+
+    if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+
+    updateGlobalStatusUI();
+
+    if (res.source === 'google-sheets') {
+      showToast(`✅ VIRA ${target} — tersimpan ke Google Sheets`);
+    } else if (res.source === 'local-only' && res.warn) {
+      showToast(`⚠️ VIRA ${target} (n8n belum dikonfigurasi — hanya lokal)`);
+    } else if (!res.ok) {
+      showToast(`❌ Gagal toggle global: ${res.error || 'Cek koneksi n8n'}`);
+    } else {
+      showToast(`✅ VIRA ${target}`);
+    }
+  }
+
+  function updateGlobalStatusUI() {
+    const st  = ViraStore.getGlobalStatus();
+    const dot = document.getElementById('globalDot');
+    const txt = document.getElementById('globalStatusText');
+    if (!dot || !txt) return;
+    dot.className = 'dot ' + (st === 'ON' ? 'on' : 'off');
+    txt.textContent = `VIRA: ${st}`;
+  }
+
+  /* --- Settings Drawer & n8n Config --- */
+  function openSettingsDrawer() {
+    const inp = document.getElementById('n8nUrlInput');
+    if (inp) inp.value = ViraStore.getN8nUrl();
+    document.getElementById('settingsDrawer').classList.add('open');
+  }
+
+  function closeSettingsDrawer(e) {
+    if (!e || e.target === document.getElementById('settingsDrawer')) {
+      document.getElementById('settingsDrawer').classList.remove('open');
+    }
+  }
+
+  async function saveN8nUrl() {
+    const url = document.getElementById('n8nUrlInput').value.trim();
+    if (!url) { showToast('⚠️ Masukkan n8n URL dulu'); return; }
+    ViraStore.setN8nUrl(url);
+    showToast('🔄 Menyimpan & sync data...');
+    const syncRes = await ViraStore.syncWithApi();
+    const statusEl = document.getElementById('n8nStatus');
+    if (syncRes.ok) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--apple-green)">✅ Terhubung! Data live dari Google Sheets.</span>';
+      showToast('✅ Terhubung ke n8n! Data live aktif.');
+      renderAll();
+      updateGlobalStatusUI();
+    } else {
+      if (statusEl) statusEl.innerHTML = '<span style="color:var(--apple-red)">❌ Gagal: ' + (syncRes.message || 'Cek URL & pastikan workflow aktif') + '</span>';
+      showToast('❌ Gagal sync: ' + (syncRes.message || 'Cek n8n'));
+    }
+  }
+
+  async function testN8nConnection() {
+    const url = document.getElementById('n8nUrlInput').value.trim();
+    const statusEl = document.getElementById('n8nStatus');
+    if (!url) { showToast('⚠️ Masukkan n8n URL dulu'); return; }
+    if (statusEl) statusEl.innerHTML = '<span style="color:var(--text-muted)">⏳ Testing...</span>';
+    try {
+      const testUrl = url.replace(/\/$/, '') + '/vira-getdata';
+      const res = await fetch(testUrl, { method: 'GET', signal: AbortSignal.timeout(8000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.ok) {
+        const count = data.database?.STATS?.length || 0;
+        if (statusEl) statusEl.innerHTML = `<span style="color:var(--apple-green)">✅ OK — ${count} leads ditemukan.</span>`;
+        showToast(`✅ Koneksi berhasil! ${count} leads di Sheets.`);
+      } else throw new Error('Response ok:false');
+    } catch (e) {
+      if (statusEl) statusEl.innerHTML = `<span style="color:var(--apple-red)">❌ Gagal: ${e.message}</span>`;
+      showToast('❌ Test gagal: ' + e.message);
+    }
+  }
+
+  async function manualSync() {
+    const btn = document.getElementById('syncNowBtn');
+    if (btn) { btn.textContent = '⏳ Syncing...'; btn.disabled = true; }
+    const res = await ViraStore.syncWithApi();
+    if (btn) { btn.textContent = '🔄 Refresh Data Sekarang'; btn.disabled = false; }
+    if (res.ok) {
+      showToast('✅ Data diperbarui dari Google Sheets!');
+      renderAll();
+      updateGlobalStatusUI();
+    } else {
+      showToast('⚠️ ' + (res.message || 'Sync gagal'));
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+
+</body>
+</html>

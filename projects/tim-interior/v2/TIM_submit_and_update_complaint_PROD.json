@@ -1,0 +1,2575 @@
+{
+  "name": "TIM_submit_and_update_complaint_PROD",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "salero-complaint",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        2864
+      ],
+      "id": "2bda3a86-5354-42b3-904a-30def9a7edba",
+      "name": "Webhook - Terima Komplain",
+      "webhookId": "a1b2c3d4-0001-0001-0001-000000000099"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json.body || $json;\nconst now = new Date();\nconst pad = n => String(n).padStart(2,'0');\nconst ts = [\n  now.getFullYear(),\n  pad(now.getMonth()+1),\n  pad(now.getDate()),\n  pad(now.getHours()),\n  pad(now.getMinutes()),\n  pad(now.getSeconds())\n].join('');\n\nconst id = `CMP-${ts}`;\n\nconst tanggalSubmit = now.toLocaleString('id-ID', {\n  timeZone: 'Asia/Jakarta',\n  day:'2-digit', month:'2-digit', year:'numeric',\n  hour:'2-digit', minute:'2-digit', second:'2-digit'\n});\n\nconst attachments = Array.isArray(d.attachments) ? d.attachments : [];\n\nreturn [{\n  json: {\n    ID: id,\n    Tanggal_Komplain: d.tanggal_komplain || now.toISOString().split('T')[0],\n    Nama_Project: d.nama_project || '',\n    Komplain: d.komplain || '',\n    Pengaju: d.pengaju || '',\n    Prioritas: d.prioritas || 'Sedang',\n    Kategori: d.kategori || 'Lainnya',\n    Status_Workflow: 'pending',\n    Status_Pekerjaan: 'Proses',\n    Status_Pekerjaan_Counter: 0,\n    Tanggal_Submit: tanggalSubmit,\n    _attachments: attachments,\n    _hasAttachments: attachments.length > 0,\n    PIC_Mandor: d.pic || '',                 // ← huruf besar P,I,C\n    PIC_Pengawas: d.pic_pengawas || '', // ← tambahkan ini\n    Lokasi: (d.lokasi || '').trim(),\n    Tipe: d.tipe || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        2864
+      ],
+      "id": "604c2673-323d-4295-bd3c-f42c89faca8c",
+      "name": "Generate ID & Parse Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Split: output 1 item per file, dengan binary data ────\nconst formData = $input.first().json;\nconst files    = formData._attachments || [];\n\nreturn files.map((f, i) => ({\n  json: {\n    _formID:    formData.ID,\n    _fileIndex: i,\n    _fileName:  f.name,\n    _fileMime:  f.type || 'application/octet-stream'\n  },\n  binary: {\n    data: {   // ← ganti dari 'attachment' menjadi 'data'\n      data:     f.data,\n      mimeType: f.type || 'application/octet-stream',\n      fileName: f.name,\n      fileSize: f.size || 0\n    }\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        2768
+      ],
+      "id": "b6099ea1-a246-4e76-b8c2-626bcd095383",
+      "name": "Siapkan Binary per File"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json._formID + '_' + $json._fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1pzPpEz_fPerVgRnjBinEAPqTKxNg9-5A",
+          "mode": "list",
+          "cachedResultName": "Lampiran Komplain",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1pzPpEz_fPerVgRnjBinEAPqTKxNg9-5A"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        640,
+        2768
+      ],
+      "id": "3df99725-da17-48cc-8fc1-16ed9c3254b6",
+      "name": "Upload File ke Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "HoUtfVyc3rhcqoeJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── No attachment path: pass form data with empty attachment URL columns ──\nconst formData = $input.first().json;\n\nreturn [{\n  json: {\n    ...formData,\n    _attachments: undefined,\n    _hasAttachments: undefined,\n    URL_1: '-',\n    URL_2: '-',\n    URL_3: '-',\n    URL_4: '-',\n    URL_5: '-',\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        2960
+      ],
+      "id": "1daa7f90-cb0b-4a82-ad23-29df375c4923",
+      "name": "Tidak Ada Lampiran"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1312,
+        2864
+      ],
+      "id": "dea02b7d-8cf4-4e9b-b428-217c52f8bc81",
+      "name": "Merge Path"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Tanggal_Komplain": "={{ $json.Tanggal_Komplain }}",
+            "Nama_Project": "={{ $json.Nama_Project }}",
+            "Komplain": "={{ $json.Komplain }}",
+            "Pengaju": "={{ $json.Pengaju }}",
+            "Prioritas": "={{ $json.Prioritas }}",
+            "Kategori": "={{ $json.Kategori }}",
+            "Tanggal_Submit": "={{ $json.Tanggal_Submit }}",
+            "Notify_Count": "0",
+            "URL_5": "={{ $json.URL_5 }}",
+            "URL_1": "={{ $json.URL_1 }}",
+            "URL_2": "={{ $json.URL_2 }}",
+            "URL_3": "={{ $json.URL_3 }}",
+            "URL_4": "={{ $json.URL_4 }}",
+            "Lokasi": "={{ $json.Lokasi }}",
+            "Tipe_Laporan": "={{ $json.Tipe }}",
+            "Status_Workflow": "={{ $json.Status_Workflow}}",
+            "Status_Pekerjaan": "={{ $json.Status_Pekerjaan}}",
+            "Status_Pekerjaan_Counter": "={{ $json.Status_Pekerjaan_Counter }}",
+            "PIC_Mandor": "={{ $json.PIC_Mandor }}",
+            "PIC_Pengawas": "={{ $json.PIC_Pengawas}}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tanggal_Komplain",
+              "displayName": "Tanggal_Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama_Project",
+              "displayName": "Nama_Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PIC_Mandor",
+              "displayName": "PIC_Mandor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "PIC_Pengawas",
+              "displayName": "PIC_Pengawas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Komplain",
+              "displayName": "Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status_Pekerjaan",
+              "displayName": "Status_Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tipe_Laporan",
+              "displayName": "Tipe_Laporan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pengaju",
+              "displayName": "Pengaju",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL_1",
+              "displayName": "URL_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL_2",
+              "displayName": "URL_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL_3",
+              "displayName": "URL_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL_4",
+              "displayName": "URL_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL_5",
+              "displayName": "URL_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Update_Notes",
+              "displayName": "Update_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_1",
+              "displayName": "Up_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_2",
+              "displayName": "Up_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_3",
+              "displayName": "Up_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_4",
+              "displayName": "Up_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_5",
+              "displayName": "Up_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Update",
+              "displayName": "Tanggal_Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal_Submit",
+              "displayName": "Tanggal_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Pekerjaan_Counter",
+              "displayName": "Status_Pekerjaan_Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1536,
+        2864
+      ],
+      "id": "06b69183-09c1-4ade-a5d3-6496646cd796",
+      "name": "Simpan ke Google Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, id: $('Generate ID & Parse Data').first().json.ID, message: 'Komplain berhasil dicatat!' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1760,
+        2864
+      ],
+      "id": "e6e2566b-782b-465e-a716-7fab5ebee0ee",
+      "name": "Kirim Response ke Form"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "has-att",
+              "leftValue": "={{ $json._hasAttachments }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        2864
+      ],
+      "id": "017f682a-6b9e-404f-acb6-cdee903eedfd",
+      "name": "Ada Lampiran?"
+    },
+    {
+      "parameters": {
+        "path": "get-projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        2320
+      ],
+      "id": "9371f6fc-9ee9-4169-a202-bcc4efc54f8b",
+      "name": "Webhook - Get - Project",
+      "webhookId": "406edd1d-7df7-43b9-8b9b-485de1b2aa35"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "add-project",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        2544
+      ],
+      "id": "ad3bbb8c-90b5-43ab-93be-5050c9ff28c6",
+      "name": "Webhook - Add - Project",
+      "webhookId": "cb2ff1a5-2f1d-4587-8193-2156f6932d6f"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, data: $input.all().map(item => item.json.Project) } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        2320
+      ],
+      "id": "518054df-d67f-4275-ae30-21330d9dc262",
+      "name": "Kirim Response ke List Project"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"sukses\": true,\n  \"pesan\": \"Proyek baru masuk ke sheet\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        2544
+      ],
+      "id": "9b3169a6-0b72-4e16-9aef-c0cc4cdbe7b2",
+      "name": "Kirim Response Save New Project"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua item hasil dari node \"Upload File ke Drive\"\nconst items = $input.all();\nconst formData = $('Generate ID & Parse Data').first().json;\n\n// Fungsi ambil link file Drive secara robust\nfunction getDriveLink(fileJson) {\n  // Beberapa versi node Drive n8n bisa mengembalikan field berbeda\n  const direct =\n    fileJson.webViewLink ||\n    fileJson.alternateLink ||\n    fileJson.url ||\n    fileJson.link;\n\n  if (direct) return direct;\n\n  // Kalau tidak ada link, coba buat dari id\n  if (fileJson.id) {\n    return `https://drive.google.com/file/d/${fileJson.id}/view`;\n  }\n\n  // Fallback terakhir\n  return '';\n}\n\n// Kumpulkan link dari semua attachment\nconst links = items\n  .map(it => getDriveLink(it.json))\n  .filter(l => l && String(l).trim() !== '');\n\n// Maksimal 5 link, sisanya diabaikan\nconst five = links.slice(0, 5);\n\n// Bentuk output ke 5 kolom URL_1..URL_5\nconst urlCols = {\n  URL_1: five[0] || '-',\n  URL_2: five[1] || '-',\n  URL_3: five[2] || '-',\n  URL_4: five[3] || '-',\n  URL_5: five[4] || '-',\n};\n\nreturn [{\n  json: {\n    ...formData,\n    _attachments: undefined,\n    _hasAttachments: undefined,\n    ...urlCols,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        2768
+      ],
+      "id": "a7d89fc7-d9d3-40fe-be8f-a52ff74d2842",
+      "name": "Kumpulkan Link Drive"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 182067246,
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=182067246"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Project": "={{ $json.body.Project }}"
+          },
+          "matchingColumns": [
+            "Kemenpora"
+          ],
+          "schema": [
+            {
+              "id": "Project",
+              "displayName": "Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        2544
+      ],
+      "id": "db481149-9515-46c9-be68-2713079a9588",
+      "name": "Append row Project",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 182067246,
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=182067246"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        2320
+      ],
+      "id": "7e49883e-0120-4856-8d34-febb450dcd71",
+      "name": "Get row(s) Project",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "search-ticket",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        1232
+      ],
+      "id": "6de40bc9-e506-4627-90a1-e10d122f7268",
+      "name": "Webhook Search Tickets",
+      "webhookId": "search-ticket-001"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse filter dari request body\nconst body = $json.body || $json;\n\n// Ekstrak semua filter\nconst filters = {\n  pic: (body.pic || '').trim(),\n  nama_project: (body.nama_project || '').trim(),\n  tipe: (body.tipe || '').trim(),\n  status: (body.status || '').trim(),\n  prioritas: (body.prioritas || '').trim(),\n  id_tiket: (body.id_tiket || '').trim().toUpperCase(),\n  pengaju: (body.pengaju || '').trim().toLowerCase(),\n  tanggal_komplain: (body.tanggal_komplain || '').trim()\n};\n\n// Return untuk query ke sheet\nreturn [{\n  json: { filters }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        1232
+      ],
+      "id": "fa2276b3-af8d-4438-830f-2137ea4a33c8",
+      "name": "Parse Filter"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        192,
+        1232
+      ],
+      "id": "60957fe5-21f6-40c5-81e3-3496ff0cad6d",
+      "name": "Baca Semua Data Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter data berdasarkan kriteria yang dikirim dari frontend\nconst filters = $('Parse Filter').first().json.filters;\nconst allRows = $input.all();\n\nconst filtered = allRows.filter(item => {\n  const row = item.json;\n  \n  // Filter PIC Pengawas (karena from webhook mengirim pic untuk PIC Pengawas)\n  if (filters.pic && row.PIC_Pengawas !== filters.pic) return false;\n  \n  // Filter Nama Project\n  if (filters.nama_project && row.Nama_Project !== filters.nama_project) return false;\n  \n  // Filter Tipe Laporan\n  if (filters.tipe && row.Tipe_Laporan !== filters.tipe) return false;\n  \n  // Filter Status Pekerjaan\n  if (filters.status) {\n    const rowStatus = (row.Status_Pekerjaan || '').toLowerCase();\n    const filterStatus = filters.status.toLowerCase();\n    if (rowStatus !== filterStatus) return false;\n  }\n  \n  // Filter Prioritas\n  if (filters.prioritas && row.Prioritas !== filters.prioritas) return false;\n  \n  // Filter ID Tiket (partial match)\n  if (filters.id_tiket) {\n    const rowId = (row.ID || '').toUpperCase();\n    if (!rowId.includes(filters.id_tiket)) return false;\n  }\n  \n  // Filter Pengaju (partial match, case insensitive)\n  if (filters.pengaju) {\n    const rowPengaju = (row.Pengaju || '').toLowerCase();\n    if (!rowPengaju.includes(filters.pengaju)) return false;\n  }\n  \n  // Filter Tanggal\n  if (filters.tanggal_komplain && row.Tanggal_Komplain !== filters.tanggal_komplain) return false;\n  \n  return true;\n});\n\n// Return hasil filter dengan pic diambil dari PIC_Pengawas (konsisten dengan filter)\nreturn filtered.map(item => ({\n  json: {\n    id_tiket: item.json.ID,\n    tanggal_komplain: item.json.Tanggal_Komplain,\n    nama_project: item.json.Nama_Project,\n    pic: item.json.PIC_Pengawas,      // <-- diperbaiki: ambil dari PIC_Pengawas\n    komplain: item.json.Komplain,\n    lokasi: item.json.Lokasi,\n    tipe: item.json.Tipe_Laporan,\n    pengaju: item.json.Pengaju,\n    prioritas: item.json.Prioritas,\n    kategori: item.json.Kategori,\n    status: item.json.Status_Pekerjaan || 'Proses',\n    update_notes: item.json.Update_Notes || '',\n    tanggal_submit: item.json.Tanggal_Submit\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1232
+      ],
+      "id": "42883366-a894-4921-90b4-d5613428ddd9",
+      "name": "Filter Data"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "update-ticket",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        1552
+      ],
+      "id": "90974490-3652-4682-b0c0-54c5b5d2c3da",
+      "name": "Webhook Update Ticket",
+      "webhookId": "update-ticket-001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\n\nconst id_tiket = (body.id_tiket || '').trim();\nconst status_pekerjaan = (body.status || 'Proses').trim();\nconst update_notes = (body.update_notes || '').trim();\nconst attachments = Array.isArray(body.attachments) ? body.attachments : [];\nconst updated_by = (body.updated_by || 'System').trim();\n\nif (!id_tiket) {\n    throw new Error('ID Tiket tidak boleh kosong');\n}\n\nconst now = new Date();\nconst tanggalUpdate = now.toLocaleString('id-ID', {\n    timeZone: 'Asia/Jakarta',\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit'\n});\n\nconst result = {\n    id_tiket,\n    Status_Pekerjaan: status_pekerjaan,\n    update_notes,\n    updated_by,\n    _attachments: attachments,\n    _hasAttachments: attachments.length > 0,\n    Tanggal_Update: tanggalUpdate\n};\n\nif (status_pekerjaan.toLowerCase() === 'proses') {\n    result.Status_Pekerjaan_Counter = 0;\n}\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        1552
+      ],
+      "id": "9739d00f-6fa2-49de-abc6-7a83f7d2e901",
+      "name": "Parse Update Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "86c5d592-2056-4571-aa83-3aef86130e49",
+              "leftValue": "={{ $json._hasAttachments }}",
+              "rightValue": true,
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        1552
+      ],
+      "id": "3a3d306d-ce58-481f-b9ed-8e279a9ec4fa",
+      "name": "Ada Lampiran Update?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split attachment menjadi item terpisah untuk upload\nconst updateData = $input.first().json;\nconst files = updateData._attachments || [];\n\nreturn files.map((f, i) => ({\n  json: {\n    _ticketID: updateData.id_tiket,\n    _fileIndex: i,\n    _fileName: f.name,\n    _fileMime: f.type || 'application/octet-stream'\n  },\n  binary: {\n    data: {\n      data: f.data,\n      mimeType: f.type || 'application/octet-stream',\n      fileName: f.name,\n      fileSize: f.size || 0\n    }\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        1456
+      ],
+      "id": "dc25a522-7746-4d23-bcd6-4f5c1f6404b0",
+      "name": "Siapkan Binary per File Update"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json._ticketID + '_update_' + $json._fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1pzPpEz_fPerVgRnjBinEAPqTKxNg9-5A",
+          "mode": "list",
+          "cachedResultName": "Lampiran Komplain",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1pzPpEz_fPerVgRnjBinEAPqTKxNg9-5A"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1088,
+        1456
+      ],
+      "id": "85b6ab6e-3113-4a9c-bb92-ef12ce0d4703",
+      "name": "Upload File Update ke Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "HoUtfVyc3rhcqoeJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst updateData = $('Calculate Update Sequence V2').first().json;\n\nconst urls = items.map(item => {\n    const webViewLink = item.json.webViewLink || '';\n    return webViewLink;\n}).filter(Boolean);\n\nconst result = {\n    ...updateData,\n    _attachments: undefined,\n    _hasAttachments: undefined,\n    Up_1: urls[0] || '-',\n    Up_2: urls[1] || '-',\n    Up_3: urls[2] || '-',\n    Up_4: urls[3] || '-',\n    Up_5: urls[4] || '-'\n};\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        1456
+      ],
+      "id": "b0f02500-fd27-4143-bc85-945d8bb33100",
+      "name": "Kumpulkan Link Update"
+    },
+    {
+      "parameters": {
+        "jsCode": "const updateData = $input.first().json;\n\nreturn [{\n    json: {\n        ...updateData,\n        _attachments: undefined,\n        _hasAttachments: undefined,\n        Up_1: '-',\n        Up_2: '-',\n        Up_3: '-',\n        Up_4: '-',\n        Up_5: '-'\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        1648
+      ],
+      "id": "8e0e1610-c1ed-46e7-9685-cb1a616ce004",
+      "name": "Tidak Ada Lampiran Update"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status_Pekerjaan": "={{ $json.Status_Pekerjaan }}",
+            "Update_Notes": "={{ $json.Update_Notes }}",
+            "Up_1": "={{ $json.Up_1 }}",
+            "Up_2": "={{ $json.Up_2 }}",
+            "Up_3": "={{ $json.Up_3 }}",
+            "Up_4": "={{ $json.Up_4 }}",
+            "Up_5": "={{ $json.Up_5 }}",
+            "ID": "={{ $json.ID_Tiket }}",
+            "row_number": 0,
+            "Tanggal_Update": "={{ $json.Tanggal_Update }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "Tanggal_Komplain",
+              "displayName": "Tanggal_Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nama_Project",
+              "displayName": "Nama_Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC",
+              "displayName": "PIC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Komplain",
+              "displayName": "Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Pekerjaan",
+              "displayName": "Status_Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tipe_Laporan",
+              "displayName": "Tipe_Laporan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Pengaju",
+              "displayName": "Pengaju",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_1",
+              "displayName": "URL_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_2",
+              "displayName": "URL_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_3",
+              "displayName": "URL_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_4",
+              "displayName": "URL_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_5",
+              "displayName": "URL_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Update_Notes",
+              "displayName": "Update_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Up_1",
+              "displayName": "Up_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Up_2",
+              "displayName": "Up_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Up_3",
+              "displayName": "Up_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Up_4",
+              "displayName": "Up_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Up_5",
+              "displayName": "Up_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal_Update",
+              "displayName": "Tanggal_Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal_Submit",
+              "displayName": "Tanggal_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Pekerjaan_Counter",
+              "displayName": "Status_Pekerjaan_Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2432,
+        1552
+      ],
+      "id": "7048ab19-ba02-42aa-a760-bafef38e8728",
+      "name": "Update Sheet Row",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tambahkan ID ke mapping\nconst data = $input.first().json;\nreturn [{\n  json: {\n    ...data,\n    ID: data.id_tiket\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1536,
+        1456
+      ],
+      "id": "d76b15b4-2a54-402b-b38f-40744ff2f160",
+      "name": "Tambah ID untuk Matching"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, id_tiket: $('Parse Update Data').first().json.id_tiket, message: 'Update berhasil disimpan' }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2656,
+        1552
+      ],
+      "id": "8334f435-770f-4b8a-8177-30b9414d259a",
+      "name": "Kirim Response Update"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1984,
+        1552
+      ],
+      "id": "3c564194-e4c3-4eea-aa82-6683a5934bd4",
+      "name": "Merge Path1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\n\nfunction toHyperlink(url, label) {\n  if (!url || url === '-') return '-';\n  const safeUrl = String(url).replace(/\"/g, '\"\"');\n  const safeLabel = String(label).replace(/\"/g, '\"\"');\n  return `=HYPERLINK(\"${safeUrl}\",\"${safeLabel}\")`;\n}\n\nreturn [{\n  json: {\n    ...d,\n    URL_1: toHyperlink(d.URL_1, 'dok_1'),\n    URL_2: toHyperlink(d.URL_2, 'dok_2'),\n    URL_3: toHyperlink(d.URL_3, 'dok_3'),\n    URL_4: toHyperlink(d.URL_4, 'dok_4'),\n    URL_5: toHyperlink(d.URL_5, 'dok_5'),\n  }\n}];\n``"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        2768
+      ],
+      "id": "82e2424d-cec3-4be8-92ea-4d7a22d54dcf",
+      "name": "Set URL to Hyperlink",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\n\nfunction toHyperlink(url, label) {\n  if (!url || url === '-') return '-';\n  const safeUrl = String(url).replace(/\"/g, '\"\"');\n  const safeLabel = String(label).replace(/\"/g, '\"\"');\n  return `=HYPERLINK(\"${safeUrl}\",\"${safeLabel}\")`;\n}\n\nreturn [{\n  json: {\n    ...item,\n    Up_1: toHyperlink(item.Up_1, 'up_1'),\n    Up_2: toHyperlink(item.Up_2, 'up_2'),\n    Up_3: toHyperlink(item.Up_3, 'up_3'),\n    Up_4: toHyperlink(item.Up_4, 'up_4'),\n    Up_5: toHyperlink(item.Up_5, 'up_5')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        1456
+      ],
+      "id": "151f6ee8-794c-4be8-9680-080360024c20",
+      "name": "Set UP to Hyperlink",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "add-pic",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        1872
+      ],
+      "id": "6f435396-7a5d-4517-9ce3-ac4f351a5ede",
+      "name": "Webhook - Add - PIC Mandor",
+      "webhookId": "cb2ff1a5-2f1d-4587-8193-2156f6932d6f"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1553988268,
+          "mode": "list",
+          "cachedResultName": "PIC_Mandor",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1553988268"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "PIC": "={{ $json.body.PIC}}"
+          },
+          "matchingColumns": [
+            "Kemenpora"
+          ],
+          "schema": [
+            {
+              "id": "PIC",
+              "displayName": "PIC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "No_WA",
+              "displayName": "No_WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        1872
+      ],
+      "id": "41e6a6d3-33eb-4d83-823b-2918177a8a5e",
+      "name": "Append row PIC Mandor",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"sukses\": true,\n  \"pesan\": \"PIC baru masuk ke sheet\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        1872
+      ],
+      "id": "96285fa1-d228-4d73-bf1a-2130302c6009",
+      "name": "Kirim Response Save New PIC Mandor"
+    },
+    {
+      "parameters": {
+        "path": "get-pic",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        2096
+      ],
+      "id": "2d284a9d-c95e-4e1b-9301-eb357ac68bb8",
+      "name": "Webhook - Get - PIC Mandor",
+      "webhookId": "406edd1d-7df7-43b9-8b9b-485de1b2aa35"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1553988268,
+          "mode": "list",
+          "cachedResultName": "PIC_Mandor",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1553988268"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        2096
+      ],
+      "id": "6819dbdd-664d-4daa-bb6d-95abe1009d04",
+      "name": "Get row(s) in PIC Mandor",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst filtered = items.map(item => ({\n  row_number: item.json.row_number,\n  PIC: item.json.PIC\n}));\nreturn filtered; // ← langsung kembalikan array, bukan objek"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        2096
+      ],
+      "id": "d42e5790-b4df-4266-8acd-42aa10af2eb8",
+      "name": "Filter PIC Mandor"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, data: $input.all().map(item => item.json.PIC) } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        2096
+      ],
+      "id": "402abf44-193a-4168-96b0-2a47ea0108c2",
+      "name": "Kirim Response ke List PIC Mandor"
+    },
+    {
+      "parameters": {
+        "path": "get-pic-pengawas",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        592
+      ],
+      "id": "1e0cfb62-321e-499f-94f5-c30b1a782b91",
+      "name": "Webhook - Get - PIC Pengawas",
+      "webhookId": "406edd1d-7df7-43b9-8b9b-485de1b2aa35"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1433810787,
+          "mode": "list",
+          "cachedResultName": "PIC_Pengawas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1433810787"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        592
+      ],
+      "id": "66eadc48-1941-4660-8fbd-94d67d29d1f8",
+      "name": "Get row(s) in PIC Pengawas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst filtered = items.map(item => ({\n  row_number: item.json.row_number,\n  PIC: item.json.PIC\n}));\nreturn filtered; // ← langsung kembalikan array, bukan objek"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        592
+      ],
+      "id": "65e467b6-4e07-4f32-a6e1-f6e53fb68ea3",
+      "name": "Filter PIC Pengawas"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { success: true, data: $input.all().map(item => item.json.PIC) } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        592
+      ],
+      "id": "3084084b-ae6e-42ba-a784-2ab1e097e492",
+      "name": "Kirim Response ke List PIC Pengawas"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "add-pic-pengawas",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -256,
+        368
+      ],
+      "id": "e39534ac-1289-41cf-a11c-ae91ef20105d",
+      "name": "Webhook - Add - PIC Pengawas",
+      "webhookId": "cb2ff1a5-2f1d-4587-8193-2156f6932d6f"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1433810787,
+          "mode": "list",
+          "cachedResultName": "PIC_Pengawas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1433810787"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "PIC": "={{ $json.body.PIC}}"
+          },
+          "matchingColumns": [
+            "Kemenpora"
+          ],
+          "schema": [
+            {
+              "id": "PIC",
+              "displayName": "PIC",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "No_WA",
+              "displayName": "No_WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -32,
+        368
+      ],
+      "id": "e441abfb-e3d1-4f30-9a3f-4ef9b33cc3b3",
+      "name": "Append row PIC Pengawas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"sukses\": true,\n  \"pesan\": \"PIC baru masuk ke sheet\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        192,
+        368
+      ],
+      "id": "6200fb9d-1f9d-4aa1-9dba-213440b78664",
+      "name": "Kirim Response Save New PIC Pengawas"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().map(i => i.json) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        1232
+      ],
+      "id": "241a904b-2cb5-4087-92ca-8fc3300a7f4c",
+      "name": "Kirim Response Ticket",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1909603665,
+          "mode": "list",
+          "cachedResultName": "Update_History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1909603665"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        1552
+      ],
+      "id": "e5ed5506-1609-44fc-ae88-4f70c76c5a4b",
+      "name": "Get Update History Count V2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const updateData = $('Parse Update Data').first().json;\nconst historyRows = $input.all();\n\n// Count existing updates for this ticket\nconst existingUpdates = historyRows.filter(item => \n    item.json.ID_Tiket === updateData.id_tiket\n);\n\nconst nextSequence = existingUpdates.length + 1;\n\nreturn [{\n    json: {\n        ...updateData,\n        update_sequence: nextSequence\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1552
+      ],
+      "id": "f7e865b6-dd3b-4da3-9cc5-d9efbc8595cd",
+      "name": "Calculate Update Sequence V2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1909603665,
+          "mode": "list",
+          "cachedResultName": "Update_History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1909603665"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID_Tiket": "={{ $json.id_tiket }}",
+            "Update_Sequence": "={{ $json.update_sequence }}",
+            "Tanggal_Update": "={{ $json.Tanggal_Update }}",
+            "Status_Pekerjaan": "={{ $json.Status_Pekerjaan }}",
+            "Update_Notes": "={{ $json.update_notes }}",
+            "Updated_By": "={{ $json.updated_by || 'System' }}",
+            "Up_1": "={{ $json.Up_1 }}",
+            "Up_2": "={{ $json.Up_2 }}",
+            "Up_3": "={{ $json.Up_3 }}",
+            "Up_4": "={{ $json.Up_4 }}",
+            "Up_5": "={{ $json.Up_5 }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID_Tiket",
+              "displayName": "ID_Tiket",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Update_Sequence",
+              "displayName": "Update_Sequence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal_Update",
+              "displayName": "Tanggal_Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status_Pekerjaan",
+              "displayName": "Status_Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Update_Notes",
+              "displayName": "Update_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_By",
+              "displayName": "Updated_By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Up_1",
+              "displayName": "Up_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Up_2",
+              "displayName": "Up_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Up_3",
+              "displayName": "Up_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Up_4",
+              "displayName": "Up_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Up_5",
+              "displayName": "Up_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2208,
+        1552
+      ],
+      "id": "04926b8b-ed55-4036-84c4-108c30139815",
+      "name": "Append to Update_History V2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "get-ticket-detail",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        912
+      ],
+      "id": "85169e31-8565-4bb2-ab97-668b064a717d",
+      "name": "Webhook Get Ticket Detail V2",
+      "webhookId": "get-ticket-detail-v2-001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $json.query || {};\nconst id_tiket = (query.id || '').trim();\n\nif (!id_tiket) {\n    throw new Error('ID Tiket required');\n}\n\nreturn [{ json: { id_tiket } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        912
+      ],
+      "id": "d7419075-f219-4dc2-8b3d-d071daf94702",
+      "name": "Parse Detail Request V2"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $('Parse Detail Request V2').first().json.id_tiket }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        1008
+      ],
+      "id": "1b41ccd2-f1b3-4382-abc2-3484c2cb96d9",
+      "name": "Get Ticket From Database V2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1909603665,
+          "mode": "list",
+          "cachedResultName": "Update_History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=1909603665"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID_Tiket",
+              "lookupValue": "={{ $('Parse Detail Request V2').first().json.id_tiket }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        816
+      ],
+      "id": "4d15ebc5-abae-4744-bf42-e7ac73024420",
+      "name": "Get Update History V2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ticket = $('Get Ticket From Database V2').first().json;\nconst historyItems = $('Get Update History V2').all();\n\nconst history = historyItems.map(item => item.json);\n\nconst result = {\n    ticket: ticket,\n    history: history,\n    total_updates: history.length\n};\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        1008
+      ],
+      "id": "2074a31e-9a1f-44fc-b485-ba6305307bf4",
+      "name": "Combine Ticket and History V2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        1008
+      ],
+      "id": "3172a3aa-7a82-4596-89c6-1f500ffc7a42",
+      "name": "Respond Ticket Detail V2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Terima Komplain": {
+      "main": [
+        [
+          {
+            "node": "Generate ID & Parse Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate ID & Parse Data": {
+      "main": [
+        [
+          {
+            "node": "Ada Lampiran?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siapkan Binary per File": {
+      "main": [
+        [
+          {
+            "node": "Upload File ke Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload File ke Drive": {
+      "main": [
+        [
+          {
+            "node": "Kumpulkan Link Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tidak Ada Lampiran": {
+      "main": [
+        [
+          {
+            "node": "Merge Path",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Path": {
+      "main": [
+        [
+          {
+            "node": "Simpan ke Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simpan ke Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response ke Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ada Lampiran?": {
+      "main": [
+        [
+          {
+            "node": "Siapkan Binary per File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tidak Ada Lampiran",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get - Project": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Add - Project": {
+      "main": [
+        [
+          {
+            "node": "Append row Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kumpulkan Link Drive": {
+      "main": [
+        [
+          {
+            "node": "Set URL to Hyperlink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row Project": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response Save New Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) Project": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response ke List Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Search Tickets": {
+      "main": [
+        [
+          {
+            "node": "Parse Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Filter": {
+      "main": [
+        [
+          {
+            "node": "Baca Semua Data Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Semua Data Sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Data": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Update Ticket": {
+      "main": [
+        [
+          {
+            "node": "Parse Update Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Update Data": {
+      "main": [
+        [
+          {
+            "node": "Get Update History Count V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ada Lampiran Update?": {
+      "main": [
+        [
+          {
+            "node": "Siapkan Binary per File Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tidak Ada Lampiran Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Siapkan Binary per File Update": {
+      "main": [
+        [
+          {
+            "node": "Upload File Update ke Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload File Update ke Drive": {
+      "main": [
+        [
+          {
+            "node": "Kumpulkan Link Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kumpulkan Link Update": {
+      "main": [
+        [
+          {
+            "node": "Tambah ID untuk Matching",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tidak Ada Lampiran Update": {
+      "main": [
+        [
+          {
+            "node": "Merge Path1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Update Sheet Row": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tambah ID untuk Matching": {
+      "main": [
+        [
+          {
+            "node": "Set UP to Hyperlink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Path1": {
+      "main": [
+        [
+          {
+            "node": "Append to Update_History V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set URL to Hyperlink": {
+      "main": [
+        [
+          {
+            "node": "Merge Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set UP to Hyperlink": {
+      "main": [
+        [
+          {
+            "node": "Merge Path1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Add - PIC Mandor": {
+      "main": [
+        [
+          {
+            "node": "Append row PIC Mandor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row PIC Mandor": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response Save New PIC Mandor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get - PIC Mandor": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in PIC Mandor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in PIC Mandor": {
+      "main": [
+        [
+          {
+            "node": "Filter PIC Mandor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter PIC Mandor": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response ke List PIC Mandor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get - PIC Pengawas": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in PIC Pengawas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in PIC Pengawas": {
+      "main": [
+        [
+          {
+            "node": "Filter PIC Pengawas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter PIC Pengawas": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response ke List PIC Pengawas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Add - PIC Pengawas": {
+      "main": [
+        [
+          {
+            "node": "Append row PIC Pengawas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row PIC Pengawas": {
+      "main": [
+        [
+          {
+            "node": "Kirim Response Save New PIC Pengawas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Update History Count V2": {
+      "main": [
+        [
+          {
+            "node": "Calculate Update Sequence V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Update Sequence V2": {
+      "main": [
+        [
+          {
+            "node": "Ada Lampiran Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to Update_History V2": {
+      "main": [
+        [
+          {
+            "node": "Update Sheet Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Get Ticket Detail V2": {
+      "main": [
+        [
+          {
+            "node": "Parse Detail Request V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Detail Request V2": {
+      "main": [
+        [
+          {
+            "node": "Get Ticket From Database V2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Update History V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ticket From Database V2": {
+      "main": [
+        [
+          {
+            "node": "Combine Ticket and History V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Ticket and History V2": {
+      "main": [
+        [
+          {
+            "node": "Respond Ticket Detail V2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "0e4a719b-f45c-414b-8f01-5059b649a82c",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "14bJBB00AcdqGcv7p5bcq",
+  "tags": [
+    {
+      "updatedAt": "2026-04-17T03:59:31.467Z",
+      "createdAt": "2026-04-17T03:59:31.467Z",
+      "id": "ffzAjus91osOPTcs",
+      "name": "TIM Interior"
+    }
+  ]
+}

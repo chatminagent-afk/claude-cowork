@@ -1,0 +1,14 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "// Rate Limiter (ENGINE) — batas \u0026 window dari CONFIG (default 5/menit)\nconst cfg = $(\u0027Parse Config\u0027).first().json.config || {};\nconst userWa = $(\u0027Chat Counter\u0027).first().json.user_lid || $(\u0027Chat Counter\u0027).first().json.user_wa;\nconst now = Date.now();\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nconst rateLimits = staticData.rateLimits || {};\nconst userKey = `rl_${userWa}`;\nconst windowMs = (Number(cfg.rate_limit_window_sec) || 60) * 1000;\nconst maxMessages = Number(cfg.rate_limit_max) || 5;\nif (!rateLimits[userKey]) {\n  rateLimits[userKey] = { count: 1, windowStart: now };\n} else {\n  const elapsed = now - rateLimits[userKey].windowStart;\n  if (elapsed \u003e windowMs) rateLimits[userKey] = { count: 1, windowStart: now };\n  else rateLimits[userKey].count++;\n}\nstaticData.rateLimits = rateLimits;\nif (rateLimits[userKey].count \u003e maxMessages) {\n  console.log(`⛔ RATE LIMITED: ${userWa} (${rateLimits[userKey].count}/${maxMessages})`);\n  return [];\n}\nconsole.log(`✅ RATE OK: ${userWa} pesan ke-${rateLimits[userKey].count}`);\nreturn [$input.first()];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -17296,
+                     2544
+                 ],
+    "id":  "6121d01d-7ec4-40b3-9a26-9a4a67b45600",
+    "name":  "Rate Limiter LID",
+    "alwaysOutputData":  false
+}

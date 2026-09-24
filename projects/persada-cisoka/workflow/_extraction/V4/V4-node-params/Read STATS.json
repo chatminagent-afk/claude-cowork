@@ -1,0 +1,39 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+                                          "mode":  "list",
+                                          "cachedResultName":  "The_Scholars_Database",
+                                          "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  56867128,
+                                         "mode":  "list",
+                                         "cachedResultName":  "STATS",
+                                         "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+                                     },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     1424,
+                     2288
+                 ],
+    "id":  "9ff7e189-2aa6-420f-a315-ab08893e8a52",
+    "name":  "Read STATS",
+    "alwaysOutputData":  true,
+    "retryOnFail":  true,
+    "executeOnce":  true,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

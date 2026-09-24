@@ -1,0 +1,270 @@
+{
+  "name": "Monthly Rollup (WF-B)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 0 1 * *"
+            }
+          ]
+        }
+      },
+      "id": "6bebbb53-c423-4b4e-94f9-2b912c1b2e36",
+      "name": "Tanggal 1, 00:30 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "TOPIC_LOG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "44c548bb-f5bb-4f78-bf8b-3ba5b2c10c17",
+      "name": "Read TOPIC_LOG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rekap TOPIC_LOG bulan lalu -> satu baris MONTHLY_SUMMARY.\n// Peringkat dihitung per USER UNIK, bukan per pesan: satu orang yang bertanya\n// enam kali tidak boleh menggelembungkan persentase.\n\nconst TOP_N = 10;\nconst NOISE = 'lainnya';  // sapaan/ucapan terima kasih/fragmen — dihitung, tapi tidak diperingkat\n\nfunction bulanWIB(d) {\n  const p = new Intl.DateTimeFormat('en-GB', {\n    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit'\n  }).formatToParts(d);\n  return p.find(x => x.type === 'year').value + '-' + p.find(x => x.type === 'month').value;\n}\n\n// Bulan sasaran = bulan sebelum bulan berjalan (WIB).\n// Dihitung dengan mundur ke tanggal 15 bulan lalu supaya aman dari beda panjang bulan & DST.\nconst now = new Date();\nconst nowWIB = bulanWIB(now);\nconst [y, m] = nowWIB.split('-').map(Number);\nconst prev = new Date(Date.UTC(m === 1 ? y - 1 : y, m === 1 ? 11 : m - 2, 15, 5, 0, 0));\nconst target = bulanWIB(prev);\n\n// --- kumpulkan baris bulan sasaran ---\nconst users = new Set();\nconst perTopicUsers = {};   // topic -> Set(user)\nconst perTopicMsgs = {};    // topic -> jumlah pesan\nlet totalPesan = 0, pesanNoise = 0;\nconst topikBaru = {};       // label NEW: -> jumlah user\n\nfor (const item of $('Read TOPIC_LOG').all()) {\n  const r = item.json || {};\n  if (String(r.bulan || '').trim() !== target) continue;\n\n  const user = String(r.user_key || '').trim();\n  const topic = String(r.topic || '').trim();\n  const n = Number(r.jumlah_pesan) || 0;\n  if (!user || !topic) continue;\n\n  users.add(user);\n  totalPesan += n;\n\n  if (topic === NOISE) { pesanNoise += n; continue; }\n\n  if (!perTopicUsers[topic]) { perTopicUsers[topic] = new Set(); perTopicMsgs[topic] = 0; }\n  perTopicUsers[topic].add(user);\n  perTopicMsgs[topic] += n;\n\n  if (topic.indexOf('NEW:') === 0) {\n    topikBaru[topic] = (topikBaru[topic] || 0) + 1;\n  }\n}\n\nconst totalUser = users.size;\n\nconst ranked = Object.keys(perTopicUsers).map(t => ({\n  topic: t,\n  users: perTopicUsers[t].size,\n  messages: perTopicMsgs[t],\n  pct: totalUser ? Math.round((perTopicUsers[t].size / totalUser) * 1000) / 10 : 0\n})).sort((a, b) => (b.users - a.users) || (b.messages - a.messages) || a.topic.localeCompare(b.topic));\n\nconst top = ranked.slice(0, TOP_N);\n\n// Persentase sengaja BOLEH berjumlah >100%: satu user bisa membawa beberapa topik.\nconst note = totalUser === 0\n  ? 'Belum ada data untuk bulan ini.'\n  : 'Berdasarkan percakapan yang ditangani VIRA. Chat yang sudah diambil alih Sam tidak ikut terhitung. '\n    + 'Satu user bisa menanyakan lebih dari satu topik, jadi jumlah persentase bisa melebihi 100%.';\n\nreturn [{ json: {\n  bulan: target,\n  total_user_unik: totalUser,\n  total_pesan: totalPesan,\n  top_json: JSON.stringify(top),\n  topik_baru_json: JSON.stringify(Object.keys(topikBaru).sort()),\n  pesan_lainnya: pesanNoise,\n  topik_terpakai: ranked.length,\n  coverage_note: note,\n  generated_at: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })\n} }];\n"
+      },
+      "id": "e27af03f-7a9a-42d6-8490-f307640da81c",
+      "name": "Rollup Bulan Lalu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MONTHLY_SUMMARY",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "bulan": "={{ $json.bulan }}",
+            "total_user_unik": "={{ $json.total_user_unik }}",
+            "total_pesan": "={{ $json.total_pesan }}",
+            "top_json": "={{ $json.top_json }}",
+            "topik_baru_json": "={{ $json.topik_baru_json }}",
+            "pesan_lainnya": "={{ $json.pesan_lainnya }}",
+            "topik_terpakai": "={{ $json.topik_terpakai }}",
+            "coverage_note": "={{ $json.coverage_note }}",
+            "generated_at": "={{ $json.generated_at }}"
+          },
+          "matchingColumns": [
+            "bulan"
+          ],
+          "schema": [
+            {
+              "id": "bulan",
+              "displayName": "bulan",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_user_unik",
+              "displayName": "total_user_unik",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_pesan",
+              "displayName": "total_pesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "top_json",
+              "displayName": "top_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topik_baru_json",
+              "displayName": "topik_baru_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pesan_lainnya",
+              "displayName": "pesan_lainnya",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topik_terpakai",
+              "displayName": "topik_terpakai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "coverage_note",
+              "displayName": "coverage_note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "generated_at",
+              "displayName": "generated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "5d6f41bd-37a4-4e60-8d19-c8fa5c82eeed",
+      "name": "Write MONTHLY_SUMMARY",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tanggal 1, 00:30 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read TOPIC_LOG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read TOPIC_LOG": {
+      "main": [
+        [
+          {
+            "node": "Rollup Bulan Lalu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rollup Bulan Lalu": {
+      "main": [
+        [
+          {
+            "node": "Write MONTHLY_SUMMARY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "0mp_AdLtInm68RxQUwLqV"
+  },
+  "versionId": "b8cb7670-c357-4294-8ebc-ae51b81831bc",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "49Idh3Um3-OiK2eKlBcCi",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

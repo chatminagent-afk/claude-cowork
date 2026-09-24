@@ -1,0 +1,14 @@
+﻿{
+    "parameters":  {
+                       "amount":  60
+                   },
+    "type":  "n8n-nodes-base.wait",
+    "typeVersion":  1.1,
+    "position":  [
+                     -16624,
+                     2544
+                 ],
+    "id":  "a7883b6a-6ac1-4f3d-8926-b2dbc6d01dc6",
+    "name":  "Wait3",
+    "webhookId":  "de3ed2ba-287b-4bbc-a6cf-21f675580c1b"
+}

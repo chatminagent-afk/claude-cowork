@@ -1,0 +1,231 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>QA WF-A — VIRA Topic Harvester</title>
+<style>
+ body{font:14px/1.6 ui-monospace,Consolas,monospace;background:#0f1115;color:#d7dae0;padding:24px;margin:0}
+ h1{font-size:16px;margin:0 0 4px} .sub{color:#7d8590;font-size:12px;margin-bottom:18px}
+ .r{padding:3px 0;border-bottom:1px solid #1c2027}
+ .ok{color:#3fb950} .no{color:#f85149;font-weight:700}
+ .d{color:#7d8590;font-size:12px;padding-left:26px}
+ #sum{margin-top:18px;padding:12px 14px;border-radius:6px;font-weight:700}
+ .green{background:#12261a;color:#3fb950;border:1px solid #2ea04326}
+ .red{background:#2a1215;color:#f85149;border:1px solid #f8514926}
+</style>
+<h1>QA WF-A — VIRA Topic Harvester</h1>
+<div class="sub">Kode diambil apa adanya dari <code>2026-08-26-VIRA-WF-A-topic-harvester.json</code></div>
+<div id="out"></div>
+<div id="sum"></div>
+<script>
+var SRC = {"Prepare Batches": "const SYSTEM_PROMPT = \"Kamu adalah pengklasifikasi topik untuk VIRA, asisten WhatsApp milik The Scholars — konsultan pendidikan Indonesia yang menjual program beasiswa Singapura. Penanyanya orang tua dan siswa Indonesia. Bahasanya informal, banyak typo, sering campur Inggris.\\n\\nTugasmu: beri SATU label topik untuk setiap pesan.\\n\\nTAKSONOMI:\\nminat_asean_scholarship: Menyebut ASEAN Scholarship / MOE-ASEAN — minat, info, atau persiapannya.\\nsyarat_usia_kelas: Menanyakan apakah anak di kelas/usia tertentu memenuhi syarat ikut program.\\nprogram_senior_admisi_uni: Program Seniors, mentoring admisi universitas, jalur kuliah S1 luar negeri.\\nminat_program_batch_generik: Minat program/batch tanpa menyebut program spesifik. Termasuk template klik-iklan \\\"Halo Sam! Saya mau tanya tentang program The Scholars Batch N\\\".\\nbeasiswa_umum_luar_negeri: Beasiswa luar negeri secara umum, di luar ASEAN Scholarship dan UOB.\\ntanya_tanpa_topik_spesifik: Menyatakan ingin bertanya tapi belum menyebut topiknya sama sekali (\\\"mau tanya dong\\\", \\\"izin bertanya kak\\\").\\nstatus_pendaftaran_dan_ketersediaan: Pendaftaran masih buka/tutup, kuota, batch berikutnya kapan, masih available atau tidak.\\nakses_webinar_zoom: Masalah teknis akses webinar/Zoom — link invalid, minta passcode, tidak bisa masuk, minta rekaman.\\nuob_cli_scholarship: Menyebut UOB atau CLI scholarship secara spesifik.\\nbiaya_program: Harga, biaya, tarif, cara bayar, cicilan.\\nlokasi_cabang: Lokasi kantor/cabang, alamat, apakah ada di kota tertentu, online atau offline.\\ninfo_program_general: Minta penjelasan umum tentang The Scholars atau isi programnya, tanpa mengarah ke satu program.\\nkonsultasi_langsung: Minta bicara dengan orang/Sam, minta dihubungi, minta jadwal konsultasi.\\njadwal_kelas_waktu: Jadwal kelas, hari apa, jam berapa, durasi, frekuensi pertemuan.\\nles_privat_lain: Les privat atau bimbingan mata pelajaran lain di luar program beasiswa.\\nielts_english_test: Persiapan IELTS, TOEFL, SAT, atau tes bahasa Inggris lain.\\n\\nATURAN:\\n1. Pilih satu topik yang paling menggambarkan apa yang user INGINKAN, bukan sekadar kata yang muncul.\\n2. Kalau pesan tidak cocok ke topik mana pun TAPI membawa maksud bisnis yang jelas, keluarkan \\\"NEW:<label_singkat_snake_case>\\\". Contoh: \\\"NEW:minta_brosur\\\". Pakai ini seperlunya — hanya kalau benar-benar ada maksud yang tidak tertampung.\\n3. Kalau pesan cuma sapaan, ucapan terima kasih, penutup, konfirmasi nomor, atau fragmen tanpa maksud apa pun, beri \\\"lainnya\\\".\\n4. Jangan pernah mengarang topik di luar taksonomi kecuali lewat prefiks \\\"NEW:\\\".\\n\\nFORMAT KELUARAN — WAJIB JSON array, tanpa teks lain, tanpa markdown fence:\\n[{\\\"i\\\":0,\\\"topic\\\":\\\"biaya_program\\\"},{\\\"i\\\":1,\\\"topic\\\":\\\"lainnya\\\"}]\\n\\nSetiap pesan input diberi nomor. Kembalikan satu objek per nomor, urut, tidak ada yang dilewat.\";\n\n// Ambil watermark, saring pesan baru, potong jadi batch.\n// Nomor WhatsApp TIDAK pernah dikirim ke AI — hanya indeks + teks.\nconst BATCH_SIZE = 40;\nconst MAX_CHARS = 400;\n\nlet watermark = 0;\nfor (const item of $('Read State').all()) {\n  const r = item.json || {};\n  if (String(r.key || '').trim() === 'msg_buffer_watermark') {\n    watermark = Number(r.value) || 0;\n  }\n}\n\nconst fresh = [];\nfor (const item of $('Read MSG_BUFFER').all()) {\n  const r = item.json || {};\n  const ts = Number(r.ts) || 0;\n  const msg = String(r.message == null ? '' : r.message).trim();\n  const key = String(r.no_wa == null ? '' : r.no_wa).trim();\n  if (ts <= watermark) continue;   // sudah dipanen di run sebelumnya\n  if (!msg || !key) continue;      // baris rusak, lewati\n  fresh.push({ ts: ts, key: key, msg: msg });\n}\n\n// Tidak ada yang baru -> hentikan cabang. Tidak ada panggilan AI, tidak ada write.\nif (fresh.length === 0) return [];\n\nfresh.sort(function (a, b) { return a.ts - b.ts; });\nconst newWatermark = fresh[fresh.length - 1].ts;\n\nconst out = [];\nfor (let i = 0; i < fresh.length; i += BATCH_SIZE) {\n  const chunk = fresh.slice(i, i + BATCH_SIZE);\n  const lines = chunk.map(function (c, n) {\n    return n + '. ' + c.msg.replace(/\\s+/g, ' ').slice(0, MAX_CHARS);\n  });\n  out.push({\n    json: {\n      batch_index: out.length,\n      count: chunk.length,\n      watermark: watermark,\n      new_watermark: newWatermark,\n      payload: lines.join('\\n'),\n      items: chunk,\n      system_prompt: SYSTEM_PROMPT\n    }\n  });\n}\nreturn out;\n", "Aggregate": "// Gabungkan label AI dengan pesannya, lalu BUANG teksnya.\n// Yang keluar dari node ini hanya: bulan, user, topik, hitungan, rentang waktu.\nconst batches = $('Prepare Batches').all().map(function (i) { return i.json; });\nconst responses = $input.all().map(function (i) { return i.json; });\n\nfunction bulanWIB(ts) {\n  const d = new Date(Number(ts));\n  const parts = new Intl.DateTimeFormat('en-GB', {\n    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit'\n  }).formatToParts(d);\n  const y = parts.find(function (p) { return p.type === 'year'; }).value;\n  const m = parts.find(function (p) { return p.type === 'month'; }).value;\n  return y + '-' + m;\n}\n\nfunction parseLabels(resp) {\n  try {\n    const content = resp && resp.content;\n    if (!Array.isArray(content) || !content.length) return null;\n    let text = '';\n    for (const c of content) { if (c && c.type === 'text') text += c.text; }\n    text = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();\n    const parsed = JSON.parse(text);\n    return Array.isArray(parsed) ? parsed : null;\n  } catch (e) { return null; }\n}\n\nconst agg = {};\nlet classified = 0, failedBatches = 0, newTopics = 0;\n\nfor (let b = 0; b < batches.length; b++) {\n  const batch = batches[b];\n  const labels = parseLabels(responses[b]);\n\n  if (!labels) {\n    // Batch gagal diparse. Jangan tebak — biarkan tidak terhitung.\n    failedBatches++;\n    continue;\n  }\n\n  const byIndex = {};\n  for (const l of labels) {\n    if (l && l.i != null) byIndex[Number(l.i)] = String(l.topic || '').trim();\n  }\n\n  for (let n = 0; n < batch.items.length; n++) {\n    const it = batch.items[n];\n    let topic = byIndex[n] || '';\n    if (!topic) topic = 'lainnya';\n    if (topic.indexOf('NEW:') === 0) newTopics++;\n\n    const bulan = bulanWIB(it.ts);\n    const rowKey = bulan + '|' + it.key + '|' + topic;\n\n    if (!agg[rowKey]) {\n      agg[rowKey] = {\n        row_key: rowKey, bulan: bulan, user_key: it.key, topic: topic,\n        jumlah_pesan: 0, first_ts: it.ts, last_ts: it.ts\n      };\n    }\n    const a = agg[rowKey];\n    a.jumlah_pesan += 1;\n    if (it.ts < a.first_ts) a.first_ts = it.ts;\n    if (it.ts > a.last_ts) a.last_ts = it.ts;\n    classified++;\n  }\n}\n\n// Kalau SEMUA batch gagal, jangan majukan watermark — biar dicoba lagi run berikutnya.\nif (failedBatches === batches.length) {\n  throw new Error('Semua batch gagal diklasifikasi (' + failedBatches + '). Watermark tidak dimajukan.');\n}\n\nconst rows = Object.keys(agg).map(function (k) { return agg[k]; });\nconst meta = {\n  new_watermark: batches[0].new_watermark,\n  batches_total: batches.length,\n  batches_failed: failedBatches,\n  classified: classified,\n  new_topic_hits: newTopics\n};\n\nreturn rows.map(function (r) { return { json: Object.assign({}, r, { _meta: meta }) }; });\n", "Merge Counts": "// Tambahkan hitungan lama dari TOPIC_LOG supaya appendOrUpdate tidak menimpa histori.\nconst existing = {};\nfor (const item of $('Read TOPIC_LOG').all()) {\n  const r = item.json || {};\n  const k = String(r.row_key || '').trim();\n  if (!k) continue;\n  existing[k] = {\n    jumlah_pesan: Number(r.jumlah_pesan) || 0,\n    first_ts: Number(r.first_ts) || 0,\n    last_ts: Number(r.last_ts) || 0\n  };\n}\n\n// PENTING: baris agregat diambil dari $('Aggregate'), BUKAN $input.\n// Di n8n, $input sebuah node = output node TEPAT SEBELUMNYA -- di sini itu\n// \"Read TOPIC_LOG\" (isi sheet), bukan hasil Aggregate. Memakai $input di sini\n// membuat baris yang ditulis kosong semua.\nreturn $('Aggregate').all().map(function (item) {\n  const r = Object.assign({}, item.json);\n  const prev = existing[r.row_key];\n  if (prev) {\n    r.jumlah_pesan = prev.jumlah_pesan + r.jumlah_pesan;\n    if (prev.first_ts && prev.first_ts < r.first_ts) r.first_ts = prev.first_ts;\n    if (prev.last_ts && prev.last_ts > r.last_ts) r.last_ts = prev.last_ts;\n  }\n  return { json: r };\n});\n"};
+</script>
+<script>
+var pass, fail, log;
+(function () {
+/* Tes dijalankan di dalam function scope, BUKAN global. Di global scope, nama
+   seperti `top` / `name` / `status` / `length` adalah properti bawaan window
+   yang TIDAK bisa ditimpa `var` -- assignment gagal diam-diam dan tes jadi bohong. */
+try {
+
+var pass = 0, fail = 0, log = [];
+function check(label, cond, detail) {
+  if (cond) { pass++; log.push(['ok', label, '']); }
+  else { fail++; log.push(['no', label, detail || '']); }
+}
+
+/* Harness: bikin fungsi dari jsCode node, sediakan $() dan $input seperti n8n. */
+function run(src, ctx, inputItems) {
+  var $ = function (name) {
+    return {
+      all: function () { return (ctx[name] || []).map(function (j) { return { json: j }; }); },
+      first: function () { return { json: (ctx[name] || [])[0] }; }
+    };
+  };
+  var $input = { all: function () { return (inputItems || []).map(function (j) { return { json: j }; }); } };
+  return new Function('$', '$input', src)($, $input);
+}
+
+var WIB = function (s) { return Date.parse(s + '+07:00'); };
+var T0 = WIB('2026-09-03T10:00:00');
+
+var msgBuffer = [
+  { no_wa: '628111', message: 'Halo, program asean scholarship untuk kelas berapa ya?', ts: T0 + 1000 },
+  { no_wa: '628111', message: 'oh iya, biayanya berapa kak?',                            ts: T0 + 2000 },
+  { no_wa: '628222', message: 'link zoomnya invalid kak, minta passcode dong',           ts: T0 + 3000 },
+  { no_wa: '628333', message: 'halo',                                                     ts: T0 + 4000 },
+  { no_wa: '628444', message: 'SUDAHDIPANEN harus dilewati',                              ts: T0 - 9000 },
+  { no_wa: '',       message: 'BARISRUSAK tanpa no_wa',                                   ts: T0 + 5000 },
+  { no_wa: '628555', message: '   ',                                                      ts: T0 + 6000 }
+];
+var state = [{ key: 'msg_buffer_watermark', value: String(T0), updated_at: 'x' }];
+
+/* ================= 1. Prepare Batches ================= */
+var batches = run(SRC['Prepare Batches'], { 'Read State': state, 'Read MSG_BUFFER': msgBuffer }, []);
+var b0 = batches[0].json;
+var dump = JSON.stringify(batches);
+
+check('menyaring baris <= watermark',      dump.indexOf('SUDAHDIPANEN') === -1);
+check('menyaring baris tanpa no_wa',       dump.indexOf('BARISRUSAK') === -1);
+check('menyaring pesan kosong/spasi',      dump.indexOf('628555') === -1);
+check('4 pesan valid tersisa',             b0.count === 4, 'count=' + b0.count);
+check('watermark baru = ts terbesar',      b0.new_watermark === T0 + 4000, String(b0.new_watermark));
+check('payload TIDAK memuat nomor WA',     b0.payload.indexOf('628111') === -1, b0.payload.slice(0, 50));
+check('system_prompt ikut terbawa',        typeof b0.system_prompt === 'string' && b0.system_prompt.length > 500);
+check('payload bernomor urut dari 0',      b0.payload.indexOf('0. ') === 0);
+check('taksonomi 16 topik ada di prompt',  (b0.system_prompt.match(/^[a-z_]+:/gm) || []).length >= 16,
+      'ketemu ' + ((b0.system_prompt.match(/^[a-z_]+:/gm) || []).length));
+
+var firstRun = run(SRC['Prepare Batches'], { 'Read State': [], 'Read MSG_BUFFER': msgBuffer }, []);
+check('run pertama (state kosong) proses semua', firstRun[0].json.count === 5, 'count=' + firstRun[0].json.count);
+
+var noNew = run(SRC['Prepare Batches'],
+  { 'Read State': [{ key: 'msg_buffer_watermark', value: String(T0 + 99999) }], 'Read MSG_BUFFER': msgBuffer }, []);
+check('tidak ada data baru -> berhenti, tanpa panggil AI', noNew.length === 0);
+
+/* alwaysOutputData: sheet kosong mengirim SATU item {} , bukan nol item.
+   Ini kondisi run PERTAMA (ANALYTICS_STATE & TOPIC_LOG masih kosong). */
+var blankState = run(SRC['Prepare Batches'],
+  { 'Read State': [{}], 'Read MSG_BUFFER': msgBuffer }, []);
+check('run pertama: ANALYTICS_STATE kosong ({}) -> watermark 0, semua diproses',
+      blankState.length === 1 && blankState[0].json.count === 5,
+      'count=' + (blankState[0] && blankState[0].json.count));
+
+var blankBoth = run(SRC['Prepare Batches'], { 'Read State': [{}], 'Read MSG_BUFFER': [{}] }, []);
+check('MSG_BUFFER kosong ({}) -> berhenti rapi, tanpa crash', blankBoth.length === 0);
+
+/* batching: 90 pesan -> 3 batch (40/40/10) */
+var many = [];
+for (var i = 0; i < 90; i++) many.push({ no_wa: '6281' + i, message: 'pesan ' + i, ts: T0 + 10000 + i });
+var manyB = run(SRC['Prepare Batches'], { 'Read State': [], 'Read MSG_BUFFER': many }, []);
+check('90 pesan -> 3 batch (40/40/10)',
+      manyB.length === 3 && manyB[0].json.count === 40 && manyB[2].json.count === 10,
+      manyB.map(function (b) { return b.json.count; }).join('/'));
+check('semua batch bawa new_watermark yang sama',
+      manyB.every(function (b) { return b.json.new_watermark === manyB[0].json.new_watermark; }));
+
+/* ================= 2. Aggregate ================= */
+function aiResp(arr) { return { content: [{ type: 'text', text: JSON.stringify(arr) }] }; }
+var resp = aiResp([
+  { i: 0, topic: 'minat_asean_scholarship' },
+  { i: 1, topic: 'biaya_program' },
+  { i: 2, topic: 'akses_webinar_zoom' },
+  { i: 3, topic: 'lainnya' }
+]);
+var rows = run(SRC['Aggregate'], { 'Prepare Batches': [b0] }, [resp]);
+var byKey = {}; rows.forEach(function (r) { byKey[r.json.row_key] = r.json; });
+
+check('4 baris agregat',                    rows.length === 4, 'len=' + rows.length);
+check('bulan dihitung WIB = 2026-09',       rows.every(function (r) { return r.json.bulan === '2026-09'; }));
+check('row_key = bulan|user|topik',         !!byKey['2026-09|628111|biaya_program']);
+check('1 user 2 topik -> 2 baris',          !!byKey['2026-09|628111|minat_asean_scholarship'] && !!byKey['2026-09|628111|biaya_program']);
+check('TEKS PESAN TIDAK IKUT KELUAR',       JSON.stringify(rows).indexOf('asean scholarship untuk kelas') === -1);
+check('user_key tetap ada (hitung user unik)', byKey['2026-09|628222|akses_webinar_zoom'].user_key === '628222');
+check('meta bawa watermark baru',           rows[0].json._meta.new_watermark === T0 + 4000);
+check('meta hitung jumlah terklasifikasi',  rows[0].json._meta.classified === 4, String(rows[0].json._meta.classified));
+
+var one = { batch_index: 0, count: 1, watermark: 0, new_watermark: T0, items: [{ ts: T0, key: '628999', msg: 'x' }] };
+
+var fenced = { content: [{ type: 'text', text: '```json\n' + JSON.stringify([{ i: 0, topic: 'biaya_program' }]) + '\n```' }] };
+var fr = run(SRC['Aggregate'], { 'Prepare Batches': [one] }, [fenced]);
+check('respons ber-fence ```json``` tetap terparse', fr.length === 1 && fr[0].json.topic === 'biaya_program');
+
+var nr = run(SRC['Aggregate'], { 'Prepare Batches': [one] }, [aiResp([{ i: 0, topic: 'NEW:minta_brosur' }])]);
+check('label NEW: dipertahankan apa adanya', nr[0].json.topic === 'NEW:minta_brosur');
+check('NEW: terhitung di meta',              nr[0].json._meta.new_topic_hits === 1);
+
+/* AI cuma melabeli 1 dari 4 pesan: 3 sisanya harus jatuh ke "lainnya", tidak boleh hilang. */
+var missing = run(SRC['Aggregate'], { 'Prepare Batches': [b0] }, [aiResp([{ i: 0, topic: 'biaya_program' }])]);
+var lainnyaCount = missing.filter(function (r) { return r.json.topic === 'lainnya'; })
+                          .reduce(function (s, r) { return s + r.json.jumlah_pesan; }, 0);
+var totalPesan = missing.reduce(function (s, r) { return s + r.json.jumlah_pesan; }, 0);
+check('label bolong -> tidak ada pesan yang hilang', totalPesan === 4, 'total=' + totalPesan);
+check('label bolong -> 3 sisanya jadi "lainnya"', lainnyaCount === 3, 'lainnya=' + lainnyaCount);
+check('label bolong -> yang berlabel tetap benar',
+      missing.some(function (r) { return r.json.topic === 'biaya_program'; }));
+
+var threw = false;
+try { run(SRC['Aggregate'], { 'Prepare Batches': [one] }, [{ content: [{ type: 'text', text: 'bukan json' }] }]); }
+catch (e) { threw = true; }
+check('SEMUA batch gagal -> throw, watermark tidak maju', threw);
+
+var partial = run(SRC['Aggregate'], { 'Prepare Batches': [b0, one] },
+                  [resp, { content: [{ type: 'text', text: 'rusak' }] }]);
+check('sebagian batch gagal -> sisanya tetap tersimpan', partial.length === 4 &&
+      partial[0].json._meta.batches_failed === 1, 'failed=' + (partial[0] && partial[0].json._meta.batches_failed));
+
+/* batas bulan: 30 Sep 23:59 WIB vs 1 Okt 00:01 WIB harus beda bulan */
+var akhirSep = WIB('2026-09-30T23:59:00'), awalOkt = WIB('2026-10-01T00:01:00');
+var edge = { batch_index: 0, count: 2, watermark: 0, new_watermark: awalOkt,
+             items: [{ ts: akhirSep, key: '628777', msg: 'a' }, { ts: awalOkt, key: '628777', msg: 'b' }] };
+var er = run(SRC['Aggregate'], { 'Prepare Batches': [edge] },
+             [aiResp([{ i: 0, topic: 'biaya_program' }, { i: 1, topic: 'biaya_program' }])]);
+var bulans = er.map(function (r) { return r.json.bulan; }).sort();
+check('batas bulan WIB dipisah benar (2026-09 vs 2026-10)',
+      er.length === 2 && bulans[0] === '2026-09' && bulans[1] === '2026-10', bulans.join(','));
+
+/* ================= 3. Merge Counts ================= */
+/* PEMODELAN PENTING: di n8n, $input sebuah node = output node TEPAT SEBELUMNYA.
+   Rantainya Aggregate -> Read TOPIC_LOG -> Merge Counts, jadi $input di Merge
+   Counts berisi BARIS SHEET, bukan hasil Aggregate. Harness versi awal keliru
+   menyuapkan hasil Aggregate ke $input -- itu sebabnya bug "baris kosong" lolos
+   QA dan baru ketahuan di n8n asli. Sekarang dimodelkan apa adanya. */
+var existing = [{ row_key: '2026-09|628111|biaya_program', jumlah_pesan: '5',
+                  first_ts: String(T0 - 50000), last_ts: String(T0 - 40000) }];
+var aggRows = rows.map(function (r) { return r.json; });
+
+var merged = run(SRC['Merge Counts'],
+                 { 'Read TOPIC_LOG': existing, 'Aggregate': aggRows },
+                 existing);            /* <-- $input = baris sheet, bukan agregat */
+
+var mk = {}; merged.forEach(function (r) { mk[r.json.row_key] = r.json; });
+var bp = mk['2026-09|628111|biaya_program'] || {};
+
+check('REGRESI: jumlah keluaran = jumlah baris Aggregate, bukan baris sheet',
+      merged.length === aggRows.length, 'keluar=' + merged.length + ' agregat=' + aggRows.length);
+check('REGRESI: row_key terisi, tidak kosong',
+      merged.every(function (r) { return String(r.json.row_key || '') !== ''; }),
+      JSON.stringify(merged.map(function (r) { return r.json.row_key; })));
+check('hitungan lama ditambah, bukan ditimpa (5+1=6)', bp.jumlah_pesan === 6, 'dapat ' + bp.jumlah_pesan);
+check('first_ts mundur ke yang lebih lama',            bp.first_ts === T0 - 50000);
+check('last_ts maju ke yang lebih baru',               bp.last_ts === T0 + 2000);
+check('baris baru tidak terpengaruh',                  mk['2026-09|628222|akses_webinar_zoom'].jumlah_pesan === 1);
+
+/* KONDISI RUN PERTAMA yang sebenarnya: TOPIC_LOG masih kosong. Dengan
+   alwaysOutputData, sheet kosong mengirim SATU item {} ke $input. Inilah persis
+   skenario yang kemarin menulis baris kosong ke sheet. */
+var firstRunMerge = run(SRC['Merge Counts'],
+                        { 'Read TOPIC_LOG': [{}], 'Aggregate': aggRows }, [{}]);
+check('RUN PERTAMA: sheet kosong ({}) -> tetap keluar semua baris agregat',
+      firstRunMerge.length === aggRows.length, 'keluar=' + firstRunMerge.length);
+check('RUN PERTAMA: TIDAK ada baris kosong yang ditulis',
+      firstRunMerge.every(function (r) {
+        return String(r.json.row_key || '') !== '' && Number(r.json.jumlah_pesan) > 0;
+      }), JSON.stringify(firstRunMerge.map(function (r) { return r.json; })));
+check('RUN PERTAMA: hitungan apa adanya', 
+      firstRunMerge.every(function (r) { return r.json.jumlah_pesan === 1; }));
+
+/* Merge Counts tidak boleh lagi bergantung pada $input untuk baris agregat */
+check('kode Merge Counts TIDAK memakai $input.all()',
+      SRC['Merge Counts'].indexOf('$input.all()') === -1);
+check('kode Merge Counts memakai $(\'Aggregate\').all()',
+      SRC['Merge Counts'].indexOf("$('Aggregate').all()") !== -1);
+
+
+} catch (e) {
+  if (!log) log = [];
+  log.push(['no', 'HARNESS ERROR', String(e && e.stack || e)]); fail = (fail || 0) + 1;
+}
+window.__P = pass; window.__F = fail; window.__L = log;
+})();
+pass = window.__P; fail = window.__F; log = window.__L;
+
+var out = document.getElementById('out');
+out.innerHTML = log.map(function (r) {
+  return '<div class="r"><span class="' + r[0] + '">' + (r[0] === 'ok' ? '&#10003;' : '&#10007;') +
+         '</span> ' + r[1] + '</div>' + (r[2] ? '<div class="d">' + r[2] + '</div>' : '');
+}).join('');
+var s = document.getElementById('sum');
+s.className = fail ? 'red' : 'green';
+s.textContent = fail ? ('GAGAL — ' + pass + ' lulus, ' + fail + ' gagal')
+                     : ('SEMUA LULUS — ' + pass + ' pemeriksaan');
+document.title = (fail ? 'GAGAL ' + fail : 'LULUS ' + pass) + ' — QA WF-A';
+</script>

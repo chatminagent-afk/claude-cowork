@@ -1,0 +1,40 @@
+--- IF: IF Unknown ---
+  ={{ $json.needs_unknown }} equals true
+
+--- WAIT: Wait1 --- params={"amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"}
+
+--- WAIT: Wait2 --- params={"amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"}
+
+--- IF: IF Send GForm ---
+  ={{ $json.isSendGForm === true }} true True
+
+--- IF: IF Bot Mode Active ---
+  ={{ $('Resolve User Row').item.json.bot_mode }} notEquals OFF
+
+--- IF: IF Update Greeting ---
+  ={{ $json.update_needed }} equals true
+
+--- IF: IF From Me ---
+  ={{ $json.body.isFromMe }} equals False
+
+--- WAIT: Wait3 --- params={"amount": 60}
+
+--- IF: IF_Chat_Debounce ---
+  ={{ $('Re-Read STATS Debounce').first().json.timestamp }} equals ={{ $('Chat Counter').first().json.process_start_ts }}
+
+--- IF: IF Talk To Sam ---
+  ={{ $json.isTalkToSam }} true 
+
+--- IF: IF (Whitelist) ---
+  ={{ $json.body.from }} equals 6285155202354
+  ={{ $json.body.from }} equals 6281510624599
+  ={{ $json.body.from }} equals 6596110395
+  ={{ $json.body.from }} equals 6589200455
+  ={{ $json.body.from }} equals 628176480658
+
+--- IF: IF GForm Resolved ---
+  ={{ $json.gformResolved === true }} true True
+
+--- IF: If From Group ---
+  ={{ $json.body.isFromGroup }} equals False
+

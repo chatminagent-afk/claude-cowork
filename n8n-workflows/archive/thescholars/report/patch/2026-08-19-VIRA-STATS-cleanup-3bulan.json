@@ -1,0 +1,367 @@
+{
+  "name": "VIRA - STATS Cleanup (tiap 3 bulan, 00:01 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "1 0 1 */3 *"
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "Every 3 months 00:01 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "notes": "1 Jan / 1 Apr / 1 Jul / 1 Okt, 00:01 WIB (timezone workflow = Asia/Jakarta)"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "Read STATS (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        220,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PLAN CLEANUP - STATS housekeeping tiap 3 bulan\n//\n// ATURAN: SEMUA baris dihapus KECUALI off_reason == \"SAM\".\n// Perbandingan case-insensitive + trim, jadi \"SAM\", \"Sam\", \"sam\",\n// dan \" SAM \" sama-sama dipertahankan. Baris SAM = murid/parent yang\n// di-OFF-kan Sam sendiri dan harus ditangani manual selamanya.\n//\n// STRATEGI AMAN (urutan ini disengaja, JANGAN dibalik):\n//   1. salin baris SAM ke BAWAH sheet dulu (append)\n//   2. baru hapus blok baris asli di atasnya (delete)\n// Kalau append gagal -> belum ada yang dihapus -> nol kehilangan data.\n// Kalau delete gagal -> cuma duplikat -> masih nol kehilangan data.\n// Kalau urutannya dibalik, satu kegagalan append = baris murid Sam\n// hilang permanen.\n// ====================================================================\n\nconst KEEP_VALUE = 'SAM';\nconst norm = v => String(v ?? '').trim().toUpperCase();\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && typeof r === 'object'\n            && r.row_number !== undefined\n            && Number(r.row_number) >= 2);\n\nif (!rows.length) {\n  console.log('STATS kosong / hanya header - tidak ada yang dibersihkan.');\n  return [];\n}\n\n// Guard 1: pastikan yang terbaca benar-benar tab STATS.\n// Kalau kolom kuncinya tidak ada, BERHENTI dengan error - lebih baik\n// workflow gagal berisik daripada menghapus tab yang salah.\nconst sample = rows[0];\nif (!('No WA' in sample)) {\n  throw new Error('Kolom \"No WA\" tidak ditemukan - tab yang terbaca kemungkinan bukan STATS. Cleanup DIBATALKAN.');\n}\n\n// Guard 2: kolom off_reason wajib sudah ada. Tanpa kolom ini semua\n// baris akan terbaca sebagai non-SAM dan murid/parent Sam ikut terhapus.\nif (!('off_reason' in sample)) {\n  throw new Error('Kolom \"off_reason\" belum ada di STATS. Tambahkan kolomnya dulu sebelum mengaktifkan workflow ini. Cleanup DIBATALKAN.');\n}\n\nconst keptRows = [];\nlet offByVira = 0;\nlet offNoLabel = 0;\n\nfor (const r of rows) {\n  if (norm(r.off_reason) === KEEP_VALUE) {\n    const copy = { ...r };\n    delete copy.row_number;  // kolom bawaan n8n, bukan kolom asli sheet\n    keptRows.push(copy);\n  } else if (norm(r.bot_mode) === 'OFF') {\n    if (norm(r.off_reason) === 'VIRA') offByVira++;\n    else offNoLabel++;\n  }\n}\n\n// Rentang hapus dihitung dari row_number TERBESAR, bukan rows.length,\n// supaya baris kosong di tengah (kalau ada) ikut kena hapus dan hasil\n// akhirnya rapi tanpa celah.\nconst maxRow = rows.reduce((m, r) => Math.max(m, Number(r.row_number)), 0);\nconst totalDataRows = maxRow - 1;\n\nif (totalDataRows < 1) {\n  console.log('Tidak ada baris data untuk dibersihkan.');\n  return [];\n}\n\nconst keptCount = keptRows.length;\nconst deleteCount = totalDataRows - keptCount;\n\nconsole.log(`STATS cleanup: ${totalDataRows} baris data | ${keptCount} SAM dipertahankan | ${deleteCount} dihapus (OFF by VIRA: ${offByVira}, OFF tanpa label: ${offNoLabel}).`);\n\nreturn [{\n  json: {\n    startRow: 2,\n    totalDataRows,\n    keptCount,\n    deleteCount,\n    offByVira,\n    offNoLabel,\n    keptRows,\n  }\n}];\n"
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Plan cleanup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "kept-rows-exist-001",
+              "leftValue": "={{ $json.keptCount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "IF Ada Baris SAM",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pecah keptRows jadi item terpisah supaya node Append menulis\n// satu baris per item. row_number sudah dibuang di Plan cleanup.\nconst plan = $('Plan cleanup').first().json;\nconst rows = plan.keptRows || [];\n\nif (!rows.length) {\n  console.log('Tidak ada baris SAM untuk disalin.');\n  return [];\n}\n\nconsole.log(`Menyalin ${rows.length} baris SAM ke bawah sebelum blok lama dihapus.`);\nreturn rows.map(r => ({ json: r }));\n"
+      },
+      "id": "a1000000-0000-4000-8000-000000000005",
+      "name": "Split kept rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000006",
+      "name": "Append SAM rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1100,
+        -120
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Disalin ke bawah DULU. Kalau node ini gagal, blok lama belum terhapus - nol kehilangan data."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node ini WAJIB mengeluarkan TEPAT 1 item.\n// Node Google Sheets jalan sekali per item masuk - kalau node Append\n// mengirim 30 item ke sini tanpa diciutkan, node Delete akan jalan\n// 30x dan menghapus blok yang salah berkali-kali.\nconst plan = $('Plan cleanup').first().json;\nconst last = plan.startRow + plan.totalDataRows - 1;\n\nconsole.log(`Hapus blok asli: baris ${plan.startRow}..${last} (${plan.totalDataRows} baris). Salinan SAM sudah aman di bawahnya.`);\n\nreturn [{ json: plan }];\n"
+      },
+      "id": "a1000000-0000-4000-8000-000000000007",
+      "name": "Prepare delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "notes": "Menciutkan jadi 1 item supaya node Delete jalan sekali saja."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "toDelete": "rows",
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.totalDataRows }}"
+      },
+      "id": "a1000000-0000-4000-8000-000000000008",
+      "name": "Delete original block",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1540,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "notes": "Hapus baris 2..(totalDataRows+1). Salinan SAM ada di bawah blok ini, jadi ikut naik jadi baris 2 dst - hasilnya rapi tanpa celah."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "=ISI_NOMOR_WA_STEVEN"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"[VIRA] STATS Cleanup selesai\\n\\n\" + \"Total baris data : \" + $('Plan cleanup').first().json.totalDataRows + \"\\n\" + \"Dipertahankan    : \" + $('Plan cleanup').first().json.keptCount + \" (off_reason=SAM)\\n\" + \"Dihapus          : \" + $('Plan cleanup').first().json.deleteCount + \"\\n\\n\" + \"Rincian yang dihapus:\\n\" + \"- OFF by VIRA    : \" + $('Plan cleanup').first().json.offByVira + \"\\n\" + \"- OFF tanpa label: \" + $('Plan cleanup').first().json.offNoLabel + ($('Plan cleanup').first().json.offNoLabel > 0 ? \"  <-- CEK INI, mungkin murid/parent Sam yang belum dilabeli\" : \"\") }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-4000-8000-000000000009",
+      "name": "Notify Steven",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "GANTI ISI_NOMOR_WA_STEVEN dengan nomor WA-mu (format 62xxx, tanpa + dan tanpa spasi)."
+    }
+  ],
+  "connections": {
+    "Every 3 months 00:01 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read STATS (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS (all)": {
+      "main": [
+        [
+          {
+            "node": "Plan cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan cleanup": {
+      "main": [
+        [
+          {
+            "node": "IF Ada Baris SAM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Ada Baris SAM": {
+      "main": [
+        [
+          {
+            "node": "Split kept rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split kept rows": {
+      "main": [
+        [
+          {
+            "node": "Append SAM rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append SAM rows": {
+      "main": [
+        [
+          {
+            "node": "Prepare delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare delete": {
+      "main": [
+        [
+          {
+            "node": "Delete original block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete original block": {
+      "main": [
+        [
+          {
+            "node": "Notify Steven",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta",
+    "errorWorkflow": "ZKsINjA7ZC8c9yRHWp3ud"
+  },
+  "pinData": {}
+}

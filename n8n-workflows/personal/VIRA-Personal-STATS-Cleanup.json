@@ -1,0 +1,537 @@
+{
+  "name": "VIRA Personal — STATS Cleanup (tiap 3 bulan, 02:30 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 2 1 1,4,7,10 *"
+            }
+          ]
+        }
+      },
+      "id": "vp-stats-cron",
+      "name": "Tiap 3 bulan 02:30 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "vp-stats-manual",
+      "name": "Test manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Dipicu jadwal kuartalan -> penghapusan SUNGGUHAN.\nreturn [{ json: { dry_run: false, dipicu: 'jadwal' } }];"
+      },
+      "id": "vp-stats-mode-live",
+      "name": "Mode: Live",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Dipicu tombol Test manual -> DRY RUN. Membaca dan menghitung, tapi tidak\n// menghapus satu baris pun. Pakai ini untuk mengecek angkanya masuk akal\n// sebelum mengaktifkan jadwal.\nreturn [{ json: { dry_run: true, dipicu: 'manual' } }];"
+      },
+      "id": "vp-stats-mode-dry",
+      "name": "Mode: Dry Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "vp-stats-read-config",
+      "name": "Read CONFIG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        120
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Baca CONFIG -> parameter purge STATS + kredensial Kirimi untuk notifikasi.\n//\n// Kunci CONFIG yang dipakai (semua opsional, ada default):\n//   stats_retention_days  angka, default 90. Umur maksimum baris berdasarkan\n//                         last_reply_ts. Baris lebih tua dari ini dihapus.\n//   stats_purge_dry_run   'Y' -> paksa dry run walaupun dipicu jadwal.\n//                         Berguna untuk menguji tanpa menghapus apa pun.\n//   admin_phone, kirimi_user_code, kirimi_secret, kirimi_device_id\n//\n// CATATAN: dry_run dari mode eksekusi (Test manual) SELALU menang. CONFIG hanya\n// bisa MENAMBAH pengaman (memaksa dry run), tidak pernah mematikannya.\nconst upstream = $input.all().map(i => i.json);\n\nconst cfg = {};\nfor (const r of upstream) {\n  const k = String(r.key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value : '';\n}\n\nconst num = (k, d) => {\n  const raw = cfg[k];\n  if (raw === undefined || raw === '') return d;\n  const n = Number(raw);\n  return isNaN(n) ? d : n;\n};\n\n// Deteksi mode eksekusi. Node \"Read CONFIG\" mengganti isi item dengan baris\n// CONFIG, jadi flag dry_run dari trigger tidak bisa mengalir lewat data --\n// harus dibaca balik lewat referensi node.\n//\n// FAIL-CLOSED: kalau kedua node mode sama-sama tidak bisa dibaca (mis. nama\n// node berubah, atau n8n mengubah perilaku referensi node yang belum\n// dieksekusi), kita ANGGAP DRY RUN. Lebih baik tidak menghapus apa pun\n// daripada menghapus karena sinyal yang tidak jelas.\nlet dryFromMode = null;\ntry {\n  if ($('Mode: Dry Run').first().json.dry_run === true) dryFromMode = true;\n} catch (e) { /* node ini tidak dieksekusi -- berarti bukan jalur manual */ }\n\nif (dryFromMode === null) {\n  try {\n    if ($('Mode: Live').first().json.dry_run === false) dryFromMode = false;\n  } catch (e) { /* node ini juga tidak terbaca */ }\n}\n\nif (dryFromMode === null) {\n  console.warn('Mode eksekusi tidak bisa ditentukan (node \"Mode: Live\" maupun \"Mode: Dry Run\" tidak terbaca). Jatuh ke DRY RUN demi keamanan -- tidak ada baris yang dihapus. Periksa nama node kalau ini terjadi pada run terjadwal.');\n  dryFromMode = true;\n}\n\nconst dryFromConfig = String(cfg.stats_purge_dry_run || '').trim().toUpperCase() === 'Y';\nconst retentionDays = num('stats_retention_days', 90);\n\nif (retentionDays < 30) {\n  console.warn(`PERINGATAN: stats_retention_days = ${retentionDays} hari. Nilai di bawah 30 hari berisiko menghapus lead yang masih hangat. Pastikan ini memang disengaja.`);\n}\n\nreturn [{ json: {\n  retention_days: retentionDays,\n  retention_ms: retentionDays * 24 * 60 * 60 * 1000,\n  dry_run: dryFromMode || dryFromConfig,\n  dry_reason: dryFromMode ? 'dipicu Test manual / mode tidak terbaca' : (dryFromConfig ? 'stats_purge_dry_run=Y di CONFIG' : ''),\n  admin_phone: String(cfg.admin_phone || '').trim(),\n  kirimi_user_code: String(cfg.kirimi_user_code || '').trim(),\n  kirimi_secret: String(cfg.kirimi_secret || '').trim(),\n  kirimi_device_id: String(cfg.kirimi_device_id || '').trim()\n} }];"
+      },
+      "id": "vp-stats-parse",
+      "name": "Parse Config Purge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "vp-stats-read-stats",
+      "name": "Read STATS",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        120
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PLAN PURGE -- STATS housekeeping (retensi 90 hari default)\n//\n// Beda dari MSG_BUFFER: STATS TIDAK append-only. Baris di-update di tempat,\n// jadi baris tua tersebar, bukan blok kontigu di atas. Karena itu di sini\n// kita bangun daftar \"run\" (blok baris berurutan) lalu MENGHAPUS DARI BAWAH\n// KE ATAS -- kalau dihapus dari atas, nomor baris di bawahnya bergeser dan\n// penghapusan berikutnya akan mengenai baris yang salah.\n//\n// PENGAMAN:\n//   1. Schema guard  -- kolom wajib harus ada, kalau tidak: berhenti total.\n//   2. bot_mode OFF  -- baris yang sedang ditangani manusia TIDAK PERNAH dihapus.\n//   3. ts tidak valid -> baris DIPERTAHANKAN (bukan dihapus). Defensif.\n// ====================================================================\nconst meta = $('Parse Config Purge').first().json;\nconst RETENTION_MS = meta.retention_ms;\nconst cutoff = Date.now() - RETENTION_MS;\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.row_number !== undefined && Number(r.row_number) >= 2);\n\nif (!rows.length) {\n  return [{ json: { ...meta, total_rows: 0, to_delete: 0, kept: 0, protected_off: 0,\n                    bad_ts: 0, runs: [], note: 'STATS kosong / hanya header.' } }];\n}\n\n// --- 1. Schema guard ---\nconst WAJIB = ['No WA', 'bot_mode', 'last_reply_ts'];\nconst kolom = Object.keys(rows[0]);\nconst hilang = WAJIB.filter(k => !kolom.includes(k));\nif (hilang.length) {\n  throw new Error('Schema STATS tidak sesuai -- kolom wajib hilang: ' + hilang.join(', ') +\n    '. Penghapusan DIBATALKAN supaya tidak salah hapus. Kolom yang terbaca: ' + kolom.join(', '));\n}\n\n// --- 2. Nilai umur baris ---\n// last_reply_ts bisa berupa epoch ms (angka) atau tanggal ISO. Dukung keduanya.\nconst parseTs = (raw) => {\n  if (raw === undefined || raw === null || raw === '') return NaN;\n  const s = String(raw).trim();\n  if (/^\\d{10,}$/.test(s)) return Number(s);          // epoch ms\n  const p = Date.parse(s);\n  return Number.isFinite(p) ? p : NaN;\n};\n\nconst hapus = [];\nlet protectedOff = 0, badTs = 0, kept = 0;\n\nfor (const r of rows) {\n  const rn = Number(r.row_number);\n\n  // bot_mode OFF = sedang ditangani manusia -> jangan pernah disentuh.\n  if (String(r.bot_mode || '').trim().toUpperCase() === 'OFF') { protectedOff++; continue; }\n\n  const ts = parseTs(r.last_reply_ts);\n  if (!Number.isFinite(ts) || ts <= 0) { badTs++; kept++; continue; }\n\n  if (ts < cutoff) hapus.push(rn); else kept++;\n}\n\n// --- 3. Bangun run kontigu, lalu urutkan MENURUN ---\nhapus.sort((a, b) => a - b);\nconst runs = [];\nfor (const rn of hapus) {\n  const last = runs[runs.length - 1];\n  if (last && rn === last.startRow + last.count) last.count++;\n  else runs.push({ startRow: rn, count: 1 });\n}\nruns.sort((a, b) => b.startRow - a.startRow);   // bawah -> atas\n\nconsole.log(`STATS purge: ${rows.length} baris dibaca, ${hapus.length} kedaluwarsa (${runs.length} blok), ${protectedOff} dilindungi bot_mode=OFF, ${badTs} ts tidak valid (dipertahankan).`);\n\nreturn [{ json: {\n  ...meta,\n  total_rows: rows.length,\n  to_delete: hapus.length,\n  kept,\n  protected_off: protectedOff,\n  bad_ts: badTs,\n  runs\n} }];"
+      },
+      "id": "vp-stats-plan",
+      "name": "Plan Purge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "vp-cond-runs",
+              "leftValue": "={{ $json.runs.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "vp-stats-if-rows",
+      "name": "Ada Baris?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pecah daftar run jadi item terpisah supaya bisa di-loop satu per satu.\n// Urutan sudah MENURUN (baris terbawah dulu) dari node Plan Purge -- jangan\n// diurutkan ulang di sini.\nconst d = $input.first().json;\nreturn d.runs.map((r, i) => ({\n  json: { ...r, urutan: i + 1, total_runs: d.runs.length, dry_run: d.dry_run }\n}));"
+      },
+      "id": "vp-stats-expand",
+      "name": "Expand Runs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "vp-stats-loop",
+      "name": "Loop Runs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1792,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "vp-cond-live",
+              "leftValue": "={{ $json.dry_run }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "vp-stats-if-live",
+      "name": "Live?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "operation": "delete",
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "vp-stats-delete",
+      "name": "Delete STATS Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2240,
+        240
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ringkasan hasil -- dibaca dari Plan Purge supaya jalan di kedua jalur\n// (ada baris yang dihapus, maupun tidak ada sama sekali).\nconst d = $('Plan Purge').first().json;\nconst dry = d.dry_run === true;\n\nconst judul = dry ? 'STATS Purge (DRY RUN -- tidak ada yang dihapus)' : 'STATS Purge';\nconst alasan = dry && d.dry_reason ? ` [${d.dry_reason}]` : '';\n\nconst text = `[VIRA Personal] ${judul}${alasan}\nRetensi: ${d.retention_days} hari (last_reply_ts)\nDibaca: ${d.total_rows} baris\n${dry ? 'AKAN dihapus' : 'Dihapus'}: ${d.to_delete} baris (${(d.runs || []).length} blok)\nDipertahankan: ${d.kept}\nDilindungi bot_mode=OFF: ${d.protected_off}\nts tidak valid (dipertahankan): ${d.bad_ts}`;\n\nreturn [{ json: { ...d, notif_text: text, dry_run: dry } }];"
+      },
+      "id": "vp-stats-ringkas",
+      "name": "Ringkasan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2016,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config Purge').first().json.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config Purge').first().json.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config Purge').first().json.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config Purge').first().json.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "vp-stats-notify",
+      "name": "Notify Purge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2240,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "content": "## VIRA Personal - STATS Cleanup\n\nMenghapus baris STATS yang `last_reply_ts`-nya lebih tua dari **stats_retention_days** (default 90 hari).\n\n### Sebelum diaktifkan\n1. Klik **Test manual** dulu. Itu DRY RUN - tidak menghapus apa pun, hanya melaporkan angka lewat WA.\n2. Cocokkan angkanya dengan isi tab STATS. Kalau `Dihapus` terasa terlalu besar, cek dulu `stats_retention_days` di CONFIG.\n3. Baru aktifkan jadwal.\n\n### Pengaman yang sudah terpasang\n- Baris `bot_mode = OFF` **tidak pernah** dihapus (sedang ditangani manusia).\n- `last_reply_ts` tidak terbaca -> baris **dipertahankan**, bukan dihapus.\n- Schema guard: kalau kolom `No WA` / `bot_mode` / `last_reply_ts` hilang, workflow berhenti total.\n- Penghapusan dilakukan **dari baris bawah ke atas** supaya nomor baris tidak bergeser.\n\n### Catatan cron\n`30 2 1 1,4,7,10 *` = tanggal 1 Januari/April/Juli/Oktober jam 02:30 WIB.\nIni **bukan** \"tiap 3 bulan dari sekarang\" - `*/3` di field bulan artinya bulan kelipatan, bukan interval berjalan.\n\nJam 02:30 dipilih supaya tidak bentrok dengan GLOBAL Sheet Cleanup (02:00) dan MSG_BUFFER harian (03:00).\n\n### Yang WAJIB di-set setelah import\n**Settings -> Error Workflow = `VIRA Personal - Error Notifier`**. Belum di-set di file ini karena ID-nya baru ada setelah notifier di-import.",
+        "height": 700,
+        "width": 460,
+        "color": 4
+      },
+      "id": "vp-stats-sticky",
+      "name": "Sticky - Cara pakai",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Tiap 3 bulan 02:30 WIB": {
+      "main": [
+        [
+          {
+            "node": "Mode: Live",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test manual": {
+      "main": [
+        [
+          {
+            "node": "Mode: Dry Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mode: Live": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mode: Dry Run": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG": {
+      "main": [
+        [
+          {
+            "node": "Parse Config Purge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config Purge": {
+      "main": [
+        [
+          {
+            "node": "Read STATS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS": {
+      "main": [
+        [
+          {
+            "node": "Plan Purge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Purge": {
+      "main": [
+        [
+          {
+            "node": "Ada Baris?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ada Baris?": {
+      "main": [
+        [
+          {
+            "node": "Expand Runs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ringkasan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Runs": {
+      "main": [
+        [
+          {
+            "node": "Loop Runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Runs": {
+      "main": [
+        [
+          {
+            "node": "Ringkasan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Live?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Live?": {
+      "main": [
+        [
+          {
+            "node": "Delete STATS Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete STATS Rows": {
+      "main": [
+        [
+          {
+            "node": "Loop Runs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ringkasan": {
+      "main": [
+        [
+          {
+            "node": "Notify Purge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": ""
+  },
+  "tags": []
+}

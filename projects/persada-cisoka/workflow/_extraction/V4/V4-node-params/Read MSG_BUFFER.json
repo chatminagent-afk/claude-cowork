@@ -1,0 +1,43 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+                                          "mode":  "list",
+                                          "cachedResultName":  "The_Scholars_Database",
+                                          "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  "MSG_BUFFER",
+                                         "mode":  "name"
+                                     },
+                       "filtersUI":  {
+                                         "values":  [
+                                                        {
+                                                            "lookupColumn":  "no_wa",
+                                                            "lookupValue":  "={{ $(\u0027Resolve User Row\u0027).first().json.resolved_key }}"
+                                                        }
+                                                    ]
+                                     },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -1840,
+                     2720
+                 ],
+    "id":  "b2a6475e-a7cb-41c4-85e4-7dc962327b60",
+    "name":  "Read MSG_BUFFER",
+    "alwaysOutputData":  true,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

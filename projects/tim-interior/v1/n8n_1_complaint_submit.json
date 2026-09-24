@@ -1,0 +1,262 @@
+{
+  "name": "Salero Dindo - 1. Terima Komplain",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "salero-complaint",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-400, 0],
+      "id": "node-01-webhook",
+      "name": "Webhook - Terima Komplain",
+      "webhookId": "a1b2c3d4-0001-0001-0001-000000000099"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Generate ID & parse form data ──────────────────────────\nconst d = $json;\nconst now = new Date();\nconst pad = n => String(n).padStart(2,'0');\nconst ts = [\n  now.getFullYear(),\n  pad(now.getMonth()+1),\n  pad(now.getDate()),\n  pad(now.getHours()),\n  pad(now.getMinutes()),\n  pad(now.getSeconds())\n].join('');\n\nconst id = `CMP-${ts}`;\n\nconst tanggalSubmit = now.toLocaleString('id-ID', {\n  timeZone: 'Asia/Jakarta',\n  day:'2-digit', month:'2-digit', year:'numeric',\n  hour:'2-digit', minute:'2-digit', second:'2-digit'\n});\n\n// Attachments array from form\nconst attachments = Array.isArray(d.attachments) ? d.attachments : [];\n\nreturn [{\n  json: {\n    ID:               id,\n    Tanggal_Komplain: d.tanggal_komplain || now.toISOString().split('T')[0],\n    Nama_Project:     d.nama_project     || '',\n    Komplain:         d.komplain         || '',\n    Pengaju:          d.pengaju          || '',\n    Prioritas:        d.prioritas        || 'Sedang',\n    Kategori:         d.kategori         || 'Lainnya',\n    Status:           'pending',\n    Tanggal_Submit:   tanggalSubmit,\n    // Keep attachments for downstream processing\n    _attachments:     attachments,\n    _hasAttachments:  attachments.length > 0\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 0],
+      "id": "node-02-parse",
+      "name": "Generate ID & Parse Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "has-att",
+              "leftValue": "={{ $json._hasAttachments }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equal" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [80, 0],
+      "id": "node-03-if",
+      "name": "Ada Lampiran?"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Split: output 1 item per file, with binary data set ────\nconst formData = $input.first().json;\nconst files    = formData._attachments || [];\n\nreturn files.map((f, i) => ({\n  json: {\n    // Carry form fields for reference in downstream nodes\n    _formID:    formData.ID,\n    _fileIndex: i,\n    _fileName:  f.name,\n    _fileMime:  f.type || 'application/octet-stream'\n  },\n  binary: {\n    // n8n binary property named 'attachment'\n    attachment: {\n      data:     f.data,\n      mimeType: f.type || 'application/octet-stream',\n      fileName: f.name,\n      fileSize: f.size || 0\n    }\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, -120],
+      "id": "node-04-split-files",
+      "name": "Siapkan Binary per File"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "name": "={{ $json._formID + '_' + $json._fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_FOLDER_ID_DRIVE_LAMPIRAN",
+          "mode": "id"
+        },
+        "binaryData": true,
+        "binaryPropertyName": "attachment",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [560, -120],
+      "id": "node-05-upload-drive",
+      "name": "Upload File ke Drive",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_DRIVE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.id }}/permissions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "role", "value": "reader" },
+            { "name": "type", "value": "anyone" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [800, -120],
+      "id": "node-06-set-permission",
+      "name": "Set Drive Permission (Public)",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_DRIVE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Aggregate all Drive file IDs into one comma-separated URL list ──\nconst items = $input.all();\n\n// Build share URLs from Drive file IDs\nconst urls = items\n  .map(item => {\n    // $json.id is what Google Drive Upload node returns\n    const fileId = item.json.id;\n    return fileId\n      ? `https://drive.google.com/file/d/${fileId}/view`\n      : null;\n  })\n  .filter(Boolean);\n\n// Get the original form data from the 'Generate ID & Parse Data' node\nconst formData = $('Generate ID & Parse Data').first().json;\n\nreturn [{\n  json: {\n    ...formData,\n    _attachments:    undefined,  // remove base64 payload\n    _hasAttachments: undefined,\n    Attachment_URLs: urls.join(', ')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1040, -120],
+      "id": "node-07-aggregate-links",
+      "name": "Kumpulkan Link Drive"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── No attachment path: pass form data with empty attachment URL ──\nconst formData = $input.first().json;\nreturn [{\n  json: {\n    ...formData,\n    _attachments:    undefined,\n    _hasAttachments: undefined,\n    Attachment_URLs: '-'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 120],
+      "id": "node-08-no-attachment",
+      "name": "Tidak Ada Lampiran"
+    },
+    {
+      "parameters": {
+        "mode": "appendInputData"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1280, 0],
+      "id": "node-09-merge",
+      "name": "Merge Path"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_KAMU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GANTI_DENGAN_SPREADSHEET_ID_KAMU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID":               "={{ $json.ID }}",
+            "Tanggal_Komplain": "={{ $json.Tanggal_Komplain }}",
+            "Nama_Project":     "={{ $json.Nama_Project }}",
+            "Komplain":         "={{ $json.Komplain }}",
+            "Pengaju":          "={{ $json.Pengaju }}",
+            "Prioritas":        "={{ $json.Prioritas }}",
+            "Kategori":         "={{ $json.Kategori }}",
+            "Attachment_URLs":  "={{ $json.Attachment_URLs }}",
+            "Status":           "={{ $json.Status }}",
+            "Tanggal_Submit":   "={{ $json.Tanggal_Submit }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "ID",               "displayName": "ID",               "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Tanggal_Komplain", "displayName": "Tanggal_Komplain", "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Nama_Project",     "displayName": "Nama_Project",     "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Komplain",         "displayName": "Komplain",         "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Pengaju",          "displayName": "Pengaju",          "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Prioritas",        "displayName": "Prioritas",        "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Kategori",         "displayName": "Kategori",         "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Attachment_URLs",  "displayName": "Attachment_URLs",  "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false },
+            { "id": "Status",           "displayName": "Status",           "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": true },
+            { "id": "Tanggal_Submit",   "displayName": "Tanggal_Submit",   "required": false, "defaultMatch": false, "display": true, "type": "string", "canBeUsedToMatch": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [1520, 0],
+      "id": "node-10-sheets",
+      "name": "Simpan ke Google Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_KAMU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, id: $('Generate ID & Parse Data').first().json.ID, message: 'Komplain berhasil dicatat!' }) }}",
+        "options": { "responseCode": 200 }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1760, 0],
+      "id": "node-11-respond",
+      "name": "Kirim Response ke Form"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Terima Komplain": {
+      "main": [[{ "node": "Generate ID & Parse Data", "type": "main", "index": 0 }]]
+    },
+    "Generate ID & Parse Data": {
+      "main": [[{ "node": "Ada Lampiran?", "type": "main", "index": 0 }]]
+    },
+    "Ada Lampiran?": {
+      "main": [
+        [{ "node": "Siapkan Binary per File",  "type": "main", "index": 0 }],
+        [{ "node": "Tidak Ada Lampiran",        "type": "main", "index": 0 }]
+      ]
+    },
+    "Siapkan Binary per File": {
+      "main": [[{ "node": "Upload File ke Drive", "type": "main", "index": 0 }]]
+    },
+    "Upload File ke Drive": {
+      "main": [[{ "node": "Set Drive Permission (Public)", "type": "main", "index": 0 }]]
+    },
+    "Set Drive Permission (Public)": {
+      "main": [[{ "node": "Kumpulkan Link Drive", "type": "main", "index": 0 }]]
+    },
+    "Kumpulkan Link Drive": {
+      "main": [[{ "node": "Merge Path", "type": "main", "index": 0 }]]
+    },
+    "Tidak Ada Lampiran": {
+      "main": [[{ "node": "Merge Path", "type": "main", "index": 1 }]]
+    },
+    "Merge Path": {
+      "main": [[{ "node": "Simpan ke Google Sheet", "type": "main", "index": 0 }]]
+    },
+    "Simpan ke Google Sheet": {
+      "main": [[{ "node": "Kirim Response ke Form", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "salero-dindo-submit-v2",
+  "meta": { "instanceId": "GANTI_DENGAN_INSTANCE_ID_N8N_KAMU" },
+  "id": "salero-dindo-submit",
+  "tags": [{ "name": "Salero Dindo" }]
+}

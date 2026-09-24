@@ -1,0 +1,1068 @@
+{
+  "name": "VIRA Personal — Follow-up",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        224
+      ],
+      "id": "eefee232-36ac-44c3-a670-bb02e6f9b2e0",
+      "name": "Schedule Trigger FU",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        224
+      ],
+      "id": "ea36720b-1247-46ca-95ba-7ea8fd51ea17",
+      "name": "Read CONFIG FU",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Parse Config FU — VIRA Personal (fork Persada 2026-09-16, 2026-09-22) ──\n// Kill switch string \"true\" milik VIRA Steven DIPERTAHANKAN (Persada tidak punya).\n// Bucket B (sudah minta deck, decknya belum dikirim) SENGAJA tidak punya template:\n// prospeknya tidak dikirimi apa pun, yang ditegur Steven — lihat node Backlog Deck.\nconst rows = $input.all().map(i => i.json);\nconst cfg = {};\nfor (const r of rows) {\n  const k = String(r.key || r.Key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value\n                : ((r.Value !== undefined && r.Value !== null) ? r.Value : '');\n}\nconst num = (k, d) => {\n  const raw = cfg[k];\n  if (raw === undefined || raw === '') return d;\n  const n = Number(raw);\n  return isNaN(n) ? d : n;\n};\nconst yes = (k, dflt) => {\n  const v = String(cfg[k] === undefined || cfg[k] === '' ? dflt : cfg[k]).trim().toUpperCase();\n  return v === 'Y' || v === 'YES' || v === 'TRUE' || v === '1';\n};\nconst arr = (k) => {\n  try {\n    const a = JSON.parse(cfg[k] || '[]');\n    return Array.isArray(a) ? a.map(s => String(s).trim()).filter(Boolean) : [];\n  } catch (e) { return []; }\n};\n\n// Kill switch utama — WAJIB string \"true\" persis, bukan truthy sembarangan.\nif (String(cfg.followup_enabled || '').trim().toLowerCase() !== 'true') {\n  console.log('follow-up dimatikan (followup_enabled != \"true\") -- run berhenti di sini.');\n  return [];\n}\n\nconst openH = num('followup_open_hour', 9);\nconst closeH = num('followup_close_hour', 21);\nconst wibParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());\nconst wibHour = Number((wibParts.find(p => p.type === 'hour') || {}).value || 0);\nconst wibMin = Number((wibParts.find(p => p.type === 'minute') || {}).value || 0);\n\n// Di luar jam etis -> stop; trigger jam berikutnya coba lagi. Kandidat yang\n// \"ketinggalan\" otomatis terkirim di slot berikutnya (antrian tidak hilang).\nif (wibHour < openH || wibHour >= closeH) {\n  console.log('di luar jendela follow-up [' + openH + '-' + closeH + ') WIB -- run berhenti.');\n  return [];\n}\n\nconst aiEnabled = yes('followup_ai_enabled', 'Y');\nconst aiDryRun = yes('followup_ai_dry_run', 'Y');   // default AMAN: semua ke admin dulu\n\n// Template cadangan per bucket. followup_templates lama dipakai sebagai jaring\n// terakhir supaya bucket yang belum diisi tidak kehilangan fallback guard.\nconst tplGlobal = arr('followup_templates');\nconst pilihTpl = (k) => { const a = arr(k); return a.length ? a : tplGlobal; };\nconst templates = { A: pilihTpl('followup_templates_a'), C: pilihTpl('followup_templates_c') };\n\n// Template hanya WAJIB kalau AI mati. Kalau AI hidup, template cuma jaring fallback.\nif (!aiEnabled && !(templates.A.length || templates.C.length)) {\n  console.log('AI mati dan semua template kosong -- tidak ada yang bisa dikirim.');\n  return [];\n}\n\n// followup_max: 0 = TANPA BATAS (semantik Persada). Ini PEMBALIKAN dari versi\n// 2026-08-28, yang membuat followup_max = 0 berarti NOL orang di-follow-up --\n// gagal diam, dan sticky note file lama sudah menandainya.\nconst gInterval = num('followup_interval_hours', 48);\nconst gMax = num('followup_max', 0);\nconst mkBucket = (s) => {\n  let h = num('followup_interval_hours_' + s, gInterval);\n  if (h < 6) h = 6;                       // clamp: interval 0 tidak boleh jadi blast tiap jam\n  if (h > 24 * 30) h = 24 * 30;\n  let m = num('followup_max_' + s, gMax);\n  if (m < 0) m = 0;\n  return { interval_sec: h * 3600, interval_h: h, max: m };\n};\nconst bucket = { A: mkBucket('a'), C: mkBucket('c') };\n\nlet minDelay = num('followup_min_delay_sec', 20);\nlet maxDelay = num('followup_max_delay_sec', 45);\nif (minDelay < 3) minDelay = 3;\nif (maxDelay < minDelay) maxDelay = minDelay + 5;\nlet maxPerRun = num('followup_max_per_run', 20);\nif (maxPerRun < 1) maxPerRun = 1;\nif (maxPerRun > 300) maxPerRun = 300;\n\n// Pengingat backlog deck (bucket B) -- sekali sehari, bukan tiap jam.\nlet backlogHour = num('followup_backlog_hour', 9);\nif (backlogHour < openH || backlogHour >= closeH) backlogHour = openH;\nlet backlogDays = num('followup_backlog_days', 3);\nif (backlogDays < 1) backlogDays = 1;\n\n// Reset penghitung kegagalan untuk run ini; dibaca Report FU Run di ujung loop.\ntry { $getWorkflowStaticData('global').fu_gagal = []; } catch (e) {}\n\nconst adminPhone = String(cfg.admin_phone || '').replace(/\\D/g, '');\nif (!adminPhone) {\n  console.log('admin_phone kosong di CONFIG -- run berhenti, notifikasi tidak akan sampai.');\n  return [];\n}\n\nreturn [{ json: {\n  config: {\n    kirimi_user_code: String(cfg.kirimi_user_code || '').trim(),\n    kirimi_secret: String(cfg.kirimi_secret || '').trim(),\n    kirimi_device_id: String(cfg.kirimi_device_id || '').trim(),\n    admin_phone: adminPhone,\n    exclude_numbers: [cfg.admin_phone, cfg.admin_phone_display, cfg.bot_wa_number]\n      .map(v => String(v || '').replace(/\\D/g, '')).filter(Boolean),\n    // MODE UJI: kalau diisi, HANYA nomor ini yang boleh jadi kandidat.\n    test_numbers: String(cfg.followup_test_numbers || '')\n      .split(/[,;\\s]+/).map(v => v.replace(/\\D/g, '')).filter(Boolean),\n    bucket: bucket,\n    templates: templates,\n    min_delay: minDelay, max_delay: maxDelay, max_per_run: maxPerRun,\n    open_hour: openH, close_hour: closeH,\n    backlog_hour: backlogHour, backlog_days: backlogDays,\n    ai_enabled: aiEnabled, ai_dry_run: aiDryRun\n  },\n  wib_hour: wibHour,\n  wib_min: wibMin,\n  now_epoch: Math.floor(Date.now() / 1000)\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        0
+      ],
+      "name": "Parse Config FU"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        224
+      ],
+      "id": "63efde30-e7ac-4160-9134-f42bf470b53d",
+      "name": "Read STATS FU",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Filter Kandidat — VIRA Personal, bucket kontekstual (2026-09-22) ──\n// Bucket ditentukan dari KOLOM, bukan tebakan AI:\n//   A  deck_requested != 'Y'                            -> masih gali\n//   B  deck_requested == 'Y' DAN deck_terkirim_ts kosong -> brief menunggu di Steven\n//   C  deck_terkirim_ts terisi                           -> deck sudah sampai ke dia\n// deck_terkirim_ts menang atas deck_requested: kalau decknya terbukti sampai,\n// tidak penting lagi bagaimana permintaannya tercatat.\n//\n// Bucket B TIDAK DIKIRIMI APA PUN (keputusan Steven 2026-09-22). Yang macet di\n// antrian itu Steven, bukan prospeknya -- menenangkan prospek dengan kalimat yang\n// tidak bisa menyebut tanggal hanya menambah bising. Backlog-nya ditangani node\n// \"Backlog Deck\" yang jalan sendiri, di luar loop ini.\nconst base = $('Parse Config FU').first().json;\nconst cfg = base.config;\nconst now = base.now_epoch;\nconst wibHour = base.wib_hour;\nconst wibMin = base.wib_min;\n\nconst modeUji = Array.isArray(cfg.test_numbers) && cfg.test_numbers.length > 0;\nif (modeUji) console.warn('MODE UJI AKTIF -- hanya ' + cfg.test_numbers.join(', ') + ' yang di-follow-up');\n\n// deck_terkirim_ts ditulis kirim_deck.py sebagai epoch detik. Format WIB tetap\n// diterima kalau suatu saat diisi manual, supaya bucket tidak salah cuma karena\n// isinya diketik tangan. Tidak terbaca -> 0 = \"belum dikirim\".\nfunction bacaTs(v) {\n  const s = String(v == null ? '' : v).trim();\n  if (!s) return 0;\n  if (/^\\d{9,10}$/.test(s)) return Number(s);\n  if (/^\\d{12,13}$/.test(s)) return Math.floor(Number(s) / 1000);\n  const m = s.match(/^(\\d{4})-(\\d{2})-(\\d{2})[ T](\\d{2}):(\\d{2})(?::(\\d{2}))?/);\n  if (m) return Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)) / 1000) - 7 * 3600;\n  return 0;\n}\n\n// {nama}/{name} SELALU dibuang. Aturan keras Steven: prospek tidak pernah disapa\n// pakai nama, dan kolom 'Nama' isinya push name WA yang sering bukan nama orang.\nfunction fillPlaceholder(text, key, value) {\n  const re = new RegExp('\\\\{\\\\s*' + key + '\\\\s*\\\\}', 'gi');\n  if (value) return text.replace(re, value);\n  text = text.replace(new RegExp('\\\\s*\\\\b(kak|kakak)\\\\s*' + re.source, 'gi'), ' kak');\n  text = text.replace(re, '')\n             .replace(/\\s+,/g, ',').replace(/,\\s*,/g, ',')\n             .replace(/\\s{2,}/g, ' ').replace(/\\s+([.,!?])/g, '$1');\n  return text.trim();\n}\n\nconst out = [];\nconst seen = new Set();\nconst hitung = { A: 0, B: 0, C: 0 };\n\nfor (const it of $input.all()) {\n  const row = it.json;\n  const noWa = String(row['No WA'] || '').trim();\n  if (!noWa) continue;\n  const digits = noWa.replace(/\\D/g, '');\n  if (!digits) continue;\n  if (seen.has(digits)) continue;\n  // Didaftarkan SEBELUM filter lain. Kalau seen.add ada di ujung (hanya untuk baris\n  // yang lolos), baris bot_mode=OFF keluar tanpa mendaftar -> baris KEMBARANNYA yang\n  // ON ikut lolos, jadi mematikan bot untuk lead itu tidak berlaku. Gagal diam.\n  seen.add(digits);\n\n  // 'No WA' sama persis dengan 'lid' = kontak LID-only; nomor teleponnya tidak\n  // pernah tertangkap, jadi pesan ke situ tidak sampai ke siapa pun.\n  const lidDigits = String(row['lid'] || '').replace(/\\D/g, '');\n  if (lidDigits && digits === lidDigits) continue;\n  if (digits.length < 10 || digits.length > 15) continue;          // bukan MSISDN\n\n  // MODE UJI menang atas exclude_numbers: kalau tidak, nomor uji yang kebetulan\n  // terdaftar sebagai admin tersaring diam-diam -> 0 kandidat tanpa penjelasan.\n  if (modeUji) { if (!cfg.test_numbers.includes(digits)) continue; }\n  else if (cfg.exclude_numbers.includes(digits)) continue;\n\n  if (/^off$/i.test(String(row['bot_mode'] || '').trim())) continue;  // HITL, Steven pegang\n  if (Number(row['Counter'] || 0) < 1) continue;                      // belum pernah chat\n\n  const lastReply = Number(row['last_reply_ts'] || 0);\n  if (!lastReply) continue;                                           // belum pernah dibalas bot\n\n  // ── BUCKET ──\n  const deckReq = /^y$/i.test(String(row['deck_requested'] || '').trim());\n  const deckTs = bacaTs(row['deck_terkirim_ts']);\n  const bucket = deckTs ? 'C' : (deckReq ? 'B' : 'A');\n  hitung[bucket]++;\n  if (bucket === 'B') continue;                 // prospek bucket B tidak dikirimi apa pun\n  const bc = cfg.bucket[bucket];\n\n  // Jam acuan. Untuk C, deck yang datang SESUDAH balasan terakhir memulai hitungan\n  // baru -- tanpa ini deck yang baru dikirim langsung jatuh tempo di run berikutnya.\n  const refTs = Math.max(lastReply, deckTs);\n  if (now - refTs < bc.interval_sec) continue;                        // masih hangat\n\n  const lastFu = Number(row['last_follow_up_ts'] || 0);\n  if (lastFu && now - lastFu < bc.interval_sec) continue;             // belum jatuh tempo\n\n  // PERBAIKAN BUG 2026-08-28: dulu `if (fuCount >= cfg.followup_max) continue;`\n  // tanpa jalan keluar `> 0`, jadi followup_max = 0 berarti NOL orang di-follow-up,\n  // kebalikan dari Persada. Sekarang 0 = tanpa batas.\n  const fuCount = Number(row['follow_up_count'] || 0);\n  if (bc.max > 0 && fuCount >= bc.max) continue;\n\n  // Template cadangan bucket ini (dipakai kalau AI mati ATAU kalimat AI ditolak guard).\n  const tplArr = cfg.templates[bucket] || [];\n  let msg = tplArr.length ? String(tplArr[fuCount % tplArr.length] || '') : '';\n  msg = fillPlaceholder(msg, 'nama', '');\n  msg = fillPlaceholder(msg, 'name', '');\n  msg = fillPlaceholder(msg, 'nama_bisnis', String(row['nama_bisnis'] || '').trim());\n\n  out.push({ json: {\n    no_wa: noWa,\n    lid: String(row['lid'] || '').trim(),\n    nama: String(row['Nama'] || '').trim(),\n    nama_lengkap: String(row['nama_lengkap'] || '').trim(),\n    follow_up_count: fuCount,\n    prev_last_fu: lastFu || '',                  // untuk rollback kalau kirim gagal\n    last_reply_ts: lastReply,\n    ref_ts: refTs,\n    days_idle: Math.floor((now - refTs) / 86400),\n    message: msg,\n    bucket: bucket,\n    deck_terkirim_ts: deckTs || '',\n    days_since_deck: deckTs ? Math.floor((now - deckTs) / 86400) : 0,\n    // Sub-sinyal bucket C. last_reply_ts ditulis Main saat BOT membalas, dan bot\n    // hanya membalas kalau prospek mengirim pesan -> efektif \"interaksi terakhir\".\n    pernah_balas_sesudah_deck: !!(deckTs && lastReply > deckTs),\n    // ── bahan composer, semua dari baris STATS yang sudah di tangan run ini ──\n    nama_bisnis: String(row['nama_bisnis'] || '').trim(),\n    industri: String(row['industri'] || '').trim(),\n    masalah_utama: String(row['masalah_utama'] || '').trim(),\n    volume_chat: String(row['volume_chat'] || '').trim(),\n    minat_paket: String(row['minat_paket'] || '').trim(),\n    budget_range: String(row['budget_range'] || '').trim(),\n    brief_terisi: String(row['brief_terisi'] || '').trim(),   // daftar NAMA field, bukan nilainya\n    last_bot_reply: String(row['last_bot_reply'] || '').trim().slice(0, 500),\n    pesan_pertama: String(row['Pesan Pertama'] || '').trim().slice(0, 200)\n  } });\n}\n\n// Prioritas antrian: yang decknya sudah di tangan dia dulu (paling dekat closing),\n// lalu yang belum pernah di-follow-up, lalu yang paling lama diam.\nconst prio = { C: 0, A: 1 };\nout.sort((a, b) => {\n  const ap = prio[a.json.bucket], bp = prio[b.json.bucket];\n  if (ap !== bp) return ap - bp;\n  const af = Number(a.json.follow_up_count), bf = Number(b.json.follow_up_count);\n  if (af !== bf) return af - bf;\n  return Number(a.json.ref_ts) - Number(b.json.ref_ts);\n});\n\n// Batas per-run = min(plafon config, kapasitas waktu tersisa sebelum jam tutup).\nconst avgDelay = ((cfg.min_delay + cfg.max_delay) / 2) + 4;   // +4s: latency Kirimi + 1 panggilan LLM\nconst minutesToClose = Math.max(0, (cfg.close_hour - wibHour) * 60 - wibMin);\nconst capByTime = Math.floor((minutesToClose * 60) / avgDelay);\nconst cap = Math.max(0, Math.min(cfg.max_per_run, capByTime));\n\nconst hasil = out.slice(0, cap);\nfor (const h of hasil) {\n  h.json.antrian_total = out.length;\n  h.json.cap_per_run = cap;\n  h.json.antrian_bucket = hitung;      // {A,B,C} seluruh baris STATS, bukan yang terkirim\n}\nif (modeUji && hasil.length === 0) {\n  console.warn('MODE UJI: 0 kandidat. Cek di STATS: Counter >= 1, last_reply_ts terisi dan sudah '\n    + 'lewat interval bucket-nya, bot_mode bukan OFF, last_follow_up_ts kosong, dan '\n    + 'follow_up_count < followup_max bucket itu.');\n}\nreturn hasil;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -100
+      ],
+      "name": "Filter Kandidat"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        224
+      ],
+      "id": "af6173d0-a916-4c62-8673-fe2089b4f68a",
+      "name": "Loop Kandidat"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $json.no_wa }}",
+            "lid": "={{ $json.lid }}",
+            "follow_up_count": "={{ Number($json.follow_up_count) + 1 }}",
+            "last_follow_up_ts": "={{ Math.floor(Date.now()/1000) }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_up_count",
+              "displayName": "follow_up_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_follow_up_ts",
+              "displayName": "last_follow_up_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "update"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -800,
+        0
+      ],
+      "name": "Claim STATS FU",
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Build FU Prompt — VIRA Personal (2026-09-22) ──\n// Dijalankan SESUDAH Claim STATS FU — anti-dobel tetap utuh: nomornya sudah\n// diklaim sebelum satu token pun dibakar.\n//\n// INVARIAN: GUARD_SAMAR di sini WAJIB tetap superset dari pola tolak di\n// \"Validate FU Message\". Ubah satu, ubah dua-duanya. Kalau tidak, bahan prompt\n// memuat pola yang dilarang, AI menyalinnya, dan lead yang sama ditolak di SETIAP\n// run karena baris STATS-nya tidak berubah sampai dia chat lagi (kejadian nyata\n// di Persada, 12-13 Sep).\nconst cfg = $('Parse Config FU').first().json.config;\nconst c = $('Loop Kandidat').first().json;\n\nconst fuKe = Number(c.follow_up_count || 0) + 1;\nconst bucket = String(c.bucket || 'A');\n\n// ── TAHAP per bucket ──\nlet tahap;\nif (bucket === 'C') {\n  tahap = 'DECKNYA SUDAH DIKIRIM ke dia ' + Number(c.days_since_deck || 0) + ' hari lalu dan dia diam. '\n    + 'Pilih SATU saja dari tiga ini: (a) tanya apakah decknya sempat dibaca, (b) tanya mana yang '\n    + 'lebih mendekati kebutuhannya antara Basic dan Premium, (c) tawarkan ngobrol langsung dengan '\n    + 'Steven. Jangan dua-duanya, apalagi tiga.';\n  tahap += c.pernah_balas_sesudah_deck\n    ? ' Dia SUDAH sempat membalas sesudah decknya sampai, jadi JANGAN bertanya \"sudah diterima belum\" '\n      + 'atau \"sudah sampai belum\" — itu sudah jelas. Lanjutkan dari situ.'\n    : ' Dia BELUM membalas sama sekali sejak decknya dikirim, jadi wajar menanyakan apakah sempat '\n      + 'dibaca — sekali, dengan ringan, tanpa menagih.';\n} else if (fuKe <= 2) {\n  tahap = 'AWAL — dia belum sampai tahap deck. Buka lagi obrolannya dengan ringan dan lanjutkan gali '\n    + 'SATU hal yang belum kamu tahu. Boleh menawarkan deck sekali, tanpa angka apa pun.';\n} else if (fuKe <= 4) {\n  tahap = 'MENENGAH — lebih ringan. JANGAN mengulang ajakan yang sudah pernah dia lewatkan. '\n    + 'Satu pertanyaan saja, atau satu tawaran saja.';\n} else {\n  tahap = 'LANJUT — SOFT. Beri ruang, akui dia mungkin sedang sibuk atau memang belum butuh. '\n    + 'JANGAN mendesak dan JANGAN menawarkan deck lagi.';\n}\n\n// ── MASKING ──\n// Risiko tenant ini berbeda dari Persada: tidak ada tenor KPR, yang berbahaya\n// adalah angka paket, nama prospek, dan janji waktu.\nconst GUARD_SAMAR = [\n  { re: /\\d{1,3}([.,]\\d{3})+/g, ganti: '[angka]' },\n  { re: /\\b\\d+([.,]\\d+)?\\s*(jt|juta|rb|ribu|k|m|miliar|milyar)\\b/gi, ganti: '[angka]' },\n  { re: /\\bRp\\s*\\.?\\s*\\d/gi, ganti: '[angka]' },\n  { re: /\\d+\\s*%/g, ganti: '[angka]' },\n  { re: /\\b(satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh)\\s*(juta|jt|ribu|rb|rupiah)\\b/gi, ganti: '[angka]' },\n  { re: /\\b999\\b/g, ganti: '[angka]' },\n  { re: /(https?:|www\\.|wa\\.me|\\.com\\b|\\.id\\b)/gi, ganti: '[link]' },\n  { re: /\\b0\\d{8,}\\b|\\b62\\d{8,}\\b/g, ganti: '[nomor]' },\n  { re: /\\b(besok|lusa)\\b/gi, ganti: '[waktu]' },\n  { re: /\\b(minggu|pekan|bulan)\\s+depan\\b/gi, ganti: '[waktu]' },\n  { re: /\\bhari\\s+(senin|selasa|rabu|kamis|jum'?at|jumat|sabtu|minggu|ahad)\\b/gi, ganti: '[waktu]' },\n  { re: /\\btanggal\\s*\\d{1,2}\\b/gi, ganti: '[waktu]' },\n  { re: /\\bjam\\s*\\d{1,2}([.:]\\d{2})?\\b/gi, ganti: '[waktu]' },\n  { re: /\\bdalam\\s+\\d+\\s*(menit|jam|hari|minggu|bulan)\\b/gi, ganti: '[waktu]' },\n  { re: /\\b\\d+\\s*(menit|jam|hari|minggu|bulan)\\s*(lagi|ke\\s?depan|kedepan)\\b/gi, ganti: '[waktu]' },\n  // Arah ke belakang - harus ikut disamarkan, kalau tidak bahan promptnya sendiri\n  // memuat pola yang ditolak guard (lihat WAKTU_LAMPAU di Validate FU Message).\n  { re: /\\b(kemarin|kemaren|barusan)\\b/gi, ganti: '[waktu]' },\n  { re: /\\b(minggu|pekan|bulan|tahun)\\s+(lalu|kemarin)\\b/gi, ganti: '[waktu]' },\n  { re: /\\b\\d+\\s*(menit|jam|hari|minggu|bulan|tahun)\\s+(yang\\s+)?lalu\\b/gi, ganti: '[waktu]' }\n];\n\n// Kata umum yang lazim nyangkut di push name WA. WAJIB identik dengan daftar UMUM\n// di Validate FU Message: tanpa ini, lead yang push name-nya \"Halo\" atau \"Toko\"\n// ditolak di SETIAP run dan tidak pernah benar-benar di-follow-up (bug Persada 16 Sep).\nconst UMUM_NAMA = ['vira','steven','leroy','basic','premium','paket','harga','biaya','admin','info',\n  'official','store','shop','olshop','toko','usaha','bisnis','jasa','agency','studio','whatsapp',\n  'chat','bot','chatbot','otomasi','sistem','customer','service','marketing','sales','pak','bapak',\n  'ibu','kak','kakak','mas','mbak','yang','saya','aku','kami','anda','kamu','halo','hallo','helo',\n  'hai','hei','hey','salam','assalamualaikum','waalaikumsalam','selamat','pagi','siang','sore',\n  'malam','permisi','maaf','mohon','tolong','terima','kasih','test','tes','coba','oke','okay','sip',\n  'siap','iya','mau','ingin','minta','boleh','bisa','ada','apa','berapa','gimana','bagaimana',\n  'lokasi','alamat','masih','sudah','belum','nanti','besok','hari','kabar','nomor','dan','atau',\n  'untuk','dari','dengan','kalau','saja','juga','lagi','dulu','punya','ini','itu','nya','deck',\n  'proposal','penawaran'];\n\nconst tokenNama = String((c.nama_lengkap || '') + ' ' + (c.nama || ''))\n  .split(/[^A-Za-z]+/)\n  .filter(w => w.length >= 3 && UMUM_NAMA.indexOf(w.toLowerCase()) === -1)\n  .map(w => w.toLowerCase());\n\nconst samarkan = (s) => {\n  let t = String(s || '');\n  if (!t) return t;\n  // Bentuk utuh dulu (termasuk rentang), supaya tidak tersisa potongan \"15-[angka]\".\n  t = t\n    .replace(/\\S*(https?:|www\\.|wa\\.me|\\.com\\b|\\.id\\b)\\S*/gi, '[link]')\n    .replace(/\\+?\\b(0|62)\\d{8,}\\b/g, '[nomor]')\n    .replace(/\\bRp\\s*\\.?\\s*\\d+([.,]\\d+)*(\\s*(jt|juta|rb|ribu|k|m|miliar|milyar)\\b)?/gi, '[angka]')\n    .replace(/\\b\\d+([.,]\\d+)?(\\s*(-|–|—|\\/|s\\.?\\s*d\\.?|sampai|hingga|atau|dan)\\s*\\d+([.,]\\d+)?)*\\s*(jt|juta|rb|ribu|k|m|miliar|milyar)\\b/gi, '[angka]')\n    .replace(/\\d{1,3}([.,]\\d{3})+([.,]\\d+)?/g, '[angka]')\n    .replace(/\\d+([.,]\\d+)?(\\s*(-|–|—|\\/|s\\.?\\s*d\\.?|sampai|hingga|atau|dan)\\s*\\d+([.,]\\d+)?)*\\s*%/g, '[angka]');\n  if (tokenNama.length) {\n    t = t.split(/([^A-Za-z]+)/)\n         .map(tok => (tokenNama.indexOf(tok.toLowerCase()) !== -1 ? '[nama]' : tok))\n         .join('');\n  }\n  for (let i = 0; i < 3; i++) {              // jaring terakhir = pola guard persis\n    let sisa = false;\n    for (const g of GUARD_SAMAR) {\n      if (t.search(g.re) !== -1) { sisa = true; t = t.replace(g.re, g.ganti); }\n    }\n    if (!sisa) break;\n  }\n  return t;\n};\n\n// Balasan terakhir VIRA sering memuat JANJI yang belum terjadi (\"nanti aku teruskan\n// ke Steven\"). Disuapkan mentah, composer menulisnya seolah sudah selesai.\nconst buangJanji = (s) => String(s || '')\n  .split(/(?:(?<=[.?!])\\s+)|\\n+/)\n  .filter(k => !/\\b(nanti|akan|aku|saya)\\b[^.?!]{0,40}\\b(teruskan|kirim|kirimkan|sampaikan|mintakan|buatkan|susunkan|hubungi|kabari|sambungkan|jadwalkan)\\b/i.test(k))\n  .join(' ').trim();\n\n// nama_bisnis hanya dipakai kalau tidak berbagi token dengan nama orangnya.\n// \"Rina Catering\" untuk lead bernama Rina akan diblokir guard nama di hilir --\n// lebih baik tidak pernah masuk ke prompt daripada menolak setiap kalimat.\nconst tokenBisnis = String(c.nama_bisnis || '').split(/[^A-Za-z]+/)\n  .filter(w => w.length >= 3).map(w => w.toLowerCase());\nconst bisnisAman = (tokenBisnis.length && !tokenBisnis.some(w => tokenNama.indexOf(w) !== -1))\n  ? String(c.nama_bisnis || '').trim() : '';\n\n// Satu target galian untuk bucket A, dihitung dari apa yang SUDAH tercatat.\nconst LABEL_GALI = {\n  nama_bisnis: 'nama usahanya',\n  industri: 'bidang usahanya',\n  masalah_utama: 'apa yang paling bikin repot soal chat sekarang',\n  volume_chat_harian: 'kira-kira berapa chat masuk per hari',\n  pertanyaan_tersering: 'pertanyaan apa yang paling sering masuk ke chatnya',\n  alur_setelah_chat: 'langkah dari chat pertama sampai akhirnya jadi beli',\n  aksi_utama: 'hasil apa yang dia kejar dari chat masuk'\n};\nconst sudahTahu = new Set(String(c.brief_terisi || '').split(',').map(s => s.trim()).filter(Boolean));\nif (c.nama_bisnis) sudahTahu.add('nama_bisnis');\nif (c.industri) sudahTahu.add('industri');\nif (c.masalah_utama) sudahTahu.add('masalah_utama');\nif (c.volume_chat) sudahTahu.add('volume_chat_harian');\nconst galian = (bucket === 'A')\n  ? (['nama_bisnis','industri','masalah_utama','volume_chat_harian','pertanyaan_tersering',\n      'alur_setelah_chat','aksi_utama'].filter(f => !sudahTahu.has(f)).map(f => LABEL_GALI[f])[0] || '')\n  : '';\n\nreturn [{ json: {\n  ai_enabled: !!cfg.ai_enabled,\n  ai_dry_run: !!cfg.ai_dry_run,\n  bucket: bucket,\n  fu_ke: fuKe,\n  fu_tahap: tahap,\n  fu_hari: Number(c.days_idle || 0),\n  fu_bisnis: samarkan(bisnisAman),\n  fu_industri: samarkan(c.industri),\n  fu_masalah: samarkan(c.masalah_utama),\n  fu_volume: samarkan(c.volume_chat),\n  fu_paket: String(c.minat_paket || '').trim(),\n  fu_budget: samarkan(c.budget_range),\n  fu_balasan_terakhir: samarkan(buangJanji(c.last_bot_reply)).slice(0, 300),\n  fu_pesan_pertama: samarkan(c.pesan_pertama),\n  fu_galian: galian\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -600,
+        0
+      ],
+      "name": "Build FU Prompt"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-if-pakai-ai",
+              "leftValue": "={{ $json.ai_enabled }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -400,
+        0
+      ],
+      "name": "IF Pakai AI"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Kamu Steven versi AI, asisten AI yang dibangun Steven Leroy. Kamu menawarkan jasa AI customer service bernama VIRA. Tulis SATU pesan WhatsApp follow-up untuk calon klien yang sudah beberapa hari tidak membalas.\n\nKeluarkan HANYA isi pesannya. Tanpa tanda kutip, tanpa penjelasan, tanpa label, tanpa tag dalam kurung siku.\n\nLARANGAN KERAS (pesan DITOLAK sistem kalau dilanggar):\n- DILARANG menyebut ANGKA apa pun soal harga, biaya, paket, atau add-on. Harga add-on tidak boleh disebut dalam keadaan apa pun. Kalau perlu menyinggung harga, arahkan ke Steven tanpa angka.\n- DILARANG menyebut nama siapa pun, termasuk nama calon klien. Sapa cukup \"kak\", TANPA nama di belakangnya. Kamu TIDAK diberi namanya, jadi nama apa pun yang kamu tulis pasti karangan. Nama Steven boleh disebut.\n- DILARANG menjanjikan tanggal, hari, jam, atau berapa lama lagi sesuatu selesai. Tidak ada \"besok\", \"minggu depan\", \"secepatnya\", \"dalam 2 hari\".\n- DILARANG menyebutkan KAPAN sesuatu terjadi. Bukan \"kemarin\", bukan \"minggu lalu\", bukan \"3 hari lalu\". Angka hari di bagian TAHAP itu untuk pemahamanmu sendiri, JANGAN dipakai di kalimat, dan jangan diparafrase jadi \"kemarin\". Kalimatnya tetap masuk akal tanpa menyebut waktu sama sekali.\n- DILARANG mengaku sudah melakukan sesuatu yang belum terjadi: sudah cek, sudah tanya ke Steven, sudah menelepon, sudah menjadwalkan. Kamu tidak tahu apa yang sudah dikerjakan Steven.\n- DILARANG memakai kurung siku, markdown, bintang, URL, atau nomor telepon.\n- Teks dalam kurung siku di bahan di bawah, seperti [angka], [link], [nomor], [nama], [waktu], adalah data yang sengaja disembunyikan. JANGAN menulisnya dan JANGAN menebak isinya.\n\nGAYA (aturan Steven, tidak bisa ditawar):\n- Bahasa Indonesia santai WhatsApp. Hangat, tidak memaksa, tidak menagih.\n- DUA kalimat, sekitar 20 sampai 35 kata. Maksimal 3 kalimat, itu batas keras.\n- Panggil \"kak\". Emoji maksimal satu, dan sering kali tidak perlu sama sekali.\n- Hindari tanda seru. Hindari pembuka klise seperti \"sekadar mengingatkan\" atau \"izin follow up\".\n- JANGAN mengulang atau merangkum ucapannya. Jangan mengulang pertanyaan yang sama persis dengan BALASAN TERAKHIRKU.\n- Tutup dengan SATU pertanyaan terbuka ATAU satu tawaran. Jangan dua-duanya.\n\nTAHAP: ini follow-up ke-{{ $json.fu_ke }}, terakhir ada interaksi {{ $json.fu_hari }} hari lalu.\n{{ $json.fu_tahap }}\n\n{{ $json.fu_galian ? ('HAL YANG BELUM KUTAHU dan boleh kutanyakan sekali di pesan ini: ' + $json.fu_galian + '.') : 'Jangan menggali apa pun di pesan ini.' }}\n\nBALASAN TERAKHIRKU KE DIA:\n{{ $json.fu_balasan_terakhir || '(tidak tercatat)' }}\n\nPESAN PERTAMANYA DULU:\n{{ $json.fu_pesan_pertama || '(tidak ada)' }}\n\nFAKTA TERCATAT (JANGAN dikarang kalau kosong):\nUsaha: {{ $json.fu_bisnis || '-' }}\nBidang: {{ $json.fu_industri || '-' }}\nMasalah utama: {{ $json.fu_masalah || '-' }}\nVolume chat: {{ $json.fu_volume || '-' }}\nMinat paket: {{ $json.fu_paket || '-' }}\nAnggaran: {{ $json.fu_budget || '-' }}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        -200,
+        -80
+      ],
+      "name": "Compose Follow-up",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-flash",
+        "thinkingLevel": "none",
+        "options": {
+          "maxTokens": 400,
+          "temperature": 0.7
+        }
+      },
+      "type": "n8n-nodes-deepseek-thinking.lmChatDeepSeekThinking",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        100
+      ],
+      "name": "DeepSeek FU",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "tVKwMVPK1fROjH5Z",
+          "name": "DeepSeek Personal"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Validate FU Message — VIRA Personal (2026-09-22) ──\n// Guard deterministik: prompt boleh melarang, tapi yang MENJAMIN adalah kode ini.\n//  * Kegagalan teknis (AI kosong / API error) -> throw -> rollback -> dicoba lagi\n//    run berikutnya. Gangguan sesaat tidak boleh menunda lead satu interval penuh.\n//  * Penolakan guard -> kalimat AI DIBUANG, diganti template bucket (pola Persada\n//    16-Sep), supaya lead yang penyebab tolakannya melekat di baris STATS-nya\n//    tidak macet selamanya.\nconst cfg = $('Parse Config FU').first().json.config;\nconst c = $('Loop Kandidat').first().json;\nconst p = $('Build FU Prompt').first().json;\nconst bucket = String(c.bucket || 'A');\n\nconst EMOJI = /\\p{Extended_Pictographic}(️|‍\\p{Extended_Pictographic})*/gu;\nconst bersihkan = (s) => {\n  let t = String(s || '')\n    .replace(/\\[(FACTS|DECK_REQUEST|\\/DECK_REQUEST|TALK_TO_ADMIN|UNKNOWN|SEND_MEDIA)[^\\]]*\\]/gi, ' ')\n    .replace(/[*`#_]/g, '')\n    .replace(/^\\s*[\"'“”‘’]+|[\"'“”‘’]+\\s*$/g, '')\n    .replace(/[ \\t]{2,}/g, ' ')\n    .replace(/\\n{3,}/g, '\\n\\n')\n    .trim();\n  // Emoji lebih dari satu = pelanggaran gaya yang sepele dan bisa diperbaiki diam-diam.\n  // Menolaknya cuma membuang kalimat yang isinya sudah benar.\n  let n = 0;\n  t = t.replace(EMOJI, (m) => (++n <= 1 ? m : '')).replace(/[ \\t]{2,}/g, ' ').trim();\n  return t;\n};\n\nlet pesan = '';\nlet pakai_template = false;\n\nif (p.ai_enabled) {\n  let mentah = '';\n  try {\n    const s = $input.first().json;\n    mentah = (s.content && s.content[0] && s.content[0].text) || s.text || s.output || '';\n  } catch (e) { mentah = ''; }\n  pesan = bersihkan(mentah);\n\n  const tolak = [];\n\n  // ── panjang & bentuk ──\n  if (pesan.length < 20) tolak.push('terlalu pendek atau kosong');\n  if (pesan.length > 400) tolak.push('terlalu panjang (' + pesan.length + ' char)');\n  const jmlKalimat = pesan.split(/[.!?…]+(?:\\s|$)|\\n+/).filter(x => x.trim().length > 1).length;\n  if (jmlKalimat > 4) tolak.push('lebih dari 4 kalimat');\n  if (/\\[(angka|link|nomor|nama|waktu)\\]/i.test(mentah)) tolak.push('menyalin data tersamar');\n\n  // ── HARGA (risiko utama tenant ini) ──\n  if (/\\d{1,3}([.,]\\d{3})+/.test(pesan)) tolak.push('nominal berformat ribuan');\n  if (/\\b\\d+([.,]\\d+)?\\s*(jt|juta|rb|ribu|k|m|miliar|milyar)\\b/i.test(pesan)) tolak.push('nominal singkat');\n  if (/\\bRp\\s*\\.?\\s*\\d/i.test(pesan)) tolak.push('menyebut Rp');\n  if (/\\d+\\s*%/.test(pesan)) tolak.push('persentase');\n  // Angka dieja huruf: cara paling umum model lolos dari regex digit.\n  if (/\\b(satu|dua|tiga|empat|lima|enam|tujuh|delapan|sembilan|sepuluh)\\s*(juta|jt|ribu|rb|rupiah)\\b/i.test(pesan))\n    tolak.push('nominal ditulis huruf');\n  // Harga add-on TIDAK PERNAH boleh keluar, bahkan di konteks deck.\n  if (/\\b999\\b/.test(pesan)) tolak.push('harga add-on');\n  if (/\\badd[\\s-]?on\\b/i.test(pesan) && /\\d/.test(pesan)) tolak.push('add-on disertai angka');\n\n  // ── URL & nomor ──\n  if (/(https?:|www\\.|wa\\.me|\\.com\\b|\\.id\\b)/i.test(pesan)) tolak.push('URL');\n  if (/\\b0\\d{8,}\\b|\\b62\\d{8,}\\b/.test(pesan)) tolak.push('nomor telepon');\n\n  // ── NAMA (aturan keras Steven: tidak pernah menyapa pakai nama) ──\n  // (a) pola sapaan bernama; honorifik dan kata yang memang boleh dikecualikan.\n  if (/\\b([Kk]ak|[Kk]akak|[Hh]alo|[Hh]allo|[Hh]ai|[Hh]ei|[Hh]ey)\\s+(?!Kak|Kakak|Pak|Bapak|Ibu|Bu|Mas|Mbak|Semua|Steven|Basic|Premium|VIRA)[A-Z][a-z]{2,}/.test(pesan))\n    tolak.push('menyapa pakai nama');\n  // (b) nama yang benar-benar tersimpan untuk lead ini, di mana pun ia muncul.\n  //     Kata umum dikecualikan supaya push name seperti \"Halo\" atau \"Toko Berkah\"\n  //     tidak membuat SETIAP pesan ditolak -- tanpa ini lead itu tidak pernah\n  //     benar-benar di-follow-up, selamanya (kejadian nyata Persada 16-Sep).\n  const UMUM = ['vira','steven','leroy','basic','premium','paket','harga','biaya','admin','info',\n    'official','store','shop','olshop','toko','usaha','bisnis','jasa','agency','studio','whatsapp',\n    'chat','bot','chatbot','otomasi','sistem','customer','service','marketing','sales','pak','bapak',\n    'ibu','kak','kakak','mas','mbak','yang','saya','aku','kami','anda','kamu','halo','hallo','helo',\n    'hai','hei','hey','salam','assalamualaikum','waalaikumsalam','selamat','pagi','siang','sore',\n    'malam','permisi','maaf','mohon','tolong','terima','kasih','test','tes','coba','oke','okay','sip',\n    'siap','iya','mau','ingin','minta','boleh','bisa','ada','apa','berapa','gimana','bagaimana',\n    'lokasi','alamat','masih','sudah','belum','nanti','besok','hari','kabar','nomor','dan','atau',\n    'untuk','dari','dengan','kalau','saja','juga','lagi','dulu','punya','ini','itu','nya','deck',\n    'proposal','penawaran'];\n  const kandidatNama = String((c.nama_lengkap || '') + ' ' + (c.nama || ''))\n    .split(/[^A-Za-z]+/).filter(w => w.length >= 3 && UMUM.indexOf(w.toLowerCase()) === -1);\n  for (const w of kandidatNama) {\n    const aman = w.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n    if (new RegExp('\\\\b' + aman + '\\\\b', 'i').test(pesan)) {\n      tolak.push('menyebut nama lead (' + w + ')');\n      break;\n    }\n  }\n\n  // ── JANJI WAKTU (aturan keras Steven: tidak pernah menjanjikan tanggal) ──\n  const JANJI_WAKTU = [\n    /\\b(besok|lusa)\\b/i,\n    /\\b(minggu|pekan|bulan)\\s+(depan|besok)\\b/i,\n    /\\bakhir\\s+(pekan|minggu|bulan)\\s+(ini|depan)\\b/i,\n    /\\bhari\\s+(senin|selasa|rabu|kamis|jum'?at|jumat|sabtu|minggu|ahad)\\b/i,\n    /\\btanggal\\s*\\d{1,2}\\b/i,\n    /\\bjam\\s*\\d{1,2}([.:]\\d{2})?\\b/i,\n    /\\bdalam\\s+(waktu\\s+)?\\d+\\s*(menit|jam|hari|minggu|bulan)\\b/i,\n    /\\b\\d+\\s*(menit|jam|hari|minggu|bulan)\\s*(lagi|ke\\s?depan|kedepan)\\b/i,\n    /\\b(paling\\s+lambat|selambat[-\\s]?lambatnya|paling\\s+cepat|secepatnya|sesegera\\s+mungkin|dalam\\s+waktu\\s+dekat)\\b/i,\n    /\\b(kurang\\s+dari|maksimal|maksimum|max)\\s+\\d+\\s*(menit|jam|hari|minggu|bulan)\\b/i,\n    // \"hari ini\" bukan janji dengan sendirinya -- baru berbahaya kalau ditempel\n    // ke kata kerja penyelesaian.\n    /\\b(kirim|kirimkan|susun|selesai|selesaikan|buat|buatkan|proses|update|kabari|hubungi|jadwalkan)\\w*\\s+(\\w+\\s+){0,3}?(hari\\s+ini|malam\\s+ini|sore\\s+ini|siang\\s+ini|nanti\\s+(malam|sore|siang))\\b/i\n  ];\n  if (JANJI_WAKTU.some(re => re.test(pesan))) tolak.push('menjanjikan waktu');\n\n  // ── MENYEBUT KAPAN SESUATU TERJADI (2026-09-22) ──\n  // JANJI_WAKTU cuma menutup arah ke DEPAN. Kejadian 20:45: deck dikirim 31 hari\n  // lalu, modelnya menulis \"deck yang dikirim kemarin\". Follow-up tidak pernah\n  // perlu menyebut kapan; penanda lampau yang spesifik selalu tebakan.\n  // Yang kabur (\"beberapa waktu lalu\") sengaja dibiarkan - tidak bisa salah.\n  const WAKTU_LAMPAU = [\n    /\\b(kemarin|kemaren)\\b/i,\n    /\\b(tadi|barusan)\\b/i,\n    /\\b(minggu|pekan|bulan|tahun)\\s+(lalu|kemarin)\\b/i,\n    /\\b\\d+\\s*(menit|jam|hari|minggu|bulan|tahun)\\s+(yang\\s+)?lalu\\b/i\n  ];\n  if (WAKTU_LAMPAU.some(re => re.test(pesan))) tolak.push('menyebut kapan (waktu lampau)');\n\n  // ── KLAIM SUDAH MELAKUKAN ──\n  // Sengaja sempit: subjek wajib saya/aku/kami/Steven, supaya \"Kakak sudah sempat baca?\" lolos.\n  const KLAIM_INTI = [\n    /\\b(saya|aku|kami|steven|vira)\\s+(juga\\s+|tadi\\s+|kemarin\\s+|barusan\\s+|sempat\\s+)?(sudah|udah|telah|barusan)\\s+(sempat\\s+|coba\\s+|juga\\s+|langsung\\s+)?(cek|cekin|ngecek|mengecek|periksa|memeriksa|tanya|tanyakan|nanya|nanyain|menanyakan|konfirmasi|mengonfirmasi|mengkonfirmasi|hubungi|menghubungi|kontak|mengontak|telepon|menelepon|telpon|nelpon|jadwalkan|menjadwalkan|atur|aturkan|mengatur|siapkan|menyiapkan|review|revisi|proses|memproses|hitung|menghitung|analisa|analisis)\\b/i,\n    /\\b(sudah|udah|telah|barusan)\\s+(saya|aku|kami|steven)\\s+(cek|periksa|tanya|tanyakan|konfirmasi|hubungi|kontak|telepon|jadwalkan|atur|aturkan|siapkan|review|revisi|proses|hitung)\\b/i,\n    /\\b(sudah|udah|telah)\\s+di(cek|periksa|tanyakan|konfirmasi|konfirmasikan|hubungi|jadwalkan|atur|siapkan|review|revisi|proses|hitung)(kan)?\\s+(oleh|sama|ke|dengan)\\s+(steven|saya|aku|kami|tim)\\b/i\n  ];\n  if (KLAIM_INTI.some(re => re.test(pesan))) tolak.push('klaim sudah melakukan');\n\n  // Klaim MENGIRIM -- sadar bucket. Di bucket C decknya MEMANG sudah dikirim, jadi\n  // \"decknya sudah aku kirim\" di situ BENAR. Di bucket A kalimat yang sama bohong.\n  const TENTANG_DECK = /\\b(deck|dek|proposal|penawaran|materi|pdf|dokumen|file)\\b/i;\n  const KLAIM_KIRIM_AKTIF = /\\b(saya|aku|kami|steven)\\s+(juga\\s+|tadi\\s+|barusan\\s+)?(sudah|udah|telah|barusan)\\s+(kirim|kirimkan|mengirim|mengirimkan|share|sharing|kasih|berikan)\\w*/i;\n  const KLAIM_KIRIM_PASIF = /\\b(deck|dek|proposal|penawaran|materi|pdf)\\w*\\s+(\\w+\\s+){0,3}?(sudah|udah|telah)\\s+(di)?(kirim|kirimkan|sampai|terkirim|selesai|jadi|siap|dibuat)\\w*/i;\n  for (const re of [KLAIM_KIRIM_AKTIF, KLAIM_KIRIM_PASIF]) {\n    const m = pesan.match(re);\n    if (!m) continue;\n    const sekitar = pesan.slice(Math.max(0, m.index - 30), m.index + m[0].length + 60);\n    const bolehDiC = (bucket === 'C') && TENTANG_DECK.test(sekitar);\n    if (!bolehDiC) { tolak.push('klaim sudah mengirim'); break; }\n  }\n\n  // ── KEPUTUSAN ──\n  // Keluaran AI KOSONG = anomali model/API, bukan soal isi konteks: pakai jalur\n  // error (klaim di-rollback, dicoba lagi run berikutnya), JANGAN menunda leadnya\n  // satu interval penuh cuma karena gangguan sesaat.\n  if (tolak.length && !pesan) {\n    throw new Error('FU_AI_INVALID: ' + tolak.join(', '));\n  }\n  if (tolak.length) {\n    // Satu baris, TANPA titik dua: formatter error node Code n8n hanya membawa baris\n    // pertama dan memotong di titik dua. Penanda FU_AI_DITOLAK_GUARD wajib sampai\n    // utuh ke Rollback STATS FU supaya nomornya DITUNDA, bukan diulang tiap jam.\n    const info = ('FU_AI_DITOLAK_GUARD [' + bucket + '] (' + tolak.join(', ') + ') >> ' + pesan)\n      .replace(/[:\\r\\n]+/g, ' ').replace(/\\s{2,}/g, ' ').slice(0, 150);\n\n    // FALLBACK TEMPLATE (pola 16-Sep). Templatenya sudah dipilih PER BUCKET di\n    // Filter Kandidat, jadi pesan penggantinya tetap benar konteksnya. Template\n    // TIDAK divalidasi ulang -- itu tulisan manusia, sama persis dengan yang\n    // dipakai saat followup_ai_enabled = N.\n    const tpl = String(c.message || '').trim();\n    if (!tpl) throw new Error(info);   // tidak ada pengganti -> lewati & tunda\n    try {\n      const sd = $getWorkflowStaticData('global');\n      if (!Array.isArray(sd.fu_gagal)) sd.fu_gagal = [];\n      sd.fu_gagal.push({ no_wa: c.no_wa, bucket: bucket,\n        alasan: info.replace('FU_AI_DITOLAK_GUARD', 'FU_AI_FALLBACK_TEMPLATE').slice(0, 150) });\n    } catch (e) {}\n    console.warn('Follow-up pakai template (' + c.no_wa + '): ' + info);\n    pesan = tpl;\n    pakai_template = true;\n  }\n} else {\n  // followup_ai_enabled = N -> template rotasi per bucket.\n  pesan = String(c.message || '').trim();\n  if (!pesan) throw new Error('FU_AI_INVALID: AI dimatikan tapi template bucket ' + bucket + ' kosong');\n  pakai_template = true;\n}\n\n// Dry run: pesannya tetap disusun sungguhan, tapi dikirim ke admin, bukan ke lead.\nconst dry = !!p.ai_dry_run;\nconst target = dry ? String(cfg.admin_phone || '').trim() : String(c.no_wa || '').replace(/\\D/g, '');\nif (!target) throw new Error('FU_AI_INVALID: nomor tujuan kosong');\n\nconst teks = dry\n  ? ('[DRY RUN -> ' + c.no_wa + ' | bucket ' + bucket + ' | FU ke-' + p.fu_ke\n     + ' | diam ' + p.fu_hari + ' hari' + (pakai_template ? ' | TEMPLATE' : '') + ']\\n\\n' + pesan)\n  : pesan;\n\nreturn [{ json: {\n  target_phone: target,\n  final_message: teks,\n  dry_run: dry,\n  pakai_template: pakai_template,\n  bucket: bucket,\n  no_wa: c.no_wa\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        40,
+        0
+      ],
+      "name": "Validate FU Message",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor( $('Parse Config FU').first().json.config.min_delay + Math.random() * ($('Parse Config FU').first().json.config.max_delay - $('Parse Config FU').first().json.config.min_delay + 1) ) }}",
+        "unit": "seconds"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        96
+      ],
+      "id": "394a0847-8ffd-494a-bb49-8a9cecf60f23",
+      "name": "Wait FU",
+      "webhookId": "6ad96f0d-8634-416f-9541-868cf35658d8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Validate FU Message').first().json.target_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Validate FU Message').first().json.final_message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        460,
+        0
+      ],
+      "name": "Kirim Follow-up",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-if-bukan-dry-run",
+              "leftValue": "={{ !$('Validate FU Message').first().json.dry_run }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        -120
+      ],
+      "name": "IF Bukan Dry Run"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Loop Kandidat').first().json.no_wa }}",
+            "last_bot_reply": "={{ $('Validate FU Message').first().json.final_message }}",
+            "last_bot_reply_ts": "={{ Math.floor(Date.now()/1000) }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_bot_reply",
+              "displayName": "last_bot_reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_bot_reply_ts",
+              "displayName": "last_bot_reply_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "update"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        860,
+        -120
+      ],
+      "name": "Catat Balasan FU",
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Catat Kegagalan AI — VIRA Personal (2026-09-22) ──\n// Composer atau guard gagal TOTAL (bukan fallback template). Nomor ini dilewati,\n// klaimnya dikembalikan di node berikutnya. Dicatat di static data supaya\n// Report FU Run melapor SEKALI di ujung run, bukan satu WA per kegagalan --\n// itu yang dulu membuat notif admin berulang di Persada (13 Sep).\nconst c = $('Loop Kandidat').first().json;\nlet alasan = '';\ntry {\n  const e = $input.first().json;\n  const raw = (e && e.error !== undefined) ? e.error : (e && e.message);\n  alasan = (raw && typeof raw === 'object')\n    ? String(raw.message || raw.description || JSON.stringify(raw))\n    : String(raw || '');\n  alasan = alasan.replace(/[\\r\\n]+/g, ' ').replace(/\\s{2,}/g, ' ').slice(0, 150);\n} catch (err) { alasan = ''; }\nif (!alasan) alasan = 'FU_AI_INVALID (tidak diketahui)';\ntry {\n  const sd = $getWorkflowStaticData('global');\n  if (!Array.isArray(sd.fu_gagal)) sd.fu_gagal = [];\n  sd.fu_gagal.push({ no_wa: c.no_wa, bucket: c.bucket, alasan: alasan });\n} catch (e) {}\nconsole.warn('Composer follow-up gagal (' + c.no_wa + '): ' + alasan);\nreturn [{ json: { no_wa: c.no_wa, bucket: c.bucket, alasan: alasan } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ],
+      "name": "Catat Kegagalan AI"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Catat Gagal Kirim — VIRA Personal (2026-09-22) ──\n// Kirimi menolak atau timeout. Nomor ini dilewati, klaimnya DIKEMBALIKAN penuh\n// (bukan ditunda) supaya dicoba lagi run berikutnya -- kegagalan gateway bukan\n// salah leadnya. Dicatat di static data yang sama; laporannya sekali per run.\n// Menggantikan node \"Notify Admin FU Error\" milik Persada, yang mengirim satu WA\n// per kegagalan dan jadi sumber notif berulang.\nconst c = $('Loop Kandidat').first().json;\nlet alasan = '';\ntry {\n  const e = $input.first().json;\n  const raw = (e && e.error !== undefined) ? e.error : (e && e.message);\n  alasan = (raw && typeof raw === 'object')\n    ? String(raw.message || raw.description || JSON.stringify(raw))\n    : String(raw || '');\n  alasan = alasan.replace(/[\\r\\n]+/g, ' ').replace(/\\s{2,}/g, ' ').slice(0, 130);\n} catch (err) { alasan = ''; }\ntry {\n  const sd = $getWorkflowStaticData('global');\n  if (!Array.isArray(sd.fu_gagal)) sd.fu_gagal = [];\n  sd.fu_gagal.push({ no_wa: c.no_wa, bucket: c.bucket,\n    alasan: 'FU_KIRIM_GAGAL (' + (alasan || 'tidak diketahui') + ')' });\n} catch (e) {}\nconsole.warn('Kirim follow-up gagal (' + c.no_wa + '): ' + alasan);\n// Penanda FU_AI_DITOLAK_GUARD sengaja TIDAK dipakai di sini: rollback harus\n// memulihkan last_follow_up_ts ke nilai lama, bukan menunda 1 interval.\nreturn [{ json: { no_wa: c.no_wa, bucket: c.bucket,\n                  alasan: 'FU_KIRIM_GAGAL ' + alasan } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        200
+      ],
+      "name": "Catat Gagal Kirim"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Loop Kandidat').first().json.no_wa }}",
+            "follow_up_count": "={{ Number($('Loop Kandidat').first().json.follow_up_count) }}",
+            "last_follow_up_ts": "={{ String($json.alasan || '').indexOf('FU_AI_DITOLAK_GUARD') !== -1 ? Math.floor(Date.now() / 1000) : $('Loop Kandidat').first().json.prev_last_fu }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_up_count",
+              "displayName": "follow_up_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_follow_up_ts",
+              "displayName": "last_follow_up_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {},
+        "operation": "update"
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        660,
+        200
+      ],
+      "name": "Rollback STATS FU",
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Report FU Run — VIRA Personal (2026-09-22) ──\n// Jalan sekali di cabang \"done\" Loop Kandidat. Merangkum satu run jadi SATU\n// pesan ke Steven, bukan satu pesan per kegagalan.\nconst cfg = $('Parse Config FU').first().json.config;\nlet antrian = { A: 0, B: 0, C: 0 };\nlet total = 0, cap = 0;\ntry {\n  const f = $('Filter Kandidat').first().json;\n  antrian = f.antrian_bucket || antrian;\n  total = Number(f.antrian_total || 0);\n  cap = Number(f.cap_per_run || 0);\n} catch (e) {}\n\nlet gagal = [];\ntry {\n  const sd = $getWorkflowStaticData('global');\n  gagal = Array.isArray(sd.fu_gagal) ? sd.fu_gagal : [];\n  sd.fu_gagal = [];                       // bersihkan untuk run berikutnya\n} catch (e) { gagal = []; }\n\nconst isKirim = (g) => String(g.alasan || '').indexOf('FU_KIRIM_GAGAL') !== -1;\nconst isFallback = (g) => String(g.alasan || '').indexOf('FU_AI_FALLBACK_TEMPLATE') !== -1;\nconst nKirim = gagal.filter(isKirim).length;\nconst nFallback = gagal.filter(isFallback).length;\nconst nAI = gagal.length - nKirim - nFallback;\n\nconst modeUji = Array.isArray(cfg.test_numbers) && cfg.test_numbers.length > 0;\n// Mode uji WAJIB dilaporkan walaupun tidak ada kegagalan: kalau followup_test_numbers\n// lupa dikosongkan, follow-up berhenti diam-diam untuk semua orang lain.\nconst perluLapor = (gagal.length > 0) || modeUji || !!cfg.ai_dry_run;\n\nconst baris = [];\nbaris.push('[VIRA Steven] LAPORAN FOLLOW-UP');\nif (modeUji) baris.push('MODE UJI AKTIF -- hanya ' + cfg.test_numbers.join(', ') + '. Kosongkan followup_test_numbers untuk jalan normal.');\nif (cfg.ai_dry_run) baris.push('DRY RUN AKTIF -- semua pesan mendarat di WA ini, bukan ke prospek. Set followup_ai_dry_run = N untuk mulai sungguhan.');\nbaris.push('Antrian STATS: A ' + antrian.A + ' | B ' + antrian.B + ' | C ' + antrian.C\n           + '  (B tidak dikirimi, lihat pengingat backlog)');\nbaris.push('Layak kirim run ini: ' + total + ', plafon ' + cap);\nbaris.push('Interval: A ' + cfg.bucket.A.interval_h + 'j (maks ' + (cfg.bucket.A.max || 'tanpa batas')\n           + ') | C ' + cfg.bucket.C.interval_h + 'j (maks ' + (cfg.bucket.C.max || 'tanpa batas') + ')');\nif (nFallback) baris.push('Pakai template karena kalimat AI ditolak guard: ' + nFallback);\nif (nAI) baris.push('Composer gagal total (dilewati, ditunda): ' + nAI);\nif (nKirim) baris.push('Gagal kirim ke Kirimi (dilewati, dicoba lagi): ' + nKirim);\nif (gagal.length) {\n  baris.push('');\n  for (const g of gagal.slice(0, 10)) baris.push('- ' + g.no_wa + ' [' + (g.bucket || '?') + '] ' + g.alasan);\n  if (gagal.length > 10) baris.push('... dan ' + (gagal.length - 10) + ' lagi');\n}\n\nreturn [{ json: {\n  perlu_lapor: perluLapor,\n  admin_phone: cfg.admin_phone,\n  user_code: cfg.kirimi_user_code,\n  secret: cfg.kirimi_secret,\n  device_id: cfg.kirimi_device_id,\n  laporan: baris.join('\\n')\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1000,
+        200
+      ],
+      "name": "Report FU Run"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-if-perlu-lapor",
+              "leftValue": "={{ $json.perlu_lapor }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        200
+      ],
+      "name": "IF Perlu Lapor"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $json.user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $json.secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $json.device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.laporan }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -600,
+        200
+      ],
+      "name": "Notify Admin FU Summary",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Backlog Deck — pengingat bucket B ke Steven (2026-09-22) ──\n// Prospek yang sudah minta deck tapi decknya belum pernah dikirim TIDAK dikirimi\n// apa pun: yang macet di antrian itu Steven, bukan dia, dan pesan penenang yang\n// tidak boleh menyebut tanggal cuma menambah bising.\n//\n// Node ini menggantung langsung dari Read STATS FU, BUKAN dari cabang \"done\"\n// Loop Kandidat. Alasannya: splitInBatches tidak menjalankan cabang done kalau\n// input kandidatnya kosong -- dan run tanpa kandidat A/C justru run yang paling\n// mungkin masih punya backlog B.\nconst base = $('Parse Config FU').first().json;\nconst cfg = base.config;\nconst now = base.now_epoch;\n\n// Sekali sehari, bukan tiap jam.\nif (base.wib_hour !== cfg.backlog_hour) return [];\n\nfunction bacaTs(v) {\n  const s = String(v == null ? '' : v).trim();\n  if (!s) return 0;\n  if (/^\\d{9,10}$/.test(s)) return Number(s);\n  if (/^\\d{12,13}$/.test(s)) return Math.floor(Number(s) / 1000);\n  const m = s.match(/^(\\d{4})-(\\d{2})-(\\d{2})[ T](\\d{2}):(\\d{2})(?::(\\d{2}))?/);\n  if (m) return Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)) / 1000) - 7 * 3600;\n  return 0;\n}\n\nconst ambang = cfg.backlog_days * 86400;\nconst seen = new Set();\nconst macet = [];\n\nfor (const it of $input.all()) {\n  const row = it.json;\n  const digits = String(row['No WA'] || '').replace(/\\D/g, '');\n  if (!digits || seen.has(digits)) continue;\n  seen.add(digits);\n  if (!/^y$/i.test(String(row['deck_requested'] || '').trim())) continue;   // belum minta deck\n  if (bacaTs(row['deck_terkirim_ts'])) continue;                            // decknya sudah dikirim\n  if (/^off$/i.test(String(row['bot_mode'] || '').trim())) continue;        // sudah dipegang manual\n  const lastReply = Number(row['last_reply_ts'] || 0);\n  if (!lastReply || now - lastReply < ambang) continue;                     // belum cukup lama\n  macet.push({\n    no_wa: digits,\n    nama_bisnis: String(row['nama_bisnis'] || '').trim() || '(nama usaha belum ada)',\n    hari: Math.floor((now - lastReply) / 86400),\n    brief: String(row['brief_terisi'] || '').split(',').filter(Boolean).length\n  });\n}\n\nif (!macet.length) {\n  console.log('Backlog deck: tidak ada yang menggantung lebih dari ' + cfg.backlog_days + ' hari.');\n  return [];\n}\nmacet.sort((a, b) => b.hari - a.hari);\n\nconst baris = ['[VIRA Steven] BRIEF DECK MENGGANTUNG'];\nbaris.push(macet.length + ' prospek sudah minta deck tapi decknya belum pernah dikirim, dan sudah '\n           + cfg.backlog_days + ' hari atau lebih tidak ada kabar.');\nbaris.push('');\nfor (const m of macet.slice(0, 15)) {\n  baris.push('- ' + m.no_wa + ' | ' + m.nama_bisnis + ' | ' + m.hari + ' hari | brief ' + m.brief + ' isian');\n}\nif (macet.length > 15) baris.push('... dan ' + (macet.length - 15) + ' lagi');\nbaris.push('');\nbaris.push('Cek: python cek_request.py --belum');\n\nreturn [{ json: {\n  jumlah: macet.length,\n  admin_phone: cfg.admin_phone,\n  user_code: cfg.kirimi_user_code,\n  secret: cfg.kirimi_secret,\n  device_id: cfg.kirimi_device_id,\n  laporan: baris.join('\\n')\n} }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        260
+      ],
+      "name": "Backlog Deck"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $json.user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $json.secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $json.device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.laporan }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1000,
+        400
+      ],
+      "name": "Notify Admin Backlog",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## NONAKTIF saat import — WAJIB\n\n### Tiga saklar yang berbeda\n\n| Saklar | Mengatur |\n|---|---|\n| Toggle **Active** workflow | jadwalnya berdenyut SENDIRI tiap jam |\n| Node `Schedule Trigger FU` | workflow bisa dijalankan sama sekali, termasuk manual |\n| CONFIG `followup_enabled` | kill switch di dalam kode, berlaku siklus berikutnya |\n\nNode trigger dikirim **disabled** sebagai lapis kedua: kalau toggle Active\nkepencet tidak sengaja, tetap tidak ada yang terkirim.\n\n### Urutan menyalakan\n1. Tambah kolom `deck_terkirim_ts` di STATS (paling kanan).\n2. Isi CONFIG: `followup_templates_a`, `followup_templates_c`,\n   `followup_interval_hours_a/c`, `followup_max_a/c`.\n3. `followup_ai_dry_run = Y` + `followup_test_numbers` = nomor Steven,\n   lalu `followup_enabled = true`.\n4. **Aktifkan NODE `Schedule Trigger FU`** (klik kanan node — Activate).\n   Toggle Active workflow **tetap OFF** — selama OFF, jadwalnya\n   tidak pernah jalan sendiri, Steven yang memicunya.\n5. Klik **Execute workflow**. Semua pesan harus mendarat di WA Steven\n   berawalan `[DRY RUN ...]`. Ulangi sampai kalimatnya enak dibaca.\n6. Baru kosongkan `followup_test_numbers`, set `followup_ai_dry_run = N`,\n   lalu nyalakan toggle Active workflow.\n\n`followup_enabled` WAJIB string `true` persis — truthy lain tidak cukup.",
+        "height": 580,
+        "width": 520,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1720,
+        -560
+      ],
+      "name": "Sticky Note - Nonaktif & Syarat Uji"
+    },
+    {
+      "parameters": {
+        "content": "## Tiga bucket, ditentukan dari kolom\n\n| Bucket | Syarat | Isi pesan |\n|---|---|---|\n| **A** | `deck_requested` ≠ Y | buka lagi pelan, gali satu hal |\n| **B** | `deck_requested`=Y, `deck_terkirim_ts` kosong | **tidak dikirimi apa pun** |\n| **C** | `deck_terkirim_ts` terisi | sempat dibaca belum, Basic/Premium, tawarkan diskusi |\n\nBucket B ditangani `Backlog Deck` → WA ke **Steven**, bukan ke prospek.\nYang macet di antrian itu Steven; pesan penenang yang tidak boleh\nmenyebut tanggal cuma menambah bising.\n\n`deck_terkirim_ts` menang atas `deck_requested`: kalau decknya terbukti\nsampai, tidak penting lagi bagaimana permintaannya tercatat.",
+        "height": 380,
+        "width": 560,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1240,
+        -520
+      ],
+      "name": "Sticky Note - Tiga Bucket"
+    },
+    {
+      "parameters": {
+        "content": "## Yang dijaga kode, bukan prompt\n\n`Validate FU Message` menolak: angka harga (digit & huruf), `999` (add-on),\nURL, nomor telepon, **menyapa pakai nama**, janji waktu, dan klaim\n\"sudah aku cek/kirim\". Klaim \"sudah dikirim\" DIMAAFKAN di bucket C —\ndi situ memang benar.\n\nDitolak → **pakai template bucket itu**, bukan dilewati. Tanpa fallback,\nlead yang faktanya selalu memicu guard macet selamanya (bug Persada 16 Sep).\n\n`GUARD_SAMAR` di `Build FU Prompt` WAJIB superset pola tolak di\n`Validate FU Message`. Ubah satu, ubah dua-duanya.\n\nAnti-dobel: `Claim STATS FU` jalan SEBELUM `Wait FU`/`Kirim`.\nJeda acak 20–45 dtk, plafon per run, dan gerbang jam WIB di `Parse Config FU`.\n`followup_max = 0` berarti TANPA BATAS (dulu kebalikannya — itu bug).",
+        "height": 400,
+        "width": 560,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        -520
+      ],
+      "name": "Sticky Note - Guard & Jeda"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger FU": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG FU": {
+      "main": [
+        [
+          {
+            "node": "Parse Config FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config FU": {
+      "main": [
+        [
+          {
+            "node": "Read STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Filter Kandidat",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Backlog Deck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Kandidat": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Kandidat": {
+      "main": [
+        [
+          {
+            "node": "Report FU Run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Claim STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Build FU Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build FU Prompt": {
+      "main": [
+        [
+          {
+            "node": "IF Pakai AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Pakai AI": {
+      "main": [
+        [
+          {
+            "node": "Compose Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Validate FU Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek FU": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compose Follow-up",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Validate FU Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Catat Kegagalan AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate FU Message": {
+      "main": [
+        [
+          {
+            "node": "Wait FU",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Catat Kegagalan AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait FU": {
+      "main": [
+        [
+          {
+            "node": "Kirim Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim Follow-up": {
+      "main": [
+        [
+          {
+            "node": "IF Bukan Dry Run",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Catat Gagal Kirim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Bukan Dry Run": {
+      "main": [
+        [
+          {
+            "node": "Catat Balasan FU",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Balasan FU": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Kegagalan AI": {
+      "main": [
+        [
+          {
+            "node": "Rollback STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Gagal Kirim": {
+      "main": [
+        [
+          {
+            "node": "Rollback STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rollback STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Report FU Run": {
+      "main": [
+        [
+          {
+            "node": "IF Perlu Lapor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Perlu Lapor": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin FU Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Backlog Deck": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Backlog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta",
+    "saveManualExecutions": true
+  },
+  "versionId": "",
+  "meta": {},
+  "id": "",
+  "tags": [
+    {
+      "updatedAt": "2026-08-15T00:00:00.000Z",
+      "createdAt": "2026-08-15T00:00:00.000Z",
+      "id": "uFkh64Z3DrxyMFaWVlgbm",
+      "name": "vira-steven"
+    }
+  ]
+}

@@ -1,0 +1,1954 @@
+{
+  "name": "VIRA_MockBooking",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "mock-booking-slots",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        -80
+      ],
+      "id": "5704a271-c432-4ca7-b965-5047da6df0af",
+      "name": "Webhook GET (get_slots)",
+      "webhookId": "mock-booking-get"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mock-booking-submit",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        320
+      ],
+      "id": "98731cd7-5e1b-4e03-8b0d-085c6898d3f8",
+      "name": "Webhook POST (submit)",
+      "webhookId": "mock-booking-post"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        560,
+        -80
+      ],
+      "id": "fb3e4f37-87fc-4fda-b055-89fc37cb4738",
+      "name": "Read MOCK_SLOTS",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst slots = rows\n  .filter(r => String(r.json['Booked'] || '').trim().toUpperCase() !== 'Y')\n  .map(r => ({\n    id        : String(r.json['ID']         || '').trim(),\n    tanggal   : String(r.json['Tanggal']    || '').trim(),\n    jamMulai  : String(r.json['JamMulai']   || '').trim(),\n    jamSelesai: String(r.json['JamSelesai'] || '').trim(),\n    booked    : false,\n  }))\n  .filter(s => s.id && s.tanggal && s.jamMulai && s.jamSelesai);\nreturn [{ json: { slots } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -80
+      ],
+      "id": "3567d827-f53b-4e20-8916-5d46375f8ee7",
+      "name": "Format Slots"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.slots) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        -80
+      ],
+      "id": "3d8b89e2-a86a-48fc-b11b-fa7978730029",
+      "name": "Return Slots"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\nconst required = ['idBooking','tanggal','noWaAnak','namaAnak','namaOrangTua','asalKota','sekolah','kelas','kurikulumSekolah','targetUniJurusan','jamMulai','jamSelesai','slotId'];\nconst missing = required.filter(k => !body[k] || String(body[k]).trim() === '');\nif (missing.length > 0) throw new Error('Missing fields: ' + missing.join(', '));\nconst wa = String(body.noWaAnak).trim();\nif (!/^(08\\d{8,12}|628\\d{8,12})$/.test(wa)) throw new Error('Format noWaAnak tidak valid: ' + wa);\nreturn [{ json: {\n  idBooking        : String(body.idBooking).trim(),\n  tanggal          : String(body.tanggal).trim(),\n  noWaAnak         : wa,\n  namaAnak         : String(body.namaAnak).trim(),\n  namaOrangTua     : String(body.namaOrangTua).trim(),\n  asalKota         : String(body.asalKota).trim(),\n  sekolah          : String(body.sekolah).trim(),\n  kelas            : String(body.kelas).trim(),\n  kurikulumSekolah : String(body.kurikulumSekolah).trim(),\n  targetUniJurusan : String(body.targetUniJurusan).trim(),\n  bimbingan        : 'University Mock Interview',\n  jamMulai         : String(body.jamMulai).trim(),\n  jamSelesai       : String(body.jamSelesai).trim(),\n  slotId           : String(body.slotId).trim(),\n  status           : 'Pending',\n  timestamp        : body.timestamp || Math.floor(Date.now() / 1000),\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        320
+      ],
+      "id": "e07d6d71-7dc2-4961-a1d4-fff522bbbdaa",
+      "name": "Validate Payload",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\": \"BAD_REQUEST\", \"message\": \"Invalid payload\"}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        544
+      ],
+      "id": "2e8e70f3-f5c0-4915-8bcc-cda305cf141e",
+      "name": "Return 400 Bad Request"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $json.slotId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        848,
+        320
+      ],
+      "id": "79ce8b38-57ab-4865-adcf-a14f46e1a9e9",
+      "name": "Read Slot by ID",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const slotRows = $input.all();\nconst payload  = $('Validate Payload').first().json;\nif (slotRows.length === 0) return [{ json: { slotTaken: true, reason: 'SLOT_NOT_FOUND', ...payload } }];\nconst slot   = slotRows[0].json;\nconst Booked = String(slot['Booked'] || '').trim().toUpperCase();\nif (Booked === 'Y') return [{ json: { slotTaken: true, reason: 'SLOT_TAKEN', ...payload } }];\nreturn [{ json: { slotTaken: false, rowNumber: slot.row_number, ...payload } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        320
+      ],
+      "id": "601402be-35bd-4e73-a49a-21ea5290bafb",
+      "name": "Check Slot Availability"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "slot-taken-check",
+              "leftValue": "={{ $json.slotTaken }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        320
+      ],
+      "id": "47df8061-9968-4026-b474-51f54b0b4502",
+      "name": "Slot Taken?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\": \"SLOT_TAKEN\", \"message\": \"Slot sudah dibooked.\"}",
+        "options": {
+          "responseCode": 409,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        208
+      ],
+      "id": "c21fc105-3d61-4fcc-8a14-9430c233bb84",
+      "name": "Return 409 Slot Taken"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "ID": "={{ $json.slotId }}",
+            "Booked": "Y",
+            "NamaPemesan": "={{ $json.namaAnak }}",
+            "NoWaPemesan": "={{ $json.noWaAnak }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "JamMulai",
+              "displayName": "JamMulai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "JamSelesai",
+              "displayName": "JamSelesai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Booked",
+              "displayName": "Booked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NamaPemesan",
+              "displayName": "NamaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NoWaPemesan",
+              "displayName": "NoWaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1680,
+        448
+      ],
+      "id": "72b35362-70b2-427c-88f2-9b3ec7aa3c64",
+      "name": "Flag Slot Booked",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_INTERVIEW_BOOKING",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Booking": "={{ $('Check Slot Availability').first().json.idBooking }}",
+            "Tanggal": "={{ $('Check Slot Availability').first().json.tanggal }}",
+            "Jam Mulai": "={{ $('Check Slot Availability').first().json.jamMulai }}",
+            "Jam Selesai": "={{ $('Check Slot Availability').first().json.jamSelesai }}",
+            "Sesi": "={{ $('Check Slot Availability').first().json.tanggal + ' · ' + $('Check Slot Availability').first().json.jamMulai + '–' + $('Check Slot Availability').first().json.jamSelesai + ' WIB' }}",
+            "Slot ID": "={{ $('Check Slot Availability').first().json.slotId }}",
+            "Nama Anak": "={{ $('Check Slot Availability').first().json.namaAnak }}",
+            "Nama Orang Tua": "={{ $('Check Slot Availability').first().json.namaOrangTua }}",
+            "No WA Anak": "={{ $('Check Slot Availability').first().json.noWaAnak }}",
+            "Asal Kota": "={{ $('Check Slot Availability').first().json.asalKota }}",
+            "Sekolah": "={{ $('Check Slot Availability').first().json.sekolah }}",
+            "Kelas": "={{ $('Check Slot Availability').first().json.kelas }}",
+            "Kurikulum Sekolah": "={{ $('Check Slot Availability').first().json.kurikulumSekolah }}",
+            "Target Uni Jurusan": "={{ $('Check Slot Availability').first().json.targetUniJurusan }}",
+            "Bimbingan": "University Mock Interview",
+            "Status": "Pending",
+            "Timestamp": "={{ $('Check Slot Availability').first().json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Booking",
+              "displayName": "ID Booking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam Mulai",
+              "displayName": "Jam Mulai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam Selesai",
+              "displayName": "Jam Selesai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sesi",
+              "displayName": "Sesi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Slot ID",
+              "displayName": "Slot ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama Anak",
+              "displayName": "Nama Anak",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama Orang Tua",
+              "displayName": "Nama Orang Tua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No WA Anak",
+              "displayName": "No WA Anak",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asal Kota",
+              "displayName": "Asal Kota",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sekolah",
+              "displayName": "Sekolah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kelas",
+              "displayName": "Kelas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kurikulum Sekolah",
+              "displayName": "Kurikulum Sekolah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Target Uni Jurusan",
+              "displayName": "Target Uni Jurusan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bimbingan",
+              "displayName": "Bimbingan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan Sam",
+              "displayName": "Catatan Sam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1920,
+        448
+      ],
+      "id": "1d20ed82-dfb1-4187-868a-7e0834691224",
+      "name": "Append to MOCK_INTERVIEW_BOOKING",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"📅 [BOOKING MOCK INTERVIEW]\\nID: \" + $('Check Slot Availability').first().json.idBooking + \"\\n\\n👤 Nama Anak: \" + $('Check Slot Availability').first().json.namaAnak + \"\\n👨‍👩‍👧 Orang Tua: \" + $('Check Slot Availability').first().json.namaOrangTua + \"\\n📱 No WA: \" + $('Check Slot Availability').first().json.noWaAnak + \"\\n\\n🏫 Sekolah: \" + $('Check Slot Availability').first().json.sekolah + \" (Kelas \" + $('Check Slot Availability').first().json.kelas + \")\" + \"\\n📚 Kurikulum: \" + $('Check Slot Availability').first().json.kurikulumSekolah + \"\\n🌆 Asal Kota: \" + $('Check Slot Availability').first().json.asalKota + \"\\n🎯 Target: \" + $('Check Slot Availability').first().json.targetUniJurusan + \"\\n\\n🗓️ Jadwal: \" + $('Check Slot Availability').first().json.tanggal + \" · \" + $('Check Slot Availability').first().json.jamMulai + \"–\" + $('Check Slot Availability').first().json.jamSelesai + \" WIB\" + \"\\n\\n──────────────\\n✅ KONFIRMASI:\\nhttps://n8n.srv1270416.hstgr.cloud/webhook/confirm-booking?id=\" + $('Check Slot Availability').first().json.idBooking + \"&action=confirm\" + \"\\n\\n❌ TOLAK:\\nhttps://n8n.srv1270416.hstgr.cloud/webhook/confirm-booking?id=\" + $('Check Slot Availability').first().json.idBooking + \"&action=reject\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2160,
+        448
+      ],
+      "id": "a95ed022-ab5f-4e0a-be42-c23c69f07f58",
+      "name": "Notify Sam",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, notifyFailed: false, idBooking: $('Check Slot Availability').first().json.idBooking }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2400,
+        368
+      ],
+      "id": "0ffb5628-07a4-4cce-b1bb-65e6ab02efce",
+      "name": "Return 200 OK"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: 'NOTIFY_FAILED', notifyFailed: true, idBooking: $('Check Slot Availability').first().json.idBooking, message: 'Booking berhasil disimpan tetapi notifikasi ke Sam gagal terkirim.' }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2400,
+        544
+      ],
+      "id": "b1a2c3d4-e5f6-7890-abcd-ef1234567890",
+      "name": "Return 200 Notify Failed"
+    },
+    {
+      "parameters": {
+        "path": "confirm-booking",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        880
+      ],
+      "id": "conf-wh-00000001",
+      "name": "Webhook GET (confirm-booking)",
+      "webhookId": "mock-booking-confirm"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $input.first().json.query || {};\nconst id     = String(query.id     || '').trim();\nconst action = String(query.action || '').trim().toLowerCase();\nconst skipFree = String(query.skip_free || '').trim() === '1';\nif (!id)                                    throw new Error('Missing booking ID');\nif (!['confirm','reject'].includes(action)) throw new Error('Invalid action: ' + action);\nreturn [{ json: { id, action, skipFree } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        880
+      ],
+      "id": "conf-parse-00000001",
+      "name": "Parse Confirm Request"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_INTERVIEW_BOOKING",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID Booking",
+              "lookupValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        760,
+        880
+      ],
+      "id": "conf-read-booking-001",
+      "name": "Read Booking by ID (Confirm)",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nif (rows.length === 0) throw new Error('Booking tidak ditemukan.');\nreturn rows;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        880
+      ],
+      "id": "conf-check-exists-001",
+      "name": "Check Booking Exists"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1280,
+        880
+      ],
+      "id": "conf-read-config-001",
+      "name": "Read CONFIG",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const configRows  = $input.all();\nconst bookingRow  = $('Read Booking by ID (Confirm)').first().json;\nconst { id, action, skipFree } = $('Parse Confirm Request').first().json;\n\nconst cfg = {};\nconfigRows.forEach(r => {\n  const k = String(r.json['Key']   || '').trim();\n  const v = String(r.json['Value'] || '').trim();\n  if (k) cfg[k] = v;\n});\n\nconst status = String(bookingRow['Status'] || '').trim();\n\nreturn [{ json: {\n  id,\n  action,\n  skipFree         : skipFree || false,\n  alreadyProcessed : status !== 'Pending',\n  status,\n  namaAnak         : String(bookingRow['Nama Anak']   || '').trim(),\n  noWaAnak         : String(bookingRow['No WA Anak']  || '').trim(),\n  tanggal          : String(bookingRow['Tanggal']     || '').trim(),\n  jamMulai         : String(bookingRow['Jam Mulai']   || '').trim(),\n  jamSelesai       : String(bookingRow['Jam Selesai'] || '').trim(),\n  slotId           : String(bookingRow['Slot ID']     || '').trim(),\n  nominalBiaya     : cfg['NOMINAL_BIAYA']   || '1.000.000',\n  namaBank         : cfg['NAMA_BANK']       || 'BCA',\n  nomorRekening    : cfg['NOMOR_REKENING']  || '1820111111',\n  atasNama         : cfg['ATAS_NAMA']       || 'Samuel Oscar',\n  deadlineHari     : cfg['DEADLINE_HARI']   || '1',\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        880
+      ],
+      "id": "conf-build-data-001",
+      "name": "Build Confirm Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "already-proc-check",
+              "leftValue": "={{ $json.alreadyProcessed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1800,
+        880
+      ],
+      "id": "conf-already-proc-001",
+      "name": "Already Processed?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nreturn [{ json: { html:\n  '<!doctype html><html lang=\"id\"><head><meta charset=\"UTF-8\"/><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/><title>Sudah Diproses</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f9f9f8;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}.card{background:#fff;border-radius:16px;padding:2rem 1.5rem;max-width:360px;width:100%;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}p{color:#6b6a65;font-size:.875rem;line-height:1.6;margin-top:.5rem}</style></head><body><div class=\"card\"><div class=\"icon\">ℹ️</div><h1>Sudah Diproses</h1><p>Booking <strong>' + d.id + '</strong> sudah diproses sebelumnya.<br/>Status saat ini: <strong>' + d.status + '</strong></p></div></body></html>'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2060,
+        720
+      ],
+      "id": "conf-html-already-001",
+      "name": "Build Already Processed HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2320,
+        720
+      ],
+      "id": "conf-resp-already-001",
+      "name": "Return HTML Already Processed"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "action-confirm-check",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "confirm",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2840,
+        1000
+      ],
+      "id": "conf-branch-001",
+      "name": "Confirm or Reject?"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_INTERVIEW_BOOKING",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "ID Booking": "={{ $json.id }}",
+            "Status": "Confirmed"
+          },
+          "matchingColumns": [
+            "ID Booking"
+          ],
+          "schema": [
+            {
+              "id": "ID Booking",
+              "displayName": "ID Booking",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3100,
+        880
+      ],
+      "id": "conf-upd-ok-001",
+      "name": "Update Status Confirmed",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Build Confirm Data').first().json.noWaAnak }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"✅ Halo \" + $('Build Confirm Data').first().json.namaAnak + \"!\\n\\nBooking Mock Interview kamu sudah *DIKONFIRMASI* oleh Sam 🎉\\n\\n🗓️ Jadwal: \" + $('Build Confirm Data').first().json.tanggal + \" · \" + $('Build Confirm Data').first().json.jamMulai + \"–\" + $('Build Confirm Data').first().json.jamSelesai + \" WIB\\n🎓 Bimbingan: University Mock Interview\\n\\n💳 *Detail Pembayaran:*\\nBank: \" + $('Build Confirm Data').first().json.namaBank + \"\\nNo. Rek: \" + $('Build Confirm Data').first().json.nomorRekening + \"\\nA.N: \" + $('Build Confirm Data').first().json.atasNama + \"\\nNominal: Rp \" + $('Build Confirm Data').first().json.nominalBiaya + \"\\nDeadline: \" + $('Build Confirm Data').first().json.deadlineHari + \"x24 jam\\n\\nMohon kirim bukti transfer ke nomor ini setelah pembayaran.\\nSampai jumpa di sesinya! 🙌\\n— The Scholars\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3360,
+        880
+      ],
+      "id": "conf-wa-ok-001",
+      "name": "Send WA Payment Info",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Build Confirm Data').first().json;\nreturn [{ json: { html:\n  '<!doctype html><html lang=\"id\"><head><meta charset=\"UTF-8\"/><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/><title>Booking Dikonfirmasi</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f9f9f8;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}.card{background:#fff;border-radius:16px;padding:2rem 1.5rem;max-width:360px;width:100%;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}p{color:#6b6a65;font-size:.875rem;line-height:1.6;margin-top:.5rem}</style></head><body><div class=\"card\"><div class=\"icon\">✅</div><h1>Booking Dikonfirmasi</h1><p><strong>' + d.namaAnak + '</strong><br/>' + d.tanggal + ' · ' + d.jamMulai + '–' + d.jamSelesai + ' WIB</p><p>WA konfirmasi + info pembayaran sudah dikirim ke murid.</p></div></body></html>'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3620,
+        880
+      ],
+      "id": "conf-html-ok-001",
+      "name": "Build Confirm HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3880,
+        880
+      ],
+      "id": "conf-resp-ok-001",
+      "name": "Return HTML Confirmed"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_INTERVIEW_BOOKING",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "ID Booking": "={{ $json.id }}",
+            "Status": "Rejected"
+          },
+          "matchingColumns": [
+            "ID Booking"
+          ],
+          "schema": [
+            {
+              "id": "ID Booking",
+              "displayName": "ID Booking",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3100,
+        1120
+      ],
+      "id": "conf-upd-rej-001",
+      "name": "Update Status Rejected",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "ID": "={{ $('Build Confirm Data').first().json.slotId }}",
+            "Booked": "",
+            "NamaPemesan": "",
+            "NoWaPemesan": ""
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Booked",
+              "displayName": "Booked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "NamaPemesan",
+              "displayName": "NamaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "NoWaPemesan",
+              "displayName": "NoWaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3360,
+        1220
+      ],
+      "id": "conf-free-slot-001",
+      "name": "Free Slot",
+      "continueOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Build Confirm Data').first().json.noWaAnak }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"Halo \" + $('Build Confirm Data').first().json.namaAnak + \",\\n\\nMohon maaf, Sam tidak bisa hadir di jadwal berikut:\\n🗓️ \" + $('Build Confirm Data').first().json.tanggal + \" · \" + $('Build Confirm Data').first().json.jamMulai + \"–\" + $('Build Confirm Data').first().json.jamSelesai + \" WIB\\n\\nJadwal tersebut sudah dibebaskan kembali. Silakan isi ulang form dan pilih jadwal lain yang tersedia:\\n🔗 https://tinyurl.com/mockbooking\\n\\nTerima kasih atas pengertiannya 🙏\\n— The Scholars\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3620,
+        1220
+      ],
+      "id": "conf-wa-rej-001",
+      "name": "Send WA Rejection",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Build Confirm Data').first().json;\nreturn [{ json: { html:\n  '<!doctype html><html lang=\"id\"><head><meta charset=\"UTF-8\"/><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/><title>Booking Ditolak</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f9f9f8;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}.card{background:#fff;border-radius:16px;padding:2rem 1.5rem;max-width:360px;width:100%;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;font-weight:700;margin-bottom:.5rem}p{color:#6b6a65;font-size:.875rem;line-height:1.6;margin-top:.5rem}</style></head><body><div class=\"card\"><div class=\"icon\">❌</div><h1>Booking Ditolak</h1><p><strong>' + d.namaAnak + '</strong><br/>' + d.tanggal + ' · ' + d.jamMulai + '–' + d.jamSelesai + ' WIB</p><p>WA pemberitahuan sudah dikirim ke murid. Slot dikembalikan.</p></div></body></html>'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3880,
+        1220
+      ],
+      "id": "conf-html-rej-001",
+      "name": "Build Reject HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        4140,
+        1220
+      ],
+      "id": "conf-resp-rej-001",
+      "name": "Return HTML Rejected"
+    },
+    {
+      "parameters": {
+        "content": "## Mock Booking — Full Workflow (v2)\n\n**Submit flow:**\nWebhook POST → Validate → Check Slot → Flag Booked → Append MOCK_INTERVIEW_BOOKING → Notify Sam → 200 OK\n\n**Confirm/Reject flow (v2 — race condition safe):**\nSam tap link → Parse (id, action, skip_free) → Read Booking → Read CONFIG → Build Data →\nAlready Processed? →\n  TRUE  → Already Processed HTML\n  FALSE → Read Bookings Same Slot → Check Slot Conflict → Slot Conflict? →\n    TRUE  → Slot Conflict HTML (+ tombol Tolak Duplikat dengan skip_free=1)\n    FALSE → Confirm or Reject? →\n      confirm → Update Confirmed → Send WA Payment → Confirm HTML\n      reject  → Update Rejected → Should Free Slot? →\n                  TRUE  → Free Slot → Send WA Rejection → Reject HTML\n                  FALSE → Send WA Rejection → Reject HTML  (skip_free=1: tidak bebaskan slot milik booking lain)\n\n**Race condition handling:**\n- Jika 2 booking ada utk slot yg sama (keduanya Pending), Sam konfirmasi satu → booking lainnya akan\n  menampilkan halaman 'Jadwal Sudah Di-book' dgn info peserta yg dikonfirmasi.\n- Sam bisa klik 'Tolak Booking Duplikat' → reject tanpa membebaskan slot (skip_free=1).\n- Jika Sam menolak booking pertama dulu → slot dibebaskan → booking kedua available utk di-confirm/reject.\n\n**Sheet columns MOCK_INTERVIEW_BOOKING:**\nID Booking | Tanggal | Jam Mulai | Jam Selesai | Sesi | Slot ID | Nama Anak | Nama Orang Tua | No WA Anak | Asal Kota | Sekolah | Kelas | Kurikulum Sekolah | Target Uni Jurusan | Bimbingan | Status | Catatan Sam | Timestamp\n\n**Sheet CONFIG:**\nKey | Value\nNOMINAL_BIAYA | 1.000.000\nNAMA_BANK | BCA\nNOMOR_REKENING | 1820111111\nATAS_NAMA | Samuel Oscar\nDEADLINE_HARI | 1",
+        "height": 500,
+        "width": 1000
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1584,
+        -360
+      ],
+      "typeVersion": 1,
+      "id": "8584ea37-8c22-4f05-ab93-c82bf6c60331",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_INTERVIEW_BOOKING",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Slot ID",
+              "lookupValue": "={{ $('Build Confirm Data').first().json.slotId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2060,
+        960
+      ],
+      "id": "conf-read-same-slot-001",
+      "name": "Read Bookings Same Slot",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst currentId = $('Parse Confirm Request').first().json.id;\nconst d = $('Build Confirm Data').first().json;\n\n// Cari booking lain utk slot yang sama yg sudah Status=Confirmed\nconst confirmed = rows.filter(r => {\n  const status    = String(r.json['Status']     || '').trim();\n  const bookingId = String(r.json['ID Booking'] || '').trim();\n  return status === 'Confirmed' && bookingId !== currentId;\n});\n\nconst hasConflict = confirmed.length > 0;\n// showConflictPage: tampilkan halaman konflik KECUALI jika ini adalah\n// force-reject dari halaman konflik itu sendiri (skip_free=1 & action=reject)\nconst showConflictPage = hasConflict && !(d.skipFree === true && d.action === 'reject');\n\nif (hasConflict) {\n  const w = confirmed[0].json;\n  return [{ json: {\n    hasConflict,\n    showConflictPage,\n    winnerNama     : String(w['Nama Anak']      || '').trim(),\n    winnerOrangTua : String(w['Nama Orang Tua'] || '').trim(),\n    winnerNoWa     : String(w['No WA Anak']     || '').trim(),\n    winnerSekolah  : String(w['Sekolah']        || '').trim(),\n    winnerKelas    : String(w['Kelas']          || '').trim(),\n    winnerIdBooking: String(w['ID Booking']     || '').trim(),\n    ...d,\n  }}];\n}\nreturn [{ json: { hasConflict: false, showConflictPage: false, ...d } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        960
+      ],
+      "id": "conf-check-conflict-001",
+      "name": "Check Slot Conflict"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "show-conflict-page-check",
+              "leftValue": "={{ $json.showConflictPage }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2580,
+        960
+      ],
+      "id": "conf-slot-conflict-if-001",
+      "name": "Slot Conflict?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\nconst webhookBase = 'https://n8n.srv1270416.hstgr.cloud/webhook/confirm-booking';\nconst rejectUrl = webhookBase + '?id=' + d.id + '&action=reject&skip_free=1';\nreturn [{ json: { html:\n  '<!doctype html><html lang=\"id\"><head><meta charset=\"UTF-8\"/>'\n  + '<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>'\n  + '<title>Jadwal Sudah Di-book</title>'\n  + '<style>'\n  + '*{box-sizing:border-box;margin:0;padding:0}'\n  + 'body{font-family:system-ui,sans-serif;background:#f9f9f8;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1rem}'\n  + '.card{background:#fff;border-radius:16px;padding:2rem 1.5rem;max-width:420px;width:100%;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,.08)}'\n  + '.icon{font-size:3rem;margin-bottom:1rem}'\n  + 'h1{font-size:1.2rem;font-weight:700;margin-bottom:.75rem;color:#E24B4A}'\n  + 'p{color:#6b6a65;font-size:.875rem;line-height:1.6;margin-top:.5rem}'\n  + '.info-box{background:#f1f0ec;border-radius:10px;padding:1rem;margin-top:1rem;text-align:left;font-size:.875rem;line-height:1.9;color:#111}'\n  + '.info-box strong{display:block;margin-bottom:.25rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:#6b6a65}'\n  + '.row{margin-bottom:.1rem}'\n  + '.btn-reject{display:block;margin-top:1.25rem;background:#E24B4A;color:#fff;text-decoration:none;border-radius:10px;padding:.75rem 1rem;font-size:.875rem;font-weight:600}'\n  + '.note{font-size:.75rem;color:#b0afa8;margin-top:.75rem;line-height:1.5}'\n  + '</style></head><body>'\n  + '<div class=\"card\">'\n  + '<div class=\"icon\">\\uD83D\\uDEAB</div>'\n  + '<h1>Jadwal Sudah Di-book Peserta Lain</h1>'\n  + '<p>Jadwal <strong>' + d.tanggal + ' \\u00b7 ' + d.jamMulai + '\\u2013' + d.jamSelesai + ' WIB</strong>'\n  + '<br/>sudah dikonfirmasi untuk peserta lain sebelumnya.</p>'\n  + '<div class=\"info-box\">'\n  + '<strong>Peserta yang sudah dikonfirmasi:</strong>'\n  + '<div class=\"row\">\\uD83D\\uDC64 Nama: <b>' + d.winnerNama + '</b></div>'\n  + '<div class=\"row\">\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67 Orang Tua: ' + d.winnerOrangTua + '</div>'\n  + '<div class=\"row\">\\uD83C\\uDFEB Sekolah: ' + d.winnerSekolah + ', Kelas ' + d.winnerKelas + '</div>'\n  + '<div class=\"row\">\\uD83D\\uDCF1 No. WA: ' + d.winnerNoWa + '</div>'\n  + '<div class=\"row\" style=\"margin-top:.4rem;font-size:.8rem;color:#6b6a65\">ID: ' + d.winnerIdBooking + '</div>'\n  + '</div>'\n  + '<a class=\"btn-reject\" href=\"' + rejectUrl + '\">Tolak Booking Duplikat (' + d.id + ')</a>'\n  + '<p class=\"note\">Booking <strong>' + d.id + '</strong> adalah duplikat untuk jadwal yang sama.'\n  + '<br/>Klik tombol di atas untuk menolak booking ini tanpa membebaskan slot.</p>'\n  + '</div></body></html>'\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2840,
+        780
+      ],
+      "id": "conf-html-conflict-001",
+      "name": "Build Slot Conflict HTML"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.html }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3100,
+        780
+      ],
+      "id": "conf-resp-conflict-001",
+      "name": "Return HTML Slot Conflict"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "should-free-slot-check",
+              "leftValue": "={{ !$('Build Confirm Data').first().json.skipFree }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2840,
+        1120
+      ],
+      "id": "conf-should-free-slot-001",
+      "name": "Should Free Slot?"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook GET (get_slots)": {
+      "main": [
+        [
+          {
+            "node": "Read MOCK_SLOTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MOCK_SLOTS": {
+      "main": [
+        [
+          {
+            "node": "Format Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Slots": {
+      "main": [
+        [
+          {
+            "node": "Return Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook POST (submit)": {
+      "main": [
+        [
+          {
+            "node": "Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "Read Slot by ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 400 Bad Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Slot by ID": {
+      "main": [
+        [
+          {
+            "node": "Check Slot Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Slot Availability": {
+      "main": [
+        [
+          {
+            "node": "Slot Taken?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slot Taken?": {
+      "main": [
+        [
+          {
+            "node": "Return 409 Slot Taken",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flag Slot Booked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flag Slot Booked": {
+      "main": [
+        [
+          {
+            "node": "Append to MOCK_INTERVIEW_BOOKING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to MOCK_INTERVIEW_BOOKING": {
+      "main": [
+        [
+          {
+            "node": "Notify Sam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Sam": {
+      "main": [
+        [
+          {
+            "node": "Return 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 200 Notify Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook GET (confirm-booking)": {
+      "main": [
+        [
+          {
+            "node": "Parse Confirm Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Confirm Request": {
+      "main": [
+        [
+          {
+            "node": "Read Booking by ID (Confirm)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Booking by ID (Confirm)": {
+      "main": [
+        [
+          {
+            "node": "Check Booking Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Booking Exists": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG": {
+      "main": [
+        [
+          {
+            "node": "Build Confirm Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Confirm Data": {
+      "main": [
+        [
+          {
+            "node": "Already Processed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already Processed?": {
+      "main": [
+        [
+          {
+            "node": "Build Already Processed HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Bookings Same Slot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Already Processed HTML": {
+      "main": [
+        [
+          {
+            "node": "Return HTML Already Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm or Reject?": {
+      "main": [
+        [
+          {
+            "node": "Update Status Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Status Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status Confirmed": {
+      "main": [
+        [
+          {
+            "node": "Send WA Payment Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WA Payment Info": {
+      "main": [
+        [
+          {
+            "node": "Build Confirm HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Confirm HTML": {
+      "main": [
+        [
+          {
+            "node": "Return HTML Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status Rejected": {
+      "main": [
+        [
+          {
+            "node": "Should Free Slot?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Free Slot": {
+      "main": [
+        [
+          {
+            "node": "Send WA Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WA Rejection": {
+      "main": [
+        [
+          {
+            "node": "Build Reject HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reject HTML": {
+      "main": [
+        [
+          {
+            "node": "Return HTML Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Bookings Same Slot": {
+      "main": [
+        [
+          {
+            "node": "Check Slot Conflict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Slot Conflict": {
+      "main": [
+        [
+          {
+            "node": "Slot Conflict?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slot Conflict?": {
+      "main": [
+        [
+          {
+            "node": "Build Slot Conflict HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Confirm or Reject?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slot Conflict HTML": {
+      "main": [
+        [
+          {
+            "node": "Return HTML Slot Conflict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Free Slot?": {
+      "main": [
+        [
+          {
+            "node": "Free Slot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send WA Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "maxConcurrency": 1
+  },
+  "versionId": "enhancement-v2-race-condition-fix",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "JCQ3_a8u2FS2Xa5eL5Kz3",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

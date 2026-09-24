@@ -1,0 +1,3221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAPI — Rekap &amp; Arsip Progress Inti | Solusi Manajemen Proyek Studio Interior</title>
+  
+  <!-- Google Fonts CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* --------------------------------------------------
+       CORE DESIGN SYSTEM & UTILITIES
+       -------------------------------------------------- */
+    :root {
+      --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      /* Color Palette - Premium Hybrid Dark/Light Theme */
+      --bg-dark-1: #0a0a09;
+      --bg-dark-2: #12110f;
+      --bg-dark-3: #1a1916;
+      
+      --gold-primary: #c5a059;
+      --gold-light: #e0be7d;
+      --gold-dark: #96732f;
+      --gold-gradient: linear-gradient(135deg, #e0be7d 0%, #c5a059 50%, #96732f 100%);
+      --gold-glow: rgba(197, 160, 89, 0.12);
+      
+      --text-primary: #f5f2eb;
+      --text-secondary: #c9c5bd;
+      --text-muted: #8c887f;
+      
+      /* Light Section Colors */
+      --bg-light-1: #fcfbfa;
+      --bg-light-2: #f6f3eb;
+      --bg-light-3: #ebe6dc;
+      --text-light-primary: #1c1a17;
+      --text-light-secondary: #4d4941;
+      --text-light-muted: #7c776d;
+      
+      --border-dark: rgba(224, 190, 125, 0.08);
+      --border-light: rgba(28, 26, 23, 0.08);
+      
+      --border-radius-lg: 24px;
+      --border-radius-md: 16px;
+      --border-radius-sm: 10px;
+      
+      --transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+    
+    body {
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background-color: var(--bg-dark-1);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    
+    h1, h2, h3, h4 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    
+    /* --------------------------------------------------
+       LAYOUT SECTIONS
+       -------------------------------------------------- */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    section {
+      padding: 100px 0;
+      position: relative;
+    }
+    
+    .section-light {
+      background-color: var(--bg-light-2);
+      color: var(--text-light-primary);
+    }
+    
+    .section-dark {
+      background-color: var(--bg-dark-1);
+      color: var(--text-primary);
+    }
+    
+    /* Eyebrow & Headers */
+    .section-header {
+      text-align: center;
+      max-width: 750px;
+      margin: 0 auto 60px;
+    }
+    
+    .eyebrow {
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+    
+    .section-title {
+      font-size: 36px;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    
+    .section-light .section-title {
+      color: var(--text-light-primary);
+    }
+    
+    .section-dark .section-title {
+      color: var(--text-primary);
+    }
+    
+    .section-subtitle {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+    
+    .section-light .section-subtitle {
+      color: var(--text-light-secondary);
+    }
+    
+    /* --------------------------------------------------
+       BUTTONS
+       -------------------------------------------------- */
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      padding: 14px 28px;
+      border-radius: var(--border-radius-sm);
+      text-decoration: none;
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    
+    .btn-primary {
+      background: var(--gold-gradient);
+      color: #000;
+      box-shadow: 0 8px 30px rgba(197, 160, 89, 0.2);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(197, 160, 89, 0.35);
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border-color: var(--border-dark);
+      backdrop-filter: blur(5px);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--gold-light);
+      transform: translateY(-2px);
+    }
+    
+    .btn-light-secondary {
+      background: transparent;
+      color: var(--text-light-primary);
+      border-color: var(--text-light-secondary);
+    }
+    
+    .btn-light-secondary:hover {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: var(--text-light-primary);
+      transform: translateY(-2px);
+    }
+    
+    .wa-btn-icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      flex-shrink: 0;
+    }
+    
+    /* --------------------------------------------------
+       STICKY HEADER NAVBAR
+       -------------------------------------------------- */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-dark);
+      background-color: rgba(10, 10, 9, 0.7);
+      backdrop-filter: blur(20px) saturate(180%);
+      transition: var(--transition);
+    }
+    
+    header.scrolled {
+      padding: 8px 0;
+      background-color: rgba(10, 10, 9, 0.85);
+    }
+    
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 72px;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+    
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--gold-gradient);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .logo-mark::after {
+      content: 'R';
+      color: #000;
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 16px;
+    }
+    
+    .logo-text-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo-text {
+      font-family: var(--font-heading);
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: 0.05em;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+    
+    .logo-tagline {
+      font-size: 8px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      font-weight: 500;
+    }
+    
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      background-color: rgba(46, 213, 115, 0.08);
+      color: #2ed573;
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid rgba(46, 213, 115, 0.15);
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #2ed573;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    
+    .nav-cta {
+      display: inline-flex;
+    }
+    
+    /* --------------------------------------------------
+       HERO SECTION WITH MESH GLOW
+       -------------------------------------------------- */
+    #hero {
+      padding-top: 180px;
+      padding-bottom: 100px;
+      overflow: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 20%, rgba(197, 160, 89, 0.09) 0%, rgba(10, 10, 9, 0) 60%),
+        radial-gradient(circle at 80% 80%, rgba(197, 160, 89, 0.04) 0%, rgba(10, 10, 9, 0) 50%);
+    }
+    
+    .hero-content {
+      text-align: center;
+      max-width: 950px;
+      margin: 0 auto 60px;
+    }
+    
+    .hero-title {
+      font-size: 58px;
+      line-height: 1.1;
+      font-weight: 800;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+    }
+    
+    .gradient-text {
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+    
+    .hero-description {
+      font-size: 19px;
+      color: var(--text-secondary);
+      max-width: 780px;
+      margin: 0 auto 36px;
+      line-height: 1.6;
+      font-weight: 300;
+    }
+    
+    .hero-philosophy {
+      font-family: var(--font-heading);
+      font-size: 14px;
+      color: var(--gold-light);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    
+    .hero-philosophy::before, .hero-philosophy::after {
+      content: '';
+      width: 20px;
+      height: 1px;
+      background-color: var(--border-dark);
+    }
+    
+    /* --------------------------------------------------
+       THE CONTRAST SECTION (BEFORE VS AFTER)
+       -------------------------------------------------- */
+    #contrast {
+      background: linear-gradient(180deg, var(--bg-dark-1) 0%, var(--bg-dark-2) 100%);
+      border-bottom: 1px solid var(--border-dark);
+    }
+    
+    .contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-top: 20px;
+    }
+    
+    .contrast-panel {
+      border-radius: var(--border-radius-lg);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .contrast-panel.before {
+      background-color: rgba(20, 15, 15, 0.35);
+      border: 1px solid rgba(235, 94, 85, 0.08);
+    }
+    
+    .contrast-panel.after {
+      background-color: rgba(15, 20, 16, 0.35);
+      border: 1px solid rgba(46, 213, 115, 0.12);
+      box-shadow: 0 10px 40px rgba(46, 213, 115, 0.01);
+    }
+    
+    .panel-tag {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+    
+    .before .panel-tag {
+      background-color: rgba(235, 94, 85, 0.1);
+      color: #eb5e55;
+    }
+    
+    .after .panel-tag {
+      background-color: rgba(46, 213, 115, 0.1);
+      color: #2ed573;
+    }
+    
+    .panel-title {
+      font-size: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .before .panel-title { color: #f2a09b; }
+    .after .panel-title { color: #a4f2b3; }
+    
+    .contrast-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .contrast-item {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .contrast-indicator {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    
+    .before .contrast-indicator {
+      background-color: rgba(235, 94, 85, 0.1);
+      color: #eb5e55;
+    }
+    
+    .after .contrast-indicator {
+      background-color: rgba(46, 213, 115, 0.1);
+      color: #2ed573;
+    }
+    
+    .contrast-text h4 {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .before .contrast-text h4 { color: #f5f2eb; }
+    .after .contrast-text h4 { color: #f5f2eb; }
+    
+    .contrast-text p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    /* --------------------------------------------------
+       PLAYABLE VIRTUAL PWA EMULATOR (SIMULATOR)
+       -------------------------------------------------- */
+    #simulator {
+      background-color: var(--bg-dark-1);
+      border-bottom: 1px solid var(--border-dark);
+      padding: 100px 0;
+    }
+    
+    .sim-wrapper {
+      background-color: var(--bg-dark-2);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+    }
+    
+    .sim-control-panel {
+      padding: 40px;
+      border-right: 1px solid var(--border-dark);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    
+    .sim-header {
+      margin-bottom: 24px;
+    }
+    
+    .sim-header h3 {
+      font-size: 24px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .sim-header p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    
+    /* Simulated Mobile Device Wrapper */
+    .sim-output-panel {
+      background-color: #0c0b0a;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    /* Realistic iPhone Mockup Container */
+    .phone-mockup {
+      width: 100%;
+      max-width: 325px;
+      height: 540px;
+      border: 10px solid #282724;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      
+      /* Active PWA Light Theme styling by default */
+      --bg: #F9F8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F2EFE9;
+      --surface-3: #EAE5DC;
+      --gold: #B49157;
+      --gold-dim: #8A7257;
+      --gold-glow: rgba(180, 145, 87, 0.12);
+      --text: #2C2B29;
+      --text-muted: #59554C;
+      --text-dim: #A39E93;
+      --border: rgba(180, 145, 87, 0.22);
+      --border-focus: rgba(180, 145, 87, 0.55);
+      --danger: #C0392B;
+      --success: #27AE60;
+      --r: 14px;
+      --shadow: 0 2px 6px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(180, 145, 87, 0.04);
+      
+      font-family: 'Sora', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+    }
+    
+    /* iPhone top speaker and notch */
+    .phone-notch {
+      width: 120px;
+      height: 18px;
+      background-color: #282724;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+    }
+    
+    .phone-screen {
+      flex: 1;
+      padding: 26px 0 0; /* Padding top for notch */
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* PWA Screens Container */
+    .pwa-screen {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+      padding: 12px 14px 14px;
+      overflow-y: auto;
+      height: 100%;
+      animation: fadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    
+    .pwa-screen.active {
+      display: flex;
+    }
+    
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* PWA Home Topbar */
+    .pwa-top-bar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold-dim) 25%, var(--gold) 50%, var(--gold-dim) 75%, transparent 100%);
+      width: 100%;
+    }
+    
+    .pwa-header {
+      text-align: center;
+      padding: 16px 12px 12px;
+    }
+    
+    .pwa-logo-monogram {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+      color: #FFFFFF;
+      font-weight: 800;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      box-shadow: 0 4px 12px rgba(180, 145, 87, 0.2);
+      border: 1px solid var(--border);
+    }
+    
+    .pwa-eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+    
+    .pwa-eyebrow::before, .pwa-eyebrow::after {
+      content: '';
+      width: 16px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-dim));
+    }
+    
+    .pwa-eyebrow::after {
+      background: linear-gradient(to left, transparent, var(--gold-dim));
+    }
+    
+    .pwa-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    
+    .pwa-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    
+    .pwa-sub {
+      margin-top: 4px;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      font-weight: 300;
+    }
+    
+    /* PWA Navigation Menu Cards */
+    .pwa-menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .pwa-menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow);
+      user-select: none;
+    }
+    
+    .pwa-menu-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(180, 145, 87, 0.08);
+    }
+    
+    .pwa-menu-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--surface-2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    
+    .pwa-menu-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .pwa-menu-label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .pwa-menu-desc {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .pwa-menu-arrow {
+      color: var(--gold-dim);
+      font-size: 16px;
+      font-weight: 300;
+    }
+    
+    /* PWA Screen Header Topbars */
+    .pwa-screen-topbar {
+      display: flex;
+      align-items: center;
+      padding: 0 0 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+      position: relative;
+    }
+    
+    .pwa-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      font-family: 'Sora', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--gold-dim);
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    
+    .pwa-back-btn:hover {
+      color: var(--gold);
+      background-color: var(--gold-glow);
+    }
+    
+    .pwa-screen-title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding-right: 40px; /* Balance the back button */
+    }
+    
+    /* PWA Cards & Form Fields */
+    .pwa-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+    
+    .pwa-sec-label {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .pwa-sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+    
+    .pwa-field {
+      margin-bottom: 12px;
+    }
+    
+    .pwa-field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    
+    .pwa-label {
+      display: block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    
+    .pwa-input, .pwa-select, .pwa-textarea {
+      width: 100%;
+      font-family: 'Sora', sans-serif;
+      font-size: 12px;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    
+    .pwa-input:focus, .pwa-select:focus, .pwa-textarea:focus {
+      border-color: var(--border-focus);
+      background: var(--surface);
+    }
+    
+    .pwa-select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A7257' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 14px;
+      padding-right: 24px;
+      cursor: pointer;
+    }
+    
+    .pwa-btn-submit {
+      width: 100%;
+      padding: 11px 16px;
+      background: var(--gold);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-family: 'Sora', sans-serif;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 10px rgba(180, 145, 87, 0.2);
+    }
+    
+    .pwa-btn-submit:hover {
+      background: var(--gold-dim);
+    }
+    
+    /* PWA Dashboard KPI Cards */
+    .pwa-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .pwa-kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 10px 4px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    
+    .pwa-kpi-card span {
+      display: block;
+      font-size: 7.5px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    
+    .pwa-kpi-card b {
+      font-size: 13.5px;
+      color: var(--gold);
+    }
+    
+    /* PWA List items inside emulator */
+    .pwa-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .pwa-list-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      font-size: 11.5px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    
+    .pwa-list-card:hover {
+      border-color: var(--gold);
+    }
+    
+    .pwa-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 9.5px;
+    }
+    
+    .pwa-list-proj {
+      font-weight: 700;
+      color: var(--gold-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .pwa-badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 7.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    
+    .pwa-badge.selesai { background-color: rgba(46, 213, 115, 0.1); color: #27ae60; }
+    .pwa-badge.proses { background-color: rgba(255, 171, 0, 0.1); color: #d68900; }
+    .pwa-badge.pending { background-color: rgba(235, 94, 85, 0.1); color: #c0392b; }
+    
+    .pwa-list-desc {
+      color: var(--text);
+      line-height: 1.4;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    
+    .pwa-list-footer {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--text-dim);
+      border-top: 1px dashed var(--border);
+      padding-top: 6px;
+      margin-top: 4px;
+    }
+    
+    /* WhatsApp Simulated View inside phone */
+    .phone-wa-container {
+      background-color: #0b141a;
+      flex: 1;
+      margin: -12px -14px -14px;
+      padding: 16px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      background-image: radial-gradient(circle, #121b22 15%, transparent 15%);
+      background-size: 16px 16px;
+    }
+    
+    .phone-wa-bubble {
+      background-color: #005c4b;
+      color: #e9edef;
+      border-left: 3px solid #25d366;
+      padding: 10px;
+      border-radius: 0 10px 10px 10px;
+      font-family: monospace;
+      font-size: 9px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      max-width: 95%;
+      align-self: flex-start;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    
+    /* --------------------------------------------------
+       BENTO GRID FEATURES
+       -------------------------------------------------- */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    
+    .bento-card {
+      background-color: var(--bg-dark-2);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--border-radius-lg);
+      padding: 36px;
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .bento-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 0%, rgba(197, 160, 89, 0.06) 0%, rgba(0,0,0,0) 50%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+    
+    .bento-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(197, 160, 89, 0.25);
+      box-shadow: 0 10px 30px rgba(197, 160, 89, 0.05);
+    }
+    
+    .bento-card:hover::after {
+      opacity: 1;
+    }
+    
+    .bento-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--border-radius-sm);
+      background-color: rgba(197, 160, 89, 0.05);
+      border: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-light);
+      position: relative;
+      z-index: 2;
+    }
+    
+    .bento-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+    
+    .bento-info {
+      position: relative;
+      z-index: 2;
+    }
+    
+    .bento-info h3 {
+      font-size: 18px;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+    
+    .bento-info p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    /* --------------------------------------------------
+       BENEFITS SECTION (DAILY vs MANAGERIAL)
+       -------------------------------------------------- */
+    #benefits {
+      background-color: var(--bg-dark-2);
+      border-bottom: 1px solid var(--border-dark);
+    }
+    
+    .benefit-tabs-container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    
+    .benefit-nav-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 50px;
+    }
+    
+    .benefit-tab-btn {
+      background-color: transparent;
+      border: 1px solid var(--border-dark);
+      color: var(--text-secondary);
+      font-family: var(--font-heading);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 14px 30px;
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .benefit-tab-btn.active {
+      background-color: var(--gold-primary);
+      border-color: var(--gold-primary);
+      color: #000;
+      box-shadow: 0 8px 25px rgba(197, 160, 89, 0.15);
+    }
+    
+    .benefit-grid {
+      display: none;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    
+    .benefit-grid.active {
+      display: grid;
+    }
+    
+    .benefit-card {
+      background-color: var(--bg-dark-3);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--border-radius-md);
+      padding: 30px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: var(--transition);
+    }
+    
+    .benefit-card:hover {
+      border-color: rgba(197, 160, 89, 0.15);
+      transform: translateY(-2px);
+    }
+    
+    .benefit-check {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: var(--gold-glow);
+      color: var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 12.5px;
+      flex-shrink: 0;
+    }
+    
+    .benefit-card-content h3 {
+      font-size: 16.5px;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .benefit-card-content p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    
+    /* --------------------------------------------------
+       PRICING TIERS & EXPLANATION
+       -------------------------------------------------- */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 50px;
+    }
+    
+    .pricing-card {
+      background-color: var(--bg-light-1);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-lg);
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: var(--transition);
+      height: 100%;
+    }
+    
+    .pricing-card.featured {
+      background-color: #ffffff;
+      border: 2.5px solid var(--gold-primary);
+      box-shadow: 0 20px 50px rgba(197, 160, 89, 0.12);
+      transform: scale(1.03);
+      z-index: 10;
+      padding: 50px 36px;
+    }
+    
+    .pricing-badge {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold-gradient);
+      color: #000;
+      font-family: var(--font-heading);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 18px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
+    }
+    
+    .tier-header {
+      margin-bottom: 24px;
+    }
+    
+    .tier-name {
+      font-family: var(--font-heading);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-light-muted);
+      margin-bottom: 16px;
+    }
+    
+    .featured .tier-name {
+      color: var(--gold-dark);
+      font-weight: 800;
+    }
+    
+    .tier-setup {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-light-primary);
+      line-height: 1.1;
+      margin-bottom: 4px;
+      letter-spacing: -0.03em;
+    }
+    
+    .tier-setup-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-light-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .tier-divider {
+      height: 1px;
+      background-color: var(--border-light);
+      margin: 16px 0;
+      border: 0;
+    }
+    
+    .tier-retainer {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--gold-dark);
+      margin-bottom: 2px;
+    }
+    
+    .tier-retainer span {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-light-secondary);
+    }
+    
+    .tier-features {
+      list-style: none;
+      margin-top: 24px;
+      margin-bottom: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .tier-features li {
+      font-size: 13.5px;
+      color: var(--text-light-secondary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      line-height: 1.4;
+    }
+    
+    .tier-features li svg {
+      width: 16px;
+      height: 16px;
+      color: var(--gold-primary);
+      flex-shrink: 0;
+    }
+    
+    /* Pricing Explainer (Value Proposition of Setup & Retainer) */
+    .pricing-explainer {
+      background-color: var(--bg-light-3);
+      border-radius: var(--border-radius-lg);
+      padding: 40px;
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+    
+    .explainer-block h3 {
+      font-size: 18px;
+      color: var(--text-light-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .explainer-block h3 svg {
+      width: 20px;
+      height: 20px;
+      color: var(--gold-dark);
+    }
+    
+    .explainer-block p {
+      font-size: 13.5px;
+      color: var(--text-light-secondary);
+      line-height: 1.6;
+    }
+    
+    .pricing-note {
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--text-light-muted);
+      margin-top: 24px;
+    }
+    
+    /* --------------------------------------------------
+       SOCIAL PROOF / CASE STUDY TESTIMONIAL
+       -------------------------------------------------- */
+    #proof {
+      background-color: var(--bg-dark-1);
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+    
+    .proof-wrapper {
+      background-color: var(--bg-dark-2);
+      border: 1px solid var(--border-dark);
+      border-radius: var(--border-radius-lg);
+      padding: 60px;
+      position: relative;
+      overflow: hidden;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .proof-wrapper::before {
+      content: '“';
+      position: absolute;
+      top: -20px;
+      left: 40px;
+      font-family: var(--font-heading);
+      font-size: 180px;
+      color: rgba(197, 160, 89, 0.04);
+      line-height: 1;
+    }
+    
+    .proof-text {
+      font-size: 20px;
+      line-height: 1.6;
+      font-weight: 300;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .proof-text strong {
+      color: var(--gold-light);
+      font-weight: 600;
+    }
+    
+    .proof-author {
+      font-family: var(--font-heading);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-primary);
+      position: relative;
+      z-index: 2;
+    }
+    
+    /* --------------------------------------------------
+       INTERACTIVE ACCORDION FAQ
+       -------------------------------------------------- */
+    .faq-list {
+      max-width: 850px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .faq-item {
+      background-color: var(--bg-light-1);
+      border: 1px solid var(--border-light);
+      border-radius: var(--border-radius-md);
+      overflow: hidden;
+      transition: var(--transition);
+    }
+    
+    .faq-item[open] {
+      background-color: #ffffff;
+      border-color: var(--gold-primary);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.01);
+    }
+    
+    .faq-item summary {
+      padding: 24px;
+      font-family: var(--font-heading);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-light-primary);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
+    
+    .faq-item summary::-webkit-details-marker {
+      display: none;
+    }
+    
+    .faq-item summary::after {
+      content: '+';
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--text-light-muted);
+      transition: var(--transition);
+    }
+    
+    .faq-item[open] summary::after {
+      content: '−';
+      transform: rotate(180deg);
+      color: var(--gold-dark);
+    }
+    
+    .faq-content {
+      padding: 0 24px 24px;
+      font-size: 13.5px;
+      color: var(--text-light-secondary);
+      line-height: 1.6;
+      border-top: 1px solid transparent;
+    }
+    
+    .faq-item[open] .faq-content {
+      border-color: var(--border-light);
+    }
+    
+    /* --------------------------------------------------
+       CTA SECTION (FINAL CONVERSION)
+       -------------------------------------------------- */
+    #cta {
+      background: linear-gradient(180deg, var(--bg-dark-2) 0%, var(--bg-dark-1) 100%);
+      padding: 120px 0;
+      border-top: 1px solid var(--border-dark);
+      text-align: center;
+    }
+    
+    .cta-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .cta-title {
+      font-size: 44px;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+    
+    .cta-description {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-bottom: 40px;
+      max-width: 620px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .contact-info {
+      margin-top: 36px;
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    
+    .contact-item-detail {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+    
+    .contact-item-detail svg {
+      width: 18px;
+      height: 18px;
+      color: var(--gold-light);
+    }
+    
+    .contact-item-detail b {
+      color: var(--text-primary);
+    }
+    
+    /* --------------------------------------------------
+       FOOTER
+       -------------------------------------------------- */
+    footer {
+      background-color: var(--bg-dark-1);
+      border-top: 1px solid var(--border-dark);
+      padding: 40px 0;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .footer-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .footer-right {
+      text-align: right;
+      line-height: 1.6;
+    }
+    
+    /* --------------------------------------------------
+       FLOATING WHATSAPP BUTTON
+       -------------------------------------------------- */
+    .whatsapp-float {
+      position: fixed;
+      bottom: 40px;
+      right: 40px;
+      width: 60px;
+      height: 60px;
+      background-color: #25d366;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+      z-index: 999;
+      transition: var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    
+    .whatsapp-float:hover {
+      transform: scale(1.1) translateY(-3px);
+      box-shadow: 0 15px 30px rgba(37, 211, 102, 0.45);
+    }
+    
+    .whatsapp-float svg {
+      width: 32px;
+      height: 32px;
+      fill: #ffffff;
+    }
+    
+    .whatsapp-badge-pulse {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 12px;
+      height: 12px;
+      background-color: #eb5e55;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      animation: pulse 2.5s infinite;
+    }
+    
+    /* Dynamic Printed RAB Preview Modal */
+    .rab-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .rab-modal-content {
+      background-color: #ffffff;
+      color: #333333;
+      width: 100%;
+      max-width: 650px;
+      border-radius: var(--border-radius-md);
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .rab-modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+    
+    .rab-modal-close:hover {
+      color: #111;
+    }
+    
+    .rab-doc {
+      font-family: 'Courier New', Courier, monospace;
+    }
+    
+    .rab-doc-title {
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      text-align: center;
+      border-bottom: 2px solid #000000;
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .rab-doc-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+    
+    .rab-doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    
+    .rab-doc-table th, .rab-doc-table td {
+      border: 1px solid #cccccc;
+      padding: 8px;
+      text-align: left;
+      font-size: 11px;
+    }
+    
+    .rab-doc-table th {
+      background-color: #f2f2f2;
+      font-weight: 700;
+    }
+    
+    .rab-doc-total {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 13px;
+      font-weight: 700;
+      border-top: 2px solid #000000;
+      padding-top: 10px;
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(37, 211, 102, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+      }
+    }
+    
+    .fade-in-up {
+      animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Toast Alert inside simulator */
+    .sim-toast {
+      position: absolute;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      background-color: #27ae60;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 100;
+      box-shadow: 0 10px 25px rgba(39, 174, 96, 0.3);
+    }
+    
+    .sim-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Simulator interaktif diganti tombol demo langsung */
+    #simulator { display: none !important; }
+    .demo-feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 880px; margin: 0 auto 44px; }
+    .demo-feature-item { display: flex; gap: 14px; align-items: flex-start; background-color: var(--bg-dark-2); border: 1px solid var(--border-dark); border-radius: var(--border-radius-md); padding: 22px; }
+    .demo-feature-item .dfi-emoji { font-size: 22px; line-height: 1; flex-shrink: 0; }
+    .demo-feature-item h3 { font-size: 15.5px; color: var(--text-primary); margin-bottom: 4px; }
+    .demo-feature-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    @media (max-width: 768px) { .demo-feature-grid { grid-template-columns: 1fr; } }
+
+    /* --------------------------------------------------
+       RESPONSIVE / MOBILE BREAKPOINTS
+       -------------------------------------------------- */
+    @media (max-width: 1024px) {
+      section { padding: 80px 0; }
+      .hero-title { font-size: 44px; }
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      .sim-wrapper { grid-template-columns: 1fr; }
+      .sim-control-panel { border-right: none; border-bottom: 1px solid var(--border-dark); }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 460px; margin-left: auto; margin-right: auto; gap: 32px; }
+      .pricing-card.featured { transform: none; order: -1; }
+    }
+
+    @media (max-width: 768px) {
+      section { padding: 60px 0; }
+      .container { padding: 0 18px; }
+      .section-header { margin-bottom: 40px; }
+      .section-title { font-size: 28px; }
+      #hero { padding-top: 130px; padding-bottom: 70px; }
+      .hero-title { font-size: 33px; }
+      .hero-description { font-size: 15.5px; }
+      .contrast-grid { grid-template-columns: 1fr; gap: 18px; }
+      .contrast-panel { padding: 28px 22px; }
+      .bento-grid { grid-template-columns: 1fr; gap: 16px; }
+      .bento-card { padding: 28px; }
+      .benefit-grid { grid-template-columns: 1fr; gap: 16px; }
+      .benefit-nav-tabs { flex-direction: column; gap: 10px; margin-bottom: 32px; }
+      .benefit-card { padding: 24px; }
+      .pricing-explainer { grid-template-columns: 1fr; gap: 28px; padding: 28px; }
+      .proof-wrapper { padding: 36px 24px; }
+      .proof-text { font-size: 16px; }
+      .cta-title { font-size: 32px; }
+      .contact-info { gap: 16px; }
+      .footer-container { flex-direction: column; text-align: center; }
+      .footer-right { text-align: center; }
+      .status-badge { display: none; }
+      .nav-cta .btn { padding: 9px 16px; font-size: 11px; }
+      .sim-control-panel { padding: 28px 24px; }
+      .sim-output-panel { padding: 28px 18px; }
+      .whatsapp-float { bottom: 20px; right: 20px; width: 52px; height: 52px; }
+      .whatsapp-float svg { width: 26px; height: 26px; }
+      .rab-modal-content { padding: 28px 20px; }
+      .rab-doc-meta { grid-template-columns: 1fr; gap: 8px; }
+    }
+
+    @media (max-width: 420px) {
+      .hero-title { font-size: 28px; }
+      .section-title { font-size: 24px; }
+      .hero-philosophy { font-size: 12.5px; }
+      .phone-mockup { max-width: 270px; height: 500px; }
+      .sim-tabs { flex-wrap: wrap; }
+      .logo-tagline { display: none; }
+      .tier-setup { font-size: 30px; }
+      .nav-container { height: 60px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="container nav-container">
+      <a href="#" class="logo">
+        <span class="logo-mark"></span>
+        <div class="logo-text-wrapper">
+          <span class="logo-text">RAPI</span>
+          <span class="logo-tagline">Rekap &amp; Arsip Progress Inti</span>
+        </div>
+      </a>
+      
+      <div class="nav-right">
+        <div class="status-badge">
+          <span class="status-dot"></span>
+          <span>Sistem Aktif &amp; Siap Deploy</span>
+        </div>
+        <div class="nav-cta">
+          <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20demo%20sistem%20RAPI%20untuk%20studio%20interior" class="btn btn-primary" style="padding: 10px 20px; font-size: 12px;">
+            <svg class="wa-btn-icon" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+            Mulai Pilot 14 Hari
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main>
+    
+    <!-- HERO SECTION -->
+    <section id="hero" class="section-dark">
+      <div class="container">
+        <div class="hero-content fade-in-up">
+          <span class="eyebrow">Solusi Manajemen Proyek Studio Interior</span>
+          <h1 class="hero-title">
+            Pantau Proyek, Komplain, &amp; RAB <br>
+            <span class="gradient-text">Tanpa Ribet Spreadsheet</span>
+          </h1>
+          <div class="hero-philosophy">
+            <span>Satu database, satu update untuk semua.</span>
+          </div>
+          <p class="hero-description">
+            Satu aplikasi siap-pakai untuk mencatat pekerjaan, melacak komplain, dan menyusun RAB otomatis — dioperasikan langsung dari HP lapangan. Tim tetap menerima rekap WhatsApp harian secara natural, sementara Anda memiliki satu sumber database terpusat yang rapi dan terstruktur.
+          </p>
+          <div class="btn-group">
+            <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20pilot%2014%20hari%20sistem%20RAPI%20untuk%20studio%20interior" class="btn btn-primary">
+              <svg class="wa-btn-icon" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+              Mulai Pilot 14 Hari — Free
+            </a>
+            <a href="#demo" class="btn btn-secondary">Coba Demo Aplikasi</a>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- THE CONTRAST SECTION (BEFORE VS AFTER) -->
+    <section id="contrast" class="section-dark">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Perbandingan Sistem</span>
+          <h2 class="section-title">Hentikan Kekacauan Manual</h2>
+          <p class="section-subtitle">Bagaimana RAPI membebaskan waktu Anda dengan mengubah kekacauan koordinasi menjadi alur kerja satu pintu yang tenang dan terstruktur.</p>
+        </div>
+        
+        <div class="contrast-grid">
+          <!-- Before Panel -->
+          <div class="contrast-panel before">
+            <span class="panel-tag">Cara Lama (Friction)</span>
+            <h3 class="panel-title">Pengelolaan Manual &amp; Tersebar</h3>
+            <div class="contrast-list">
+              <div class="contrast-item">
+                <div class="contrast-indicator">✕</div>
+                <div class="contrast-text">
+                  <h4>Komplain Nyebar &amp; Tercecer</h4>
+                  <p>Aduan klien masuk lewat chat pribadi, lisan di lokasi, atau kertas corat-coret. Sangat rawan hilang dan terlupakan.</p>
+                </div>
+              </div>
+              <div class="contrast-item">
+                <div class="contrast-indicator">✕</div>
+                <div class="contrast-text">
+                  <h4>Catatan Pekerjaan Tidak Seragam</h4>
+                  <p>Masing-masing pekerja lapangan menulis progres dengan format berbeda-beda, membuat admin bingung mencocokkan data.</p>
+                </div>
+              </div>
+              <div class="contrast-item">
+                <div class="contrast-indicator">✕</div>
+                <div class="contrast-text">
+                  <h4>Buta Progres Lapangan</h4>
+                  <p>Tidak ada yang tahu secara pasti: <em>siapa mengerjakan apa, dan sampai mana?</em> Harus menelepon satu per satu setiap sore.</p>
+                </div>
+              </div>
+              <div class="contrast-item">
+                <div class="contrast-indicator">✕</div>
+                <div class="contrast-text">
+                  <h4>RAB &amp; Checklist Proyek Baru dari Nol</h4>
+                  <p>Setiap ada proyek selesai atau baru, harus menyusun rincian anggaran belanja dan daftar centang kerja dari awal di Excel.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- After Panel -->
+          <div class="contrast-panel after">
+            <span class="panel-tag">Cara RAPI (Flow)</span>
+            <h3 class="panel-title">Sistem RAPI Terpadu</h3>
+            <div class="contrast-list">
+              <div class="contrast-item">
+                <div class="contrast-indicator">✓</div>
+                <div class="contrast-text">
+                  <h4>1 Pintu Input Komplain</h4>
+                  <p>Semua komplain dicatat instan lewat form terpadu, otomatis memiliki ID komplain resmi, dan berstatus awal "Pending".</p>
+                </div>
+              </div>
+              <div class="contrast-item">
+                <div class="contrast-indicator">✓</div>
+                <div class="contrast-text">
+                  <h4>Pencatatan Pekerjaan Format RAB</h4>
+                  <p>Tim lapangan menginput data terstandardisasi (dropdown nama, proyek, volume, satuan, harga) lewat satu aplikasi di HP.</p>
+                </div>
+              </div>
+              <div class="contrast-item">
+                <div class="contrast-indicator">✓</div>
+                <div class="contrast-text">
+                  <h4>Otomatisasi Laporan &amp; WhatsApp</h4>
+                  <p>Dari input → database Google Sheet → notifikasi WhatsApp → status update, semua berjalan secara sistematis tanpa rekap manual.</p>
+                </div>
+              </div>
+              <div class="contrast-item">
+                <div class="contrast-indicator">✓</div>
+                <div class="contrast-text">
+                  <h4>RAB &amp; Laporan Instan</h4>
+                  <p>Pilih proyek, dan sistem akan langsung menarik data pekerjaan yang sudah diinput untuk digenerate menjadi RAB siap cetak / PDF.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- PLAYABLE 2-WEBSITE SIMULATOR -->
+    <section id="simulator" class="section-dark">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Playable App Simulator</span>
+          <h2 class="section-title">Coba Langsung Aplikasinya</h2>
+          <p class="section-subtitle">Operasikan langsung di dalam mockup handphone — meniru aplikasi PWA asli v5. Catat pekerjaan, lapor komplain, pantau dashboard, ubah status real-time, dan uji rekap WhatsApp otomatis.</p>
+        </div>
+        
+        <div class="sim-wrapper">
+          
+          <!-- Control Panel (Left Side) -->
+          <div class="sim-control-panel">
+            <div class="sim-toast" id="simToast">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+              <span id="simToastText">Data Tersimpan ke Google Sheet!</span>
+            </div>
+            
+            <div>
+              <div class="sim-header">
+                <h3>RAPI Control Hub</h3>
+                <p>Gunakan tombol navigasi eksternal atau operasikan langsung layar handphone di sebelah kanan.</p>
+              </div>
+              
+              <!-- Tab Navigation (External Controller) -->
+              <div class="sim-tabs">
+                <button class="sim-tab-btn active" id="btnTabHome" onclick="pwaGoHome()">1. PWA Home Menu</button>
+                <button class="sim-tab-btn" id="btnTab1" onclick="pwaNavigateTo('pwa-dashboard')">2. Dashboard</button>
+                <button class="sim-tab-btn" id="btnTab2" onclick="pwaNavigateTo('pwa-pekerjaan')">3. Catat Pekerjaan</button>
+                <button class="sim-tab-btn" id="btnTab3" onclick="pwaNavigateTo('pwa-laporan')">4. Rekap &amp; RAB</button>
+              </div>
+              
+              <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 14.5px; color: var(--text-primary); margin-bottom: 8px;">Cara Kerja Emulator</h4>
+                <ul style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; padding-left: 20px;">
+                  <li>Layar kanan mensimulasikan webform PWA asli berbasis <strong>Sora &amp; Playfair</strong> typography.</li>
+                  <li>Anda dapat mengklik tombol menu di layar handphone seperti menggunakan aplikasi nyata.</li>
+                  <li>Coba masuk ke menu <strong>Catat Pekerjaan</strong> di layar handphone, isi form volume &amp; harga, lalu submit untuk melihat sinkronisasi otomatis.</li>
+                  <li>Di menu <strong>Cek Pekerjaan</strong>, klik badge status tugas untuk mengubahnya secara real-time.</li>
+                </ul>
+              </div>
+              
+              <div style="background-color: var(--bg-dark-3); border: 1px solid var(--border-dark); padding: 14px; border-radius: var(--border-radius-sm); font-size: 12px; color: var(--gold-light);">
+                💡 <strong>Kekuatan 1 Database:</strong> Mengubah status pekerjaan di layar handphone langsung meng-update metrik Dashboard Google Sheet secara instan!
+              </div>
+            </div>
+            
+            <div style="font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-dark); padding-top: 20px; margin-top: 30px;">
+              *Sistem ini mereplikasi alur n8n dan Google Sheets v5 secara persis menggunakan arsitektur frontend modular.
+            </div>
+          </div>
+          
+          <!-- Phone View (Right Side) -->
+          <div class="sim-output-panel">
+            
+            <div class="phone-mockup" id="phoneMockupContainer">
+              <div class="phone-notch"></div>
+              
+              <div class="phone-screen" id="phoneScreen">
+                <!-- PWA Topbar Line -->
+                <div class="pwa-top-bar"></div>
+                
+                <!-- Phone Header / Status Bar -->
+                <div class="phone-nav" style="padding: 10px 14px 4px; margin-bottom: 0;">
+                  <span>📶 Manajemen Proyek</span>
+                  <span id="phoneTime">15:42 WIB</span>
+                </div>
+                
+                <!-- SCREEN 1: PWA HOME MENU -->
+                <div class="pwa-screen active" id="pwa-home">
+                  <div class="pwa-header">
+                    <div class="pwa-logo-monogram">R</div>
+                    <div class="pwa-eyebrow">Sistem Manajemen Proyek</div>
+                    <h2 class="pwa-title">Manajemen<br><em>Proyek</em></h2>
+                    <p class="pwa-sub">Catat · Pantau · Rencanakan</p>
+                  </div>
+                  
+                  <div class="pwa-menu-list">
+                    <!-- Menu 1: Dashboard -->
+                    <div class="pwa-menu-card" onclick="pwaNavigateTo('pwa-dashboard')">
+                      <div class="pwa-menu-icon">📊</div>
+                      <div class="pwa-menu-info">
+                        <div class="pwa-menu-label">Dashboard Monitoring</div>
+                        <div class="pwa-menu-desc">KPI, progres &amp; status proyek</div>
+                      </div>
+                      <div class="pwa-menu-arrow">›</div>
+                    </div>
+                    
+                    <!-- Menu 2: Catat Pekerjaan -->
+                    <div class="pwa-menu-card" onclick="pwaNavigateTo('pwa-pekerjaan')">
+                      <div class="pwa-menu-icon">✍️</div>
+                      <div class="pwa-menu-info">
+                        <div class="pwa-menu-label">Catat Pekerjaan</div>
+                        <div class="pwa-menu-desc">Input progres format RAB</div>
+                      </div>
+                      <div class="pwa-menu-arrow">›</div>
+                    </div>
+                    
+                    <!-- Menu 3: Catat Komplain -->
+                    <div class="pwa-menu-card" onclick="pwaNavigateTo('pwa-komplain')">
+                      <div class="pwa-menu-icon">⚠️</div>
+                      <div class="pwa-menu-info">
+                        <div class="pwa-menu-label">Catat Komplain</div>
+                        <div class="pwa-menu-desc">Lapor temuan &amp; kendala lapangan</div>
+                      </div>
+                      <div class="pwa-menu-arrow">›</div>
+                    </div>
+                    
+                    <!-- Menu 4: Cek Pekerjaan -->
+                    <div class="pwa-menu-card" onclick="pwaNavigateTo('pwa-cek')">
+                      <div class="pwa-menu-icon">🔍</div>
+                      <div class="pwa-menu-info">
+                        <div class="pwa-menu-label">Cek Pekerjaan</div>
+                        <div class="pwa-menu-desc">Lihat list pekerjaan &amp; update status</div>
+                      </div>
+                      <div class="pwa-menu-arrow">›</div>
+                    </div>
+                    
+                    <!-- Menu 5: Laporan & Rekap WA -->
+                    <div class="pwa-menu-card" onclick="pwaNavigateTo('pwa-laporan')">
+                      <div class="pwa-menu-icon">📄</div>
+                      <div class="pwa-menu-info">
+                        <div class="pwa-menu-label">Generate RAB / Checklist</div>
+                        <div class="pwa-menu-desc">Buat dokumen RAB dan checklist lapangan</div>
+                      </div>
+                      <div class="pwa-menu-arrow">›</div>
+                    </div>
+                  </div>
+                  
+                  <div style="text-align: center; font-size: 9.5px; color: var(--text-dim); margin-top: 24px; padding-bottom: 10px;">
+                    <strong>Manajemen Proyek</strong> · v5
+                  </div>
+                </div>
+                
+                <!-- SCREEN 2: PWA DASHBOARD -->
+                <div class="pwa-screen" id="pwa-dashboard">
+                  <div class="pwa-screen-topbar">
+                    <button class="pwa-back-btn" onclick="pwaGoHome()">← Menu</button>
+                    <div class="pwa-screen-title">Dashboard</div>
+                  </div>
+                  
+                  <!-- Live Metrics Grid -->
+                  <div class="pwa-kpi-grid">
+                    <div class="pwa-kpi-card">
+                      <span>Proyek</span>
+                      <b id="pwaKpiProj">3 Aktif</b>
+                    </div>
+                    <div class="pwa-kpi-card">
+                      <span>Pending</span>
+                      <b id="pwaKpiComp">2 Tiket</b>
+                    </div>
+                    <div class="pwa-kpi-card">
+                      <span>Selesai</span>
+                      <b id="pwaKpiDone">3 Tugas</b>
+                    </div>
+                  </div>
+                  
+                  <!-- Recent Activity Card -->
+                  <div class="pwa-card" style="padding: 12px 14px;">
+                    <div class="pwa-sec-label" style="margin-bottom: 8px;">Aktivitas Terakhir</div>
+                    <div style="font-size: 11px; line-height: 1.4; color: var(--text-muted);" id="pwaRecentActivity">
+                      <!-- Rendered by JS -->
+                    </div>
+                  </div>
+                  
+                  <button class="pwa-btn-submit" style="margin-top: 6px;" onclick="pwaNavigateTo('pwa-cek')">Lihat Semua Progres</button>
+                </div>
+                
+                <!-- SCREEN 3: PWA CATAT PEKERJAAN -->
+                <div class="pwa-screen" id="pwa-pekerjaan">
+                  <div class="pwa-screen-topbar">
+                    <button class="pwa-back-btn" onclick="pwaGoHome()">← Menu</button>
+                    <div class="pwa-screen-title">Catat Kerja</div>
+                  </div>
+                  
+                  <div class="pwa-card" style="padding: 14px 12px;">
+                    <div class="pwa-sec-label">Progres Proyek</div>
+                    <form onsubmit="submitPWAPekerjaan(event)">
+                      <div class="pwa-field">
+                        <label class="pwa-label">Nama Pekerja</label>
+                        <select class="pwa-select" id="pwaPkjWorker">
+                          <option value="Rizal Hakim">Rizal Hakim</option>
+                          <option value="Yusuf Maulana">Yusuf Maulana</option>
+                          <option value="Bayu Pratama">Bayu Pratama</option>
+                        </select>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Pilih Proyek</label>
+                        <select class="pwa-select" id="pwaPkjProj">
+                          <option value="Rumah Kebun Jeruk">Rumah Kebun Jeruk</option>
+                          <option value="Apartemen PIK">Apartemen PIK</option>
+                          <option value="Kantor Pondok Indah">Kantor Pondok Indah</option>
+                        </select>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Deskripsi Pekerjaan</label>
+                        <input type="text" class="pwa-input" id="pwaPkjDesc" placeholder="Contoh: Pemasangan kisi-kisi kayu foyer" required>
+                      </div>
+                      
+                      <div class="pwa-field-row">
+                        <div class="pwa-field">
+                          <label class="pwa-label">Volume</label>
+                          <input type="number" class="pwa-input" id="pwaPkjVol" value="10" min="1" oninput="calculatePWATotal()">
+                        </div>
+                        <div class="pwa-field">
+                          <label class="pwa-label">Satuan</label>
+                          <select class="pwa-select" id="pwaPkjUnit">
+                            <option value="m2">m2</option>
+                            <option value="m'">m'</option>
+                            <option value="Unit">Unit</option>
+                            <option value="Lot">Lot</option>
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Harga Satuan (Rp)</label>
+                        <input type="number" class="pwa-input" id="pwaPkjPrice" value="250000" min="0" step="5000" oninput="calculatePWATotal()">
+                      </div>
+                      
+                      <div style="background: var(--surface-2); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 11.5px; font-weight: 700; color: var(--gold); text-align: right; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                        <span>Total:</span>
+                        <span id="pwaPkjTotalLabel">Rp 2.500.000</span>
+                      </div>
+                      
+                      <button type="submit" class="pwa-btn-submit">Simpan ke Google Sheet</button>
+                    </form>
+                  </div>
+                </div>
+                
+                <!-- SCREEN 4: PWA CATAT KOMPLAIN -->
+                <div class="pwa-screen" id="pwa-komplain">
+                  <div class="pwa-screen-topbar">
+                    <button class="pwa-back-btn" onclick="pwaGoHome()">← Menu</button>
+                    <div class="pwa-screen-title">Lapor Komplain</div>
+                  </div>
+                  
+                  <div class="pwa-card" style="padding: 14px 12px;">
+                    <div class="pwa-sec-label">Data Temuan Lapangan</div>
+                    <form onsubmit="submitPWAKomplain(event)">
+                      <div class="pwa-field">
+                        <label class="pwa-label">Pilih Proyek</label>
+                        <select class="pwa-select" id="pwaCmpProj">
+                          <option value="Rumah Kebun Jeruk">Rumah Kebun Jeruk</option>
+                          <option value="Apartemen PIK">Apartemen PIK</option>
+                          <option value="Kantor Pondok Indah">Kantor Pondok Indah</option>
+                        </select>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Nama Pekerja (PIC)</label>
+                        <select class="pwa-select" id="pwaCmpWorker">
+                          <option value="Rizal Hakim">Rizal Hakim</option>
+                          <option value="Yusuf Maulana">Yusuf Maulana</option>
+                          <option value="Bayu Pratama">Bayu Pratama</option>
+                        </select>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Deskripsi Komplain</label>
+                        <textarea class="pwa-textarea" id="pwaCmpDesc" placeholder="Contoh: Sambungan wallpaper ruang keluarga renggang" required></textarea>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Lokasi / Area Spasifik</label>
+                        <input type="text" class="pwa-input" id="pwaCmpLoc" placeholder="Contoh: Kamar Utama Lantai 2" required>
+                      </div>
+                      
+                      <div class="pwa-field">
+                        <label class="pwa-label">Prioritas Komplain</label>
+                        <select class="pwa-select" id="pwaCmpPriority">
+                          <option value="Tinggi">⚠️ Tinggi (Urgent)</option>
+                          <option value="Sedang">Sedang</option>
+                          <option value="Rendah">Rendah</option>
+                        </select>
+                      </div>
+                      
+                      <button type="submit" class="pwa-btn-submit">Kirim Laporan Komplain</button>
+                    </form>
+                  </div>
+                </div>
+                
+                <!-- SCREEN 5: PWA CEK PEKERJAAN & STATUS -->
+                <div class="pwa-screen" id="pwa-cek">
+                  <div class="pwa-screen-topbar">
+                    <button class="pwa-back-btn" onclick="pwaGoHome()">← Menu</button>
+                    <div class="pwa-screen-title">Cek Pekerjaan</div>
+                  </div>
+                  
+                  <div style="font-size: 9px; color: var(--text-dim); text-align: center; margin-bottom: 8px; font-weight: 500;">
+                    💡 Tips: Klik badge status untuk mengubah status kerja secara instan!
+                  </div>
+                  
+                  <div class="pwa-list" id="pwaTicketList">
+                    <!-- Rendered dynamically by JS -->
+                  </div>
+                </div>
+                
+                <!-- SCREEN 6: PWA REKAP & LAPORAN -->
+                <div class="pwa-screen" id="pwa-laporan">
+                  <div class="pwa-screen-topbar">
+                    <button class="pwa-back-btn" onclick="pwaGoHome()">← Menu</button>
+                    <div class="pwa-screen-title">Rekap &amp; Laporan</div>
+                  </div>
+                  
+                  <div class="pwa-card" style="padding: 14px 12px; margin-bottom: 8px;">
+                    <div class="pwa-sec-label">Notifikasi Otomatis</div>
+                    <p style="font-size: 11.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+                      Simulasikan pengiriman to-do list harian otomatis ke WhatsApp tim mandor Anda.
+                    </p>
+                    <button class="pwa-btn-submit" style="background-color: #27ae60; color: white;" onclick="pwaTriggerWhatsApp()">Kirim Rekap WA Sekarang</button>
+                  </div>
+                  
+                  <div class="pwa-card" style="padding: 14px 12px;">
+                    <div class="pwa-sec-label">Generate RAB Proyek</div>
+                    <p style="font-size: 11.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 12px;">
+                      Tarik seluruh database progres pekerjaan menjadi dokumen RAB terperinci siap cetak.
+                    </p>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <button class="pwa-btn-submit" style="background: var(--surface-2); color: var(--text); border: 1px solid var(--border);" onclick="pwaTriggerRAB('Rumah Kebun Jeruk')">Cetak RAB Kebun Jeruk</button>
+                      <button class="pwa-btn-submit" style="background: var(--surface-2); color: var(--text); border: 1px solid var(--border);" onclick="pwaTriggerRAB('Apartemen PIK')">Cetak RAB Apartemen PIK</button>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- SCREEN 7: SIMULATED WHATSAPP VIEW -->
+                <div class="pwa-screen" id="pwa-wa" style="padding: 0;">
+                  <div class="pwa-screen-topbar" style="padding: 10px 14px; background-color: #128c7e; border-bottom: none; margin-bottom: 0;">
+                    <button class="pwa-back-btn" style="color: #ffffff;" onclick="pwaNavigateTo('pwa-laporan')">← Laporan</button>
+                    <div class="pwa-screen-title" style="color: #ffffff; padding-right: 50px;">WhatsApp Rekap</div>
+                  </div>
+                  
+                  <div class="phone-wa-container" id="pwaWaChatScreen">
+                    <!-- Rendered dynamically by JS -->
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+            
+          </div>
+          
+        </div>
+      </div>
+    </section>
+    
+    <!-- DEMO ACCESS SECTION (pengganti simulator) -->
+    <section id="demo" class="section-dark">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Coba Langsung</span>
+          <h2 class="section-title">Lihat Aplikasinya Bekerja</h2>
+          <p class="section-subtitle">Ringkasan tiap menu di aplikasi ada di bawah. Ingin mencoba sendiri? Buka demo langsung — berjalan penuh dengan data contoh, tanpa instal dan tanpa daftar.</p>
+        </div>
+
+        <div class="demo-feature-grid">
+          <div class="demo-feature-item">
+            <span class="dfi-emoji">📊</span>
+            <div><h3>Dashboard Monitoring</h3><p>KPI semua proyek dalam satu layar — proyek aktif, tiket pending, tugas selesai, plus aktivitas terbaru.</p></div>
+          </div>
+          <div class="demo-feature-item">
+            <span class="dfi-emoji">✍️</span>
+            <div><h3>Catat Pekerjaan</h3><p>Input progres format RAB: pilih pekerja &amp; proyek, isi volume, satuan, dan harga — total dihitung otomatis lalu tersimpan.</p></div>
+          </div>
+          <div class="demo-feature-item">
+            <span class="dfi-emoji">⚠️</span>
+            <div><h3>Catat Komplain</h3><p>Lapor temuan lapangan dengan lokasi &amp; prioritas. Otomatis dapat ID komplain resmi dan berstatus awal "Pending".</p></div>
+          </div>
+          <div class="demo-feature-item">
+            <span class="dfi-emoji">🔍</span>
+            <div><h3>Cek Pekerjaan</h3><p>Cari pekerjaan &amp; komplain per proyek atau pekerja, lalu ubah status Pending → Proses → Selesai secara real-time.</p></div>
+          </div>
+          <div class="demo-feature-item">
+            <span class="dfi-emoji">📄</span>
+            <div><h3>Generate RAB / Checklist</h3><p>Pilih proyek, sistem menarik seluruh data pekerjaan menjadi dokumen RAB &amp; checklist lapangan siap cetak / PDF.</p></div>
+          </div>
+          <div class="demo-feature-item">
+            <span class="dfi-emoji">💬</span>
+            <div><h3>Rekap WhatsApp Otomatis</h3><p>Ringkasan progres &amp; komplain dikelompokkan per proyek, terkirim otomatis ke WhatsApp tim setiap pagi.</p></div>
+          </div>
+        </div>
+
+        <div style="text-align: center;">
+          <a href="https://catat.chatminagent.workers.dev/#home" target="_blank" rel="noopener" class="btn btn-primary" style="font-size: 15px; padding: 16px 36px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Buka Demo Aplikasi
+          </a>
+          <p style="margin-top: 16px; font-size: 12.5px; color: var(--text-muted);">Paling pas dibuka langsung di HP · mode demo, data contoh, aman dicoba.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES SECTION (BENTO GRID) -->
+    <section id="features" class="section-dark" style="background-color: var(--bg-dark-2); border-bottom: 1px solid var(--border-dark);">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Fitur Lengkap</span>
+          <h2 class="section-title">Satu Aplikasi &amp; Otomasi Penuh</h2>
+          <p class="section-subtitle">Sistem minimalis berkinerja tinggi yang didesain khusus untuk kebutuhan harian studio interior.</p>
+        </div>
+        
+        <div class="bento-grid">
+          <!-- Card 1 -->
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+            </div>
+            <div class="bento-info">
+              <h3>Dashboard Monitoring</h3>
+              <p>Pantau progres, komplain, dan realisasi RAB seluruh proyek dalam satu layar — langsung dari HP lapangan.</p>
+            </div>
+          </div>
+          
+          <!-- Card 2 -->
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="bento-info">
+              <h3>Catat Pekerjaan &amp; Komplain</h3>
+              <p>Input progres terstandardisasi format RAB dan laporan komplain lapangan, langsung dari handphone tim.</p>
+            </div>
+          </div>
+          
+          <!-- Card 3 -->
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="bento-info">
+              <h3>Real-Time WhatsApp Notify</h3>
+              <p>Mengirimkan notifikasi WhatsApp instan ke pekerja begitu ada komplain baru, serta rekap agenda otomatis tiap pagi.</p>
+            </div>
+          </div>
+          
+          <!-- Card 4 -->
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div class="bento-info">
+              <h3>RAB &amp; Laporan Instan</h3>
+              <p>Menyusun rencana anggaran biaya (RAB) dan checklist lapangan siap cetak atau PDF dalam hitungan detik berdasarkan data input.</p>
+            </div>
+          </div>
+          
+          <!-- Card 5 -->
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="bento-info">
+              <h3>Arsip Otomatis Google Drive</h3>
+              <p>Setiap foto progres lapangan otomatis diunggah langsung ke Drive studio Anda, aman dan tidak menyumbat memori HP tim.</p>
+            </div>
+          </div>
+          
+          <!-- Card 6 -->
+          <div class="bento-card">
+            <div class="bento-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+            </div>
+            <div class="bento-info">
+              <h3>Google Sheets Terpusat</h3>
+              <p>1 database terpusat yang terstruktur aman. Memudahkan penyaringan status proyek, prioritas, dan ekspor data kapan saja.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- BENEFITS SECTION (DAILY vs MANAGERIAL) -->
+    <section id="benefits" class="section-dark">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Mengapa Memilih RAPI?</span>
+          <h2 class="section-title">Nilai Tambah Harian &amp; Manajerial</h2>
+          <p class="section-subtitle">Bagaimana RAPI mendisiplinkan alur kerja operasional tim lapangan sekaligus menjaga profitabilitas kendali manajemen.</p>
+        </div>
+        
+        <div class="benefit-tabs-container">
+          <!-- Benefit Tabs Nav -->
+          <div class="benefit-nav-tabs">
+            <button class="benefit-tab-btn active" onclick="switchBenefitTab('benefit-daily', this)">Manfaat Harian Tim</button>
+            <button class="benefit-tab-btn" onclick="switchBenefitTab('benefit-managerial', this)">Manfaat Manajerial Owner</button>
+          </div>
+          
+          <!-- Benefit Tab 1: Daily -->
+          <div class="benefit-grid active" id="benefit-daily">
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Kejelasan Tugas Harian Pekerja</h3>
+                <p>Pekerja tahu persis apa saja yang harus dikerjakan hari ini berkat to-do list harian WhatsApp otomatis yang masuk tiap pukul 08.00 WIB.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Pembaruan Mandiri Pekerja</h3>
+                <p>Tenaga lapangan dapat langsung memperbarui progres pekerjaan mereka secara mandiri dari lokasi proyek tanpa harus menunggu ditanya.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>ID Resmi untuk Setiap Laporan</h3>
+                <p>Setiap temuan atau aduan komplain terdaftar dengan ID unik resmi sistem, memastikan tidak ada laporan yang hilang di tengah chat.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Prioritas Nyata Berbasis Data</h3>
+                <p>Tim operasional langsung tahu mana masalah kritis (*high priority*) yang harus diselesaikan dulu, bukan sekadar berdasarkan tebakan perasaan.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Benefit Tab 2: Managerial -->
+          <div class="benefit-grid" id="benefit-managerial">
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Visibility Tanpa Batas</h3>
+                <p>Cukup buka dashboard Google Sheet atau rekap harian WA untuk melihat kondisi seluruh proyek tanpa perlu menghubungi tim satu per satu.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Evaluasi Performa &amp; Bottleneck</h3>
+                <p>Dengan histori status terperinci dan pengingat reminder otomatis, Anda tahu pekerja mana yang lambat atau menjadi penghambat proyek.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Deteksi Akar Masalah (Root Cause)</h3>
+                <p>Analisis kategori proyek membantu mendeteksi jika suatu proyek sering bermasalah di area tertentu untuk evaluasi vendor masa depan.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <div class="benefit-check">✓</div>
+              <div class="benefit-card-content">
+                <h3>Handover Proyek Sangat Mudah</h3>
+                <p>Seluruh riwayat perkembangan tercatat rapi di database cloud, bukan di handphone karyawan, sehingga staf baru bisa langsung beradaptasi.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- PRICING SECTION -->
+    <section id="pricing" class="section-light">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Paket Kemitraan</span>
+          <h2 class="section-title">Investasi yang Terukur &amp; Terjangkau</h2>
+          <p class="section-subtitle" style="color: var(--text-light-secondary);">Harga terjangkau, terima beres — biaya server &amp; WhatsApp sudah termasuk. Lebih hemat dibanding software SaaS sejenis yang Rp 15–40 jt/tahun. Minimum kontrak 3 bulan.</p>
+        </div>
+        
+        <div class="pricing-grid">
+          <!-- Tier 1 -->
+          <div class="pricing-card">
+            <div class="tier-header">
+              <div class="tier-name">RAPI Basic</div>
+              <div class="tier-setup">Rp 5.000.000</div>
+              <div class="tier-setup-label">Biaya Setup (Sekali)</div>
+              <hr class="tier-divider">
+              <div class="tier-retainer">Rp 750.000 <span>/ bulan</span></div>
+              <p style="font-size: 11px; color: var(--text-light-muted); margin-top: 2px;">Langganan &amp; Perawatan</p>
+            </div>
+            <ul class="tier-features">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <strong>s/d 15 proyek aktif</strong></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <strong>Setup Aplikasi Manajemen Proyek</strong></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Konfigurasi n8n (72 node, 10 endpoint)</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Setup Google Sheets (7 tab terstruktur)</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Koneksi Google Drive (lampiran otomatis)</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Integrasi WhatsApp (via Kirimi.id)</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Panduan Penggunaan Tim</li>
+            </ul>
+            <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20paket%20Basic%20sistem%20RAPI%20untuk%20studio%20interior" class="btn btn-light-secondary" style="width: 100%;">
+              <svg class="wa-btn-icon" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+              Pilih Paket Basic
+            </a>
+          </div>
+          
+          <!-- Tier 2 (Featured) -->
+          <div class="pricing-card featured">
+            <span class="pricing-badge">Paling Direkomendasikan</span>
+            <div class="tier-header">
+              <div class="tier-name">RAPI Full</div>
+              <div class="tier-setup">Rp 5.000.000</div>
+              <div class="tier-setup-label">Biaya Setup (Sekali)</div>
+              <hr class="tier-divider">
+              <div class="tier-retainer">Rp 1.000.000 <span>/ bulan</span></div>
+              <p style="font-size: 11px; color: var(--text-light-muted); margin-top: 2px;">Langganan &amp; Perawatan</p>
+            </div>
+            <ul class="tier-features">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <strong>Proyek tak dibatasi (unlimited)</strong></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <strong>Setup Aplikasi penuh (semua fitur)</strong></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dashboard Monitoring &amp; Laporan RAB</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <strong>Schedule Reminder Rekap WA Otomatis</strong></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> <strong>Priority Support Jam Kerja</strong></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Konfigurasi n8n &amp; Drive Otomatisasi</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Onboarding Live + Handover Akses</li>
+            </ul>
+            <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20paket%20Full%20sistem%20RAPI%20untuk%20studio%20interior" class="btn btn-primary" style="width: 100%;">
+              <svg class="wa-btn-icon" viewBox="0 0 24 24" fill="#000"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+              Pilih Paket RAPI Full
+            </a>
+          </div>
+          
+          <!-- Tier 3 -->
+          <div class="pricing-card">
+            <div class="tier-header">
+              <div class="tier-name">RAPI Custom</div>
+              <div class="tier-setup">Kustom</div>
+              <div class="tier-setup-label">Biaya Setup Sesuai Scope</div>
+              <hr class="tier-divider">
+              <div class="tier-retainer">Kustom <span>/ bulan</span></div>
+              <p style="font-size: 11px; color: var(--text-light-muted); margin-top: 2px;">Tergantung Kebutuhan</p>
+            </div>
+            <ul class="tier-features">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Integrasi Aplikasi Pihak Ketiga</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dukungan Multi-Device WhatsApp</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Modul Custom &amp; Format Rekap Khusus</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> 2x Training Live + Onboarding Intensif</li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Review Kuartalan Sistem Secara Langsung</li>
+            </ul>
+            <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20kustomisasi%20sistem%20RAPI%20untuk%20studio%20interior" class="btn btn-light-secondary" style="width: 100%;">
+              <svg class="wa-btn-icon" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+              Hubungi untuk Custom
+            </a>
+          </div>
+        </div>
+        
+        <!-- Setup vs Retainer Explainer -->
+        <div class="pricing-explainer">
+          <div class="explainer-block">
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              Biaya Setup (Sekali Bayar)
+            </h3>
+            <p>
+              Investasi awal untuk pengerjaan instalasi teknis khusus studio Anda. Ini mencakup proses pembuatan cloud workflow n8n terisolasi (untuk keamanan data), pembuatan Google Sheets 7-tab master data, penyambungan WhatsApp API, deployment webform sebagai aplikasi PWA dengan logo studio Anda, pengujian end-to-end, serta training tim lapangan. Studio Anda siap go-live dalam 2-3 hari kerja.
+            </p>
+          </div>
+          <div class="explainer-block">
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              Biaya Retainer Bulanan
+            </h3>
+            <p>
+              Biaya operasional untuk menjaga sistem RAPI Anda tetap aktif dan terpantau setiap hari. Biaya ini menutup sewa server VPS hosting n8n, langganan API device WhatsApp untuk pengiriman rekap harian, pengawasan ketat agar tidak ada delay pengiriman, penanganan error teknis (seperti kuota limit API Google Sheets), serta update minor untuk alur kerja studio Anda.
+            </p>
+          </div>
+        </div>
+        
+        <p class="pricing-note">Seluruh biaya server n8n dan WhatsApp API sudah termasuk dalam langganan retainer — studio Anda menerima beres, tanpa perlu mengelola akun teknis apa pun. Kontrak minimum 3 bulan. Total tahun pertama mulai dari Rp 14 juta — jauh lebih ringan dari rata-rata software kontraktor SaaS sejenis.</p>
+      </div>
+    </section>
+    
+    <!-- TESTIMONIAL / CASE STUDY -->
+    <section id="proof" class="section-dark">
+      <div class="container">
+        <div class="proof-wrapper">
+          <p class="proof-text">
+            Sistem RAPI ini sudah berjalan nyata di lapangan untuk tim operasional interior. Membantu mencatat <strong>pekerjaan harian, komplain klien, dan menyusun RAB otomatis</strong> setiap hari tanpa celah, lengkap dengan pengiriman rekap WhatsApp otomatis ke pemilik dan mandor.
+          </p>
+          <div class="proof-author">
+            Studi Kasus Nyata: TIM Interior (Implementasi Aktif)
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- FAQ SECTION -->
+    <section id="faq" class="section-light" style="background-color: var(--bg-light-2); border-top: 1px solid var(--border-light);">
+      <div class="container">
+        <div class="section-header">
+          <span class="eyebrow">Pertanyaan Umum</span>
+          <h2 class="section-title">Menjawab Keraguan Anda</h2>
+          <p class="section-subtitle" style="color: var(--text-light-secondary);">Informasi transparan mengenai aspek teknis, keamanan data, dan pengoperasian sistem.</p>
+        </div>
+        
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>Mengapa ada biaya retainer bulanan?</summary>
+            <div class="faq-content">
+              <p>Studio desain interior bukanlah perusahaan teknologi, dan kami ingin Anda tetap fokus pada karya desain, bukan pengelolaan server. Biaya retainer bulanan digunakan untuk mendanai infrastruktur cloud yang menjaga sistem RAPI tetap hidup: biaya hosting VPS cloud n8n, biaya sewa gateway WhatsApp API agar rekap otomatis terkirim setiap hari, monitoring rutin agar tidak terjadi kegagalan sinkronisasi, serta jaminan perbaikan cepat jika terjadi kendala teknis tanpa biaya tambahan.</p>
+            </div>
+          </details>
+          
+          <details class="faq-item">
+            <summary>Bagaimana jika kami ingin berhenti berlangganan di kemudian hari?</summary>
+            <div class="faq-content">
+              <p>Seluruh data operasional Anda adalah milik Anda sepenuhnya. Data tersebut tersimpan dengan aman di Google Sheets dalam akun Google Drive studio Anda sendiri. Jika Anda memutuskan untuk berhenti berlangganan retainer, sistem otomatisasi n8n dan pengiriman rekap WhatsApp harian akan dinonaktifkan di akhir periode berjalan. Namun, Anda tidak kehilangan data apa pun. Anda tetap dapat mengakses, mengekspor, dan mengelola Google Sheets tersebut secara manual kapan saja tanpa sandera data.</p>
+            </div>
+          </details>
+          
+          <details class="faq-item">
+            <summary>Apa bedanya RAPI dengan menggunakan Excel atau Google Sheet biasa?</summary>
+            <div class="faq-content">
+              <p>Excel dan Google Sheet biasa bersifat pasif — mereka hanya menyimpan data dan menunggu Anda membukanya. RAPI bertindak seperti asisten aktif: mempermudah input di lapangan lewat antarmuka HP yang ramah mandor, melacak status keluhan klien secara real-time agar tidak ada yang terlewat, menyusun dokumen RAB siap cetak dalam hitungan detik, serta aktif mengirimkan ringkasan progres ke WhatsApp tim Anda setiap sore tanpa perlu diminta. Ini menghemat jam kerja manajemen yang berharga.</p>
+            </div>
+          </details>
+          
+          <details class="faq-item">
+            <summary>Apakah sistem RAPI sulit dioperasikan oleh mandor atau tukang di lapangan?</summary>
+            <div class="faq-content">
+              <p>Sistem ini dirancang dengan prinsip kesederhanaan ekstrem untuk pengguna lapangan. Antarmukanya berupa webform PWA minimalis yang dapat dibuka di HP berspesifikasi rendah sekalipun. Penginputan dirancang seminimal mungkin dengan menu dropdown dan tombol ketuk yang besar. Selama mandor atau tim lapangan Anda terbiasa menggunakan aplikasi WhatsApp, mereka dijamin akan langsung lancar menggunakan sistem ini dalam sekali percobaan.</p>
+            </div>
+          </details>
+          
+          <details class="faq-item">
+            <summary>Apakah keamanan data proyek studio kami terjamin?</summary>
+            <div class="faq-content">
+              <p>Sangat terjamin. Berbeda dengan aplikasi SaaS pihak ketiga di mana data Anda disimpan di database bersama yang tidak Anda ketahui, sistem RAPI menduplikasi (cloning) backend secara mandiri untuk setiap klien. Data Anda disimpan langsung di Google Spreadsheet milik akun Google resmi studio Anda. Kami hanya menyambungkan sistem integrasi untuk membaca dan menulis data ke spreadsheet tersebut atas izin Anda, memastikan kepemilikan data 100% tetap di tangan Anda.</p>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+    
+    <!-- CTA SECTION -->
+    <section id="cta" class="section-dark">
+      <div class="container">
+        <div class="cta-container fade-in-up">
+          <span class="eyebrow">Langkah Berikutnya</span>
+          <h2 class="cta-title">Siap Mengeliminasi Kendala Operasional Studio Anda?</h2>
+          <p class="cta-description">
+            Kami tunjukkan simulasi sistem berjalan secara langsung menggunakan data proyek studio Anda — gratis dan tanpa komitmen. Jika alurnya sesuai, program Pilot 14 Hari siap go-live untuk studio Anda pekan ini.
+          </p>
+          <div class="btn-group">
+            <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20demo%20sistem%20RAPI%20untuk%20studio%20interior" class="btn btn-primary">
+              <svg class="wa-btn-icon" viewBox="0 0 24 24" fill="#000"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+              Hubungi WhatsApp Konsultan
+            </a>
+          </div>
+          
+          <div class="contact-info">
+            <div class="contact-item-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span>WhatsApp: <b>+62 851-5520-2354</b></span>
+            </div>
+            <div class="contact-item-detail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Developer &amp; Konsultan: <b>Steven Leroy</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-container">
+      <div class="footer-left">
+        <span class="logo-mark" style="width: 20px; height: 20px; border-radius: 4px;"></span>
+        <span>RAPI — Rekap &amp; Arsip Progress Inti · Catat · Pantau · Rencanakan</span>
+      </div>
+      <div class="footer-right">
+        <span>Penawaran ini berlaku selama 30 hari sejak diterima.</span><br>
+        <span>Penyesuaian kebutuhan kustom dapat disepakati secara terpisah.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOATING WHATSAPP BUTTON -->
+  <a href="https://wa.me/6285155202354?text=Halo%20saya%20tertarik%20dengan%20demo%20sistem%20RAPI%20untuk%20studio%20interior" class="whatsapp-float" target="_blank" aria-label="Hubungi kami melalui WhatsApp">
+    <svg viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm5.835-3.324c1.633.97 3.2 1.486 4.96 1.487 5.539 0 10.05-4.505 10.052-10.046.002-2.684-1.038-5.207-2.93-7.101-1.892-1.892-4.408-2.934-7.098-2.935-5.544 0-10.057 4.507-10.06 10.05-.001 1.761.463 3.48 1.34 5.006l-.974 3.564 3.71-.975z"/></svg>
+    <span class="whatsapp-badge-pulse"></span>
+  </a>
+
+  <!-- Dynamic Printed RAB Preview Modal -->
+  <div class="rab-modal" id="rabModal">
+    <div class="rab-modal-content">
+      <button class="rab-modal-close" onclick="closeRABModal()">&times;</button>
+      <div class="rab-doc">
+        <div class="rab-doc-title" id="rabDocTitle">Rencana Anggaran Biaya (RAB)</div>
+        <div class="rab-doc-meta">
+          <div>
+            <p><strong>Studio:</strong> Studio Aura</p>
+            <p><strong>Proyek:</strong> <span id="rabDocProjName">Rumah Kebun Jeruk</span></p>
+          </div>
+          <div style="text-align: right;">
+            <p><strong>Tanggal:</strong> 24 Juni 2026</p>
+            <p><strong>Dokumen ID:</strong> RAB-2026-A9</p>
+          </div>
+        </div>
+        
+        <table class="rab-doc-table">
+          <thead>
+            <tr>
+              <th>Deskripsi Item</th>
+              <th>Kategori</th>
+              <th>PIC</th>
+              <th>Status</th>
+              <th style="text-align: right;">Estimasi Biaya</th>
+            </tr>
+          </thead>
+          <tbody id="rabDocTableBody">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+        
+        <div class="rab-doc-total" id="rabDocTotal">
+          Total RAB: Rp 0
+        </div>
+        
+        <div style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 15px; font-size: 10px; color: #666; text-align: center;">
+          *Dokumen ini digenerate secara otomatis oleh modul RAPI (Rekap &amp; Arsip Progress Inti)
+        </div>
+        
+        <button class="sim-btn-submit" style="margin-top: 20px;" onclick="alert('Simulasi: Dokumen PDF terunduh ke komputer Anda!')">Unduh Dokumen PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- --------------------------------------------------
+       JAVASCRIPT FOR INTERACTIVE FEATURES
+       -------------------------------------------------- -->
+  <script>
+    // Sticky Header Scroll Effect
+    window.addEventListener('scroll', function() {
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    });
+
+    // --------------------------------------------------
+    // PLAYABLE SIMULATOR STATE & LOGIC
+    // --------------------------------------------------
+    
+    // Initial mock database array reflecting real project items
+    let simTickets = [
+      { id: "PKJ-2026-001", project: "Rumah Kebun Jeruk", type: "Pekerjaan", content: "Pemasangan marmer lantai utama", worker: "Rizal Hakim", priority: "Sedang", status: "Selesai", date: "2026-06-24", vol: 45, unit: "m2", price: 1200000 },
+      { id: "CMP-2026061001", project: "Rumah Kebun Jeruk", type: "Komplain", content: "Retak rambut pilar teras samping", worker: "Rizal Hakim", priority: "Tinggi", status: "Proses", date: "2026-06-24", loc: "Teras Samping" },
+      { id: "PKJ-2026-002", project: "Apartemen PIK", type: "Pekerjaan", content: "Instalasi kelistrikan wardrobe utama", worker: "Yusuf Maulana", priority: "Sedang", status: "Selesai", date: "2026-06-24", vol: 1, unit: "Lot", price: 8500000 },
+      { id: "CMP-2026061002", project: "Apartemen PIK", type: "Komplain", content: "Pintu kabinet atas mentok plafon", worker: "Yusuf Maulana", priority: "Tinggi", status: "Pending", date: "2026-06-24", loc: "Kamar Tidur Utama" },
+      { id: "PKJ-2026-003", project: "Kantor Pondok Indah", type: "Pekerjaan", content: "Pemasangan kisi-kisi kayu area foyer", worker: "Bayu Pratama", priority: "Sedang", status: "Proses", date: "2026-06-24", vol: 8, unit: "m2", price: 3000000 }
+    ];
+
+    // Costs mapped for RAB generation simulation
+    const itemCosts = {
+      "Pemasangan marmer lantai utama": 54000000,
+      "Retak rambut pilar teras samping": 0,
+      "Instalasi kelistrikan wardrobe utama": 8500000,
+      "Pintu kabinet atas mentok plafon": 0,
+      "Pemasangan kisi-kisi kayu area foyer": 24000000,
+      "default": 1500000
+    };
+
+    // Keep clock updated in phone screen
+    function updatePhoneClock() {
+      const now = new Date();
+      const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ' WIB';
+      const clockEl = document.getElementById('phoneTime');
+      if (clockEl) clockEl.innerText = timeStr;
+    }
+    setInterval(updatePhoneClock, 1000);
+    updatePhoneClock();
+
+    // Render the live ticket list in phone dashboard (Web 1)
+    function renderPhoneDashboard() {
+      // Calculate dynamic metrics
+      const uniqueProjects = new Set(simTickets.map(t => t.project)).size;
+      const pendingTickets = simTickets.filter(t => t.status !== "Selesai").length;
+      const completedTickets = simTickets.filter(t => t.status === "Selesai").length;
+      
+      document.getElementById('pwaKpiProj').innerText = uniqueProjects + " Proyek";
+      document.getElementById('pwaKpiComp').innerText = pendingTickets + " Pending";
+      document.getElementById('pwaKpiDone').innerText = completedTickets + " Selesai";
+      
+      // Render recent activity text
+      const recentEl = document.getElementById('pwaRecentActivity');
+      if (simTickets.length > 0) {
+        const lastTicket = simTickets[simTickets.length - 1];
+        recentEl.innerHTML = `Baru ditambahkan: <strong>${lastTicket.id}</strong> di <strong>${lastTicket.project}</strong> (${lastTicket.content}) oleh <strong>${lastTicket.worker.split(' ')[0]}</strong> dengan status <strong>${lastTicket.status}</strong>.`;
+      } else {
+        recentEl.innerHTML = `Belum ada progres terbaru hari ini.`;
+      }
+      
+      // Render Scrollable Ticket List
+      const listContainer = document.getElementById('pwaTicketList');
+      listContainer.innerHTML = '';
+      
+      // Sort: newest first
+      const sortedTickets = [...simTickets].reverse();
+      
+      sortedTickets.forEach(ticket => {
+        const card = document.createElement('div');
+        card.className = 'pwa-list-card';
+        const statusClass = ticket.status.toLowerCase();
+        
+        let metaDetails = "";
+        if (ticket.type === 'Pekerjaan') {
+          metaDetails = `${ticket.vol} ${ticket.unit} @ Rp ${ticket.price.toLocaleString('id-ID')}`;
+        } else {
+          metaDetails = `Area: ${ticket.loc}`;
+        }
+        
+        card.innerHTML = `
+          <div class="pwa-list-header">
+            <span class="pwa-list-proj">${ticket.project}</span>
+            <span class="pwa-badge ${statusClass}" onclick="togglePWAStatus('${ticket.id}', event)">${ticket.status}</span>
+          </div>
+          <div class="pwa-list-desc">${ticket.content}</div>
+          <div class="pwa-list-footer">
+            <span>ID: ${ticket.id} (${ticket.type})</span>
+            <span>PIC: ${ticket.worker.split(' ')[0]}</span>
+          </div>
+        `;
+        listContainer.appendChild(card);
+      });
+    }
+
+    // Toggle ticket status interactively from dashboard
+    function togglePWAStatus(ticketId, event) {
+      event.stopPropagation(); // prevent card click
+      
+      const ticket = simTickets.find(t => t.id === ticketId);
+      if (ticket) {
+        let oldStatus = ticket.status;
+        if (ticket.status === "Pending") {
+          ticket.status = "Proses";
+        } else if (ticket.status === "Proses") {
+          ticket.status = "Selesai";
+        } else {
+          ticket.status = "Pending";
+        }
+        
+        // Show short success toast
+        const toast = document.getElementById('simToast');
+        document.getElementById('simToastText').innerText = `Status ${ticket.id} diubah ke ${ticket.status}!`;
+        toast.classList.add('show');
+        
+        renderPhoneDashboard();
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 1500);
+      }
+    }
+
+    // Real-time calculation of worker form total
+    function calculatePWATotal() {
+      const vol = parseFloat(document.getElementById('pwaPkjVol').value) || 0;
+      const price = parseFloat(document.getElementById('pwaPkjPrice').value) || 0;
+      const total = vol * price;
+      document.getElementById('pwaPkjTotalLabel').innerText = "Rp " + total.toLocaleString('id-ID');
+    }
+
+    // Navigate to a specific screen in the Virtual PWA
+    function pwaNavigateTo(screenId) {
+      // Hide all PWA screens
+      const screens = document.querySelectorAll('.pwa-screen');
+      screens.forEach(s => s.classList.remove('active'));
+      
+      // Show requested screen
+      const activeScreen = document.getElementById(screenId);
+      activeScreen.classList.add('active');
+      
+      // Sync external control tabs active states
+      syncExternalTabs(screenId);
+      
+      // Render dynamic data if dashboard or list is opened
+      if (screenId === 'pwa-dashboard' || screenId === 'pwa-cek') {
+        renderPhoneDashboard();
+      }
+    }
+    
+    function pwaGoHome() {
+      pwaNavigateTo('pwa-home');
+    }
+    
+    // Sync external control tabs with phone state
+    function syncExternalTabs(screenId) {
+      const tabs = document.querySelectorAll('.sim-tab-btn');
+      tabs.forEach(t => t.classList.remove('active'));
+      
+      if (screenId === 'pwa-home') {
+        document.getElementById('btnTabHome').classList.add('active');
+      } else if (screenId === 'pwa-dashboard' || screenId === 'pwa-cek') {
+        document.getElementById('btnTab1').classList.add('active');
+      } else if (screenId === 'pwa-pekerjaan' || screenId === 'pwa-komplain') {
+        document.getElementById('btnTab2').classList.add('active');
+      } else if (screenId === 'pwa-laporan' || screenId === 'pwa-wa') {
+        document.getElementById('btnTab3').classList.add('active');
+      }
+    }
+
+    // Toggle form fields in Worker View screen based on category
+    function toggleFormInputs() {
+      // In virtual PWA, switching is done by opening either pwa-pekerjaan or pwa-komplain screen
+      const cat = document.querySelector('input[name="simCat"]:checked').value;
+      if (cat === 'Pekerjaan') {
+        pwaNavigateTo('pwa-pekerjaan');
+      } else {
+        pwaNavigateTo('pwa-komplain');
+      }
+    }
+
+    // Handle worker task submission inside virtual PWA (Web 2)
+    function submitPWAPekerjaan(e) {
+      e.preventDefault();
+      
+      const worker = document.getElementById('pwaPkjWorker').value;
+      const proj = document.getElementById('pwaPkjProj').value;
+      const desc = document.getElementById('pwaPkjDesc').value;
+      const vol = parseFloat(document.getElementById('pwaPkjVol').value) || 1;
+      const unit = document.getElementById('pwaPkjUnit').value;
+      const price = parseFloat(document.getElementById('pwaPkjPrice').value) || 0;
+      
+      // Generate Batch ID otomatis PKJ-2026-xxx
+      const pkjCount = simTickets.filter(t => t.type === 'Pekerjaan').length + 1;
+      const newId = `PKJ-2026-${String(pkjCount).padStart(3, '0')}`;
+      
+      const newTicket = {
+        id: newId,
+        project: proj,
+        type: "Pekerjaan",
+        content: desc,
+        worker: worker,
+        status: "Pending", // Status awal otomatis: Pending
+        date: new Date().toISOString().split('T')[0],
+        vol: vol,
+        unit: unit,
+        price: price
+      };
+      
+      // Save to array
+      simTickets.push(newTicket);
+      
+      // Show success toast
+      const toast = document.getElementById('simToast');
+      document.getElementById('simToastText').innerText = `✓ Sukses! PKJ-2026-${String(pkjCount).padStart(3, '0')} tersimpan di Google Sheet Pekerjaan.`;
+      toast.classList.add('show');
+      
+      // Reset form
+      document.getElementById('pwaPkjDesc').value = '';
+      calculatePWATotal();
+      
+      // Navigate to dashboard
+      pwaNavigateTo('pwa-dashboard');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Handle worker complaint submission inside virtual PWA (Web 2)
+    function submitPWAKomplain(e) {
+      e.preventDefault();
+      
+      const worker = document.getElementById('pwaCmpWorker').value;
+      const proj = document.getElementById('pwaCmpProj').value;
+      const desc = document.getElementById('pwaCmpDesc').value;
+      const loc = document.getElementById('pwaCmpLoc').value;
+      const priority = document.getElementById('pwaCmpPriority').value;
+      
+      // Generate ID komplain otomatis CMP-timestamp
+      const timestamp = new Date().toISOString().replace(/[-T:.Z]/g, '').slice(0, 14);
+      const newId = `CMP-${timestamp}`;
+      
+      const newTicket = {
+        id: newId,
+        project: proj,
+        type: "Komplain",
+        content: desc,
+        worker: worker,
+        status: "Pending", // Status awal otomatis: Pending
+        date: new Date().toISOString().split('T')[0],
+        loc: loc,
+        priority: priority
+      };
+      
+      // Save to array
+      simTickets.push(newTicket);
+      
+      // Show success toast
+      const toast = document.getElementById('simToast');
+      document.getElementById('simToastText').innerText = `✓ Sukses! Komplain CMP-... terkirim & tercatat di Google Sheet.`;
+      toast.classList.add('show');
+      
+      // Reset form
+      document.getElementById('pwaCmpDesc').value = '';
+      document.getElementById('pwaCmpLoc').value = '';
+      
+      // Navigate to dashboard
+      pwaNavigateTo('pwa-dashboard');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Trigger WhatsApp simulated rekap bubble inside phone (Web 1/2 outcome)
+    function pwaTriggerWhatsApp() {
+      // Build recap message string dynamically from current state (grouped per project)
+      let today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      let message = `🟢 *REKAP HARIAN - MANAJEMEN PROYEK*\nTanggal: ${today}\n\n`;
+      
+      const projects = [...new Set(simTickets.map(t => t.project))];
+      
+      projects.forEach((proj, idx) => {
+        message += `*${idx + 1}. Proyek: ${proj}*\n`;
+        const projTickets = simTickets.filter(t => t.project === proj);
+        
+        projTickets.forEach(t => {
+          let statusEmoji = t.status === 'Selesai' ? '✅' : t.status === 'Proses' ? '🟡' : '🔴';
+          let priorityTag = (t.type === 'Komplain' && t.priority === 'Tinggi') ? ' *[URGENT]*' : '';
+          
+          if (t.type === 'Pekerjaan') {
+            message += `- [RAB] ${t.content} (${t.vol} ${t.unit}) [${t.status}]\n`;
+          } else {
+            message += `- [CMP] ${t.content} di ${t.loc} [${t.status}]${priorityTag}\n`;
+          }
+        });
+        message += `\n`;
+      });
+      
+      message += `*Dashboard RAPI Cloud:* \nhttps://rapi.interior.com`;
+      
+      // Render WhatsApp bubble
+      const chatScreen = document.getElementById('pwaWaChatScreen');
+      chatScreen.innerHTML = `
+        <div style="font-size: 8.5px; color: #8696a0; text-align: center; margin-bottom: 12px; font-weight: 500;">
+          HARI INI
+        </div>
+        <div class="phone-wa-bubble">${message}</div>
+      `;
+      
+      pwaNavigateTo('pwa-wa');
+    }
+
+    // Trigger RAB Document simulation inside large modal (from phone PWA)
+    function pwaTriggerRAB(projectName) {
+      triggerRABSim(projectName);
+    }
+
+    // Trigger RAB Document simulation inside large modal (General)
+    function triggerRABSim(projectName) {
+      const projTickets = simTickets.filter(t => t.project === projectName);
+      
+      const modal = document.getElementById('rabModal');
+      const modalProj = document.getElementById('rabDocProjName');
+      const modalTable = document.getElementById('rabDocTableBody');
+      const modalTotal = document.getElementById('rabDocTotal');
+      
+      modalProj.innerText = projectName;
+      modalTable.innerHTML = '';
+      
+      let grandTotal = 0;
+      
+      if (projTickets.length === 0) {
+        modalTable.innerHTML = `<tr><td colspan="5" style="text-align: center;">Belum ada data progres proyek di database.</td></tr>`;
+      } else {
+        projTickets.forEach(t => {
+          let itemCost = 0;
+          let detailsText = "";
+          
+          if (t.type === 'Pekerjaan') {
+            itemCost = t.vol * t.price;
+            detailsText = `${t.vol} ${t.unit} @ Rp ${t.price.toLocaleString('id-ID')}`;
+          } else {
+            itemCost = 0; // Komplain tidak ada biaya RAB tambahan secara default
+            detailsText = `Komplain (${t.loc})`;
+          }
+          
+          grandTotal += itemCost;
+          
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td><strong>${t.content}</strong><br><small style="color: #666;">ID: ${t.id}</small></td>
+            <td>${t.type}</td>
+            <td>${t.worker.split(' ')[0]}</td>
+            <td><strong>${t.status}</strong></td>
+            <td style="text-align: right; white-space: nowrap;">
+              ${itemCost > 0 ? 'Rp ' + itemCost.toLocaleString('id-ID') : '—'}<br>
+              <small style="color: #888; font-size: 8.5px;">${detailsText}</small>
+            </td>
+          `;
+          modalTable.appendChild(row);
+        });
+      }
+      
+      modalTotal.innerText = `Total Anggaran Realisasi: Rp ${grandTotal.toLocaleString('id-ID')}`;
+      modal.style.display = 'flex';
+    }
+
+    function closeRABModal() {
+      document.getElementById('rabModal').style.display = 'none';
+    }
+
+    // --------------------------------------------------
+    // BENEFIT TABS CONTROLLER
+    // --------------------------------------------------
+    function switchBenefitTab(tabId, btnElement) {
+      // Update buttons
+      const buttons = document.querySelectorAll('.benefit-tab-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+      
+      // Update grids
+      const grids = document.querySelectorAll('.benefit-grid');
+      grids.forEach(grid => grid.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Initialize PWA dashboard on load
+    window.onload = function() {
+      renderPhoneDashboard();
+      calculatePWATotal();
+    };
+  </script>
+
+</body>
+</html>

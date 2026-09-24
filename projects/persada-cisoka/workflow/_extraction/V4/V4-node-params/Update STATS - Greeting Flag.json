@@ -1,0 +1,13 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "// ====================================================================\n// UPDATE GREETING FLAG (V4 - disederhanakan)\n// Dulu: pattern-matching teks balasan (rapuh, tergantung susunan\n// kalimat). Sekarang: cukup dari flag is_new_user — kalau eksekusi\n// ini mengirim intro ke user baru (reply sudah SUKSES terkirim\n// karena node ini jalan setelah Reply Chat Kirimi), tandai Y.\n// ====================================================================\nconst isNewUser = $(\u0027Cek_user_status\u0027).first().json.is_new_user === true;\n\nif (isNewUser) {\n  console.log(\u0027📝 [GREETING] intro terkirim ke user baru -\u003e greeting_sent = Y\u0027);\n}\n\nreturn [{\n  json: {\n    update_needed: isNewUser ? \u0027true\u0027 : \u0027false\u0027,\n    greeting_sent: \u0027Y\u0027\n  }\n}];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     1200,
+                     2912
+                 ],
+    "id":  "54c9cc88-8926-4a6a-9e90-b27e270195bf",
+    "name":  "Update STATS - Greeting Flag"
+}

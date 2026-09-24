@@ -1,0 +1,37 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  2
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "5a22216d-bae5-4f18-8353-4304ac535156",
+                                                                 "leftValue":  "={{ $json.needs_unknown }}",
+                                                                 "rightValue":  "true",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.2,
+    "position":  [
+                     -13808,
+                     3248
+                 ],
+    "id":  "9699a0c2-1822-42e0-b380-9108741fcfbe",
+    "name":  "IF Unknown"
+}

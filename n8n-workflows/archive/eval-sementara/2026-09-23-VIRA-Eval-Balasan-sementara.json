@@ -1,0 +1,132 @@
+{
+  "name": "VIRA Eval — Balasan (sementara, hapus sesudah uji)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "vira-eval-balasan-fb634e0c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "71feb5c4-5eb1-4698-94a8-d87942ee6aa5",
+      "name": "Eval Masuk",
+      "webhookId": "2d74cdfd-5ba7-4620-bfd0-3b470cf78550"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Eval sementara VIRA (2026-09-23) - TIDAK mengirim WA, TIDAK menulis sheet.\n// Meneruskan satu permintaan chat ke DeepSeek memakai credential \"DeepSeek Personal\".\nconst TOKEN = 'REDACTED';\nconst j = $input.first().json;\nconst h = j.headers || {};\nif (String(h['x-eval-token'] || '') !== TOKEN) throw new Error('token eval salah');\nconst b = j.body || {};\nif (!Array.isArray(b.messages) || !b.messages.length) throw new Error('messages kosong');\nreturn [{ json: { body: {\n  model: b.model || 'deepseek-v4-pro',\n  messages: b.messages,\n  temperature: (b.temperature === undefined ? 0.7 : b.temperature),\n  max_tokens: b.max_tokens || 3000,\n  reasoning_effort: b.reasoning_effort || 'none',\n} } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "09c150ec-06d1-4a04-b96f-7468c7ed4cb5",
+      "name": "Cek Token & Susun Body"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "deepSeekApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "8ecb38df-6d20-439f-95e1-31a234d9de08",
+      "name": "DeepSeek Chat",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "deepSeekApi": {
+          "id": "tVKwMVPK1fROjH5Z",
+          "name": "DeepSeek Personal"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "d2e5515a-c224-4c6c-bcc3-f659ec5c7ecd",
+      "name": "Balas Eval"
+    }
+  ],
+  "connections": {
+    "Eval Masuk": {
+      "main": [
+        [
+          {
+            "node": "Cek Token & Susun Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cek Token & Susun Body": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek Chat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat": {
+      "main": [
+        [
+          {
+            "node": "Balas Eval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Asia/Jakarta",
+    "saveDataSuccessExecution": "none"
+  }
+}

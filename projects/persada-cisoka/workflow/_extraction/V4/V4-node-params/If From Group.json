@@ -1,0 +1,35 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "strict",
+                                                          "version":  3
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "8fffbed0-77f9-4ba9-af00-4fa47eca448b",
+                                                                 "leftValue":  "={{ $json.body.isFromGroup }}",
+                                                                 "rightValue":  false,
+                                                                 "operator":  {
+                                                                                  "type":  "boolean",
+                                                                                  "operation":  "equals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.3,
+    "position":  [
+                     -5200,
+                     2816
+                 ],
+    "id":  "e44ac4a4-0d8b-40c5-851e-79f8e4992f1b",
+    "name":  "If From Group"
+}

@@ -1,0 +1,21 @@
+﻿TOP LEVEL KEYS: name, nodes, pinData, connections, active, settings, versionId, meta, id, tags
+
+name: VIRA V4
+active: True
+id: TW-E4ZbJgEzRSbsUcST5W
+versionId: bda16c93-c75f-4b24-ab77-fde7488aa87d
+meta: {
+    "instanceId":  "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+}
+
+settings:
+{
+    "executionOrder":  "v1",
+    "availableInMCP":  false,
+    "timeSavedMode":  "fixed",
+    "timezone":  "Asia/Jakarta",
+    "callerPolicy":  "workflowsFromSameOwner",
+    "errorWorkflow":  "ZKsINjA7ZC8c9yRHWp3ud"
+}
+
+pinData keys: Webhook

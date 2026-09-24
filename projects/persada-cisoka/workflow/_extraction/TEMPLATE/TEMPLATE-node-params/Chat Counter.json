@@ -1,0 +1,15 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "const webhookData = $input.first();\nconst body = webhookData.json.body || {};\n\n// Ambil data dari Kirimi\nconst userMessage = body.message || \"\";\nconst messageType = body.messageType || \"\";\nconst userNumber = body.from || \"unknown\";  // ← TIDAK strip @lid, passthrough as-is\nconst _isLid    = String(userNumber).toLowerCase().includes(\u0027@lid\u0027);\nconst userLid   = String(body.originLid || (_isLid ? userNumber : \u0027\u0027)).replace(/\\D/g, \u0027\u0027);// kunci cocok\nconst userPhone = _isLid ? \u0027\u0027 : String(userNumber).replace(/\\D/g, \u0027\u0027);// utk kolom No WA\nconst userName = body.name || body.pushName || body.notifyName || \"User\";\nconst isFromMe = body.isFromMe === true;\nconst eventType = body.event || \"\";\n\n// Filter: hanya pesan teks yang tidak kosong\nif (messageType !== \"text\" || !userMessage || userMessage.trim() === \"\") {\n    console.log(\u0027⛔ STOP: Bukan pesan teks valid\u0027);\n    return [];\n}\n\nconsole.log(\u0027✅ LANJUT: Pesan teks valid dari user\u0027);\nconsole.log(\u0027📱 No WA:\u0027, userNumber);\n\n// Counter sederhana\nlet counter = $vars.chatCounter || 0;\ncounter++;\n$vars.chatCounter = counter;\n\n// Format tanggal \u0026 jam WIB\nconst now = new Date();\nconst formattedDate = now.toLocaleDateString(\u0027en-GB\u0027, {\n    timeZone: \u0027Asia/Jakarta\u0027,\n    day: \u00272-digit\u0027,\n    month: \u00272-digit\u0027,\n    year: \u0027numeric\u0027\n});\nconst formattedTime = now.toLocaleTimeString(\u0027id-ID\u0027, {\n    hour: \u00272-digit\u0027,\n    minute: \u00272-digit\u0027,\n    second: \u00272-digit\u0027,\n    hour12: false,\n    timeZone: \u0027Asia/Jakarta\u0027\n}).replace(/\\./g, \u0027:\u0027);\n\nconst processStartTs = Date.now();\n\nconst aiInputText = `[SYSTEM_DATA]\nCHAT_COUNTER: ${counter}\nUSER_NAME: ${userName}\nUSER_MESSAGE: \"${userMessage}\"\n\n[USER QUERY]\n${userMessage}`;\n\nreturn [{\n    json: {\n        chat_counter: counter,\n        user_wa: userNumber,\n        user_lid: userLid,\n        user_phone: userPhone,\n        user_name: userName,\n        formatted_date: formattedDate,\n        formatted_time: formattedTime,\n        ai_input_text: aiInputText,\n        original_message: userMessage,\n        body: body,\n        message_type: messageType,\n        process_start_ts: processStartTs\n    }\n}];"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -18192,
+                     2640
+                 ],
+    "id":  "8469ffad-62de-4ce5-b617-7b718d2361df",
+    "name":  "Chat Counter",
+    "alwaysOutputData":  true,
+    "retryOnFail":  true
+}

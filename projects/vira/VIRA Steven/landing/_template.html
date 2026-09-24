@@ -1,0 +1,446 @@
+<title>VIRA by Steven</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* Palet: netral bias hijau, aksen jade — nada percakapan tanpa meniru
+   hijau WhatsApp. Semua warna lewat token supaya kedua tema konsisten. */
+:root{
+  --bg:#EFF3F0; --surface:#FFFFFF; --surface-2:#F6F9F7;
+  --ink:#101F1C; --muted:#5B6E68; --line:#D5E0DB;
+  --accent:#0E8F6B; --accent-ink:#0A6E52; --accent-soft:#DCF0E8;
+  --bubble-them:#FFFFFF; --bubble-me:#DDF3EA;
+  --shadow:0 1px 2px rgba(16,31,28,.05), 0 8px 24px -12px rgba(16,31,28,.18);
+  --shadow-lg:0 2px 4px rgba(16,31,28,.06), 0 24px 60px -28px rgba(16,31,28,.32);
+  --logo-pad:#FFFFFF;
+  --au1:#8FDFC2; --au2:#C7E9DB; --au3:#B6DCEF; --au-op:.55;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Instrument Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1513; --surface:#101F1C; --surface-2:#0D1A18;
+    --ink:#E6EEEA; --muted:#8CA39C; --line:#1E332E;
+    --accent:#26B98B; --accent-ink:#7FDCBE; --accent-soft:#16332B;
+    --bubble-them:#162925; --bubble-me:#123A2D;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    --shadow-lg:0 2px 4px rgba(0,0,0,.5), 0 24px 60px -28px rgba(0,0,0,.75);
+    --logo-pad:#E9EFEC;
+    --au1:#0F7A5C; --au2:#0A4A3C; --au3:#125064; --au-op:.5;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1513; --surface:#101F1C; --surface-2:#0D1A18;
+  --ink:#E6EEEA; --muted:#8CA39C; --line:#1E332E;
+  --accent:#26B98B; --accent-ink:#7FDCBE; --accent-soft:#16332B;
+  --bubble-them:#162925; --bubble-me:#123A2D;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  --shadow-lg:0 2px 4px rgba(0,0,0,.5), 0 24px 60px -28px rgba(0,0,0,.75);
+  --logo-pad:#E9EFEC;
+  --au1:#0F7A5C; --au2:#0A4A3C; --au3:#125064; --au-op:.5;
+}
+
+*{box-sizing:border-box}
+img{max-width:100%;display:block}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);
+  font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden}
+.wrap{max-width:660px;margin:0 auto;padding:0 20px}
+
+/* Latar gradien yang bergerak pelan. Tiga blob radial di-blur lalu digeser
+   dengan transform (bukan background-position) supaya animasinya jalan di GPU
+   dan tidak memaksa repaint tiap frame — penting untuk HP kelas menengah. */
+.aurora{position:fixed;inset:-25%;z-index:-1;pointer-events:none;
+  opacity:var(--au-op);filter:blur(64px);contain:strict}
+.aurora span{position:absolute;display:block;border-radius:50%;will-change:transform}
+.aurora .a1{width:58vmax;height:58vmax;left:-14%;top:-12%;
+  background:radial-gradient(circle at 34% 34%,var(--au1),transparent 64%);
+  animation:drift1 44s ease-in-out infinite alternate}
+.aurora .a2{width:50vmax;height:50vmax;right:-16%;top:18%;
+  background:radial-gradient(circle at 62% 40%,var(--au3),transparent 64%);
+  animation:drift2 56s ease-in-out infinite alternate}
+.aurora .a3{width:56vmax;height:56vmax;left:6%;bottom:-22%;
+  background:radial-gradient(circle at 44% 56%,var(--au2),transparent 66%);
+  animation:drift3 50s ease-in-out infinite alternate}
+@keyframes drift1{from{transform:translate3d(0,0,0) scale(1)}
+  to{transform:translate3d(12vw,9vh,0) scale(1.14)}}
+@keyframes drift2{from{transform:translate3d(0,0,0) scale(1.06)}
+  to{transform:translate3d(-13vw,12vh,0) scale(.92)}}
+@keyframes drift3{from{transform:translate3d(0,0,0) scale(.96)}
+  to{transform:translate3d(10vw,-11vh,0) scale(1.12)}}
+section{padding:48px 0}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.14}
+h1{font-size:clamp(2rem,7.6vw,2.95rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.4rem,4.8vw,1.8rem);font-weight:700;letter-spacing:-.015em}
+h3{font-size:1.02rem;font-weight:700}
+p{margin:0 0 1em}
+a{color:var(--accent-ink)}
+.eyebrow{font-family:var(--mono);font-size:.7rem;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);display:block;margin-bottom:12px}
+.lede{font-size:1.06rem;color:var(--muted)}
+.hr{height:1px;background:var(--line);border:0;margin:0}
+
+/* Hero */
+.hero{padding:52px 0 10px}
+.hero h1{margin-bottom:14px}
+.hero .lede{font-size:1.13rem;max-width:36ch}
+.sig{font-family:var(--mono);font-size:.76rem;color:var(--muted);
+  display:flex;align-items:center;gap:8px;margin-top:24px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent)}
+  70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+/* Chat */
+.phone{margin:28px 0 6px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:20px;padding:16px 14px 18px;box-shadow:var(--shadow-lg)}
+.phone-top{display:flex;align-items:center;gap:10px;padding:2px 4px 13px;
+  border-bottom:1px solid var(--line);margin-bottom:15px}
+.ava{width:34px;height:34px;border-radius:50%;flex:none;
+  background:linear-gradient(140deg,var(--accent),var(--accent-ink));color:#fff;
+  font-family:var(--display);font-weight:700;font-size:.85rem;display:grid;place-items:center}
+.phone-top b{font-size:.92rem;display:block;line-height:1.25}
+.phone-top span{font-family:var(--mono);font-size:.68rem;color:var(--accent)}
+.thread{display:flex;flex-direction:column;gap:9px}
+.msg{max-width:84%;padding:9px 13px;border-radius:15px;font-size:.92rem;
+  line-height:1.5;box-shadow:var(--shadow)}
+.thread.anim .msg{opacity:0;transform:translateY(8px)}
+.thread.anim .msg.in{opacity:1;transform:none;
+  transition:opacity .42s ease,transform .42s cubic-bezier(.2,.7,.3,1)}
+.them{background:var(--bubble-them);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:5px}
+.me{background:var(--bubble-me);align-self:flex-end;border-bottom-right-radius:5px}
+.t{font-family:var(--mono);font-size:.63rem;color:var(--muted);display:block;
+  margin-top:5px;font-variant-numeric:tabular-nums}
+.me .t{text-align:right}
+.caption{font-size:.86rem;color:var(--muted);margin:15px 4px 0;
+  padding-left:13px;border-left:2px solid var(--accent)}
+
+/* Tombol */
+.cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.btn{font-family:var(--body);font-weight:600;font-size:.94rem;padding:13px 20px;
+  border-radius:11px;text-decoration:none;display:inline-flex;align-items:center;gap:9px;
+  border:1px solid transparent;transition:transform .16s ease,background .16s ease,border-color .16s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn-1{background:var(--accent);color:#fff;box-shadow:var(--shadow)}
+.btn-1:hover{background:var(--accent-ink)}
+.btn-2{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn-2:hover{border-color:var(--accent);color:var(--accent-ink)}
+
+/* Benefit */
+.bens{display:grid;gap:14px;margin-top:24px}
+@media(min-width:560px){.bens{grid-template-columns:1fr 1fr}}
+.ben{background:var(--surface);border:1px solid var(--line);border-radius:15px;
+  padding:19px 18px;box-shadow:var(--shadow)}
+.ben h3{margin-bottom:6px}
+.ben p{font-size:.92rem;color:var(--muted);margin:0}
+.ben .ic{width:30px;height:30px;border-radius:9px;background:var(--accent-soft);
+  display:grid;place-items:center;margin-bottom:12px;color:var(--accent-ink)}
+
+/* Klien */
+.clients{display:grid;gap:14px;margin-top:24px}
+@media(min-width:560px){.clients{grid-template-columns:1fr 1fr}}
+.client{background:var(--surface);border:1px solid var(--line);border-radius:15px;
+  padding:19px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.client .logo{width:56px;height:56px;border-radius:12px;background:var(--logo-pad);
+  border:1px solid var(--line);padding:6px;object-fit:contain;margin-bottom:13px}
+.client b{font-size:1rem;display:block}
+.client .kind{font-family:var(--mono);font-size:.64rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--accent);margin:4px 0 10px;display:block}
+.client p{font-size:.91rem;color:var(--muted);margin:0}
+
+/* Paket */
+.cards{display:grid;gap:15px;margin-top:22px}
+@media(min-width:600px){.cards{grid-template-columns:1fr 1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  padding:22px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.card.hi{border-color:var(--accent)}
+.tag{font-family:var(--mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:9px;display:block}
+.price{font-family:var(--display);font-size:1.8rem;font-weight:800;letter-spacing:-.02em;
+  margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.price.q{font-size:1.25rem;line-height:1.3}
+.per{font-family:var(--mono);font-size:.71rem;color:var(--muted)}
+.card p{font-size:.92rem;color:var(--muted);margin:12px 0 14px}
+.feat{list-style:none;padding:0;margin:0;display:grid;gap:7px;font-size:.89rem}
+.feat li{display:flex;gap:9px;align-items:flex-start}
+.tick{flex:none;margin-top:5px;color:var(--accent)}
+.promo{background:var(--accent-soft);border:1px solid var(--accent);border-radius:13px;
+  padding:15px 17px;margin-top:20px;font-size:.94rem}
+.promo b{color:var(--accent-ink)}
+.newfeat{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:14px;overflow:hidden;margin-top:20px}
+.nf{background:var(--surface);padding:15px 17px;display:flex;gap:13px;align-items:flex-start}
+.nf b{display:block;font-size:.95rem;margin-bottom:2px}
+.nf span{font-size:.88rem;color:var(--muted)}
+.nf .badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--accent);color:#fff;padding:3px 7px;border-radius:5px;flex:none;margin-top:2px}
+
+/* Penawaran */
+.offer{background:var(--surface);border:1px solid var(--accent);border-radius:18px;
+  padding:25px 22px;box-shadow:var(--shadow-lg)}
+.offer .free{font-family:var(--display);font-weight:800;color:var(--accent);font-size:1.12rem}
+.steps{list-style:none;counter-reset:s;padding:0;margin:19px 0 0;display:grid;gap:12px}
+.steps li{counter-increment:s;display:flex;gap:13px;font-size:.93rem;align-items:flex-start}
+.steps li::before{content:counter(s);font-family:var(--mono);font-size:.7rem;width:23px;
+  height:23px;border-radius:7px;flex:none;display:grid;place-items:center;
+  background:var(--accent-soft);color:var(--accent-ink);margin-top:1px}
+
+/* Profil */
+.prof{display:flex;gap:18px;align-items:flex-start;margin-top:22px;flex-wrap:wrap}
+.prof img{width:112px;height:140px;object-fit:cover;object-position:center top;
+  border-radius:14px;border:1px solid var(--line);flex:none;box-shadow:var(--shadow)}
+.prof .who{flex:1;min-width:210px}
+.prof .who p{font-size:.93rem;color:var(--muted);margin:0 0 .7em}
+blockquote{margin:22px 0 0;padding:17px 19px;background:var(--surface-2);
+  border:1px solid var(--line);border-left:3px solid var(--accent);
+  border-radius:0 13px 13px 0;font-size:.96rem}
+blockquote p:last-child{margin:0}
+
+footer{background:var(--surface);border-top:1px solid var(--line);padding:40px 0 50px}
+.links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.note{font-family:var(--mono);font-size:.67rem;color:var(--muted);margin-top:26px;line-height:1.7}
+
+/* Layar sempit: foto profil dikecilkan dan .who dibiarkan menyusut
+   (min-width:0) supaya tetap berdampingan, tidak jatuh ke bawah sendirian. */
+@media(max-width:430px){
+  .prof{gap:14px}
+  .prof img{width:92px;height:116px}
+  .prof .who{min-width:0}
+  section{padding:42px 0}
+  .wrap{padding:0 17px}
+  .btn{padding:13px 17px}
+}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="aurora" aria-hidden="true"><span class="a1"></span><span class="a2"></span><span class="a3"></span></div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">AI Customer Service WhatsApp</span>
+    <h1>Chat bisnismu dibalas, bahkan saat kamu tidur.</h1>
+    <p class="lede">Aku Steven. Aku bangun VIRA — asisten WhatsApp yang dirancang sesuai tujuan bisnismu, bukan template yang dipukul rata.</p>
+
+    <div class="phone" id="demo">
+      <div class="phone-top">
+        <div class="ava">VR</div>
+        <div><b>VIRA</b><span>online</span></div>
+      </div>
+      <div class="thread" id="thread">
+        <div class="msg them" data-d="0">Kak masih buka? mau tanya harga<span class="t">23:41</span></div>
+        <div class="msg me" data-d="700">Halo kak! Aku VIRA, asisten AI-nya Steven. Masih on kok — 24 jam.<span class="t">23:41</span></div>
+        <div class="msg them" data-d="1600">bisnisku katering, chat numpuk tiap malam</div>
+        <div class="msg me" data-d="2500">Paham. Buat katering biasanya yang paling makan waktu itu tanya menu sama cek slot tanggal ya? Itu bisa VIRA yang pegang.<span class="t">23:42</span></div>
+      </div>
+      <p class="caption">Percakapan itu terjadi jam 23:41. Steven sudah tidur.</p>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-1 js-wa" href="https://instagram.com/povstevens">Coba ngobrol dengan VIRA</a>
+      <a class="btn btn-2" href="#deck">Minta pitch deck gratis</a>
+    </div>
+    <p class="sig"><span class="dot"></span> Dibangun dan dirawat langsung oleh Steven Leroy</p>
+  </header>
+
+  <section id="benefit">
+    <span class="eyebrow">Yang berubah buat kamu</span>
+    <h2>Satu admin, dibantu VIRA, cukup.</h2>
+    <div class="bens">
+      <div class="ben">
+        <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+        <h3>Kamu tidur, chat tetap dibalas</h3>
+        <p>Calon pelanggan yang tanya jam 11 malam dijawab saat itu juga — bukan besok pagi saat sudah keburu dingin.</p>
+      </div>
+      <div class="ben">
+        <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M16 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 7a3 3 0 106 0 3 3 0 00-6 0M19 8v6M22 11h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Tidak perlu nambah orang</h3>
+        <p>Satu admin plus VIRA sanggup memegang volume chat yang biasanya butuh beberapa orang.</p>
+      </div>
+      <div class="ben">
+        <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Leads-mu tercatat rapi</h3>
+        <p>Siapa bertanya apa, datang dari mana, dan mana yang serius — semuanya tersimpan, bukan tenggelam di chat.</p>
+      </div>
+      <div class="ben">
+        <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 11.5l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>Kamu tetap pegang kendali</h3>
+        <p>Begitu percakapan butuh manusia, VIRA menyerahkannya ke kamu — bukan memaksakan jawaban.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="klien">
+    <span class="eyebrow">Sudah ditangani VIRA</span>
+    <h2>Dua bisnis, dua tujuan berbeda.</h2>
+    <p class="lede" style="margin-top:12px">Keduanya pakai VIRA, tapi tidak ada satu pun alur yang sama.</p>
+    <div class="clients">
+      <div class="client">
+        <img class="logo" src="__LOGO_TS__" alt="Logo The Scholars">
+        <b>The Scholars</b>
+        <span class="kind">Platform edukasi</span>
+        <p>Murid bisa tanya-jawab soal program dan langsung mendaftar kelas dari WhatsApp, tanpa menunggu jam kerja admin.</p>
+      </div>
+      <div class="client">
+        <img class="logo" src="__LOGO_PCR__" alt="Logo Persada Cisoka Residence">
+        <b>Persada Cisoka Residence</b>
+        <span class="kind">Developer properti</span>
+        <p>Calon pembeli dibimbing sampai menjadwalkan survey unit. Yang belum survey difollow-up otomatis oleh AI yang paham isi percakapannya — bukan template yang dikirim ke semua orang.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="paket">
+    <span class="eyebrow">Paket</span>
+    <h2>Mulai dari satu paket, tumbuh sesuai kebutuhan.</h2>
+
+    <div class="cards">
+      <div class="card hi">
+        <span class="tag">Basic</span>
+        <div class="price">Rp 3.000.000</div>
+        <div class="per">per bulan</div>
+        <p>Untuk bisnis yang chat-nya sudah ramai dan pertanyaannya berulang.</p>
+        <ul class="feat">
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Balas otomatis 24/7, bahasa natural</li>
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Penjadwalan &amp; follow-up otomatis</li>
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Catatan leads &amp; sumbernya</li>
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Pengalihan ke manusia saat perlu</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <span class="tag">Premium</span>
+        <div class="price q">Sesuai kebutuhan</div>
+        <div class="per">kita hitung bareng</div>
+        <p>Untuk bisnis yang butuh data konversi dan konsistensi brand.</p>
+        <ul class="feat">
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Semua fitur Basic</li>
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Laporan konversi &amp; jam tersibuk</li>
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Persona custom sesuai brand</li>
+          <li><svg class="tick" width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Dukungan prioritas</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="promo">
+      <b>Setup &amp; integrasi awal gratis untuk 10 klien pertama.</b><br>
+      Biaya pemakaian AI dihitung terpisah sesuai pemakaian — kita hitung bareng saat pitch deck.
+    </div>
+
+    <div class="newfeat">
+      <div class="nf">
+        <span class="badge">Baru</span>
+        <div><b>Kirim media otomatis</b><span>Foto, video, brosur, siteplan, atau katalog dikirim langsung ke pelanggan begitu diminta.</span></div>
+      </div>
+      <div class="nf">
+        <span class="badge">Baru</span>
+        <div><b>Paham gambar yang dikirim pelanggan</b><span>Pelanggan kirim foto produk, tangkapan layar, atau bukti transfer — VIRA membacanya dan menjawab sesuai isinya.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="deck">
+    <span class="eyebrow">Mulai dari sini</span>
+    <h2>Pitch deck khusus untuk bisnismu.</h2>
+    <div class="offer" style="margin-top:20px">
+      <span class="free">Gratis, tanpa komitmen.</span>
+      <p style="margin-top:10px;color:var(--muted)">Bukan template umum. Aku pelajari dulu kondisi bisnismu, lalu susun rancangannya khusus buat kamu.</p>
+      <ol class="steps">
+        <li>Cerita sebentar: chat seperti apa yang masuk, siapa yang membalas sekarang.</li>
+        <li>Aku susun rancangan alurnya, khusus untuk bisnismu.</li>
+        <li>Kita bahas bareng. Kalau belum cocok, decknya tetap jadi milikmu.</li>
+      </ol>
+      <div class="cta">
+        <a class="btn btn-1 js-wa" href="https://instagram.com/povstevens">Mulai lewat WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="lainnya" style="padding-top:0">
+    <div class="promo" style="background:var(--surface-2);border-color:var(--line)">
+      <b style="color:var(--ink)">Butuh otomasi AI yang lain?</b><br>
+      <span style="color:var(--muted)">Manajemen proyek, laporan otomatis, atau proses manual berulang di luar chat — ceritakan saja, kita lihat bisa dibantu atau tidak.</span>
+      <div class="cta" style="margin-top:14px">
+        <a class="btn btn-2 js-wa" href="https://instagram.com/povstevens">Hubungi lewat WhatsApp</a>
+      </div>
+    </div>
+  </section>
+
+  <hr class="hr">
+
+  <section id="profil">
+    <span class="eyebrow">Siapa yang mengerjakan</span>
+    <h2>Steven Leroy</h2>
+    <div class="prof">
+      <img src="__FOTO__" alt="Foto Steven Leroy">
+      <div class="who">
+        <p>Quality Assurance / Testing Analyst di sebuah bank swasta nasional, 5 tahun. Latar pendidikan arsitektur. Berbasis di Jakarta.</p>
+        <p>Masih aku sendiri yang memegang semua proyek. Tiap proyek dikerjakan serius, bukan diborong.</p>
+      </div>
+    </div>
+    <blockquote>
+      <p>Kebiasaan QA-ku kebawa ke sini: sebelum bertanya “apa sistem ini jalan”, aku bertanya dulu <strong>“apa sistem ini bisa disalahgunakan”</strong>.</p>
+      <p style="color:var(--muted);font-size:.92rem">Setiap VIRA yang aku bangun aku pancing dulu dengan skenario aneh dan iseng, sebelum dipakai pelanggan asli.</p>
+    </blockquote>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <h2 style="font-size:1.45rem">Ngobrol dulu, gratis.</h2>
+    <p class="lede" style="margin-top:10px">Ceritakan kondisi bisnismu. Tidak ada kewajiban apa pun.</p>
+    <div class="links">
+      <a class="btn btn-1 js-wa" href="https://instagram.com/povstevens">WhatsApp</a>
+      <a class="btn btn-2" href="https://instagram.com/povstevens">@povstevens</a>
+      <a class="btn btn-2" href="mailto:chatminagent@gmail.com">Email</a>
+    </div>
+    <p class="note">
+      VIRA · AI Customer Service WhatsApp<br>
+      Dibangun dan dirawat oleh Steven Leroy · Jakarta<br>
+      Logo klien ditampilkan atas seizin masing-masing.
+    </p>
+  </div>
+</footer>
+
+<script>
+/* ──────────────────────────────────────────────────────────────
+   NOMOR WHATSAPP VIRA — ganti satu baris ini saja saat nomor baru aktif.
+   Format kode negara tanpa tanda plus, contoh: '628123456789'.
+   Kalau dikosongkan, semua tombol WhatsApp otomatis jatuh ke Instagram
+   supaya tidak pernah ada tautan mati.
+   ────────────────────────────────────────────────────────────── */
+const WA_NUMBER = '6285155202354';
+const WA_TEXT   = 'Halo VIRA, aku mau tanya soal AI customer service buat bisnisku.';
+
+if (WA_NUMBER) {
+  const href = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(WA_TEXT);
+  document.querySelectorAll('.js-wa').forEach(a => { a.href = href; });
+}
+
+/* Gelembung chat terlihat by default; animasi hanya kalau JS benar-benar jalan. */
+const thread = document.getElementById('thread');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (thread && !reduce && 'IntersectionObserver' in window) {
+  thread.classList.add('anim');
+  const msgs = [...thread.querySelectorAll('.msg')];
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => {
+      if (!e.isIntersecting) return;
+      io.disconnect();
+      msgs.forEach(m => setTimeout(() => m.classList.add('in'), +m.dataset.d || 0));
+    });
+  }, { threshold: .35 });
+  io.observe(document.getElementById('demo'));
+}
+</script>

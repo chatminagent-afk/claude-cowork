@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pratinjau — Blok Topik Bulanan</title>
+<link rel="stylesheet" href="../app/css/app.css">
+<style>
+  body { padding: 16px; }
+  .pv-note { font-size: 12px; color: var(--text-muted); margin: 8px 0 20px; line-height: 1.6; }
+  h2.pv { font-size: 14px; margin: 24px 0 10px; color: var(--text-muted);
+          text-transform: uppercase; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <h1 style="font-size:18px;margin:0 0 4px">Pratinjau blok topik bulanan</h1>
+  <div class="pv-note">
+    Dirender dengan <code>charts.js</code> + <code>render.js</code> produksi,
+    dari payload asli <code>vdBuildPayload()</code>. Bukan mockup.
+  </div>
+
+  <h2 class="pv">KPI</h2>
+  <div id="kpis"></div>
+
+  <h2 class="pv">Chart</h2>
+  <div id="charts"></div>
+
+  <h2 class="pv">Tabel</h2>
+  <div id="tables"></div>
+</div>
+
+<script src="../n8n/src/tenants.js"></script>
+<script src="../n8n/src/build-payload.js"></script>
+<script src="../app/js/config.js"></script>
+<script src="../app/js/charts.js"></script>
+<script src="../app/js/render.js"></script>
+<script>
+(function () {
+  function get(u) { var x = new XMLHttpRequest(); x.open('GET', u, false); x.send(null); return JSON.parse(x.responseText); }
+  var fx  = get('fixtures/thescholars.json');
+  var now = get('fixtures/manifest.json').now_ms;
+
+  var payload = vdBuildPayload(VIRA_TENANTS.thescholars, fx, { nowMs: now, cached: false });
+
+  var isTopik = function (o) { return String(o.id).indexOf('topik') === 0; };
+  var kpis   = payload.kpis.filter(function (k) { return String(k.id).indexOf('bulan_') === 0; });
+  var charts = payload.charts.filter(isTopik);
+  var tables = payload.tables.filter(isTopik);
+
+  VDRender.kpiGrid(document.getElementById('kpis'), kpis, 30);
+  VDRender.chartGrid(document.getElementById('charts'), charts, 30);
+
+  var host = document.getElementById('tables');
+  tables.forEach(function (t) { host.appendChild(VDRender.simpleTable(t)); });
+})();
+</script>
+</body>
+</html>

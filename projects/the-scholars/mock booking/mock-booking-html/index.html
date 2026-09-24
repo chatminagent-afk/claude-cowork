@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>Mock Interview Booking — The Scholars</title>
+  <meta name="description" content="Daftar sesi Mock Interview bersama The Scholars." />
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --black: #111111;
+      --white: #ffffff;
+      --gray-50: #f9f9f8;
+      --gray-100: #f1f0ec;
+      --gray-200: #e3e2dc;
+      --gray-400: #b0afa8;
+      --gray-600: #6b6a65;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --green-dark: #0F6E56;
+      --red: #E24B4A;
+      --red-light: #FCEBEB;
+      --yellow: #E8A838;
+      --yellow-light: #FFF8E6;
+      --yellow-dark: #8A5700;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--gray-50);
+      color: var(--black);
+      min-height: 100dvh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.25rem 1rem;
+      border-bottom: 0.5px solid var(--gray-200);
+      background: var(--white);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+      display: block;
+    }
+
+    .brand-name {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--gray-600);
+      margin-top: 1px;
+    }
+
+    .main {
+      flex: 1;
+      padding: 1.5rem 1.25rem 5rem;
+      max-width: 560px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .intro {
+      margin-bottom: 1.75rem;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      line-height: 1.25;
+    }
+
+    .page-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.65;
+    }
+
+    .sec-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--gray-600);
+      margin-bottom: 12px;
+    }
+
+    .divider {
+      height: 0.5px;
+      background: var(--gray-200);
+      margin: 1.5rem 0;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--black);
+    }
+
+    .field label .req {
+      color: var(--red);
+      margin-left: 2px;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      font-family: var(--font);
+      font-size: 15px;
+      padding: 11px 13px;
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      background: var(--white);
+      color: var(--black);
+      outline: none;
+      transition: border-color 0.15s;
+      min-height: 46px;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--black);
+      border-width: 1px;
+    }
+
+    .field input.err,
+    .field select.err {
+      border-color: var(--red);
+      border-width: 1px;
+    }
+
+    .field input::placeholder {
+      color: var(--gray-400);
+    }
+
+    .field input[readonly] {
+      background: var(--gray-50);
+      color: var(--gray-600);
+      cursor: default;
+    }
+
+    .field .hint {
+      font-size: 11px;
+      color: var(--gray-600);
+      line-height: 1.5;
+    }
+
+    .field .err-msg {
+      font-size: 12px;
+      color: var(--red);
+      display: none;
+    }
+
+    .field .err-msg.show {
+      display: block;
+    }
+
+    .sel-wrap {
+      position: relative;
+    }
+
+    .sel-wrap i {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 16px;
+      color: var(--gray-600);
+    }
+
+    .sel-wrap select {
+      padding-right: 36px;
+    }
+
+    .slot-preview {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--green-light);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--green-dark);
+    }
+
+    .slot-preview.show {
+      display: flex;
+    }
+
+    .slot-preview i {
+      font-size: 16px;
+      color: var(--green);
+      flex-shrink: 0;
+    }
+
+    .fetch-err {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      background: var(--red-light);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--red);
+    }
+
+    .fetch-err.show {
+      display: flex;
+    }
+
+    .fetch-err i {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .skeleton {
+      height: 46px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0 }
+      100% { background-position: -200% 0 }
+    }
+
+    .submit-err {
+      display: none;
+      align-items: flex-start;
+      gap: 9px;
+      padding: 12px 14px;
+      background: var(--red-light);
+      border: 0.5px solid var(--red);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--red);
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .submit-err.show {
+      display: flex;
+    }
+
+    .submit-err i {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .form-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-top: 0.25rem;
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: var(--gray-600);
+      line-height: 1.5;
+    }
+
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px;
+      background: var(--black);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      min-height: 50px;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      opacity: 0.82;
+    }
+
+    .btn-submit:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-submit:disabled {
+      background: var(--gray-200);
+      color: var(--gray-600);
+      cursor: not-allowed;
+    }
+
+    .btn-submit i {
+      font-size: 18px;
+    }
+
+    /* Success screen */
+    .success-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.25rem 3rem;
+      text-align: center;
+    }
+
+    .success-screen.show {
+      display: flex;
+    }
+
+    .success-ring {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 1.5px solid var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .success-ring i {
+      font-size: 28px;
+      color: var(--black);
+    }
+
+    .success-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .success-sub {
+      font-size: 13px;
+      color: var(--gray-600);
+      margin-bottom: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .notify-warn {
+      display: none;
+      width: 100%;
+      max-width: 360px;
+      background: var(--yellow-light);
+      border: 0.5px solid var(--yellow);
+      border-radius: var(--radius-md);
+      padding: 0.875rem 1rem;
+      margin-bottom: 1rem;
+      font-size: 13px;
+      color: var(--yellow-dark);
+      line-height: 1.55;
+      text-align: left;
+    }
+
+    .notify-warn.show {
+      display: block;
+    }
+
+    .notify-warn strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .success-card {
+      width: 100%;
+      max-width: 360px;
+      background: var(--white);
+      border: 0.5px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .success-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .success-row i {
+      font-size: 16px;
+      color: var(--gray-600);
+      flex-shrink: 0;
+      width: 18px;
+    }
+
+    .success-row.sub-row {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--gray-600);
+      padding-top: 0;
+    }
+
+    .success-divider {
+      height: 0.5px;
+      background: var(--gray-100);
+      margin: 4px 0;
+    }
+
+    .success-note {
+      font-size: 12px;
+      color: var(--gray-600);
+      max-width: 300px;
+      line-height: 1.6;
+    }
+
+    @media (min-width: 600px) {
+      .main {
+        padding: 2rem 1.5rem 4rem;
+      }
+
+      .page-title {
+        font-size: 26px;
+      }
+
+      .form-footer {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .footer-note {
+        flex: 1;
+        max-width: 280px;
+      }
+
+      .btn-submit {
+        width: auto;
+        padding: 12px 28px;
+        min-height: 44px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page">
+
+    <header class="header">
+      <div class="brand">
+        <div class="brand-icon"><img src="logo.jpg" alt="The Scholars Logo" /></div>
+        <div>
+          <div class="brand-name">The Scholars</div>
+          <div class="brand-sub">Mock Interview Booking</div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main" id="formView">
+      <div class="intro">
+        <h1 class="page-title">Daftar Mock Interview</h1>
+        <p class="page-desc">Pilih jadwal yang tersedia dan isi data diri. Konfirmasi akan dikirim via WhatsApp.</p>
+      </div>
+
+      <form id="bookingForm" novalidate>
+
+        <!-- ── Jadwal ── -->
+        <p class="sec-label">Pilih Jadwal</p>
+
+        <div class="field" id="slotField">
+          <label for="slotSelect">Jadwal sesi <span class="req">*</span></label>
+          <div class="skeleton" id="slotSkeleton"></div>
+          <div class="fetch-err" id="fetchErr">
+            <i class="ti ti-wifi-off"></i>
+            <span>Gagal memuat jadwal. Coba refresh halaman.</span>
+          </div>
+          <div class="sel-wrap" id="slotSelWrap" style="display:none">
+            <select id="slotSelect">
+              <option value="">— Pilih jadwal —</option>
+            </select>
+            <i class="ti ti-chevron-down"></i>
+          </div>
+          <span class="err-msg" id="slotErr">Pilih jadwal terlebih dahulu.</span>
+          <div class="slot-preview" id="slotPreview">
+            <i class="ti ti-calendar-event"></i>
+            <span id="slotPreviewText"></span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Data Orang Tua ── -->
+        <p class="sec-label">Data Orang Tua</p>
+
+        <div class="field">
+          <label for="fNamaOrangTua">Nama Orang Tua <span class="req">*</span></label>
+          <input type="text" id="fNamaOrangTua" placeholder="Nama orang tua / wali" autocomplete="name" />
+          <span class="err-msg" id="namaOrangTuaErr">Nama minimal 2 karakter.</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Data Anak / Peserta ── -->
+        <p class="sec-label">Data Anak / Peserta</p>
+
+        <div class="field">
+          <label for="fNamaAnak">Nama Anak <span class="req">*</span></label>
+          <input type="text" id="fNamaAnak" placeholder="Nama lengkap anak" />
+          <span class="err-msg" id="namaAnakErr">Nama minimal 2 karakter.</span>
+        </div>
+
+        <div class="field">
+          <label for="fWaAnak">Nomor WA Anak <span class="req">*</span></label>
+          <input type="tel" id="fWaAnak" inputmode="numeric" placeholder="08xx atau 628xx" autocomplete="tel" />
+          <span class="hint">Format: 08xxxxxxxx atau 628xxxxxxxx</span>
+          <span class="err-msg" id="waAnakErr">Format tidak valid. Gunakan 08xx atau 628xx, min 10 digit.</span>
+        </div>
+
+        <div class="field">
+          <label for="fAsalKota">Asal Kota <span class="req">*</span></label>
+          <input type="text" id="fAsalKota" placeholder="Contoh: Jakarta, Surabaya" />
+          <span class="err-msg" id="asalKotaErr">Asal kota wajib diisi.</span>
+        </div>
+
+        <div class="field">
+          <label for="fSekolah">Sekolah <span class="req">*</span></label>
+          <input type="text" id="fSekolah" placeholder="Nama sekolah" />
+          <span class="err-msg" id="sekolahErr">Nama sekolah wajib diisi.</span>
+        </div>
+
+        <div class="field">
+          <label for="fKelas">Kelas <span class="req">*</span></label>
+          <input type="text" id="fKelas" placeholder="Contoh: 11, 12, Grade 11" />
+          <span class="err-msg" id="kelasErr">Kelas wajib diisi.</span>
+        </div>
+
+        <div class="field">
+          <label for="fKurikulum">Kurikulum Sekolah <span class="req">*</span></label>
+          <div class="sel-wrap">
+            <select id="fKurikulum">
+              <option value="">— Pilih kurikulum —</option>
+              <option value="Kurikulum Nasional (K13/Merdeka)">Kurikulum Nasional (K13/Merdeka)</option>
+              <option value="Cambridge (IGCSE/A-Level)">Cambridge (IGCSE/A-Level)</option>
+              <option value="IB (International Baccalaureate)">IB (International Baccalaureate)</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+            <i class="ti ti-chevron-down"></i>
+          </div>
+          <span class="err-msg" id="kurikulumErr">Kurikulum wajib dipilih.</span>
+        </div>
+
+        <div class="field">
+          <label for="fTarget">Target Universitas dan Jurusan <span class="req">*</span></label>
+          <input type="text" id="fTarget" placeholder="Contoh: NUS – Business, NTU – Engineering" />
+          <span class="err-msg" id="targetErr">Target universitas dan jurusan wajib diisi.</span>
+        </div>
+
+        <div class="field">
+          <label for="fBimbingan">Bimbingan</label>
+          <input type="text" id="fBimbingan" value="University Mock Interview" readonly />
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Submit ── -->
+        <div class="submit-err" id="submitErr">
+          <i class="ti ti-alert-circle"></i>
+          <span id="submitErrText">Gagal mengirim booking. Periksa koneksi dan coba lagi.</span>
+        </div>
+
+        <div class="form-footer">
+          <p class="footer-note">Data kamu hanya digunakan untuk keperluan booking sesi ini.</p>
+          <button type="submit" class="btn-submit" id="btnSubmit">
+            <i class="ti ti-send"></i> Kirim booking
+          </button>
+        </div>
+
+      </form>
+    </main>
+
+    <!-- ── Success screen ── -->
+    <div class="success-screen" id="successView">
+      <div class="success-ring"><i class="ti ti-check"></i></div>
+      <h2 class="success-title">Booking diterima!</h2>
+      <p class="success-sub">Kami sudah menerima pendaftaranmu.</p>
+
+      <!-- Warning banner: hanya muncul jika notify Sam gagal -->
+      <div class="notify-warn" id="notifyWarn">
+        <strong>⚠️ Perhatian</strong>
+        Booking kamu sudah tersimpan, tapi notifikasi otomatis ke Sam gagal terkirim. Tim kami akan segera menghubungimu via WhatsApp.
+      </div>
+
+      <div class="success-card">
+        <div class="success-row"><i class="ti ti-user"></i><span id="sNamaAnak"></span></div>
+        <div class="success-row sub-row"><i class="ti ti-users"></i><span id="sNamaOrangTua"></span></div>
+        <div class="success-divider"></div>
+        <div class="success-row"><i class="ti ti-calendar-event"></i><span id="sTanggal"></span></div>
+        <div class="success-row"><i class="ti ti-clock"></i><span id="sJam"></span></div>
+        <div class="success-divider"></div>
+        <div class="success-row"><i class="ti ti-brand-whatsapp"></i><span id="sWa"></span></div>
+      </div>
+      <p class="success-note">Konfirmasi akan dikirim via WhatsApp ke nomor di atas. Pastikan nomornya aktif ya!</p>
+    </div>
+
+  </div>
+
+  <script>
+    // ============================================================
+    // KONFIGURASI — isi setelah kedua workflow n8n aktif
+    // ============================================================
+    const CONFIG = {
+      SLOTS_URL: 'https://n8n.srv1270416.hstgr.cloud/webhook/mock-booking-slots',
+      SUBMIT_URL: 'https://n8n.srv1270416.hstgr.cloud/webhook/mock-booking-submit',
+      MOCK_MODE: false, // ganti ke false setelah webhook n8n siap
+    }
+
+    // Mock data untuk test lokal
+    const MOCK_SLOTS = [
+      { id: '1', tanggal: 'Senin, 14 Jul 2026', jamMulai: '19:30', jamSelesai: '21:30', booked: false },
+      { id: '2', tanggal: 'Selasa, 15 Jul 2026', jamMulai: '19:30', jamSelesai: '21:30', booked: false },
+      { id: '3', tanggal: 'Kamis, 17 Jul 2026', jamMulai: '19:30', jamSelesai: '21:30', booked: true },
+      { id: '4', tanggal: 'Jumat, 18 Jul 2026', jamMulai: '19:30', jamSelesai: '21:30', booked: false },
+      { id: '5', tanggal: 'Senin, 21 Jul 2026', jamMulai: '19:30', jamSelesai: '21:30', booked: false },
+    ]
+
+    // State
+    let slots = []
+
+    // DOM refs
+    const slotSkeleton   = document.getElementById('slotSkeleton')
+    const fetchErrEl     = document.getElementById('fetchErr')
+    const slotSelWrap    = document.getElementById('slotSelWrap')
+    const slotSelect     = document.getElementById('slotSelect')
+    const slotPreview    = document.getElementById('slotPreview')
+    const slotPreviewTx  = document.getElementById('slotPreviewText')
+    const fNamaOrangTua  = document.getElementById('fNamaOrangTua')
+    const fNamaAnak      = document.getElementById('fNamaAnak')
+    const fWaAnak        = document.getElementById('fWaAnak')
+    const fAsalKota      = document.getElementById('fAsalKota')
+    const fSekolah       = document.getElementById('fSekolah')
+    const fKelas         = document.getElementById('fKelas')
+    const fKurikulum     = document.getElementById('fKurikulum')
+    const fTarget        = document.getElementById('fTarget')
+    const btnSubmit      = document.getElementById('btnSubmit')
+    const submitErrEl    = document.getElementById('submitErr')
+    const submitErrTx    = document.getElementById('submitErrText')
+    const formView       = document.getElementById('formView')
+    const successView    = document.getElementById('successView')
+    const notifyWarn     = document.getElementById('notifyWarn')
+
+    // ── Helpers ──────────────────────────────────────────────────
+    function validateWa(v) {
+      const c = v.replace(/[\s\-().+]/g, '')
+      return /^(08\d{8,12}|628\d{8,12})$/.test(c)
+    }
+    function normalizeWa(v) {
+      const c = v.replace(/[\s\-().+]/g, '')
+      return c.startsWith('08') ? '62' + c.slice(1) : c
+    }
+    function generateId() {
+      const d = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+      return 'MI-' + d + '-' + Math.floor(Math.random() * 900 + 100)
+    }
+    function showFieldErr(inputEl, errId) {
+      inputEl.classList.add('err')
+      document.getElementById(errId).classList.add('show')
+    }
+    function clearFieldErr(inputEl, errId) {
+      inputEl.classList.remove('err')
+      document.getElementById(errId).classList.remove('show')
+      submitErrEl.classList.remove('show')
+    }
+    function showSuccess(slot, namaAnak, namaOrangTua, waClean, warnNotify) {
+      document.getElementById('sNamaAnak').textContent = namaAnak
+      document.getElementById('sNamaOrangTua').textContent = 'Orang tua: ' + namaOrangTua
+      document.getElementById('sTanggal').textContent = slot.tanggal
+      document.getElementById('sJam').textContent = slot.jamMulai + '–' + slot.jamSelesai + ' WIB'
+      document.getElementById('sWa').textContent = waClean
+      if (warnNotify) notifyWarn.classList.add('show')
+      formView.style.display = 'none'
+      successView.classList.add('show')
+    }
+
+    // ── Load Slots ────────────────────────────────────────────────
+    async function loadSlots() {
+      try {
+        if (CONFIG.MOCK_MODE) {
+          await new Promise(r => setTimeout(r, 600))
+          slots = MOCK_SLOTS
+        } else {
+          const res = await fetch(CONFIG.SLOTS_URL)
+          if (!res.ok) throw new Error('Server error ' + res.status)
+          const data = await res.json()
+          if (!Array.isArray(data)) throw new Error('Format tidak valid')
+          slots = data
+        }
+        renderSlots()
+      } catch (e) {
+        slotSkeleton.style.display = 'none'
+        fetchErrEl.classList.add('show')
+        console.error('loadSlots error:', e)
+      }
+    }
+
+    function renderSlots() {
+      slotSkeleton.style.display = 'none'
+      slotSelWrap.style.display = 'block'
+      slots.forEach(s => {
+        const opt = document.createElement('option')
+        opt.value = s.id
+        opt.textContent = s.tanggal + ' · ' + s.jamMulai + '–' + s.jamSelesai + ' WIB' + (s.booked ? ' [Penuh]' : '')
+        if (s.booked) opt.disabled = true
+        slotSelect.appendChild(opt)
+      })
+    }
+
+    // ── Event listeners ───────────────────────────────────────────
+    slotSelect.addEventListener('change', () => {
+      clearFieldErr(slotSelect, 'slotErr')
+      const s = slots.find(x => x.id === slotSelect.value)
+      if (s) {
+        slotPreviewTx.textContent = s.tanggal + ' · ' + s.jamMulai + '–' + s.jamSelesai + ' WIB'
+        slotPreview.classList.add('show')
+      } else {
+        slotPreview.classList.remove('show')
+      }
+    })
+    fNamaOrangTua.addEventListener('input', () => clearFieldErr(fNamaOrangTua, 'namaOrangTuaErr'))
+    fNamaAnak.addEventListener('input',     () => clearFieldErr(fNamaAnak, 'namaAnakErr'))
+    fWaAnak.addEventListener('input',       () => clearFieldErr(fWaAnak, 'waAnakErr'))
+    fAsalKota.addEventListener('input',     () => clearFieldErr(fAsalKota, 'asalKotaErr'))
+    fSekolah.addEventListener('input',      () => clearFieldErr(fSekolah, 'sekolahErr'))
+    fKelas.addEventListener('input',        () => clearFieldErr(fKelas, 'kelasErr'))
+    fKurikulum.addEventListener('change',   () => clearFieldErr(fKurikulum, 'kurikulumErr'))
+    fTarget.addEventListener('input',       () => clearFieldErr(fTarget, 'targetErr'))
+
+    // ── Submit ────────────────────────────────────────────────────
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      submitErrEl.classList.remove('show')
+
+      const slotVal      = slotSelect.value
+      const namaOrangTua = fNamaOrangTua.value.trim()
+      const namaAnak     = fNamaAnak.value.trim()
+      const waAnak       = fWaAnak.value.trim()
+      const asalKota     = fAsalKota.value.trim()
+      const sekolah      = fSekolah.value.trim()
+      const kelas        = fKelas.value.trim()
+      const kurikulum    = fKurikulum.value
+      const target       = fTarget.value.trim()
+
+      // Validate
+      let valid = true
+      if (!slotVal)              { showFieldErr(slotSelect, 'slotErr');           valid = false }
+      if (namaOrangTua.length < 2) { showFieldErr(fNamaOrangTua, 'namaOrangTuaErr'); valid = false }
+      if (namaAnak.length < 2)   { showFieldErr(fNamaAnak, 'namaAnakErr');        valid = false }
+      if (!validateWa(waAnak))   { showFieldErr(fWaAnak, 'waAnakErr');            valid = false }
+      if (!asalKota)             { showFieldErr(fAsalKota, 'asalKotaErr');         valid = false }
+      if (!sekolah)              { showFieldErr(fSekolah, 'sekolahErr');           valid = false }
+      if (!kelas)                { showFieldErr(fKelas, 'kelasErr');               valid = false }
+      if (!kurikulum)            { showFieldErr(fKurikulum, 'kurikulumErr');       valid = false }
+      if (!target)               { showFieldErr(fTarget, 'targetErr');             valid = false }
+
+      if (!valid) {
+        const firstErr = document.querySelector('.err')
+        if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        return
+      }
+
+      const slot = slots.find(s => s.id === slotVal)
+      if (!slot) { showFieldErr(slotSelect, 'slotErr'); return }
+
+      const waClean = normalizeWa(waAnak)
+      const payload = {
+        idBooking        : generateId(),
+        tanggal          : slot.tanggal,
+        jamMulai         : slot.jamMulai,
+        jamSelesai       : slot.jamSelesai,
+        slotId           : slot.id,
+        namaOrangTua     : namaOrangTua,
+        namaAnak         : namaAnak,
+        noWaAnak         : waClean,
+        asalKota         : asalKota,
+        sekolah          : sekolah,
+        kelas            : kelas,
+        kurikulumSekolah : kurikulum,
+        targetUniJurusan : target,
+        bimbingan        : 'University Mock Interview',
+        status           : 'Pending',
+        timestamp        : Math.floor(Date.now() / 1000),
+      }
+
+      btnSubmit.disabled = true
+      btnSubmit.innerHTML = '<i class="ti ti-loader-2"></i> Mengirim...'
+
+      try {
+        if (CONFIG.MOCK_MODE) {
+          // Simulasi delay dan langsung sukses
+          await new Promise(r => setTimeout(r, 800))
+          showSuccess(slot, namaAnak, namaOrangTua, waClean, false)
+          return
+        }
+
+        const res = await fetch(CONFIG.SUBMIT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+
+        // Slot sudah diambil orang lain
+        if (res.status === 409) {
+          document.getElementById('slotErr').textContent = 'Jadwal ini baru saja diambil. Silakan pilih jadwal lain.'
+          showFieldErr(slotSelect, 'slotErr')
+          slotSelect.value = ''
+          slotPreview.classList.remove('show')
+          btnSubmit.disabled = false
+          btnSubmit.innerHTML = '<i class="ti ti-send"></i> Kirim booking'
+          return
+        }
+
+        if (!res.ok) throw new Error('Server error ' + res.status)
+
+        const data = await res.json()
+
+        // Booking tersimpan tapi notify Sam gagal
+        if (data.error === 'NOTIFY_FAILED') {
+          showSuccess(slot, namaAnak, namaOrangTua, waClean, true)
+          return
+        }
+
+        // Sukses penuh
+        showSuccess(slot, namaAnak, namaOrangTua, waClean, false)
+
+      } catch (err) {
+        console.error('Submit error:', err)
+        submitErrTx.textContent = 'Gagal mengirim booking. Periksa koneksi internet kamu dan coba lagi.'
+        submitErrEl.classList.add('show')
+        btnSubmit.disabled = false
+        btnSubmit.innerHTML = '<i class="ti ti-send"></i> Kirim booking'
+      }
+    })
+
+    loadSlots()
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "user_code",
+                                                                     "value":  "KM40LI0426"
+                                                                 },
+                                                                 {
+                                                                     "name":  "secret",
+                                                                     "value":  "REDACTED"
+                                                                 },
+                                                                 {
+                                                                     "name":  "device_id",
+                                                                     "value":  "D-4ZV1F"
+                                                                 },
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "=6596110395"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ \"🚨 [VIRA] UNKNOWN :\\n\" + $(\u0027Chat Counter\u0027).first().json.user_wa + \"\\n\" + $(\u0027Chat Counter\u0027).first().json.user_name + \"\\nPertanyaan: \" + $(\u0027Cek_user_status\u0027).first().json.user_message_final }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     1200,
+                     3136
+                 ],
+    "id":  "7dad3cc7-1071-439d-8d68-74a904d5ce1b",
+    "name":  "Notify Admin Unknown",
+    "retryOnFail":  true,
+    "waitBetweenTries":  2000
+}

@@ -1,0 +1,77 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  3
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "343de11e-8210-4477-8b10-4f421dfb123a",
+                                                                 "leftValue":  "={{ $json.body.from }}",
+                                                                 "rightValue":  "6285155202354",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals"
+                                                                              }
+                                                             },
+                                                             {
+                                                                 "id":  "c54bf3fd-59dc-4ac8-a48e-5a4a9ff06481",
+                                                                 "leftValue":  "={{ $json.body.from }}",
+                                                                 "rightValue":  "6281510624599",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             },
+                                                             {
+                                                                 "id":  "91397d46-d41c-427a-abba-5644e31e2730",
+                                                                 "leftValue":  "={{ $json.body.from }}",
+                                                                 "rightValue":  "6596110395",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             },
+                                                             {
+                                                                 "id":  "0f0f74e6-11cc-4ec5-a191-a1ed5ac6312b",
+                                                                 "leftValue":  "={{ $json.body.from }}",
+                                                                 "rightValue":  "6589200455",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             },
+                                                             {
+                                                                 "id":  "e5f6a7b8-0005-4a05-9005-wl628176480",
+                                                                 "leftValue":  "={{ $json.body.from }}",
+                                                                 "rightValue":  "628176480658",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "or"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.3,
+    "position":  [
+                     -4752,
+                     2816
+                 ],
+    "id":  "8f7f1f47-a6fe-43df-b4b3-3a219e5183de",
+    "name":  "IF (Whitelist)",
+    "disabled":  true
+}

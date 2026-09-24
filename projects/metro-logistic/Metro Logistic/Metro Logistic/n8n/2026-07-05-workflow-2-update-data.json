@@ -1,0 +1,415 @@
+{
+  "name": "WF2 - Update Data Tracking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tracking-update",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-post",
+      "name": "Webhook POST tracking-update",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        400
+      ],
+      "webhookId": "tracking-update"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF2 - Node Code: validasi input update.\n// Field wajib: no_resi, nama_admin, status, lokasi.\n// Tidak boleh kosong / hanya spasi. Status harus salah satu enum.\n// Jika invalid => set flag valid=false + pesan error (respond 400 nanti).\n// ============================================================\n\nconst ENUM_STATUS = [\n  \"Manifest\",\n  \"On Process\",\n  \"Transit\",\n  \"Out for Delivery\",\n  \"Delivered\",\n  \"Failed/Return\"\n];\n\n// Ambil body request dari webhook.\nconst body = ($json.body) ? $json.body : $json;\n\nfunction bersih(v) {\n  return (v === undefined || v === null) ? \"\" : String(v).trim();\n}\n\nconst no_resi = bersih(body.no_resi).toUpperCase();\nconst nama_admin = bersih(body.nama_admin);\nconst status = bersih(body.status);\nconst lokasi = bersih(body.lokasi);\n\n// Kumpulkan error validasi.\nconst errors = [];\nif (!no_resi) errors.push(\"no_resi wajib diisi\");\nif (!nama_admin) errors.push(\"nama_admin wajib diisi\");\nif (!status) errors.push(\"status wajib diisi\");\nif (!lokasi) errors.push(\"lokasi wajib diisi\");\nif (status && !ENUM_STATUS.includes(status)) {\n  errors.push(\"status tidak valid. Pilihan: \" + ENUM_STATUS.join(\", \"));\n}\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      valid: false,\n      error: errors.join(\"; \")\n    }\n  }];\n}\n\n// Valid: teruskan data bersih.\nreturn [{\n  json: {\n    valid: true,\n    no_resi: no_resi,\n    nama_admin: nama_admin,\n    status: status,\n    lokasi: lokasi\n  }\n}];\n"
+      },
+      "id": "code-validasi",
+      "name": "Code Validasi Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-valid",
+      "name": "IF Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read",
+      "name": "Baca Sheet Untuk Update",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        880,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF2 - Node Code: proses update baris atau append baris baru.\n// - Lookup baris sheet berdasarkan No_Resi.\n// - Jika ada: parse riwayat (try/catch; jika korup mulai array baru namun\n//   simpan raw lama sebagai catatan di elemen pertama), APPEND entri baru,\n//   siapkan payload UPDATE by row_number.\n// - Jika belum ada: siapkan payload APPEND baris baru dengan 1 entri.\n// Output menandai mode: \"update\" atau \"append\" untuk routing node berikut.\n// ============================================================\n\n// Data hasil validasi (item pertama dari node Validasi).\nconst val = $items('Code Validasi Input')[0].json;\nconst no_resi = val.no_resi;\nconst nama_admin = val.nama_admin;\nconst status = val.status;\nconst lokasi = val.lokasi;\n\n// Waktu sekarang dalam ISO 8601 dengan offset +07:00 (Asia/Jakarta).\nfunction nowJakartaISO() {\n  const now = new Date();\n  // Konversi ke waktu Jakarta (UTC+7) lalu format manual dengan offset tetap.\n  const jakartaMs = now.getTime() + (7 * 60 * 60 * 1000);\n  const d = new Date(jakartaMs);\n  const pad = (n) => String(n).padStart(2, '0');\n  const yyyy = d.getUTCFullYear();\n  const MM = pad(d.getUTCMonth() + 1);\n  const dd = pad(d.getUTCDate());\n  const hh = pad(d.getUTCHours());\n  const mm = pad(d.getUTCMinutes());\n  const ss = pad(d.getUTCSeconds());\n  return `${yyyy}-${MM}-${dd}T${hh}:${mm}:${ss}+07:00`;\n}\n\nconst waktu = nowJakartaISO();\n\n// Entri riwayat baru sesuai kontrak.\nconst entriBaru = {\n  waktu: waktu,\n  status: status,\n  lokasi: lokasi,\n  admin: nama_admin\n};\n\n// Rows sheet dari node Baca Sheet.\nconst rows = $items('Baca Sheet Untuk Update').map(i => i.json);\n\n// Cari baris yang cocok (No_Resi uppercase).\nlet baris = null;\nfor (const row of rows) {\n  const key = String(row.No_Resi || '').trim().toUpperCase();\n  if (key === no_resi) { baris = row; break; }\n}\n\nif (baris) {\n  // ---- MODE UPDATE ----\n  // Parse riwayat lama dengan aman.\n  let riwayat = [];\n  const raw = baris.Riwayat_Posisi_JSON;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    try {\n      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;\n      if (Array.isArray(parsed)) {\n        riwayat = parsed;\n      } else {\n        throw new Error('bukan array');\n      }\n    } catch (e) {\n      // JSON korup: mulai array baru, simpan raw lama sebagai catatan.\n      riwayat = [{\n        waktu: waktu,\n        status: 'CATATAN_SISTEM',\n        lokasi: 'Data riwayat lama korup, disimpan sebagai raw',\n        admin: 'SISTEM',\n        raw_lama: String(raw)\n      }];\n    }\n  }\n\n  // Append entri baru di akhir.\n  riwayat.push(entriBaru);\n\n  // row_number diperlukan Google Sheets untuk update by row.\n  const rowNumber = baris.row_number;\n\n  return [{\n    json: {\n      mode: 'update',\n      row_number: rowNumber,\n      No_Resi: baris.No_Resi,\n      Pengirim: baris.Pengirim || '',\n      Penerima: baris.Penerima || '',\n      Status_Terakhir: status,\n      Riwayat_Posisi_JSON: JSON.stringify(riwayat),\n      Timestamp_Update: waktu,\n      total_riwayat: riwayat.length\n    }\n  }];\n} else {\n  // ---- MODE APPEND (resi belum ada) ----\n  const riwayat = [entriBaru];\n  return [{\n    json: {\n      mode: 'append',\n      No_Resi: no_resi,\n      Pengirim: '',\n      Penerima: '',\n      Status_Terakhir: status,\n      Riwayat_Posisi_JSON: JSON.stringify(riwayat),\n      Timestamp_Update: waktu,\n      total_riwayat: riwayat.length\n    }\n  }];\n}\n"
+      },
+      "id": "code-proses",
+      "name": "Code Proses Update/Append",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-mode",
+              "leftValue": "={{ $json.mode }}",
+              "rightValue": "update",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-mode",
+      "name": "IF Mode Update?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "No_Resi": "={{ $json.No_Resi }}",
+            "Status_Terakhir": "={{ $json.Status_Terakhir }}",
+            "Riwayat_Posisi_JSON": "={{ $json.Riwayat_Posisi_JSON }}",
+            "Timestamp_Update": "={{ $json.Timestamp_Update }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets-update",
+      "name": "Update Baris Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1560,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No_Resi": "={{ $json.No_Resi }}",
+            "Pengirim": "={{ $json.Pengirim }}",
+            "Penerima": "={{ $json.Penerima }}",
+            "Status_Terakhir": "={{ $json.Status_Terakhir }}",
+            "Riwayat_Posisi_JSON": "={{ $json.Riwayat_Posisi_JSON }}",
+            "Timestamp_Update": "={{ $json.Timestamp_Update }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets-append",
+      "name": "Append Baris Baru",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1560,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"no_resi\": $json.No_Resi, \"total_riwayat\": $json.total_riwayat } }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-sukses",
+      "name": "Respond Sukses",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1800,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": false, \"error\": $json.error } }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        560
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook POST tracking-update": {
+      "main": [
+        [
+          {
+            "node": "Code Validasi Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Validasi Input": {
+      "main": [
+        [
+          {
+            "node": "IF Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid?": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Untuk Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error 400",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Untuk Update": {
+      "main": [
+        [
+          {
+            "node": "Code Proses Update/Append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Proses Update/Append": {
+      "main": [
+        [
+          {
+            "node": "IF Mode Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Mode Update?": {
+      "main": [
+        [
+          {
+            "node": "Update Baris Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Baris Baru",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Baris Sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond Sukses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Baris Baru": {
+      "main": [
+        [
+          {
+            "node": "Respond Sukses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "metro-logistik-fase-a"
+  }
+}

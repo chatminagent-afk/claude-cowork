@@ -1,0 +1,185 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>QA r7 — drop duplicate LINKS read</title>
+<style>
+ body{font:14px/1.6 ui-monospace,Consolas,monospace;background:#0f1115;color:#d7dae0;padding:24px;margin:0}
+ h1{font-size:16px;margin:0 0 4px} .sub{color:#7d8590;font-size:12px;margin-bottom:18px}
+ .r{padding:3px 0;border-bottom:1px solid #1c2027}
+ .ok{color:#3fb950} .no{color:#f85149;font-weight:700}
+ .d{color:#7d8590;font-size:12px;padding-left:26px;word-break:break-all}
+ #sum{margin-top:18px;padding:12px 14px;border-radius:6px;font-weight:700}
+ .green{background:#12261a;color:#3fb950;border:1px solid #2ea04326}
+ .red{background:#2a1215;color:#f85149;border:1px solid #f8514926}
+</style>
+<h1>QA r7 — buang pembacaan LINKS yang dobel</h1>
+<div class="sub">Kode <code>Pick GForm Link</code> diambil apa adanya dari kedua workflow JSON, lalu dijalankan berdampingan.</div>
+<div id="out"></div><div id="sum"></div>
+<script>var SRC = {"r6": "// Pilih link GForm dari sheet LINKS sesuai nama yang diminta AI (data-driven)\nconst rows = $('Query LINKS for GForm').all().map(i => i.json);\nconst proc = $('Process All').first().json;\nconst phone = $('Chat Counter').first().json.user_wa || proc.user_wa || '';\nconst requested = String(proc.gformLinkName || '').trim();\n\nconst norm = s => String(s || '').toLowerCase().replace(/\\s+/g, ' ').trim();\nconst activeRows = rows.filter(r => /aktif|active|on|ya/i.test(String(r['Status'] || '')));\n\nlet match = null;\nif (requested) {\n  const rq = norm(requested);\n  match = activeRows.find(r => norm(r['Nama Link']) === rq)\n       || activeRows.find(r => { const n = norm(r['Nama Link']); return n && (n.includes(rq) || rq.includes(n)); });\n}\n\nif (match && match['URL']) {\n  const desc = String(match['Deskripsi'] || '').trim();\n  const intro = desc\n    ? `Berikut ${desc.charAt(0).toLowerCase() + desc.slice(1)}`\n    : `Berikut link ${match['Nama Link']}`;\n  const message = `Haii! 😊 ${intro} ya:\\n\\n👉 ${match['URL']}\\n\\nSilakan diisi yaa, nanti tim kami follow up setelah form terisi. Ada yang mau ditanyain dulu sebelum isi? Santai aja tanya ke sini! 🙌`;\n  console.log('✅ GForm link resolved:', match['Nama Link']);\n  return [{ json: { ...proc, gformResolved: true, gformUrl: match['URL'], gformLinkName: match['Nama Link'], gformDesc: desc, phone, message } }];\n}\n\n// ── FALLBACK: nama kosong / tidak cocok -> tanya ulang link mana ──\nconst formRows = activeRows.filter(r => /gform|pendaftaran|mock/i.test(String(r['Nama Link'] || '')));\nconst listRows = formRows.length ? formRows : activeRows;\nconst opts = listRows.map(r => {\n  const dsc = String(r['Deskripsi'] || '').trim();\n  return dsc ? `• ${r['Nama Link']} (${dsc})` : `• ${r['Nama Link']}`;\n}).join('\\n');\nconst reason = requested ? `nama link \"${requested}\" tidak ketemu di LINKS` : 'AI tidak menyertakan nama link';\nconsole.warn('⚠️ Pick GForm Link fallback (tanya ulang):', reason);\nconst message = opts\n  ? `Boleh dibantu kirim link-nya 😊 Yang dimaksud yang mana ya:\\n${opts}\\n\\nTinggal sebut salah satu, nanti langsung saya kirimkan.`\n  : 'Boleh dibantu, link mana yang mau dikirim ya? Sebutkan program/keperluannya, nanti saya kirimkan.';\nreturn [{ json: { ...proc, gformResolved: false, gformUrl: '', gformLinkName: requested, phone, message } }];\n", "r7": "// Pilih link GForm dari sheet LINKS sesuai nama yang diminta AI (data-driven)\nconst rows = (() => {\n  // Sumber pindah dari \"Query LINKS for GForm\" (dibuang di r7) ke \"Read LINKS Data\"\n  // yang sudah membaca tab LINKS lebih dulu di rantai FAQ Retrieve.\n  // Node itu ber-executeOnce: pada run kedua referensi run saat ini kosong,\n  // jadi jatuhkan ke hasil run pertama -- pola yang sama dengan helper `grab`\n  // di node \"FAQ Retrieve\".\n  const pull = (useFirstRun) => {\n    try {\n      const ref = $('Read LINKS Data');\n      const items = useFirstRun ? ref.all(0, 0) : ref.all();\n      return (items || []).map(i => i.json).filter(Boolean);\n    } catch (e) {\n      return [];\n    }\n  };\n  const now = pull(false);\n  return now.length ? now : pull(true);\n})();\nconst proc = $('Process All').first().json;\nconst phone = $('Chat Counter').first().json.user_wa || proc.user_wa || '';\nconst requested = String(proc.gformLinkName || '').trim();\n\nconst norm = s => String(s || '').toLowerCase().replace(/\\s+/g, ' ').trim();\nconst activeRows = rows.filter(r => /aktif|active|on|ya/i.test(String(r['Status'] || '')));\n\nlet match = null;\nif (requested) {\n  const rq = norm(requested);\n  match = activeRows.find(r => norm(r['Nama Link']) === rq)\n       || activeRows.find(r => { const n = norm(r['Nama Link']); return n && (n.includes(rq) || rq.includes(n)); });\n}\n\nif (match && match['URL']) {\n  const desc = String(match['Deskripsi'] || '').trim();\n  const intro = desc\n    ? `Berikut ${desc.charAt(0).toLowerCase() + desc.slice(1)}`\n    : `Berikut link ${match['Nama Link']}`;\n  const message = `Haii! 😊 ${intro} ya:\\n\\n👉 ${match['URL']}\\n\\nSilakan diisi yaa, nanti tim kami follow up setelah form terisi. Ada yang mau ditanyain dulu sebelum isi? Santai aja tanya ke sini! 🙌`;\n  console.log('✅ GForm link resolved:', match['Nama Link']);\n  return [{ json: { ...proc, gformResolved: true, gformUrl: match['URL'], gformLinkName: match['Nama Link'], gformDesc: desc, phone, message } }];\n}\n\n// ── FALLBACK: nama kosong / tidak cocok -> tanya ulang link mana ──\nconst formRows = activeRows.filter(r => /gform|pendaftaran|mock/i.test(String(r['Nama Link'] || '')));\nconst listRows = formRows.length ? formRows : activeRows;\nconst opts = listRows.map(r => {\n  const dsc = String(r['Deskripsi'] || '').trim();\n  return dsc ? `• ${r['Nama Link']} (${dsc})` : `• ${r['Nama Link']}`;\n}).join('\\n');\nconst reason = requested ? `nama link \"${requested}\" tidak ketemu di LINKS` : 'AI tidak menyertakan nama link';\nconsole.warn('⚠️ Pick GForm Link fallback (tanya ulang):', reason);\nconst message = opts\n  ? `Boleh dibantu kirim link-nya 😊 Yang dimaksud yang mana ya:\\n${opts}\\n\\nTinggal sebut salah satu, nanti langsung saya kirimkan.`\n  : 'Boleh dibantu, link mana yang mau dikirim ya? Sebutkan program/keperluannya, nanti saya kirimkan.';\nreturn [{ json: { ...proc, gformResolved: false, gformUrl: '', gformLinkName: requested, phone, message } }];\n"};</script>
+<script>
+var pass, fail, log;
+(function () {
+  var pass = 0, fail = 0, log = [];
+  function check(label, cond, detail) {
+    if (cond) { pass++; log.push(['ok', label, '']); }
+    else { fail++; log.push(['no', label, detail || '']); }
+  }
+  try {
+
+/* Harness meniru $() n8n, termasuk .all(runIndex, outputIndex) untuk node
+   ber-executeOnce. `runs` = daftar hasil per run; run 0 = run pertama. */
+function mkRef(runs) {
+  return {
+    all: function (runIdx, outIdx) {
+      if (arguments.length >= 1) return (runs[runIdx] || []).map(function (j) { return { json: j }; });
+      return (runs[runs.length - 1] || []).map(function (j) { return { json: j }; });
+    },
+    first: function () {
+      var last = runs[runs.length - 1] || [];
+      return { json: last[0] };
+    }
+  };
+}
+
+function run(src, ctx) {
+  var $ = function (name) {
+    if (!Object.prototype.hasOwnProperty.call(ctx, name)) {
+      throw new Error('node tidak dikenal: ' + name);
+    }
+    return mkRef(ctx[name]);
+  };
+  var console = { log: function () {}, warn: function () {}, error: function () {} };
+  return new Function('$', 'console', src)($, console);
+}
+
+var LINKS = [
+  { 'Nama Link': 'GForm Pendaftaran', 'URL': 'https://forms.gle/AAA', 'Status': 'aktif',
+    'Deskripsi': 'Form pendaftaran program' },
+  { 'Nama Link': 'GForm Mock Interview', 'URL': 'https://forms.gle/BBB', 'Status': 'aktif',
+    'Deskripsi': 'Form booking mock interview' },
+  // Nilai Status memakai yang BENAR-BENAR dipakai di produksi: Active / Closed.
+  { 'Nama Link': 'Link Lama', 'URL': 'https://forms.gle/OLD', 'Status': 'Closed',
+    'Deskripsi': 'Sudah tidak dipakai' }
+];
+
+function ctxFor(linksRuns, gformLinkName) {
+  return {
+    'Query LINKS for GForm': linksRuns,
+    'Read LINKS Data':       linksRuns,
+    'Process All':  [[{ gformLinkName: gformLinkName, user_wa: '628111' }]],
+    'Chat Counter': [[{ user_wa: '628111' }]]
+  };
+}
+
+function outOf(res) {
+  var j = (res && res[0] && res[0].json) || {};
+  return { resolved: !!j.gformResolved, url: j.gformUrl || '', name: j.gformLinkName || '',
+           hasMsg: typeof j.message === 'string' && j.message.length > 0 };
+}
+
+/* ---------- 1. Paritas r6 vs r7 pada kasus normal ---------- */
+var cases = [
+  ['nama persis',            'GForm Pendaftaran'],
+  ['nama sebagian',          'pendaftaran'],
+  ['beda huruf besar-kecil', 'gform mock interview'],
+  ['nama kosong',            ''],
+  ['nama tidak cocok',       'entah apa'],
+  ['nama link Closed',       'Link Lama']
+];
+
+for (var i = 0; i < cases.length; i++) {
+  (function (label, req) {
+    var a = outOf(run(SRC.r6, ctxFor([LINKS], req)));
+    var b = outOf(run(SRC.r7, ctxFor([LINKS], req)));
+    check('paritas r6=r7 -- ' + label,
+          JSON.stringify(a) === JSON.stringify(b),
+          'r6=' + JSON.stringify(a) + ' r7=' + JSON.stringify(b));
+  }(cases[i][0], cases[i][1]));
+}
+
+/* ---------- 2. Hasilnya memang benar, bukan sama-sama salah ---------- */
+var okExact = outOf(run(SRC.r7, ctxFor([LINKS], 'GForm Pendaftaran')));
+check('nama persis -> resolved', okExact.resolved === true, JSON.stringify(okExact));
+check('nama persis -> URL benar', okExact.url === 'https://forms.gle/AAA', okExact.url);
+
+var okPartial = outOf(run(SRC.r7, ctxFor([LINKS], 'mock')));
+check('nama sebagian -> ketemu Mock Interview', okPartial.url === 'https://forms.gle/BBB', okPartial.url);
+
+var offRow = outOf(run(SRC.r7, ctxFor([LINKS], 'Link Lama')));
+check('link berstatus Closed TIDAK dipakai', offRow.url !== 'https://forms.gle/OLD', offRow.url);
+
+/* ---------- RANJAU LATEN (bukan regresi r7, sudah ada sejak r6) ----------
+   Filter status memakai /aktif|active|on|ya/i tanpa jangkar. String "nonaktif"
+   MENGANDUNG "aktif", jadi ia lolos sebagai link aktif. Produksi hari ini
+   memakai Active/Closed sehingga belum kena -- tapi "Nonaktif" adalah kata
+   yang sangat wajar diketik di kolom itu. Tes ini mengunci perilaku SEKARANG
+   supaya perubahannya nanti terlihat, bukan membenarkannya. */
+var LANDMINE = [{ 'Nama Link': 'Link Lama', 'URL': 'https://forms.gle/OLD',
+                  'Status': 'Nonaktif', 'Deskripsi': 'Sudah tidak dipakai' }];
+var mine6 = outOf(run(SRC.r6, ctxFor([LANDMINE], 'Link Lama')));
+var mine7 = outOf(run(SRC.r7, ctxFor([LANDMINE], 'Link Lama')));
+check('[ranjau laten] "Nonaktif" masih lolos filter aktif -- sama di r6 & r7',
+      mine6.resolved === true && mine7.resolved === true,
+      'r6=' + mine6.resolved + ' r7=' + mine7.resolved);
+check('[ranjau laten] r7 tidak memperburuk maupun memperbaiki',
+      JSON.stringify(mine6) === JSON.stringify(mine7));
+
+var noName = outOf(run(SRC.r7, ctxFor([LINKS], '')));
+check('nama kosong -> tidak resolved, tapi tetap balas', noName.resolved === false && noName.hasMsg,
+      JSON.stringify(noName));
+
+/* ---------- 3. INTI r7: fallback executeOnce ----------
+   Read LINKS Data ber-executeOnce. Pada run kedua (jalur debounce/buffer),
+   referensi run saat ini KOSONG walau datanya sudah terambil di run pertama.
+   Kalau fallback .all(0, 0) tidak bekerja, link GForm akan gagal terkirim
+   persis pada user yang mengirim pesan beruntun. */
+var twoRuns = [LINKS, []];   // run 0 berisi data, run 1 (terakhir) kosong
+
+var r7second = outOf(run(SRC.r7, ctxFor(twoRuns, 'GForm Pendaftaran')));
+check('run kedua (executeOnce) -> r7 TETAP menemukan link',
+      r7second.resolved === true && r7second.url === 'https://forms.gle/AAA',
+      JSON.stringify(r7second));
+
+/* Pembanding: tanpa fallback, run kedua akan gagal. Dibuktikan dengan
+   memaksa r6 membaca run terakhir yang kosong. */
+var r6second = outOf(run(SRC.r6, ctxFor(twoRuns, 'GForm Pendaftaran')));
+check('pembanding: tanpa fallback, run kedua gagal resolve (justru alasan fallback dipasang)',
+      r6second.resolved === false, JSON.stringify(r6second));
+
+/* ---------- 4. Sheet kosong / gagal dibaca ---------- */
+var empty = outOf(run(SRC.r7, ctxFor([[]], 'GForm Pendaftaran')));
+check('LINKS kosong -> tidak crash, tidak resolved', empty.resolved === false, JSON.stringify(empty));
+
+var bothEmpty = outOf(run(SRC.r7, ctxFor([[], []], 'GForm Pendaftaran')));
+check('LINKS kosong di kedua run -> tidak crash', bothEmpty.resolved === false, JSON.stringify(bothEmpty));
+
+/* ---------- 5. r7 tidak lagi menyentuh node yang dibuang ---------- */
+check('r7 TIDAK memakai $(\'Query LINKS for GForm\')',
+      SRC.r7.indexOf("$('Query LINKS for GForm')") === -1);
+check('r7 memakai $(\'Read LINKS Data\')',
+      SRC.r7.indexOf("$('Read LINKS Data')") !== -1);
+check('r6 memang memakai node lama (pembanding valid)',
+      SRC.r6.indexOf("$('Query LINKS for GForm')") !== -1);
+
+/* r7 harus meledak kalau node lama benar-benar tidak ada -- bukan diam-diam kosong */
+var threw = false;
+try {
+  run(SRC.r6, { 'Read LINKS Data': [LINKS],
+                'Process All': [[{ gformLinkName: 'x', user_wa: '1' }]],
+                'Chat Counter': [[{ user_wa: '1' }]] });
+} catch (e) { threw = true; }
+check('kode r6 mustahil jalan tanpa node lama (konfirmasi rewire wajib)', threw);
+
+  } catch (e) { log.push(['no', 'HARNESS ERROR', String(e && e.stack || e)]); fail++; }
+  window.__P = pass; window.__F = fail; window.__L = log;
+})();
+pass = window.__P; fail = window.__F; log = window.__L;
+document.getElementById('out').innerHTML = log.map(function (r) {
+  return '<div class="r"><span class="' + r[0] + '">' + (r[0]==='ok'?'&#10003;':'&#10007;') +
+         '</span> ' + r[1] + '</div>' + (r[2] ? '<div class="d">' + r[2] + '</div>' : '');
+}).join('');
+var s = document.getElementById('sum');
+s.className = fail ? 'red' : 'green';
+s.textContent = fail ? ('GAGAL — ' + pass + ' lulus, ' + fail + ' gagal')
+                     : ('SEMUA LULUS — ' + pass + ' pemeriksaan');
+document.title = (fail ? 'GAGAL ' + fail : 'LULUS ' + pass) + ' — QA r7';
+</script>

@@ -1,0 +1,45 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "user_code",
+                                                                     "value":  "KM40LI0426"
+                                                                 },
+                                                                 {
+                                                                     "name":  "secret",
+                                                                     "value":  "REDACTED"
+                                                                 },
+                                                                 {
+                                                                     "name":  "device_id",
+                                                                     "value":  "D-4ZV1F"
+                                                                 },
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $json.phone }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ $json.message }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     1424,
+                     1904
+                 ],
+    "id":  "42ff231a-44f4-4d99-ac5c-e3d45b7cd7f2",
+    "name":  "Send GForm Link",
+    "disabled":  true,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput"
+}

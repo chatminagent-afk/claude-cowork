@@ -1,0 +1,36 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "strict",
+                                                          "version":  3
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "75e1c81d-31c2-430d-9c6b-3172d29665d8",
+                                                                 "leftValue":  "={{ $json.isTalkToSam }}",
+                                                                 "rightValue":  "",
+                                                                 "operator":  {
+                                                                                  "type":  "boolean",
+                                                                                  "operation":  "true",
+                                                                                  "singleValue":  true
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.3,
+    "position":  [
+                     -13808,
+                     2432
+                 ],
+    "id":  "a96ced2d-41cd-4ba1-8502-089f9f6bb657",
+    "name":  "IF Talk To Sam"
+}

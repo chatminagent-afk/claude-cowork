@@ -1,0 +1,975 @@
+===== NODE: Process Counter & Merge Data =====
+// ====================================================================
+// PROCESS COUNTER & MERGE DATA (V4)
+// Fix: (1) matching row No WA primer / lid backup (bukan lid-only),
+//      (2) "Tanggal Chat Pertama" dibaca dari kolom yang benar
+//          (dulu baca existingRow.Tanggal yang tidak ada -> tanggal
+//          pertama ter-reset jadi hari ini setiap pesan),
+//      (3) error -> stop (return []) alih-alih menulis row "ERROR".
+// ====================================================================
+const debugLog = [];
+
+try {
+    const allItems = $input.all();
+    debugLog.push("Step 1: Received " + allItems.length + " items from Read STATS");
+
+    const chatCounter = $('Chat Counter').first().json;
+    const resolve = $('Resolve User Row').first().json;
+    const resolvedKey = resolve.resolved_key;
+
+    const userName = chatCounter.user_name || "User";
+    const userMessage = chatCounter.original_message || "";
+    const digits = v => String(v ?? '').replace(/\D/g, '');
+    const phone = digits(chatCounter.user_phone);
+    const lid = digits(chatCounter.user_lid);
+
+    if (!resolvedKey) {
+        console.warn("resolved_key kosong - skip update STATS");
+        return [];
+    }
+
+    // Process sheet rows
+    const sheetRows = allItems
+        .filter(item => {
+            const data = item?.json || item;
+            if (!data || Object.keys(data).length === 0) return false;
+            return !!(data['lid'] || data['No WA'] || data.no_wa || data.NoWA);
+        })
+        .map(item => item?.json || item);
+
+    debugLog.push("Step 2: Sheet rows found: " + sheetRows.length);
+
+    // Find existing row: No WA primer, lid backup (konsisten dgn Resolve User Row)
+    let existingRow = null;
+    if (phone) existingRow = sheetRows.find(r => digits(r['No WA']) === phone) || null;
+    if (!existingRow && lid) {
+        existingRow = sheetRows.find(r => digits(r['lid']) === lid)
+                   || sheetRows.find(r => digits(r['No WA']) === lid)
+                   || null;
+    }
+
+    const isNewUser = !existingRow;
+    debugLog.push("Step 3: " + (isNewUser ? "NEW USER" : "EXISTING USER"));
+
+    let counter, pesanPertama, tanggalPertama, intensitasChat;
+
+    if (existingRow) {
+        counter = parseInt(existingRow.Counter || existingRow.counter || 0) + 1;
+        intensitasChat = parseInt(existingRow['Intensitas Chat'] || existingRow.intensitas_chat || 0) + 1;
+
+        const pesanLama = existingRow['Pesan Pertama'] || existingRow.pesan_pertama;
+        pesanPertama = (pesanLama && String(pesanLama).trim() !== '') ? pesanLama : userMessage;
+
+        // V4 FIX: baca kolom yang benar
+        const tglLama = existingRow['Tanggal Chat Pertama'];
+        tanggalPertama = (tglLama && String(tglLama).trim() !== '') ? tglLama : null;
+    } else {
+        counter = 1;
+        intensitasChat = 1;
+        pesanPertama = userMessage;
+        tanggalPertama = null;
+    }
+
+    if (!tanggalPertama) {
+        tanggalPertama = new Date().toLocaleDateString('en-GB', {
+            timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+    }
+
+    const outputData = {
+        "No WA": resolvedKey,
+        "lid": lid,
+        "Tanggal": tanggalPertama,
+        "TanggalSekarang": new Date().toLocaleDateString('en-GB', {
+            timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric'
+        }),
+        "Nama": userName,
+        "Pesan Pertama": pesanPertama,
+        "Counter": counter,
+        "Intensitas Chat": intensitasChat
+    };
+
+    return [{ json: outputData }];
+
+} catch (error) {
+    // V4 FIX: jangan menulis row "ERROR" ke sheet - cukup log & stop.
+    console.error("Process Counter ERROR: " + error.message, debugLog);
+    return [];
+}
+
+
+===== NODE: Extract & Prepare Data =====
+const chatCounter = $('Chat Counter').first().json;
+
+// DATA LANGSUNG DARI CHAT COUNTER NODE
+const userNumber = chatCounter.user_wa;
+const userName = chatCounter.user_name;
+const userMessage = chatCounter.original_message;   // ← perbaikan utama
+
+// VALIDASI SEDERHANA
+if (!userNumber) {
+  throw new Error("user_wa tidak ditemukan di input!");
+}
+
+console.log("✅ Data berhasil di-extract:");
+console.log("- No WA:", userNumber);
+console.log("- Nama:", userName);
+console.log("- Pesan:", userMessage);
+
+return [{
+  json: {
+    search_no_wa: userNumber,
+    user_name: userName,
+    user_message: userMessage,
+    timestamp: chatCounter.formatted_date + ' ' + chatCounter.formatted_time + ' WIB',
+    source: "chat_counter_node",
+    is_valid: userNumber !== "unknown"
+  }
+}];
+
+===== NODE: Check API Response =====
+
+// Cek apakah Kirimi API sukses
+const input = $input.first();
+const responseData = input.json;
+
+// Kirimi API return success jika ada field 'status' = true atau 'data'
+const isSuccess = responseData.status === true || 
+                  responseData.success === true ||
+                  (responseData.data && responseData.data.id) ||
+                  (responseData.message && responseData.message !== 'error');
+
+if (!isSuccess) {
+  console.log('❌ Kirimi API Response Error:', JSON.stringify(responseData));
+  throw new Error('Kirimi API gagal: ' + JSON.stringify(responseData));
+}
+
+console.log('✅ Kirimi API sukses:', JSON.stringify(responseData));
+return [input];
+
+
+===== NODE: Update STATS - Greeting Flag =====
+// ====================================================================
+// UPDATE GREETING FLAG (V4 - disederhanakan)
+// Dulu: pattern-matching teks balasan (rapuh, tergantung susunan
+// kalimat). Sekarang: cukup dari flag is_new_user — kalau eksekusi
+// ini mengirim intro ke user baru (reply sudah SUKSES terkirim
+// karena node ini jalan setelah Reply Chat Kirimi), tandai Y.
+// ====================================================================
+const isNewUser = $('Cek_user_status').first().json.is_new_user === true;
+
+if (isNewUser) {
+  console.log('📝 [GREETING] intro terkirim ke user baru -> greeting_sent = Y');
+}
+
+return [{
+  json: {
+    update_needed: isNewUser ? 'true' : 'false',
+    greeting_sent: 'Y'
+  }
+}];
+
+
+===== NODE: Preprocess - Context Detection =====
+// ============================================
+// PREPROCESS - CONTEXT DETECTION (V4)
+// - Deteksi status PARENT/STUDENT DIHAPUS (register netral).
+// - Deteksi kelas MULTI-VALUE: bisa menangkap >1 kelas dalam satu
+//   pesan (kasus orang tua dengan beberapa anak). Disimpan sebagai
+//   daftar "SMP 1, SD 6".
+// - Dukung jenjang Singapura/internasional (Primary/Sec) & angka
+//   Romawi; fallback kelas tersimpan dari DB (kelas_anak, TTL di
+//   Cek_user_status).
+// ============================================
+
+const json = $input.item.json;
+
+// Get the full message (includes SYSTEM_DATA + user query)
+const fullMessage = json.message || json.ai_input_text || json.text || json.body || '';
+
+// ============================================
+// 1. EXTRACT USER QUERY
+// ============================================
+let actualUserMessage = '';
+if (fullMessage.includes('[USER QUERY]')) {
+  const parts = fullMessage.split('[USER QUERY]');
+  actualUserMessage = parts[1] ? parts[1].trim() : '';
+} else {
+  actualUserMessage = fullMessage.trim();
+}
+
+// ============================================
+// 2. PARSE SYSTEM_DATA
+// ============================================
+let isNewUser = false;
+let kelasAnakDB = '';
+let programInterestDB = '';
+
+if (fullMessage.includes('[SYSTEM_DATA]')) {
+  const newUserMatch = fullMessage.match(/IS_NEW_USER:\s*(\w+)/i);
+  if (newUserMatch) isNewUser = newUserMatch[1].toLowerCase() === 'true';
+
+  const kelasMatch = fullMessage.match(/KELAS_ANAK:\s*([^\n]+)/i);
+  if (kelasMatch) {
+    const v = kelasMatch[1].trim();
+    if (v && v.toUpperCase() !== 'UNKNOWN') kelasAnakDB = v;
+  }
+  const progMatch = fullMessage.match(/PROGRAM_INTEREST:\s*([^\n]+)/i);
+  if (progMatch) {
+    const v = progMatch[1].trim();
+    if (v && v.toUpperCase() !== 'UNKNOWN') programInterestDB = v;
+  }
+}
+
+// ============================================
+// 3. PROCESS MESSAGE
+// ============================================
+const message = actualUserMessage.toLowerCase().replace(/\bkls\b/g, 'kelas').replace(/\bklas\b/g, 'kelas');
+const userPhone = json.userPhone || json.from || json.phone || json.user_wa || 'unknown';
+
+// ============================================
+// 4. DETECT GRADE(S) & PROGRAM(S) — MULTI-VALUE
+//    Semua pola discan (bukan berhenti di match pertama) supaya
+//    ">1 anak" dalam satu pesan tertangkap semua.
+//    Seniors KHUSUS kelas 12. SMA 10/11 -> belum ada program.
+// ============================================
+const GRADE_PATTERNS = [
+  // Jenjang internasional/Singapura (intl=true)
+  [/\b(?:primary|pri)\s*\.?\s*6\b|\bp6\b/i,        'SD 6',      'Junior',       true],
+  [/\b(?:sec|secondary)\s*\.?\s*1\b/i,             'SMP 1',     'Junior',       true],
+  [/\b(?:sec|secondary)\s*\.?\s*2\b/i,             'SMP 2',     'Intermediate', true],
+  [/\b(?:sec|secondary)\s*\.?\s*3\b/i,             'SMP 3',     'Intermediate', true],
+  [/\b(?:sec|secondary)\s*\.?\s*4\b/i,             'SMA 10/11', '',             true],
+  // Angka Romawi (\b menjaga 'kelas x' tidak match di 'kelas xii')
+  [/kelas\s*xii\b/i,                               'SMA 12',    'Seniors',      false],
+  [/kelas\s*xi\b/i,                                'SMA 10/11', '',             false],
+  [/kelas\s*x\b/i,                                 'SMA 10/11', '',             false],
+  [/kelas\s*ix\b/i,                               'SMP 3',     'Intermediate', false],
+  [/kelas\s*viii\b/i,                             'SMP 2',     'Intermediate', false],
+  [/kelas\s*vii\b/i,                              'SMP 1',     'Junior',       false],
+  [/kelas\s*vi\b/i,                               'SD 6',      'Junior',       false],
+  // Pola Indonesia
+  [/sd 6|kelas 6 sd|kelas 6(?!\s*smp)/i,           'SD 6',      'Junior',       false],
+  [/smp 1|kelas 1 smp|kelas 7\b/i,                 'SMP 1',     'Junior',       false],
+  [/smp 2|kelas 2 smp|kelas 8\b/i,                 'SMP 2',     'Intermediate', false],
+  [/smp 3|kelas 3 smp|kelas 9\b/i,                 'SMP 3',     'Intermediate', false],
+  [/sma 3|kelas 3 sma|kelas 12\b/i,                'SMA 12',    'Seniors',      false],
+  [/sma 1|sma 2|kelas 1 sma|kelas 2 sma|kelas 10\b|kelas 11\b/i, 'SMA 10/11', '', false],
+];
+
+const PROGRAM_OF = { 'SD 6': 'Junior', 'SMP 1': 'Junior', 'SMP 2': 'Intermediate', 'SMP 3': 'Intermediate', 'SMA 12': 'Seniors', 'SMA 10/11': '' };
+
+let grades = [];
+let intlSystemDetected = false;
+for (const [re, label, prog, intl] of GRADE_PATTERNS) {
+  if (re.test(message) && !grades.includes(label)) {
+    grades.push(label);
+    if (intl) intlSystemDetected = true;
+  }
+}
+// Fallback generik SMA (kelas belum jelas) hanya kalau tidak ada match lain
+let smaUnclear = false;
+if (!grades.length && message.match(/sma|kelas.*sma/i)) {
+  smaUnclear = true;
+}
+
+// Fallback: kelas tersimpan dari percakapan sebelumnya (DB, sudah lolos TTL)
+let gradeFromDB = false;
+if (!grades.length && !smaUnclear && kelasAnakDB) {
+  grades = kelasAnakDB.split(',').map(s => s.trim()).filter(Boolean);
+  gradeFromDB = true;
+}
+
+const programs = [...new Set(grades.map(g => PROGRAM_OF[g] || '').filter(Boolean))];
+const noProgramGrades = grades.filter(g => !(PROGRAM_OF[g] || ''));
+
+// String gabungan (dipakai untuk penyimpanan kelas_anak & kompatibilitas)
+const grade = grades.join(', ');
+const recommendedProgram = gradeFromDB && programInterestDB ? programInterestDB : programs.join(', ');
+
+// ============================================
+// 5. DETECT REGISTRATION INTENT
+// ============================================
+const wantsToRegister = message.match(/daftar|mau ikut|tertarik|mau coba|mau daftar|link pendaftaran|link form|minta link/i) !== null;
+
+// ============================================
+// 5b. DETECT OUT-OF-SCOPE USER (di luar jenjang SMP-SMA)
+// ============================================
+let outOfScope = false;
+if (message.match(/\b(mahasiswa|semester\s*\d+|lagi kuliah|sudah kuliah|udah kuliah|sarjana|magister|fresh graduate|gap year|karyawan|pegawai|sudah lulus|udah lulus|sudah kerja|udah kerja)\b/i)) {
+  outOfScope = true;
+}
+
+// ============================================
+// 5c. DETECT UNCLEAR / AMBIGUOUS SHORT REPLY (anti-loop)
+// ============================================
+const isGreetingLike = message.match(/^(hai|halo|hi|pagi|siang|sore|malam|makasih|thanks|terima kasih|ok|oke|sip|baik|👍|🙏)/i) !== null;
+const unclearReply = (actualUserMessage.trim().length <= 4) && !grades.length && !isGreetingLike && !wantsToRegister;
+
+// ============================================
+// 6. DETECT PERSUASION TRIGGERS
+// ============================================
+let persuasionMode = '';
+if (message.match(/mau daftar|tertarik|boleh deh|mau coba|mau ikut|oke deh/i)) {
+  persuasionMode = 'INTERESTED';
+} else if (message.match(/nanti|pikir dulu|setelah ujian|belum sekarang|ragu|mikir|lihat dulu/i)) {
+  persuasionMode = 'DEFER';
+} else if (message.match(/\b(tf|transfer|bayar|mau bayar|sudah bayar|kirim bukti)\b/i)) {
+  persuasionMode = 'PAYMENT';
+}
+
+// ============================================
+// 7. DETECT TOPICS
+// ============================================
+const discussingProgram = message.match(/program|junior|intermediate|senior|batch/i) !== null;
+const askingPrice = message.match(/berapa|biaya|harga|bayar|mahal|murah/i) !== null;
+const askingBatch = message.match(/batch|kapan|mulai|jadwal|pendaftaran/i) !== null;
+
+// ============================================
+// 8. BUILD AI CONTEXT
+//    HANYA fakta deteksi + pointer, selaras system message.
+// ============================================
+let aiContext = '';
+
+if (outOfScope) {
+  aiContext += `User kemungkinan di luar jenjang SMP-SMA (mahasiswa/kuliah/kerja). Sampaikan jujur program khusus siswa SMP-SMA, jadi belum ada yang cocok. JANGAN tanya kelas SMP/SMA. `;
+}
+
+if (unclearReply) {
+  aiContext += `Balasan user terlalu singkat/ambigu. JANGAN ulang pertanyaan yang sama. Kalau sebelumnya sudah bertanya hal yang sama, tawarkan bantuan langsung dari Sam: [TALK_TO_SAM]. `;
+}
+
+if (intlSystemDetected) {
+  aiContext += `User menyebut jenjang sistem Singapura/internasional (Primary/Sec). Ini TIDAK berarti calon murid sudah bersekolah di Singapura, banyak sekolah kurikulum internasional di Indonesia. Jangan asumsikan lokasi sekolah, dan JANGAN tanya lokasi kecuali menentukan jawaban. `;
+}
+
+if (!outOfScope && grades.length) {
+  const src = gradeFromDB ? 'SUDAH DIKETAHUI dari percakapan sebelumnya' : 'disebut di pesan ini';
+  if (grades.length === 1) {
+    const g = grades[0];
+    const p = PROGRAM_OF[g] || '';
+    if (p) {
+      aiContext += `Kelas calon murid ${src}: ${g} -> arahkan ke program ${p}. ${gradeFromDB ? 'JANGAN tanya kelas lagi. ' : ''}Catatan: SMP 2 = Intermediate (BUKAN Junior). Sebut HANYA program ${p}, jangan tawarkan tier program lain kecuali user tanya. `;
+    } else if (g === 'SMA 10/11') {
+      aiContext += `Calon murid di SMA kelas 10/11 -> belum ada program yang cocok untuk sekarang (Seniors khusus kelas 12). Sampaikan jujur dan arahkan ke opsi yang ada.${gradeFromDB ? ' Kelas sudah diketahui, JANGAN tanya kelas lagi.' : ''} `;
+    }
+  } else {
+    // Multi-anak: sebutkan pemetaan per kelas
+    const mapText = grades.map(g => `${g} -> ${PROGRAM_OF[g] || 'belum ada program yang cocok (Seniors khusus kelas 12)'}`).join('; ');
+    aiContext += `User menyebut LEBIH DARI SATU kelas calon murid (kemungkinan beberapa anak), ${src}: ${mapText}. JANGAN tanya ulang kelas. Bahas program sesuai kelas masing-masing, ringkas, tanpa membandingkan tier lain di luar itu. Catatan: SMP 2 = Intermediate (BUKAN Junior). `;
+  }
+} else if (smaUnclear) {
+  aiContext += `Calon murid SMA tapi kelas belum jelas -> tanya dulu kelas berapa (Seniors hanya untuk kelas 12). `;
+}
+
+if (wantsToRegister) {
+  aiContext += `User ingin daftar -> siapkan [SEND_GFORM] HANYA jika diizinkan ATURAN BATCH (batch reguler DIBUKA, atau Mock Interview, atau Seniors). Kalau batch belum dibuka, arahkan user menunggu kabar pendaftaran. `;
+}
+
+if (persuasionMode) {
+  if (persuasionMode === 'INTERESTED') {
+    aiContext += `User tertarik daftar. Ikuti ATURAN BATCH. Nada tenang dan netral, langsung ke langkah daftar tanpa berlebihan. `;
+  } else if (persuasionMode === 'DEFER') {
+    aiContext += `User menunda. Validasi singkat dan santai, beri ruang tanpa menekan waktu. `;
+  } else if (persuasionMode === 'PAYMENT') {
+    aiContext += `User konfirmasi pembayaran. Balas singkat & hangat, contoh nada: "Baik ditunggu yaa, kalau sudah transfer kirim buktinya ke sini." `;
+  }
+}
+
+// ============================================
+// 9. BUILD ENHANCED INPUT FOR AI
+// ============================================
+// FIX C1: preserve the [SYSTEM_DATA] block from Cek_user_status so
+// IS_NEW_USER + intro instruction survive to the AI Agent. Detection
+// facts are added as an extra [CONTEXT: ...] block.
+let systemDataBlock = '';
+if (fullMessage.includes('[USER QUERY]')) {
+  systemDataBlock = fullMessage.split('[USER QUERY]')[0].trim();
+}
+let enhancedInput = '';
+if (systemDataBlock) enhancedInput += systemDataBlock + `\n\n`;
+if (aiContext.trim()) enhancedInput += `[CONTEXT: ${aiContext.trim()}]\n\n`;
+enhancedInput += `[USER QUERY]\n${actualUserMessage}`;
+
+// ============================================
+// OUTPUT
+// ============================================
+return {
+  userPhone,
+  actualUserMessage,
+  fullMessage,
+  messageLower: message,
+  isNewUser,
+  kelasAnakDB,
+  programInterestDB,
+  grade,
+  grades,
+  gradeFromDB,
+  intlSystemDetected,
+  recommendedProgram,
+  wantsToRegister,
+  discussingProgram,
+  askingPrice,
+  askingBatch,
+  persuasionMode,
+  outOfScope,
+  unclearReply,
+  aiContext: aiContext.trim(),
+  ai_input_text: enhancedInput
+};
+
+
+===== NODE: FAQ Retrieve =====
+// ===== CONTEXT RETRIEVE V3 (KONSOLIDASI) =====
+// Single source of truth = tab PROGRAM (superset: harga, batch, status, syarat).
+// + ABOUT_SAM (bio) + LINKS (url) + FAQ. Token-efisien, anti-halu, tanpa tool agent.
+try {
+  const pre = $('Preprocess - Context Detection').first().json;
+  const query = pre.actualUserMessage || '';
+  const flags = {
+    askingPrice: !!pre.askingPrice,
+    askingBatch: !!pre.askingBatch,
+    discussingProgram: !!pre.discussingProgram,
+    wantsToRegister: !!pre.wantsToRegister,
+  };
+  const askingSyarat = /syarat|persyaratan|kriteria|ketentuan|dokumen|rapor|raport|portofolio|portfolio|requirement|nilai|esai|essay/i.test(query);
+  const askingAboutSam = /\bsam\b|founder|pendiri|pengajar|mentor|tutor|guru|ngajar|siapa kak|siapa ini|admin|alumni|lulus|sekolah.*(mana|sg|singap)|kuliah|background|pengalaman|kerja/i.test(query);
+  const askingProgramDetail = flags.discussingProgram || !!pre.grade || /durasi|berapa kali|seminggu|format|online|sesi|materi|isi program|belajar apa/i.test(query);
+
+  const grab = (node) => { try { return $(node).all().map(i => i.json).filter(Boolean); } catch (e) { return []; } };
+  const val = (row, ...keys) => { for (const k of keys) { for (const rk of Object.keys(row)) { if (rk.toLowerCase().trim() === k.toLowerCase().trim() || rk.toLowerCase().startsWith(k.toLowerCase())) { const v = row[rk]; if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim(); } } } return ''; };
+  const clip = (s, n) => { s = (s || '').replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+
+  const parts = [];
+  const prog = grab('Read PROGRAM Data');
+
+  // STATUS & BATCH (selalu; gating harga & pendaftaran) -- diturunkan dari PROGRAM
+  if (prog.length) {
+    const lines = prog.map(r => {
+      const nm = val(r, 'Nama Program'), st = val(r, 'Status'), batch = val(r, 'Nama Batch');
+      const mulai = val(r, 'Tanggal Mulai'), dl = val(r, 'Deadline Daftar'), kuota = val(r, 'Kuota');
+      const hasBatch = batch && batch !== '-';
+      return `${nm}: Status=${st || 'tidak tertulis'}${hasBatch ? ', ' + batch : ''}${mulai ? ', Mulai ' + mulai : ''}${dl ? ', Deadline daftar ' + dl : ''}${kuota ? ', Kuota ' + kuota : ''}`;
+    });
+    parts.push('STATUS & BATCH (sumber resmi; program/batch yang tidak ada di sini = tidak ada, jangan dikarang):\n' + lines.join('\n'));
+  }
+
+  // Pemetaan program -> kelas (selalu, kecil)
+  parts.push('PEMETAAN PROGRAM: Junior=SD6/SMP1 | Intermediate=SMP2/SMP3 | Seniors=SMA kelas 12 | Mock Interview=semua siswa. SMA 10/11 belum ada program.');
+
+  // HARGA (kondisional) -- dari PROGRAM
+  if ((flags.askingPrice || flags.wantsToRegister || askingProgramDetail) && prog.length) {
+    const lines = prog.map(r => `${val(r, 'Nama Program')}: ${val(r, 'Harga') || 'tidak tertulis'}${val(r, 'Pembayaran') ? ' (' + clip(val(r, 'Pembayaran'), 90) + ')' : ''}${val(r, 'Catatan') ? ' - ' + clip(val(r, 'Catatan'), 70) : ''}`);
+    parts.push('HARGA (sebut hanya sesuai ATURAN HARGA di system; ikut status batch):\n' + lines.join('\n'));
+  }
+
+  // SYARAT (kondisional) -- dari PROGRAM
+  if (askingSyarat && prog.length) {
+    const lines = prog.map(r => `${val(r, 'Nama Program')}: Syarat: ${clip(val(r, 'Syarat Umum'), 180)}${val(r, 'Dokumen yang Perlu Disiapkan', 'Dokumen') ? ' | Dokumen: ' + clip(val(r, 'Dokumen yang Perlu Disiapkan', 'Dokumen'), 150) : ''}`);
+    parts.push('SYARAT:\n' + lines.join('\n'));
+  }
+
+  // PROGRAM detail (kondisional)
+  if (askingProgramDetail && prog.length) {
+    const lines = prog.map(r => `${val(r, 'Nama Program')}: ${clip(val(r, 'Deskripsi'), 170)} | Target: ${clip(val(r, 'Target Peserta'), 90)} | Durasi: ${clip(val(r, 'Durasi'), 60)} | Format: ${clip(val(r, 'Format'), 60)}`);
+    parts.push('PROGRAM (detail):\n' + lines.join('\n'));
+  }
+
+  // TENTANG SAM (kondisional) -- dari ABOUT_SAM
+  if (askingAboutSam) {
+    const about = grab('Read ABOUT Data');
+    if (about.length) parts.push('TENTANG SAM & THE SCHOLARS:\n' + about.map(r => `${val(r, 'Aspek')}: ${clip(val(r, 'Detail'), 160)}`).join('\n'));
+  }
+
+  // LINK AKTIF (selalu) -- nama saja; URL disisipkan sistem saat [SEND_GFORM]
+  const links = grab('Read LINKS Data');
+  if (links.length) {
+    const activeRows = links.filter(r => /aktif|active|on|ya/i.test(val(r, 'Status')));
+    const active = activeRows.map(r => {
+      const nm = val(r, 'Nama Link');
+      const ds = clip(val(r, 'Deskripsi'), 80);
+      return nm ? (ds ? `${nm} \u2014 ${ds}` : nm) : '';
+    }).filter(Boolean);
+    if (active.length) {
+      const sample = val(activeRows[0], 'Nama Link') || 'Nama Link';
+      parts.push('LINK AKTIF (saat [SEND_GFORM] WAJIB sebut Nama Link PERSIS, mis. [SEND_GFORM: ' + sample + ']):\n- ' + active.join('\n- '));
+    }
+  }
+
+  const data_context = parts.join('\n\n');
+
+  // ---------- FAQ lexical retrieval ----------
+  const faq = grab('Read FAQ').filter(r => r.Pertanyaan && r.Jawaban);
+  const STOP = new Set(['yang','untuk','dan','di','ke','dari','itu','ini','apa','apakah','bisa','kah','ya','yaa','kak','min','dong','sih','kok','aja','ada','gimana','bagaimana','saya','aku','nya','kalau','atau','juga','sudah','belum','mau','dengan','pada','adalah','kira','tolong','mohon','halo','hai','permisi','terima','kasih','sama','buat','soal','tentang','nih','ngga','gak','engga','tidak','dll','dsb','ga','ikut','harus','nanti','dimana','banget','seperti','pakai','punya','lagi','deh','yg','utk','sm','jd','udah','blm']);
+  const GROUPS = [
+    ['biaya','harga','bayar','tarif','pembayaran','cicil','cicilan','nyicil','nyicilnya','dicicil','ngecicil','dp','mahal','murah','fee','uang','dibayar','bayarnya','investasi','gratis'],
+    ['daftar','pendaftaran','registrasi','enroll','gabung','join','mendaftar','ndaftar','apply'],
+    ['jadwal','kapan','mulai','periode','angkatan','dibuka'],
+    ['syarat','persyaratan','kriteria','ketentuan','requirement'],
+    ['beasiswa','scholarship','asean','uob','cli','capitaland','moe','funded'],
+    ['program','kelas','junior','intermediate','senior','seniors','jenjang'],
+    ['interview','wawancara','mock'],
+    ['essay','esai','karangan'],
+    ['alumni','lulus','berhasil','diterima','keterima','sukses'],
+    ['anak','anaku','anakku','putra','putri','murid','siswa'],
+    ['singapura','singapore','sg'],
+    ['tinggal','kehidupan','asrama','akomodasi','hidup'],
+    ['kuota','slot','penuh','kursi','sisa'],
+    ['mengajar','pengajar','guru','mentor','tutor','ngajar'],
+  ];
+  const SYN = {}; for (const g of GROUPS) for (const w of g) SYN[w] = g[0];
+  const stem = (t) => { let w = t; for (const s of ['nya','kah','lah','kan','an','i']) if (w.length - s.length >= 4 && w.endsWith(s)) { w = w.slice(0, -s.length); break; } for (const p of ['meng','meny','mem','men','peng','peny','pem','pen','ber','ter','di','se','ke','me','pe']) if (w.length - p.length >= 4 && w.startsWith(p)) { w = w.slice(p.length); break; } return w; };
+  const tok = (s) => (s || '').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').split(/\s+/).filter(Boolean).filter(t => !STOP.has(t)).map(t => { const a = SYN[t]; if (a) return a; const st = stem(t); return SYN[st] || st; }).filter(t => t.length >= 2 && !STOP.has(t));
+  const docs = faq.map(r => ({ row: r, toks: tok(r.Pertanyaan) }));
+  const Nn = docs.length, df = {};
+  for (const dd of docs) for (const t of new Set(dd.toks)) df[t] = (df[t] || 0) + 1;
+  const idf = (t) => Math.log((Nn + 1) / ((df[t] || 0) + 1)) + 1;
+  const boost = {};
+  if (flags.askingPrice || flags.discussingProgram) boost['Program & Biaya'] = 1.25;
+  if (flags.askingBatch) boost['Batch & Jadwal'] = 1.30;
+  if (flags.wantsToRegister) boost['Seleksi & Proses Daftar'] = 1.20;
+  const qToks = [...new Set(tok(query))];
+  let faq_context = '';
+  if (qToks.length && docs.length) {
+    const scored = docs.map(dd => { const dset = new Set(dd.toks); let s = 0, m = 0; for (const t of qToks) if (dset.has(t)) { s += idf(t); m++; } s *= (boost[dd.row.Kategori] || 1.0); return { row: dd.row, score: s, matched: m }; }).sort((a, b) => b.score - a.score);
+    const top = scored[0];
+    const FLOOR = 2.5, needCov = qToks.length >= 3 ? 2 : 1;
+    if (top.score >= FLOOR && top.matched >= needCov) {
+      const kept = scored.filter(x => x.score >= 0.45 * top.score && x.matched >= 1).slice(0, 4);
+      faq_context = kept.map(x => `Q: ${x.row.Pertanyaan}\nA: ${x.row.Jawaban}`).join('\n\n');
+    }
+  }
+
+  return [{ json: { ...pre, faq_context, data_context }, pairedItem: { item: 0 } }];
+} catch (e) {
+  const pre = ($('Preprocess - Context Detection').first() || { json: {} }).json || {};
+  return [{ json: { ...pre, faq_context: '', data_context: '', faq_error: String(e) }, pairedItem: { item: 0 } }];
+}
+
+
+===== NODE: Process All =====
+const item = $input.first();
+
+// Ambil AI output dari Anthropic Chat Model
+let aiOutput = '';
+if (item?.json?.content && Array.isArray(item.json.content) && item.json.content.length > 0) {
+  aiOutput = item.json.content[0].text || '';
+} else {
+  aiOutput = item?.json?.output || item?.json?.text || '';
+}
+
+console.log('AI Output preview:', aiOutput.substring(0, 300));
+
+// Ambil data konteks dari node Chat Counter dan Preprocess
+const chatCounter = $('Chat Counter').first().json;
+const preprocess = $('Preprocess - Context Detection').first().json;
+
+// Context data
+const originalMessage = chatCounter.original_message || '';
+const isNewUser = preprocess?.isNewUser || false;
+
+// ── TAG: [SEND_GFORM: Nama Link] ──────────────────────────────
+let gformLinkName = '';
+let isSendGForm = false;
+const gformMatch = aiOutput.match(/\[\s*SEND_GFORM\s*(?::\s*([^\]]*))?\]/i);
+if (gformMatch) {
+  isSendGForm = true;
+  gformLinkName = (gformMatch[1] || '').trim();
+  console.log('📋 SEND_GFORM tag detected. linkName=', gformLinkName || '(kosong)');
+}
+
+if (!isSendGForm) {
+  const outputLower = aiOutput.toLowerCase();
+  const hasFormsUrl = aiOutput.includes('forms.gle');
+  const forgotTagPatterns = [
+    'link pendaftaran sudah saya kirim',
+    'link pendaftaran mock interview sudah saya kirim',
+    'silakan isi formnya',
+    'form sudah saya kirim',
+    'link pendaftarannya',
+    'link pendaftaran',
+    'ini linknya',
+    'silakan diisi',
+    'link pendaftaran mock',
+    'ini link mock',
+  ];
+  const mentionedSendingForm = forgotTagPatterns.some(pattern =>
+    outputLower.includes(pattern)
+  );
+  if (hasFormsUrl || mentionedSendingForm) {
+    isSendGForm = true;
+    const reason = hasFormsUrl ? 'forms.gle URL detected' : 'phrase pattern matched';
+    console.log(`⚠️ FALLBACK: AI forgot [SEND_GFORM] tag - auto-correcting (${reason})`);
+  }
+}
+
+// ── TAG: [TALK_TO_SAM] ─────────────────────────────────────────
+let isTalkToSam = aiOutput.includes('[TALK_TO_SAM]');
+
+if (!isTalkToSam) {
+  const outputLower = aiOutput.toLowerCase();
+  const talkToSamPatterns = [
+    'sampaikan ke sam',
+    'saya sampaikan ke sam',
+    'dibalas langsung sama dia',
+    'dibales langsung sama dia',
+    'kalau dia sudah ada waktu',
+  ];
+  if (talkToSamPatterns.some(p => outputLower.includes(p))) {
+    isTalkToSam = true;
+    console.log('⚠️ FALLBACK: AI forgot [TALK_TO_SAM] tag - auto-correcting');
+  }
+}
+
+// ── TAG: [MOCK_INTERVIEW_BOOKING] ─────────────────────────────
+let isMockBooking = false;
+let mockBookingData = {};
+const mockMatch = aiOutput.match(/\[MOCK_INTERVIEW_BOOKING\](.*?)\[\/MOCK_INTERVIEW_BOOKING\]/s);
+if (mockMatch && mockMatch[1]) {
+  isMockBooking = true;
+  const c = mockMatch[1];
+  const namaM    = c.match(/Nama:([^|]+)/);
+  const sesiM    = c.match(/Sesi:([^|]+)/);
+  const noWaM    = c.match(/NoWA:([^|\\]]+)/);
+  mockBookingData = {
+    nama:  namaM ? namaM[1].trim() : '',
+    sesi:  sesiM ? sesiM[1].trim() : '',
+    noWA:  noWaM ? noWaM[1].trim() : '',
+  };
+}
+
+// ── TAG: [UNKNOWN] ────────────────────────────────────────────
+let isUnknown = aiOutput.includes('[UNKNOWN]');
+
+// ── TAG: [FACTS kelas="..."] + MERGE kelas_anak (union, anti-overwrite) ──
+// AI (yang paham "kls 12"/"kls vii") mengekstrak kelas; digabung dgn deteksi
+// regex (cadangan) + nilai lama DB (TTL-aware dari Cek_user_status). Union +
+// dedup -> tidak menimpa anak lain. Program DITURUNKAN dari kelas (bukan AI).
+const KELAS_WL   = ['SD 1','SD 2','SD 3','SD 4','SD 5','SD 6','SMP 1','SMP 2','SMP 3','SMA 10/11','SMA 12'];
+const KELAS_PROG = { 'SD 1':'','SD 2':'','SD 3':'','SD 4':'','SD 5':'','SD 6':'Junior','SMP 1':'Junior','SMP 2':'Intermediate','SMP 3':'Intermediate','SMA 12':'Seniors','SMA 10/11':'' };
+const PROG_ORDER = ['Junior','Intermediate','Seniors'];
+const toLabel = (s) => {
+  const t = String(s || '').toUpperCase().replace(/\s+/g, ' ').trim();
+  return KELAS_WL.find(w => w.toUpperCase() === t) || null;
+};
+
+let aiFactsKelas = [];
+const factsMatch = aiOutput.match(/\[\s*FACTS\b[^\]]*\bkelas\s*=\s*"([^"]*)"[^\]]*\]/i);
+if (factsMatch && factsMatch[1]) {
+  aiFactsKelas = factsMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+  console.log('🏷️ FACTS kelas dari AI:', aiFactsKelas);
+}
+
+const regexGrades = Array.isArray(preprocess && preprocess.grades) ? preprocess.grades : [];
+let existingFreshRaw = '';
+try { existingFreshRaw = String($('Cek_user_status').first().json.kelas_anak_db || ''); } catch (e) {}
+const existingFresh = existingFreshRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+const mergedSet = [];
+for (const c of [...aiFactsKelas, ...regexGrades, ...existingFresh]) {
+  const lab = toLabel(c);
+  if (lab && !mergedSet.includes(lab)) mergedSet.push(lab);
+}
+const mergedArr     = KELAS_WL.filter(w => mergedSet.includes(w)); // urut kanonik
+const mergedKelas   = mergedArr.join(', ');
+const progSet       = [...new Set(mergedArr.map(g => KELAS_PROG[g]).filter(Boolean))];
+const mergedProgram = PROG_ORDER.filter(p => progSet.includes(p)).join(', ');
+const existingCanon = KELAS_WL.filter(w => existingFresh.map(toLabel).includes(w)).join(', ');
+const kelasChanged  = mergedKelas !== '' && mergedKelas !== existingCanon;
+if (kelasChanged) console.log(`📝 kelas_anak: "${existingCanon}" -> "${mergedKelas}" | program: "${mergedProgram}"`);
+
+
+// ── TAG: [PENDAFTARAN] (backward compat) ──────────────────────
+let isPendaftaran = false;
+let pendaftaranData = {};
+const pendMatch = aiOutput.match(/\[PENDAFTARAN\](.*?)\[\/PENDAFTARAN\]/s);
+if (pendMatch && pendMatch[1]) {
+  isPendaftaran = true;
+  const c = pendMatch[1];
+  const namaM    = c.match(/Nama:([^|]+)/);
+  const programM = c.match(/Program:([^|]+)/);
+  const batchM   = c.match(/Batch:([^|]+)/);
+  const asalM    = c.match(/Asal:([^|\\]]+)/);
+  pendaftaranData = {
+    nama:    namaM    ? namaM[1].trim()    : '',
+    program: programM ? programM[1].trim() : '',
+    batch:   batchM   ? batchM[1].trim()   : '',
+    asal:    asalM    ? asalM[1].trim()    : '',
+  };
+}
+
+// ── DATA_COMPLETE ──────────────────────────────────────────────
+let isDataComplete = false;
+let dataComplete = {};
+const dcMatch = aiOutput.match(/\[DATA_COMPLETE\](.*?)\[\/DATA_COMPLETE\]/s);
+if (dcMatch && dcMatch[1]) {
+  isDataComplete = true;
+  const c = dcMatch[1];
+  const namaM    = c.match(/Nama:([^|]+)/);
+  const noWaM    = c.match(/NoWA:([^|]+)/);
+  const programM = c.match(/Program:([^|\\]]+)/);
+  dataComplete = {
+    nama:    namaM    ? namaM[1].trim() : '',
+    noWA:    noWaM    ? noWaM[1].trim() : '',
+    program: programM ? programM[1].trim() : '',
+  };
+}
+
+// ── CLEAN OUTPUT (hapus semua tag sistem) ──────────────────────
+let cleanOutput = aiOutput
+  .replace(/\[\s*SEND_GFORM\s*(?::[^\]]*)?\]/gi, '')
+  .replace(/\[MOCK_INTERVIEW_BOOKING\].*?\[\/MOCK_INTERVIEW_BOOKING\]/gs, '')
+  .replace(/\[PENDAFTARAN\].*?\[\/PENDAFTARAN\]/gs, '')
+  .replace(/\[DATA_COMPLETE\].*?\[\/DATA_COMPLETE\]/gs, '')
+  .replace(/\[UNKNOWN\]/g, '')
+  .replace(/\[\s*USER[_\s]?STATUS\s*:\s*[^\]]*\]/gi, '')
+  .replace(/\[\s*FACTS\b[^\]]*\]/gi, '')
+  .replace(/\[TALK_TO_SAM\]/g, '');
+
+// ── SIMPAN VERSI SEBELUM FILTER INTERNAL (guard anti-kosong) ──
+const preInternalStrip = cleanOutput;
+
+// ── HAPUS KALIMAT PROSES INTERNAL ───────────────────────────
+// V4 FIX: daftar keyword DIPERSEMPIT ke frasa yang benar-benar
+// membocorkan proses internal (selalu menyebut sumber data).
+// Frasa percakapan normal ("saya cek", "saya lihat", "dari data")
+// DIHAPUS dari daftar — dulu menyebabkan balasan valid 1 kalimat
+// terhapus habis dan user menerima "Maaf, terjadi kesalahan".
+const internalKeywords = [
+  'berdasarkan faq',
+  'berdasarkan data',
+  'menurut data',
+  'dari faq',
+  'dari sheet',
+  'dari referensi',
+  'data terverifikasi',
+  'faq relevan',
+  'faq yang tersedia',
+  'data yang tersedia',
+  'saya cek data',
+  'saya cek faq',
+  'saya cek sheet',
+  'saya cek di',
+  'cek di sheet',
+  'cek di database',
+  'ambil data dari',
+];
+const keywordPattern = internalKeywords.join('|');
+const internalRegex = new RegExp(`^\\s*([^.!?]*?(${keywordPattern})[^.!?]*[.!?]\\s*)`, 'i');
+cleanOutput = cleanOutput.replace(internalRegex, '');
+
+// Hapus juga kalimat yang diawali dengan kata-kata tersebut (tanpa titik)
+const startPattern = new RegExp(`^\\s*(${keywordPattern}).*?(\\n|\\.|$)`, 'i');
+cleanOutput = cleanOutput.replace(startPattern, '');
+
+// Jaga-jaga: buang baris pertama jika terindikasi
+const lines = cleanOutput.split('\n');
+if (lines.length > 1) {
+  const firstLine = lines[0].toLowerCase();
+  if (internalKeywords.some(kw => firstLine.includes(kw))) {
+    lines.shift();
+    cleanOutput = lines.join('\n');
+  }
+}
+
+// Kalimat pembuka "Berdasarkan/Menurut/Dari + data/faq/sheet/referensi ..."
+cleanOutput = cleanOutput.replace(/^\s*(Berdasarkan|Menurut|Dari)\s+(data|faq|sheet|referensi)[^.!?]*[.!?]\s*/i, '');
+
+// Potong teks sebelum ": " — hanya jika kalimat DIAWALI frasa proses internal
+const colonMatch = cleanOutput.match(/^\s*(Berdasarkan|Menurut|Dari)\s+(data|faq|sheet|referensi)[^:]*:\s*(.+)/is);
+if (colonMatch && colonMatch[3] && colonMatch[3].trim().length > 0) {
+  cleanOutput = colonMatch[3].trim();
+}
+
+// ── V4 GUARD ANTI-KOSONG ──────────────────────────────────────
+// Kalau filter internal menghapus SEMUA teks padahal AI punya
+// jawaban, kembalikan versi sebelum filter. Pesan error hanya
+// untuk kasus AI benar-benar tidak menghasilkan output.
+if (!cleanOutput.trim() && preInternalStrip.trim()) {
+  // Coba selamatkan isi setelah titik dua ("Berdasarkan FAQ ...: <isi>")
+  const rescue = preInternalStrip.match(/^\s*[^:.!?\n]{0,80}(?:data|faq|sheet|referensi)[^:.!?\n]{0,80}:\s*(.+)/is);
+  if (rescue && rescue[1] && rescue[1].trim()) {
+    console.warn('🛡️ GUARD: ambil isi setelah frasa internal.');
+    cleanOutput = rescue[1].trim();
+  } else {
+    console.warn('🛡️ GUARD: filter internal mengosongkan output — pakai versi asli.');
+    cleanOutput = preInternalStrip;
+  }
+}
+
+cleanOutput = cleanOutput.trim();
+
+// ── CLEAN MARKDOWN ──────────────────────────────────────────
+const urlRegex = /https?:\/\/[^\s)]+/g;
+const maskedUrls = [];
+cleanOutput = cleanOutput.replace(urlRegex, (match) => {
+  maskedUrls.push(match);
+  return `\x00URL${maskedUrls.length - 1}\x00`;
+});
+
+cleanOutput = cleanOutput
+  .replace(/\*\*([^*]+)\*\*/g, '$1')
+  .replace(/\*([^*]+)\*/g, '$1')
+  .replace(/_([^_]+)_/g, '$1')
+  .replace(/~~([^~]+)~~/g, '$1')
+  .replace(/`([^`]+)`/g, '$1')
+  .replace(/[\*_~`]/g, '');
+
+cleanOutput = cleanOutput
+  .replace(/(\d)\s*[—–]\s*(\d)/g, '$1-$2')
+  .replace(/\s*[—–]\s*/g, ', ')
+  .replace(/\s*;\s*/g, ', ')
+  .replace(/\s{2,}/g, ' ')
+  .replace(/\s+([,.])/g, '$1')
+  .replace(/,\s*,/g, ',')
+  .trim();
+
+cleanOutput = cleanOutput.replace(
+  /\x00URL(\d+)\x00/g,
+  (_, idx) => maskedUrls[parseInt(idx)]
+);
+
+// Safety net register netral: buang vokatif yang lolos dari prompt
+cleanOutput = cleanOutput
+  .replace(/(^|\n)\s*(Om\s*\/?\s*Tante|Bapak\s*\/?\s*Ibu|Pak\s*\/?\s*Bu|Ayah\s*\/?\s*Bunda)\s*,\s*/gi, '$1')
+  .replace(/\s*\b(Om\s*\/?\s*Tante|Bapak\s*\/?\s*Ibu|Pak\s*\/?\s*Bu|Ayah\s*\/?\s*Bunda)\b\s*/gi, ' ')
+  .replace(/\s{2,}/g, ' ')
+  .replace(/\s+,/g, ',')
+  .replace(/,\s*,/g, ',')
+  .replace(/(^|\n)\s*,\s*/g, '$1')
+  .trim();
+
+cleanOutput = cleanOutput.replace(/(^|\n)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());
+
+// ── FALLBACK: jika cleanOutput tetap kosong (AI tidak menghasilkan output) ──
+if (!cleanOutput || cleanOutput.trim() === '') {
+  console.warn('⚠️ cleanOutput kosong! Menggunakan fallback.');
+  if (isUnknown) {
+    cleanOutput = 'Maaf yaa, untuk pertanyaan ini saya belum punya jawabannya. Nanti saya cari tahu dan kabari lewat sini ya!';
+  } else {
+    cleanOutput = 'Maaf, terjadi kesalahan. Coba tanyakan ulang yaa.';
+  }
+}
+
+// ── RESOLVE & INJECT GFORM LINK (inline, data-driven) ───────────
+if (isSendGForm) {
+  let linkRows = [];
+  try {
+    linkRows = $('Read LINKS Data').all().map(i => i.json);
+  } catch (e) {
+    console.warn('⚠️ Tidak bisa baca node Read LINKS Data:', e.message);
+  }
+
+  const normL = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  const activeRows = linkRows.filter(r => /aktif|active|on|ya/i.test(String(r['Status'] || '')));
+
+  let match = null;
+  const rq = normL(gformLinkName);
+  if (rq) {
+    match = activeRows.find(r => normL(r['Nama Link']) === rq)
+         || activeRows.find(r => { const n = normL(r['Nama Link']); return n && (n.includes(rq) || rq.includes(n)); });
+  }
+  // AI tidak menyebut nama link -> default ke pendaftaran batch reguler
+  if (!match && !rq) {
+    match = activeRows.find(r => /pendaftaran batch/i.test(String(r['Nama Link'] || '')))
+         || activeRows.find(r => /gform|pendaftaran/i.test(String(r['Nama Link'] || '')));
+  }
+
+  if (match && match['URL']) {
+    gformLinkName = match['Nama Link'];
+    const url = String(match['URL']).trim();
+
+    const linkMeta = `${match['Nama Link'] || ''} ${match['Deskripsi'] || ''}`.toLowerCase();
+    const isWaChannel =
+      /whatsapp\.com\/channel\//i.test(url) ||
+      /chat\.whatsapp\.com\//i.test(url) ||
+      /channel|komunitas|wa\s*channel/i.test(linkMeta);
+
+    if (!cleanOutput.includes(url)) {
+      cleanOutput = isWaChannel
+        ? `${cleanOutput}\n\n👉 ${url}`
+        : `${cleanOutput}\n\n👉 ${url}\n\nKalau ada yang masih kurang jelas, bisa ngobrol langsung sama Sam yaa. tinggal ketik "mau ngomong sama Sam".`;
+    }
+    console.log('✅ Link injected inline:', match['Nama Link'], url, isWaChannel ? '(WA channel - tanpa imbuhan)' : '');
+  } else {
+    console.warn('⚠️ SEND_GFORM aktif tapi link tidak ditemukan di LINKS. linkName=', gformLinkName || '(kosong)');
+  }
+}
+
+// ── LOGGING ───────────────────────────────────────────────────
+if (isSendGForm)   console.log('📋 SEND_GFORM tag detected');
+if (isMockBooking) console.log('📅 MOCK_INTERVIEW_BOOKING detected:', JSON.stringify(mockBookingData));
+if (isUnknown)     console.log('❓ UNKNOWN tag detected');
+
+// ── RETURN ──────────────────────────────────────────────────
+return [{
+  json: {
+    ...chatCounter,
+    ...preprocess,
+    ...item.json, // overwrite dengan data terbaru jika ada konflik
+    cleanOutput,
+    isSendGForm,
+    gformLinkName,
+    isMockBooking,
+    mockBookingData,
+    isUnknown,
+    isPendaftaran,
+    pendaftaranData,
+    isDataComplete,
+    dataComplete,
+    isTalkToSam,
+    nama:    pendaftaranData.nama    || dataComplete.nama    || mockBookingData.nama || '',
+    program: pendaftaranData.program || dataComplete.program || 'Mock Interview',
+    needs_unknown: isUnknown ? 'true' : 'false',
+    can_record_to_sheet: isMockBooking || isPendaftaran || isDataComplete,
+    original_message: originalMessage,
+    is_new_user: isNewUser,
+    kelas_anak_merged: mergedKelas,
+    program_interest_merged: mergedProgram,
+    kelas_changed: kelasChanged,
+  }
+}];
+
+
+===== NODE: Pick GForm Link =====
+// Pilih link GForm dari sheet LINKS sesuai nama yang diminta AI (data-driven)
+const rows = $('Query LINKS for GForm').all().map(i => i.json);
+const proc = $('Process All').first().json;
+const phone = $('Chat Counter').first().json.user_wa || proc.user_wa || '';
+const requested = String(proc.gformLinkName || '').trim();
+
+const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const activeRows = rows.filter(r => /aktif|active|on|ya/i.test(String(r['Status'] || '')));
+
+let match = null;
+if (requested) {
+  const rq = norm(requested);
+  match = activeRows.find(r => norm(r['Nama Link']) === rq)
+       || activeRows.find(r => { const n = norm(r['Nama Link']); return n && (n.includes(rq) || rq.includes(n)); });
+}
+
+if (match && match['URL']) {
+  const desc = String(match['Deskripsi'] || '').trim();
+  const intro = desc
+    ? `Berikut ${desc.charAt(0).toLowerCase() + desc.slice(1)}`
+    : `Berikut link ${match['Nama Link']}`;
+  const message = `Haii! 😊 ${intro} ya:\n\n👉 ${match['URL']}\n\nSilakan diisi yaa, nanti tim kami follow up setelah form terisi. Ada yang mau ditanyain dulu sebelum isi? Santai aja tanya ke sini! 🙌`;
+  console.log('✅ GForm link resolved:', match['Nama Link']);
+  return [{ json: { ...proc, gformResolved: true, gformUrl: match['URL'], gformLinkName: match['Nama Link'], gformDesc: desc, phone, message } }];
+}
+
+// ── FALLBACK: nama kosong / tidak cocok -> tanya ulang link mana ──
+const formRows = activeRows.filter(r => /gform|pendaftaran|mock/i.test(String(r['Nama Link'] || '')));
+const listRows = formRows.length ? formRows : activeRows;
+const opts = listRows.map(r => {
+  const dsc = String(r['Deskripsi'] || '').trim();
+  return dsc ? `• ${r['Nama Link']} (${dsc})` : `• ${r['Nama Link']}`;
+}).join('\n');
+const reason = requested ? `nama link "${requested}" tidak ketemu di LINKS` : 'AI tidak menyertakan nama link';
+console.warn('⚠️ Pick GForm Link fallback (tanya ulang):', reason);
+const message = opts
+  ? `Boleh dibantu kirim link-nya 😊 Yang dimaksud yang mana ya:\n${opts}\n\nTinggal sebut salah satu, nanti langsung saya kirimkan.`
+  : 'Boleh dibantu, link mana yang mau dikirim ya? Sebutkan program/keperluannya, nanti saya kirimkan.';
+return [{ json: { ...proc, gformResolved: false, gformUrl: '', gformLinkName: requested, phone, message } }];
+
+

@@ -1,0 +1,120 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "sendTo": "stevenleroy0@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "VIRA Alert"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        340,
+        220
+      ],
+      "id": "c3f00001-0000-4000-8000-000000000001",
+      "name": "ALT A - Gmail Node",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GANTI_ID_KREDENSIAL_GMAIL",
+          "name": "Gmail chatminagent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer GANTI_RESEND_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: 'VIRA Alert <onboarding@resend.dev>', to: ['stevenleroy0@gmail.com'], subject: $json.subject, html: $json.html, text: $json.text }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        340,
+        440
+      ],
+      "id": "c3f00002-0000-4000-8000-000000000002",
+      "name": "ALT B - Resend API",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/smtp/email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api-key",
+              "value": "GANTI_BREVO_API_KEY"
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ sender: { name: 'VIRA Alert', email: 'chatminagent@gmail.com' }, to: [{ email: 'stevenleroy0@gmail.com' }], subject: $json.subject, htmlContent: $json.html, textContent: $json.text }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        340,
+        660
+      ],
+      "id": "c3f00003-0000-4000-8000-000000000003",
+      "name": "ALT C - Brevo API",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "content": "## Pilih SATU, hapus sisanya\n\nSambungkan **Normalize & Compose Email** &rarr; node pilihanmu, lalu hapus node **Kirim Email Alert** (SMTP) dan 2 alternatif yang tidak dipakai.\n\nSemua alternatif memakai output yang sama: `$json.subject`, `$json.html`, `$json.text`. Tidak ada yang perlu diubah di Code node.\n\n---\n\n### ALT A &mdash; Gmail Node (OAuth2)\nTetap di ekosistem Google.\n\n1. Google Cloud Console &rarr; project baru &rarr; **Enable Gmail API**\n2. OAuth consent screen: External, isi seadanya, tambahkan `chatminagent@gmail.com` sebagai Test user\n3. Credentials &rarr; OAuth client ID &rarr; **Web application**\n4. Authorized redirect URI: copy dari halaman kredensial n8n (`https://<n8n-mu>/rest/oauth2-credential/callback`)\n5. Di n8n: credential **Gmail OAuth2 API**, isi Client ID + Secret, klik Connect, login sebagai chatminagent\n\n**PENTING:** setelah jalan, balik ke OAuth consent screen dan klik **PUBLISH APP** (status jadi *In production*). Kalau dibiarkan *Testing*, refresh token Google mati tiap **7 hari** dan jalur alert ini diam-diam berhenti. Abaikan warning \"unverified app\" saat consent &mdash; wajar, dan tidak masalah untuk akun sendiri.\n\n---\n\n### ALT B &mdash; Resend API (paling cepat)\nTanpa OAuth, tanpa SMTP, tanpa domain.\n\n1. Daftar di resend.com **pakai stevenleroy0@gmail.com**\n2. API Keys &rarr; Create &rarr; copy key `re_...`\n3. Paste ke header `Authorization` di node ini (ganti `GANTI_RESEND_API_KEY`, tetap sisakan kata `Bearer `)\n\nTanpa domain terverifikasi, Resend hanya boleh kirim **ke email pemilik akun** &mdash; persis kebutuhan kita. Sender-nya terkunci di `onboarding@resend.dev`.\n\n---\n\n### ALT C &mdash; Brevo API\nKalau mau sender-nya tetap `chatminagent@gmail.com`.\n\n1. Daftar di brevo.com\n2. Senders &rarr; Add sender `chatminagent@gmail.com` &rarr; klik link verifikasi yang masuk ke inbox itu\n3. SMTP & API &rarr; API Keys &rarr; Create &rarr; paste ke header `api-key`\n\nGratis 300 email/hari. Bisa kirim ke penerima mana pun (berguna kalau nanti alert mau ikut ke klien).",
+        "height": 1000,
+        "width": 480,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        660,
+        200
+      ],
+      "id": "c3f00004-0000-4000-8000-000000000004",
+      "name": "Sticky Alternatives"
+    }
+  ],
+  "connections": {},
+  "pinData": {},
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  }
+}

@@ -1,0 +1,242 @@
+========================================================================
+UAT PERILAKU — VIRA Personal v3.1 (2026-09-06)
+berkas: 2026-09-06-VIRA-Personal-Main-v3.1.json
+========================================================================
+
+------------------------------------------------------------------------
+A. GERBANG MASUK — siapa yang boleh dibalas (P0-1, P1-7, P2-12)
+------------------------------------------------------------------------
+  LOLOS  A0  IF (Whitelist) tidak lagi punya kabel keluar
+  LOLOS  A0b IF (Whitelist) disabled
+  LOLOS  A0c IF From Me menyambung langsung ke Bootstrap Config
+  LOLOS  A0d tidak ada node lain yang menyambung ke IF (Whitelist)
+  LOLOS  A1  prospek iklan (nomor acak) LOLOS
+  LOLOS  A2  whitelist aktif + nomor asing ditolak
+  LOLOS  A3  whitelist aktif + nomor terdaftar lolos
+  LOLOS  A4  whitelist aktif tapi daftar KOSONG -> tetap lolos (fail-open)
+  LOLOS  A5  nomor di blocklist ditolak
+  LOLOS  A6  nomor bot sendiri ditolak (anti-loop)
+  LOLOS  A7  pengirim @lid tetap dievaluasi lewat originLid
+  LOLOS  A8  blocklist mengenali lid
+  LOLOS  A9  If From Group: payload tanpa field -> false (bukan error)
+  LOLOS  A10 If From Group: field true tetap terdeteksi
+  LOLOS  A9  IF From Me: payload tanpa field -> false (bukan error)
+  LOLOS  A10 IF From Me: field true tetap terdeteksi
+
+------------------------------------------------------------------------
+B. CHAT COUNTER — gerbang tipe pesan (P2-9b)
+------------------------------------------------------------------------
+  LOLOS  B1  pesan teks diteruskan
+  LOLOS  B2  user_phone & media_kind benar
+  LOLOS  B3  reaction dibuang
+  LOLOS  B4  gambar diteruskan sebagai media_kind=image
+  LOLOS  B5  stiker jadi media_kind=other (tidak dikirim ke Vision)
+  LOLOS  B6  vision_mode=off membuang media
+  LOLOS  B7  $vars tidak tersedia -> TIDAK error (P2-9b)
+  LOLOS  B8  pesan kosong tanpa media dibuang
+
+------------------------------------------------------------------------
+C. RATE LIMITER (P2-9)
+------------------------------------------------------------------------
+  LOLOS  C1  batas 15/menit dipatuhi (bukan 5)
+  LOLOS  C2  batas mengikuti CONFIG.rate_limit_max
+
+------------------------------------------------------------------------
+D. RESOLVE USER ROW — identitas & balasan terakhir (P0-2a)
+------------------------------------------------------------------------
+  LOLOS  D1  cocok lewat No WA
+  LOLOS  D2  last_bot_reply ikut terbawa (P0-2a)
+  LOLOS  D3  cocok lewat lid, kunci tetap No WA
+  LOLOS  D4  user baru -> kunci = nomor, row_found false
+  LOLOS  D5  user baru tidak mewarisi last_bot_reply orang lain
+  LOLOS  D6  identitas kosong -> error keras (bukan diam-diam rows[0])
+  LOLOS  D7  STATS kosong tidak menjatuhkan node
+
+------------------------------------------------------------------------
+I. DETECT LEAD SOURCE (P2-10)
+------------------------------------------------------------------------
+  LOLOS  I1  'chat masuk tinggi banget' BUKAN Instagram
+  LOLOS  I2  'bagi info dong' BUKAN Instagram
+  LOLOS  I3  'aku lihat di IG' -> Instagram
+  LOLOS  I4  'dari instagram' -> Instagram
+  LOLOS  I5  'nemu di gmaps' -> Google
+  LOLOS  I6  sumber pertama dipertahankan
+
+------------------------------------------------------------------------
+E. CEK_USER_STATUS — buffer + jaring pengaman ingatan (P0-2b)
+------------------------------------------------------------------------
+  LOLOS  E1  tiga pesan dalam window debounce digabung
+  LOLOS  E2  bot_mode OFF setelah debounce -> berhenti
+  LOLOS  E3  blok BALASAN TERAKHIRMU disuntikkan saat segar
+  LOLOS  E3b blok berdiri SEBELUM CRITICAL INSTRUCTION
+  LOLOS  E3c blok tidak mengganggu pemisah [USER QUERY]
+  LOLOS  E4  balasan lebih tua dari 24 jam TIDAK disuntikkan
+  LOLOS  E5  kolom kosong (sheet belum ditambah) tetap jalan normal
+  LOLOS  E6  greeting_sent kosong -> IS_NEW_USER true
+  LOLOS  E6b kolom greeting_sent hilang dari hasil debounce -> jatuh ke Resolve User Row
+  LOLOS  E7  MSG_BUFFER kosong -> jatuh ke pesan terakhir, tidak kosong
+  LOLOS  E8  gambar tanpa caption -> teks netral, vision_on true
+
+------------------------------------------------------------------------
+F. PREPROCESS — tidak lagi mendorong bot bunuh diri (P1-5)
+------------------------------------------------------------------------
+  LOLOS  F1  'chat paling ramai hari senin' TIDAK mendorong [TALK_TO_ADMIN]
+  LOLOS  F1  'besok jam 10 gimana' TIDAK mendorong [TALK_TO_ADMIN]
+  LOLOS  F1  'mau mulai minggu depan' TIDAK mendorong [TALK_TO_ADMIN]
+  LOLOS  F1  'biasanya sore sih ramenya' TIDAK mendorong [TALK_TO_ADMIN]
+  LOLOS  F1  'tanggal 1 bulan depan bisa?' TIDAK mendorong [TALK_TO_ADMIN]
+  LOLOS  F2  'aku kirim foto ya' TIDAK dianggap minta file
+  LOLOS  F2  'ini gambar dashboard aku' TIDAK dianggap minta file
+  LOLOS  F2  'fotonya udah aku kirim' TIDAK dianggap minta file
+  LOLOS  F3  'boleh minta brosurnya?' dianggap minta file
+  LOLOS  F3  'ada contoh decknya ga' dianggap minta file
+  LOLOS  F3  'mau lihat portfolio dong' dianggap minta file
+  LOLOS  F4  '20an chat per hari' TIDAK memicu konteks harga
+  LOLOS  F4  'kira kira berapa ya orangnya' TIDAK memicu konteks harga
+  LOLOS  F4  'ada berapa admin' TIDAK memicu konteks harga
+  LOLOS  F5  'harganya berapa ya' memicu konteks harga
+  LOLOS  F5  'biaya bulanannya gimana' memicu konteks harga
+  LOLOS  F5  'paket premium berapa harganya' memicu konteks harga
+  LOLOS  F6  'mau ngobrol langsung sama steven dong' terdeteksi niat bicara
+  LOLOS  F6  'boleh minta nomor stevennya' terdeteksi niat bicara
+  LOLOS  F6  'bisa ditelpon ga' terdeteksi niat bicara
+  LOLOS  F6  'mau meeting bisa?' terdeteksi niat bicara
+  LOLOS  F7  SYSTEM_DATA dipertahankan utuh
+  LOLOS  F8  [USER QUERY] tepat satu
+  LOLOS  F9  actualUserMessage bersih dari blok sistem
+
+------------------------------------------------------------------------
+G. PROCESS ALL — inti insiden 2026-09-05 (P0-2, P0-3, P1-4, P1-6)
+------------------------------------------------------------------------
+  LOLOS  G0  node tidak error
+  LOLOS  G1  balasan TIDAK diganti pertanyaan kaleng (akar insiden)
+  LOLOS  G1b balasan yang dikirim = tulisan AI
+  LOLOS  G1c deckRejected tetap terdeteksi (brief tetap disimpan)
+  LOLOS  G2  'boleh' setelah tawaran deck dikenali sebagai permintaan (P1-4)
+  LOLOS  G2b deckNotify true -> Steven pasti dinotifikasi
+  LOLOS  G2c last_bot_reply = teks final yang dikirim
+  LOLOS  G2d replyOverridden false (tidak ada penggantian teks)
+  LOLOS  G2e tag tidak bocor ke prospek
+  LOLOS  G3  'boleh' tanpa tawaran deck TIDAK dianggap minta deck
+  LOLOS  G4  prospek minta ditelepon -> bot dimatikan
+  LOLOS  G5  tag TALK_TO_ADMIN tanpa permintaan bicara -> bot TETAP HIDUP (P1-6)
+  LOLOS  G5b Steven tetap dinotifikasi (isTalkToAdmin true)
+  LOLOS  G4b 'mau ngobrol langsung sama steven dong' -> bot dimatikan
+  LOLOS  G4b 'boleh minta kontak stevennya' -> bot dimatikan
+  LOLOS  G4b 'bisa meeting minggu ini?' -> bot dimatikan
+  LOLOS  G4b 'ada cp yang bisa dihubungi?' -> bot dimatikan
+  LOLOS  G6  dua tag SEND_MEDIA tidak lagi melempar ReferenceError (P0-3)
+  LOLOS  G6b media pertama & kedua sama-sama terisi
+  LOLOS  G6c URL Drive dirapikan ke bentuk direct download
+  LOLOS  G7  key tidak ada -> eskalasi manual
+  LOLOS  G7b balasan diganti supaya tidak menjanjikan file
+  LOLOS  G7c penggantian ditandai replyOverridden (P0-2d)
+  LOLOS  G7d last_bot_reply mengikuti teks pengganti, bukan tulisan AI
+  LOLOS  G8  dua kandidat -> sistem bertanya balik, media tidak dikirim
+  LOLOS  G8b ditandai replyOverridden
+  LOLOS  G9  FACTS terparse
+  LOLOS  G9b fakta lama yang tidak disebut tetap dipertahankan
+  LOLOS  G9c tag FACTS tidak bocor ke prospek
+  LOLOS  G9d penanda perubahan benar
+  LOLOS  G10 output AI kosong -> ada kalimat cadangan, bukan pesan kosong
+  LOLOS  G11 [UNKNOWN] terdeteksi & tag dibuang
+  LOLOS  G12 blok DECK_REQUEST terpotong -> tag tidak bocor ke prospek
+  LOLOS  G12b brief yang sempat tertangkap tetap tersimpan
+  LOLOS  G12c keluaran terpotong di tengah blok -> brief yang sempat tertulis tetap terbaca (P1-8b)
+  LOLOS  G12d prospek tetap menerima kalimat yang masuk akal
+  LOLOS  G13 markdown dibersihkan untuk WhatsApp
+  LOLOS  G14 link tipe website ditempel sebagai teks, bukan diunduh
+
+------------------------------------------------------------------------
+H. MERGE BRIEF — gerbang notifikasi ke Steven (P1-4b)
+------------------------------------------------------------------------
+  LOLOS  H1  brief PERTAMA selalu dinotifikasi walau tingkat 1 belum lengkap
+  LOLOS  H1b kelengkapan dihitung
+  LOLOS  H2  brief yang isinya sama TIDAK dinotifikasi lagi (anti spam)
+  LOLOS  H3  brief bertambah isi -> dinotifikasi lagi
+  LOLOS  H3b isian lama tidak hilang
+  LOLOS  H4  prospek meminta eksplisit -> selalu dinotifikasi
+  LOLOS  H5  identitas bisnis berubah -> brief lama dibuang, tidak menyeret field asing
+  LOLOS  H6  tidak ada brief sama sekali -> tidak ada notifikasi
+  LOLOS  H7  perintah generate deck memakai nomor yang benar
+
+------------------------------------------------------------------------
+J. RAKIT KONTEKS — data prospek & kebocoran catatan internal (P2-11)
+------------------------------------------------------------------------
+  LOLOS  J1  greeting_sent='Y' -> IS_NEW_USER false
+  LOLOS  J1b fakta tersimpan muncul di DATA PROSPEK
+  LOLOS  J2  greeting_sent kosong -> IS_NEW_USER true
+  LOLOS  J3  greeting_sent='N' -> IS_NEW_USER true (konsisten dgn Cek_user_status, P2-11)
+  LOLOS  J4  catatan internal PROGRAM tidak dikirim ke AI
+  LOLOS  J5  baris ABOUT 'Boleh Dibagikan=Tidak' masuk aturan internal, bukan fakta
+  LOLOS  J6  deck_requested=Y muncul sebagai sudah_minta_pitch_deck
+  LOLOS  J7  fakta lebih tua dari TTL dibuang
+
+------------------------------------------------------------------------
+K. KONSISTENSI WORKFLOW (statis)
+------------------------------------------------------------------------
+  LOLOS  K1  semua rujukan $('NodeLain') menunjuk node yang ada
+  LOLOS  K2  jalur utama tersambung dari Webhook sampai pengiriman WA
+  LOLOS  K2b IF (Whitelist) TIDAK terjangkau lagi
+  LOLOS  K3  tidak ada node aktif yang menggantung di luar jalur
+  LOLOS  K4  model chat prospek = deepseek-v4-pro
+  LOLOS  K5  model ringkasan ke Steven = deepseek-v4-flash
+  LOLOS  K6  temperature chat tetap 0.7 (keputusan Steven, jangan diturunkan)
+  LOLOS  K7  maxTokens chat cukup untuk brief 33 baris + [FACTS]
+  LOLOS  K8  Kirimi mengirim Process All.cleanOutput
+  LOLOS  K9  STATS.last_bot_reply diisi dari cleanOutput yang sama
+  LOLOS  K10 STATS.last_bot_reply_ts ikut ditulis
+  LOLOS  K11 bot_mode hanya OFF lewat matikanBot
+  LOLOS  K12 deck_requested konsisten di dua node penulis STATS
+  LOLOS  K13 system message memuat aturan BALASAN TERAKHIRKU
+  LOLOS  K14 system message memuat aturan 'satu kata = jawaban'
+  LOLOS  K15 placeholder {{ $json.prospect_context }} terpasang
+  LOLOS  K15 placeholder {{ $json.brief_context }} terpasang
+  LOLOS  K15 placeholder {{ $json.about_context }} terpasang
+  LOLOS  K15 placeholder {{ $json.program_context }} terpasang
+  LOLOS  K15 placeholder {{ $json.links_context }} terpasang
+  LOLOS  K15 placeholder {{ $json.faq_context }} terpasang
+  LOLOS  K16 kolom last_bot_reply ditulis DAN dibaca
+  LOLOS  K17 override 'Boleh tahu nama bisnisnya' sudah tidak ada di kode
+  LOLOS  K18 setiap penggantian teks yang tersisa menandai replyOverridden
+  LOLOS  K19 rapikanUrl berada di lingkup atas (bukan di dalam if)
+
+------------------------------------------------------------------------
+L. PENGERASAN 2026-09-06 — dua error produksi (H1, H2)
+------------------------------------------------------------------------
+  LOLOS  L1  input Chat Counter kosong ({}) -> berhenti tanpa error
+  LOLOS  L2  alasannya dicatat di log, bukan didiamkan total
+  LOLOS  L3  payload berisi tapi tanpa identitas -> TETAP throw
+  LOLOS  L4  pesan normal tetap resolve seperti biasa
+  LOLOS  L5  Chat Counter membuang reaction
+  LOLOS  L6  CONFIG lengkap -> tidak throw
+  LOLOS  L7  nilai kirimi terbaca utuh
+  LOLOS  L8  tab CONFIG 0 baris -> throw menyebut tab CONFIG
+  LOLOS  L9  satu item kosong (efek alwaysOutputData) -> throw juga
+  LOLOS  L10 pesannya menyebut sheet_id supaya bisa dicek aksesnya
+  LOLOS  L11 kunci kirimi_user_code hilang -> throw menyebut kunci itu
+  LOLOS  L12 pesannya membedakan 'barisnya ketemu' dari 'nilainya kosong'
+  LOLOS  L13 dua kunci lain dilaporkan ADA barisnya
+  LOLOS  L14 nilai ada barisnya tapi kosong -> tetap throw
+  LOLOS  L15 kunci non-kritis kosong -> TIDAK throw
+  LOLOS  L16 whitelist_enabled default false (mode iklan)
+
+========================================================================
+RINGKASAN UAT
+========================================================================
+  LOLOS : 170
+  GAGAL : 0
+
+------------------------------------------------------------------------
+UAT MANUAL — wajib dijalankan di nomor asli sebelum iklan menyala
+------------------------------------------------------------------------
+  1. SUDAH: kolom last_bot_reply + last_bot_reply_ts ada di tab STATS (terverifikasi 2026-09-06).
+  2. SUDAH: whitelist_enabled=false, bot_wa_number=6285155202354 (terverifikasi 2026-09-06).
+  3. CONFIG: pastikan sel A10 berbunyi kirimi_user_code (sempat tertimpa huruf f), dan naikkan rate_limit_max 5 -> 15.
+  4. Import 2026-09-06-VIRA-Personal-Main-v3.1.json, aktifkan, matikan versi lama. Tunggu ~2 menit sebelum menguji: execution yang masih menggantung di node Wait akan bangun memakai definisi baru dan bisa error sekali.
+  5. Chat dari nomor KETIGA (bukan 2 nomor uji lama) - harus dibalas. Ini bukti P0-1 beres.
+  6. Ulang persis alur 2026-09-05: tanya AI CS -> sebut bidang -> tanya harga -> 'udah itu aja' -> terima tawaran deck dengan 'boleh' -> jawab nama bisnis. VIRA harus mengenali nama bisnis itu, dan Steven harus menerima notif brief.
+  7. Kirim 'boleh minta brosurnya' saat LINKS tidak punya brosur - balasan tidak boleh menjanjikan file.
+  8. Kirim 'chat paling ramai hari senin' - VIRA harus tetap membalas (bot tidak mati).
+  9. Kirim 'mau ngobrol langsung sama Steven' - notif handover masuk DAN bot berhenti.
+  10. Cek kolom STATS.last_bot_reply terisi teks balasan terakhir.

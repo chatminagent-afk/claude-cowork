@@ -1,0 +1,22 @@
+- [Arah brand @povstevens](povstevens-brand-direction.md) — positioning "QA yang bangun AI", tone curhat, target owner scale-up; Threads = upload manual (reset 19 Agu, NIGHT SHIFT dibuang)
+- [WTF hook framework](wtf-hook-framework.md) — pola hook mudacumasekali: konkret + ironis/kontradiktif vs generik/edukatif, dipakai buat rewrite hook reel scripts
+- [Hook harus pendek](feedback-hook-length.md) — feedback: hook max 1-2 kalimat pendek, jangan kalimat beranak dengan klausa penjelas
+- [Hook confession+urgency](hook-pattern-confession-urgency.md) — pola "kalau boleh jujur..." + batas waktu konkret, pelengkap WTF hook untuk angle opini/insight
+- [Jangan inversi kaku](feedback-natural-phrasing.md) — feedback: hindari objek-di-depan-kalimat buat "keliatan punchy", pakai SVO + kalimat susulan pendek
+- [Fakta VIRA untuk konten](vira-fakta-konten.md) — angka grounded yang aman dipakai + daftar sensitif yang tidak boleh muncul
+- [Dua tenant VIRA](vira-dua-tenant.md) — The Scholars & Persada; nama asli tidak boleh disebut di konten, pakai deskripsi generik
+- [Meeting demo r8r](r8r-demo-meeting.md) — 2026-08-25 dengan Sam & founder r8r; repo GitHub r8r 404, verifikasi dulu sebelum dukung migrasi VIRA
+- [Marketing vs branding Pandji](pandji-marketing-vs-branding.md) — brand hidup di benak konsumen lewat interaksi nyata, bukan klaim; dipakai buat evaluasi angle reel scripts VIRA
+- [Temperature VIRA jangan diturunkan](vira-temperature-jangan-diturunkan.md) — 0.7 dipertahankan; panjang balasan diperbaiki lewat system message, bukan parameter node
+- [Main VIRA Personal tak terbaca MCP](vira-personal-main-tidak-terbaca-mcp.md) — availableInMCP=false, jangan tertukar "VIRA TS"; harness UAT butuh PYTHONIOENCODING=utf-8 (bukan hang)
+- [STATS terisi v3.8→v3.9](vira-stats-terisi-v3-8.md) — v3.8 live 2026-09-15; v3.9 (UAT 402/0) perbaiki insiden Aldi, live per export 16/09; patch berikutnya dari v3.9
+- [Nama tidak dipakai menyapa](feedback-vira-nama-tidak-menyapa.md) — feedback: nama prospek hanya disimpan, selalu "kak", bukan "kamu"
+- [Follow-up VIRA belum live](vira-followup-belum-live.md) — belum pernah di-import ke n8n; "Follow-up AI Powered" di n8n itu milik tenant PCR, bukan Personal
+- [VIRA v3.10 nama usaha + ringkas](vira-v3-10-nama-usaha-ringkas.md) — 18/09: nama usaha di perkenalan, tanya ulang sekali, UAT 491/0, belum deploy
+- [Balasan VIRA ringkas](feedback-vira-balasan-ringkas.md) — feedback: jangan ulang ucapan prospek; 2 kalimat ±20–35 kata, tidak sependek VIRA TS
+- [Deck: field kosong](feedback-deck-field-kosong.md) — 3 field wajib memblokir build/kirim, izin Steven per field; usulan isi hanya dari fakta tertulis
+- [Error notifier GLOBAL terbukti jalan](vira-global-error-notifier.md) — ID 0mp_AdLtInm68RxQUwLqV, host hstgr; nol eksekusi karena tak ada yang menunjuk, bukan rusak
+- [VIRA v3.11 deck terkirim](vira-v3-11-deck-terkirim.md) — kolom STATS deck_terkirim_ts bikin VIRA tahu decknya sudah sampai; Follow-up v2 berbucket (A/B/C), UAT 551/0 & 204/0, LIVE (dicek MCP 2026-09-23)
+- [VIRA v3.12 balasan ringkas](vira-v3-12-balasan-ringkas.md) — 23/09: prompt to the point + jaring RINGKAS + penangkap fakta; LIVE 23/09 (ID sama); uji live temukan bug askingPrice & sewa→nama_bisnis
+- [VIRA v3.13 harga & handover](vira-v3-13-harga-handover.md) — 23/09: harga hanya kalau ditanya, sewa X=industri, handover langsung, notif singkat sesudah deck; UAT 885/0 + eval; belum deploy
+- [Deck caption no intro](feedback-deck-caption.md) — caption WhatsApp tidak boleh punya "salam kenal, aku Steven"

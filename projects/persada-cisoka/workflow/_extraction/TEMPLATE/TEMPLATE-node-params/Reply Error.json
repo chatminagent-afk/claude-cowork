@@ -1,0 +1,42 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $(\u0027Chat Counter\u0027).item.json.user_wa }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "Maaf, saya belum bisa membantu menjawab pertanyaan tersebut. Bisa tolong diulang kembali? Atau, kalau mau ngobrol langsung dengan Sam, tinggal ketik \u0027mau ngomong sama Sam\u0027 ya."
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   },
+                       "authentication":  "genericCredentialType",
+                       "genericAuthType":  "httpCustomAuth"
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     -14032,
+                     2640
+                 ],
+    "id":  "808e978a-b155-4d87-be7f-a0c8953a22bf",
+    "name":  "Reply Error",
+    "alwaysOutputData":  true,
+    "retryOnFail":  true,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput",
+    "credentials":  {
+                        "httpCustomAuth":  {
+                                               "id":  "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+                                               "name":  "Kirimi Custom Auth (REPLACE per client)"
+                                           }
+                    }
+}

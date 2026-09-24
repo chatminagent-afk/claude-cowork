@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TIM Interior — Task View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+  <meta name="theme-color" content="#B49157" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="TIM Tasks" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #F9F8F6;
+      --surface: #FFFFFF;
+      --surface-2: #F2EFE9;
+      --surface-3: #EAE5DC;
+      --gold: #B49157;
+      --gold-dim: #8A7257;
+      --gold-glow: rgba(180, 145, 87, 0.15);
+      --text: #2C2B29;
+      --text-muted: #59554C;
+      --text-dim: #A39E93;
+      --text-1: #2C2B29;
+      --text-2: #A39E93;
+      --border: rgba(180, 145, 87, 0.25);
+      --border-focus: rgba(180, 145, 87, 0.60);
+      --danger: #C0392B;
+      --success: #27AE60;
+      --r: 14px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(180, 145, 87, 0.05);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0F0F0D;
+      --surface: #171714;
+      --surface-2: #1E1E1A;
+      --surface-3: #252521;
+      --gold: #C4A97D;
+      --gold-dim: #8A7257;
+      --text: #EDE8DF;
+      --text-muted: #7A7468;
+      --text-dim: #45433E;
+      --text-1: #EDE8DF;
+      --text-2: #7A7468;
+      --border: rgba(196, 169, 125, 0.15);
+      --border-focus: rgba(196, 169, 125, 0.50);
+      --shadow: 0 0 0 1px rgba(196, 169, 125, 0.04), 0 24px 80px rgba(0, 0, 0, 0.5);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Sora', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SCREEN SYSTEM ──────────────────────── */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      animation: fadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── TOPBAR ─────────────────────────────── */
+    .topbar {
+      height: 3px;
+      background: linear-gradient(90deg, transparent 0%, var(--gold-dim) 25%, var(--gold) 50%, var(--gold-dim) 75%, transparent 100%);
+    }
+
+    /* ── THEME TOGGLE ───────────────────────── */
+    /* Row khusus toggle — terpisah dari topbar */
+    .home-top-row {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px 14px 0;
+    }
+
+    .theme-toggle {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      flex-shrink: 0;
+    }
+
+    .theme-toggle:hover {
+      background: var(--surface-3);
+    }
+
+    .theme-toggle .sun {
+      display: none;
+    }
+
+    .theme-toggle .moon {
+      display: block;
+    }
+
+    [data-theme="dark"] .theme-toggle .sun {
+      display: block;
+    }
+
+    [data-theme="dark"] .theme-toggle .moon {
+      display: none;
+    }
+
+    /* ── HOME SCREEN ────────────────────────── */
+    .home-wrap {}
+
+    .home-header {
+      text-align: center;
+      padding: 56px 24px 36px;
+    }
+
+    .home-logo {
+      width: 84px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .home-eyebrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 4.5px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+    }
+
+    .home-eyebrow::before,
+    .home-eyebrow::after {
+      content: '';
+      width: 32px;
+      height: 1px;
+    }
+
+    .home-eyebrow::before {
+      background: linear-gradient(to right, transparent, var(--gold-dim));
+    }
+
+    .home-eyebrow::after {
+      background: linear-gradient(to left, transparent, var(--gold-dim));
+    }
+
+    .home-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 6vw, 40px);
+      font-weight: 400;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .home-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .home-sub {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 300;
+    }
+
+    /* menu cards */
+    .menu-list {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .menu-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.12s;
+      box-shadow: var(--shadow);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .menu-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 8px 32px rgba(180, 145, 87, 0.12);
+      transform: translateY(-1px);
+    }
+
+    .menu-card:active {
+      transform: scale(0.98);
+    }
+
+    .menu-avatar {
+      width: 50px;
+      height: 50px;
+      flex-shrink: 0;
+      background: var(--surface-2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+      border: 1px solid var(--border);
+      font-family: 'Playfair Display', serif;
+    }
+
+    .menu-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .menu-label {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .menu-desc {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .menu-arrow {
+      color: var(--gold-dim);
+      font-size: 20px;
+      font-weight: 300;
+    }
+
+    .home-footer {
+      text-align: center;
+      padding: 12px 20px 32px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .home-footer strong {
+      color: var(--gold-dim);
+    }
+
+    /* ── INNER SCREEN ───────────────────────── */
+    .screen-topbar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 14px 16px 6px;
+      position: relative;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      font-family: 'Sora', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--gold-dim);
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      transition: color 0.15s, background 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .back-btn:hover {
+      color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    .screen-title-bar {
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .screen-spacer {
+      width: 80px;
+    }
+
+    .form-wrap {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 4px 16px 80px;
+    }
+
+    /* ── CARD / SECTION ─────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-section {
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-section:last-child {
+      border-bottom: none;
+    }
+
+    .sec-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sec-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, var(--border), transparent);
+    }
+
+    /* filter tabs as action buttons */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+
+    .action-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .btn-action {
+      flex-shrink: 0;
+      padding: 9px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'Sora', sans-serif;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn-action:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: var(--gold-glow);
+    }
+
+    .btn-action.active {
+      background: var(--gold);
+      color: #fff;
+      border-color: var(--gold);
+    }
+
+    /* summary bar */
+    .result-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .result-summary strong {
+      color: var(--gold);
+      font-size: 14px;
+    }
+
+    /* ── RECORD CARDS ───────────────────────── */
+    .record-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      margin-bottom: 10px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .record-head {
+      padding: 14px 18px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .record-date {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .record-project {
+      display: inline-block;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--gold-dim);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .record-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 8px 18px 0;
+      font-style: italic;
+    }
+
+    .record-items {
+      padding: 8px 18px 14px;
+    }
+
+    .item-wrap {}
+
+    .item-wrap.done-item .ri-name {
+      text-decoration: line-through;
+      opacity: 0.45;
+    }
+
+    .record-item {
+      display: grid;
+      grid-template-columns: 22px 1fr auto;
+      gap: 6px 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+      font-size: 12.5px;
+    }
+
+    .record-item:last-child {
+      border-bottom: none;
+    }
+
+    .ri-no {
+      color: var(--text-dim);
+      font-size: 11px;
+      padding-top: 1px;
+    }
+
+    .ri-name {
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .ri-vol {
+      color: var(--text-muted);
+      white-space: nowrap;
+      font-size: 11.5px;
+    }
+
+    /* ── STATUS BUTTONS (identical to v3 .ist) ── */
+    .item-status-row {
+      display: flex;
+      gap: 5px;
+      padding: 3px 0 9px 26px;
+    }
+
+    .ist {
+      padding: 4px 9px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      font-family: 'Sora', sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      line-height: 1.4;
+    }
+
+    .ist.pending.active {
+      background: #f0e6d2;
+      border-color: #c4a97d;
+      color: #7a5c1e;
+    }
+
+    .ist.inprogress.active {
+      background: #d4eaf7;
+      border-color: #5ba8d4;
+      color: #1a6a96;
+    }
+
+    .ist.done.active {
+      background: #d4f0e0;
+      border-color: #4caf80;
+      color: #1a7a46;
+    }
+
+    .ist:not(.active):hover {
+      border-color: var(--gold-dim);
+      color: var(--gold-dim);
+    }
+
+    [data-theme="dark"] .ist.pending.active {
+      background: #2e2410;
+      border-color: #b49157;
+      color: #c4a97d;
+    }
+
+    [data-theme="dark"] .ist.inprogress.active {
+      background: #0a1e2e;
+      border-color: #5ba8d4;
+      color: #7cc0e8;
+    }
+
+    [data-theme="dark"] .ist.done.active {
+      background: #0a1e14;
+      border-color: #4caf80;
+      color: #6dd4a0;
+    }
+
+    /* ── EMPTY STATE ────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-dim);
+    }
+
+    .empty-icon {
+      font-size: 44px;
+      margin-bottom: 14px;
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ── LOADING INLINE ─────────────────────── */
+    .loading-inline {
+      text-align: center;
+      padding: 36px 20px;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .loading-inline::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ── SUBMIT OVERLAY ─────────────────────── */
+    .submit-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 900;
+      background: rgba(15, 15, 13, 0.45);
+      backdrop-filter: blur(3px);
+      cursor: wait;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .submit-overlay.active {
+      display: flex;
+    }
+
+    .submit-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 26px 34px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+    }
+
+    .submit-loader .ldr-ring {
+      width: 38px;
+      height: 38px;
+      border: 3px solid var(--surface-3);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .submit-loader .ldr-text {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      color: var(--text);
+    }
+
+    /* ── TOAST ──────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 11px 22px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s;
+      z-index: 9999;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── TEST BADGE ─────────────────────────── */
+    .test-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(193, 154, 107, 0.12);
+      border: 1px solid rgba(180, 145, 87, 0.3);
+      color: var(--gold-dim);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+
+    /* ── SAVE STATUS INDICATOR ──────────────── */
+    .save-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      margin-right: 6px;
+      transition: background 0.3s;
+      vertical-align: middle;
+    }
+
+    .save-dot.saving {
+      background: var(--gold);
+      animation: pulse-dot 0.8s ease-in-out infinite;
+    }
+
+    .save-dot.saved {
+      background: var(--success);
+    }
+
+    .save-dot.error {
+      background: var(--danger);
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.4
+      }
+    }
+
+    @media (max-width: 400px) {
+      .card-section {
+        padding: 18px 16px;
+      }
+
+      .home-header {
+        padding: 44px 20px 28px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════════════════
+     SCREEN: HOME — Pilih Pekerja
+══════════════════════════════════════════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="topbar"></div>
+    <div class="home-top-row">
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle tema">
+        <!-- sun -->
+        <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+        <!-- moon -->
+        <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+      </button>
+    </div>
+    <div class="home-wrap">
+      <div class="home-header">
+        <img src="./logo_tim.jpg" alt="TIM Interior" class="home-logo"
+          onerror="this.style.display='none'" />
+        <div class="home-eyebrow">Task View · Lapangan</div>
+        <h1 class="home-title">TIM <em>Interior</em></h1>
+        <p class="home-sub">Pilih nama · Cek tugas · Update status</p>
+      </div>
+
+      <div class="menu-list" id="worker-list">
+        <div class="loading-inline">Memuat daftar pekerja...</div>
+      </div>
+
+      <div class="home-footer" id="home-footer">
+        TIM Interior · Task View
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════
+     SCREEN: TASKS — Daftar Tugas
+══════════════════════════════════════════════════════ -->
+  <div id="screen-tasks" class="screen">
+    <div class="topbar"></div>
+    <div class="screen-topbar">
+      <button class="back-btn" onclick="goHome()">‹ Kembali</button>
+      <div class="screen-title-bar" id="tasks-title">Tugas Saya</div>
+      <div class="screen-spacer" style="display:flex;align-items:center;justify-content:flex-end;padding-right:4px">
+        <span class="save-dot" id="save-dot"></span>
+      </div>
+    </div>
+
+    <div class="form-wrap">
+
+      <!-- filter -->
+      <div class="action-row">
+        <button class="btn-action active" onclick="setFilter('all',this)">Semua</button>
+        <button class="btn-action" onclick="setFilter('active',this)">Aktif</button>
+        <button class="btn-action" onclick="setFilter('done',this)">Selesai</button>
+      </div>
+
+      <!-- summary -->
+      <div class="result-summary" id="tasks-summary" style="display:none">
+        <span>Tugas aktif: <strong id="active-count">0</strong></span>
+        <span>Selesai: <strong id="done-count">0</strong></span>
+      </div>
+
+      <!-- task list -->
+      <div id="task-list">
+        <div class="loading-inline">Memuat tugas...</div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════
+     SUBMIT OVERLAY
+══════════════════════════════════════════════════════ -->
+  <div class="submit-overlay" id="submit-overlay">
+    <div class="submit-loader">
+      <div class="ldr-ring"></div>
+      <div class="ldr-text" id="overlay-text">Menyimpan...</div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+
+  <script>
+    // ─── CONFIG ───────────────────────────────────────────────
+    // Ganti TEST_MODE ke false saat live
+    const TEST_MODE = false;
+    const N8N_BASE = 'https://n8n.srv1270416.hstgr.cloud/webhook';
+    const EP = {
+      getWorkers: `${N8N_BASE}/v3/get-workers`,
+      getPekerjaan: `${N8N_BASE}/v3/get-pekerjaan`,
+      updateStatus: `${N8N_BASE}/v3/update-status`,
+    };
+
+    // ─── DEMO DATA ────────────────────────────────────────────
+    const DEMO_WORKERS = [
+      { nama: 'Andi Santoso', no_hp: '628111222333' },
+      { nama: 'Budi Prasetyo', no_hp: '628222333444' },
+      { nama: 'Cahyo Wibowo', no_hp: '' },
+    ];
+    const DEMO_TASKS = {
+      'Andi Santoso': [
+        {
+          id: 'PKJ-20260610001', project: 'BTN Araya', catatan: 'Lantai 1', tanggal: '2026-06-10', items: [
+            { no: 1, pekerjaan: 'Pasang keramik lantai 60x60', vol: 12, sat: 'm²', status: 'inprogress' },
+            { no: 2, pekerjaan: 'Pasang plint keramik', vol: 20, sat: "m'", status: 'pending' },
+            { no: 3, pekerjaan: 'Grouting nat keramik', vol: 12, sat: 'm²', status: 'done' },
+          ]
+        },
+        {
+          id: 'PKJ-20260609002', project: 'Graha Indah', catatan: 'Kamar utama', tanggal: '2026-06-09', items: [
+            { no: 1, pekerjaan: 'Cat dinding interior 2 lapis', vol: 35, sat: 'm²', status: 'done' },
+          ]
+        },
+      ],
+      'Budi Prasetyo': [
+        {
+          id: 'PKJ-20260610003', project: 'BTN Araya', catatan: 'Kamar mandi', tanggal: '2026-06-10', items: [
+            { no: 1, pekerjaan: 'Pasang granit dinding 30x60', vol: 18, sat: 'm²', status: 'pending' },
+            { no: 2, pekerjaan: 'Pasang granit lantai 60x60', vol: 6, sat: 'm²', status: 'pending' },
+          ]
+        },
+      ],
+      'Cahyo Wibowo': [],
+    };
+
+    // ─── STATE ────────────────────────────────────────────────
+    let currentWorker = '';
+    let allTasks = [];
+    let currentFilter = 'all';
+    let _pendingUpdates = {};   // "batchId|noItem" → newStatus
+    let _saveTimer = null;
+
+    // ─── THEME ───────────────────────────────────────────────
+    function toggleTheme() {
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', dark ? '' : 'dark');
+      localStorage.setItem('wv-theme', dark ? '' : 'dark');
+    }
+    (function initTheme() {
+      const saved = localStorage.getItem('wv-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+
+    // ─── SCREENS ─────────────────────────────────────────────
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    function goto(id) {
+      showScreen(id);
+      history.pushState({ screen: id }, '');
+    }
+
+    function goHome() {
+      if (Object.keys(_pendingUpdates).length) flushUpdates(true);
+      currentWorker = '';
+      allTasks = [];
+      showScreen('screen-home');
+      history.pushState({ screen: 'screen-home' }, '');
+    }
+
+    // Tombol back browser / swipe back Android & iOS
+    window.addEventListener('popstate', (e) => {
+      const screen = e.state && e.state.screen;
+      if (!screen || screen === 'screen-home') {
+        if (Object.keys(_pendingUpdates).length) flushUpdates(true);
+        currentWorker = '';
+        allTasks = [];
+        showScreen('screen-home');
+      } else {
+        showScreen(screen);
+      }
+    });
+
+    // Set state awal agar popstate bisa menangkap navigasi ke home
+    history.replaceState({ screen: 'screen-home' }, '');
+
+    // ─── OVERLAY ─────────────────────────────────────────────
+    function showOverlay(msg) {
+      document.getElementById('overlay-text').textContent = msg || 'Menyimpan...';
+      document.getElementById('submit-overlay').classList.add('active');
+    }
+    function hideOverlay() {
+      document.getElementById('submit-overlay').classList.remove('active');
+    }
+
+    // ─── TOAST ───────────────────────────────────────────────
+    let _toastTimer;
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    // ─── SAVE DOT ─────────────────────────────────────────────
+    function setSaveDot(state) {  // '' | 'saving' | 'saved' | 'error'
+      const el = document.getElementById('save-dot');
+      el.className = 'save-dot' + (state ? ' ' + state : '');
+    }
+
+    // ─── LOAD WORKERS ────────────────────────────────────────
+    async function loadWorkers() {
+      const el = document.getElementById('worker-list');
+
+      if (TEST_MODE) {
+        await delay(400);
+        renderWorkers(DEMO_WORKERS);
+        document.getElementById('home-footer').innerHTML =
+          'TIM Interior · Task View &nbsp;·&nbsp; <span class="test-badge">⚠ TEST MODE</span>';
+        return;
+      }
+
+      try {
+        const r = await fetch(EP.getWorkers);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const list = (j.data || j || []).map(w =>
+          typeof w === 'string' ? { nama: w, no_hp: '' } : { nama: w.nama || w.Nama || '', no_hp: w.no_hp || w.No_HP || '' }
+        ).filter(w => w.nama);
+        renderWorkers(list);
+      } catch (e) {
+        el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <p>Gagal memuat daftar pekerja.<br>Periksa koneksi internet.</p>
+      </div>`;
+      }
+    }
+
+    function renderWorkers(workers) {
+      const el = document.getElementById('worker-list');
+      if (!workers.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><p>Belum ada nama pekerja terdaftar.</p></div>`;
+        return;
+      }
+      el.innerHTML = workers.map(w => `
+    <div class="menu-card" onclick="selectWorker('${escAttr(w.nama)}')">
+      <div class="menu-avatar">${escHtml(w.nama.charAt(0).toUpperCase())}</div>
+      <div class="menu-info">
+        <div class="menu-label">${escHtml(w.nama)}</div>
+        <div class="menu-desc">Ketuk untuk lihat tugas</div>
+      </div>
+      <div class="menu-arrow">›</div>
+    </div>
+  `).join('');
+    }
+
+    // ─── SELECT WORKER ────────────────────────────────────────
+    async function selectWorker(name) {
+      currentWorker = name;
+      currentFilter = 'all';
+      _pendingUpdates = {};
+
+      document.getElementById('tasks-title').textContent = name;
+      document.getElementById('tasks-summary').style.display = 'none';
+      document.getElementById('task-list').innerHTML = '<div class="loading-inline">Memuat tugas...</div>';
+      document.querySelectorAll('.btn-action').forEach((el, i) => el.classList.toggle('active', i === 0));
+      setSaveDot('');
+
+      goto('screen-tasks');
+
+      if (TEST_MODE) {
+        await delay(500);
+        allTasks = JSON.parse(JSON.stringify(DEMO_TASKS[name] || []));
+        renderTasks();
+        return;
+      }
+
+      try {
+        const r = await fetch(`${EP.getPekerjaan}?${new URLSearchParams({ pekerja: name })}`);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        allTasks = (Array.isArray(j) ? j : (j.data || [])).filter(d => d && d.id);
+        renderTasks();
+      } catch (e) {
+        document.getElementById('task-list').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <p>Gagal memuat tugas.<br>${escHtml(e.message)}</p>
+      </div>`;
+      }
+    }
+
+    // ─── RENDER TASKS ─────────────────────────────────────────
+    function renderTasks() {
+      const el = document.getElementById('task-list');
+
+      // filter
+      let data = allTasks;
+      if (currentFilter === 'active') {
+        data = allTasks.map(d => ({
+          ...d, items: d.items.filter(it => (it.status || 'pending') !== 'done')
+        })).filter(d => d.items.length);
+      } else if (currentFilter === 'done') {
+        data = allTasks.map(d => ({
+          ...d, items: d.items.filter(it => (it.status || 'pending') === 'done')
+        })).filter(d => d.items.length);
+      }
+
+      // update summary counts (always from allTasks, not filtered)
+      let activeCount = 0, doneCount = 0;
+      allTasks.forEach(d => d.items.forEach(it => {
+        (it.status || 'pending') === 'done' ? doneCount++ : activeCount++;
+      }));
+      document.getElementById('active-count').textContent = activeCount;
+      document.getElementById('done-count').textContent = doneCount;
+      document.getElementById('tasks-summary').style.display = allTasks.length ? 'flex' : 'none';
+
+      if (!data.length) {
+        const empty = {
+          all: { icon: '📭', msg: 'Belum ada tugas.' },
+          active: { icon: '🎉', msg: 'Semua tugas sudah selesai!' },
+          done: { icon: '📭', msg: 'Belum ada tugas yang selesai.' },
+        }[currentFilter];
+        el.innerHTML = `<div class="empty-state"><div class="empty-icon">${empty.icon}</div><p>${empty.msg}</p></div>`;
+        return;
+      }
+
+      el.innerHTML = data.map(batch => {
+        const itemsHtml = batch.items.map(it => {
+          const st = it.status || 'pending';
+          return `
+        <div class="item-wrap ${st === 'done' ? 'done-item' : ''}">
+          <div class="record-item">
+            <div class="ri-no">${it.no}</div>
+            <div class="ri-name">${escHtml(it.pekerjaan)}</div>
+            <div class="ri-vol">${escHtml(String(it.vol))} ${escHtml(it.sat)}</div>
+          </div>
+          <div class="item-status-row">
+            <button class="ist pending   ${st === 'pending' ? 'active' : ''}"
+              onclick="tapStatus('${escAttr(batch.id)}',${Number(it.no)},'pending')">Belum</button>
+            <button class="ist inprogress ${st === 'inprogress' ? 'active' : ''}"
+              onclick="tapStatus('${escAttr(batch.id)}',${Number(it.no)},'inprogress')">Proses</button>
+            <button class="ist done       ${st === 'done' ? 'active' : ''}"
+              onclick="tapStatus('${escAttr(batch.id)}',${Number(it.no)},'done')">Selesai</button>
+          </div>
+        </div>`;
+        }).join('');
+
+        const dateLabel = batch.tanggal
+          ? new Date(batch.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+          : '';
+
+        return `
+      <div class="record-card">
+        <div class="record-head">
+          <div class="record-date">${escHtml(dateLabel)}</div>
+          <div class="record-project">${escHtml(batch.project || '—')}</div>
+        </div>
+        ${batch.catatan ? `<div class="record-note">${escHtml(batch.catatan)}</div>` : ''}
+        <div class="record-items">${itemsHtml}</div>
+      </div>`;
+      }).join('');
+    }
+
+    // ─── STATUS TAP ───────────────────────────────────────────
+    function tapStatus(batchId, noItem, newSt) {
+      const batch = allTasks.find(d => d.id === batchId);
+      if (!batch) return;
+      const item = batch.items.find(it => Number(it.no) === Number(noItem));
+      if (!item) return;
+
+      item.status = newSt;
+      _pendingUpdates[batchId + '|' + noItem] = newSt;
+
+      renderTasks();
+      setSaveDot('saving');
+
+      clearTimeout(_saveTimer);
+      _saveTimer = setTimeout(() => flushUpdates(), 700);
+    }
+
+    // ─── FLUSH UPDATES ────────────────────────────────────────
+    async function flushUpdates(silent) {
+      const pending = { ..._pendingUpdates };
+      if (!Object.keys(pending).length) return;
+      _pendingUpdates = {};
+
+      const updates = Object.entries(pending).map(([key, status]) => {
+        const [batch_id, no_item] = key.split('|');
+        return { batch_id, no_item: parseInt(no_item), status };
+      });
+
+      if (TEST_MODE) {
+        await delay(350);
+        setSaveDot('saved');
+        if (!silent) showToast('Status tersimpan');
+        setTimeout(() => setSaveDot(''), 2000);
+        return;
+      }
+
+      try {
+        const r = await fetch(EP.updateStatus, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ updates, pekerja: currentWorker }),
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        setSaveDot('saved');
+        if (!silent) showToast('Status tersimpan ✓');
+        setTimeout(() => setSaveDot(''), 2000);
+      } catch (e) {
+        // Re-queue
+        Object.assign(_pendingUpdates, pending);
+        setSaveDot('error');
+        showToast('Gagal menyimpan — coba lagi');
+      }
+    }
+
+    // ─── FILTER ───────────────────────────────────────────────
+    function setFilter(f, btnEl) {
+      currentFilter = f;
+      document.querySelectorAll('.btn-action').forEach(el => el.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      renderTasks();
+    }
+
+    // ─── UTILS ────────────────────────────────────────────────
+    function escHtml(s) {
+      return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function escAttr(s) {
+      return String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    // ─── INIT ─────────────────────────────────────────────────
+
+    // ─── SERVICE WORKER ───────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+    loadWorkers();
+  </script>
+</body>
+
+</html>

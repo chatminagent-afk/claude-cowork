@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Admin Lapangan — Metro Logistik Indonesia</title>
+  <meta name="description" content="Halaman admin lapangan untuk memperbarui status dan posisi kiriman Metro Logistik Indonesia." />
+
+  <!-- ── PWA & Tema ─────────────────────────────────────────── -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0F3D5C" />
+  <link rel="icon" href="icons/icon-192.png" type="image/png" />
+
+  <!-- iOS / Safari khusus -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Metro Admin" />
+
+  <!-- ── Tailwind CDN + tema design system ── -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#0F3D5C', light: '#1D6FA5' },
+            accent: '#F2994A',
+            success: '#1E8E3E',
+            warning: '#F2B705',
+            danger: '#D93025',
+            netral: { 900: '#1A1A1A', 600: '#5F6B76', 300: '#D5DBE0', 100: '#F5F7F9' }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="bg-netral-100 text-netral-900 font-sans min-h-screen">
+
+  <!-- ═══════════════ HEADER + BADGE PERAN ═══════════════ -->
+  <header class="sticky top-0 z-30 bg-primary text-white shadow-md">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-white font-extrabold text-lg shrink-0" aria-hidden="true">M</div>
+      <div class="leading-tight flex-1">
+        <h1 class="text-base sm:text-lg font-bold tracking-wide">METRO LOGISTIK</h1>
+      </div>
+      <span class="text-[11px] font-bold uppercase tracking-wide bg-white/15 px-2 py-1 rounded">Admin Lapangan</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════ BANNER OFFLINE (kondisional) ═══════════════ -->
+  <div id="offlineBanner" class="hidden bg-warning/90 text-netral-900 text-sm px-4 py-2.5 text-center" role="status" aria-live="polite">
+    <span class="font-semibold">Offline.</span>
+    Update akan disimpan di perangkat dan dikirim otomatis saat koneksi tersedia.
+  </div>
+
+  <!-- ═══════════════ FORM ═══════════════ -->
+  <main class="max-w-2xl mx-auto px-4 py-5">
+    <div class="mx-auto md:max-w-[480px] bg-white rounded-xl border border-netral-300 p-4 sm:p-6">
+      <h2 class="text-xl font-bold mb-1">Update Status Kiriman</h2>
+      <p class="text-sm text-netral-600 mb-4">Isi data di bawah lalu kirim. Semua kolom wajib diisi.</p>
+
+      <form id="formAdmin" novalidate class="space-y-4">
+        <!-- No Resi -->
+        <div>
+          <label for="noResi" class="block text-sm font-semibold mb-1">No. Resi <span class="text-danger">*</span></label>
+          <input type="text" id="noResi" name="noResi"
+            autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="next"
+            class="w-full min-h-[48px] rounded-lg border border-netral-300 px-3 text-base
+                   focus:outline-none focus:ring-2 focus:ring-primary-light"
+            placeholder="Contoh: JX12345678" />
+          <p id="errNoResi" class="hidden text-xs text-danger mt-1"></p>
+        </div>
+
+        <!-- Nama Admin -->
+        <div>
+          <label for="namaAdmin" class="block text-sm font-semibold mb-1">Nama Admin <span class="text-danger">*</span></label>
+          <input type="text" id="namaAdmin" name="namaAdmin"
+            autocomplete="name" enterkeyhint="next"
+            class="w-full min-h-[48px] rounded-lg border border-netral-300 px-3 text-base
+                   focus:outline-none focus:ring-2 focus:ring-primary-light"
+            placeholder="Nama petugas" />
+          <p id="errNamaAdmin" class="hidden text-xs text-danger mt-1"></p>
+        </div>
+
+        <!-- Status (dropdown enum) -->
+        <div>
+          <label for="statusResi" class="block text-sm font-semibold mb-1">Status <span class="text-danger">*</span></label>
+          <select id="statusResi" name="statusResi"
+            class="w-full min-h-[48px] rounded-lg border border-netral-300 px-3 text-base bg-white
+                   focus:outline-none focus:ring-2 focus:ring-primary-light">
+            <option value="">-- Pilih Status --</option>
+            <option value="Manifest">Manifest</option>
+            <option value="On Process">On Process</option>
+            <option value="Transit">Transit</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Failed/Return">Failed/Return</option>
+          </select>
+          <p id="errStatus" class="hidden text-xs text-danger mt-1"></p>
+        </div>
+
+        <!-- Catatan Lokasi -->
+        <div>
+          <label for="lokasi" class="block text-sm font-semibold mb-1">Catatan Lokasi/Posisi Saat Ini <span class="text-danger">*</span></label>
+          <textarea id="lokasi" name="lokasi" rows="3"
+            class="w-full rounded-lg border border-netral-300 px-3 py-2.5 text-base resize-y
+                   focus:outline-none focus:ring-2 focus:ring-primary-light"
+            placeholder="Contoh: Dalam perjalanan menuju alamat penerima, area Rungkut Surabaya"></textarea>
+          <p id="errLokasi" class="hidden text-xs text-danger mt-1"></p>
+        </div>
+
+        <!-- Tombol Submit -->
+        <button type="submit" id="btnSubmit"
+          class="w-full min-h-[56px] rounded-lg bg-primary text-white font-bold text-base
+                 flex items-center justify-center gap-2 shadow-sm
+                 hover:bg-primary-light active:scale-[0.98] transition
+                 disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg id="spinner" class="hidden animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <span aria-hidden="true">&#9989;</span> <span id="btnSubmitText">Submit Update</span>
+        </button>
+
+        <!-- Indikator antrean offline (kondisional) -->
+        <div id="antreanBadge" class="hidden text-center text-sm text-netral-600">
+          <span aria-hidden="true">&#9203;</span> <span id="antreanText"></span>
+        </div>
+      </form>
+    </div>
+
+    <p class="text-center text-xs text-netral-600 mt-4">
+      <a href="index.html" class="underline hover:text-primary">Buka halaman pelacakan publik</a>
+    </p>
+  </main>
+
+  <!-- ═══════════════ TOAST ═══════════════ -->
+  <div id="toast" class="hidden fixed left-1/2 -translate-x-1/2 bottom-5 z-50 max-w-[92%] w-max
+       px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white text-center" role="status" aria-live="assertive"></div>
+
+  <!-- ═══════════════ SCRIPT ═══════════════ -->
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

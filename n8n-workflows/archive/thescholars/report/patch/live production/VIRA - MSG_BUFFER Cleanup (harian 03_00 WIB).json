@@ -1,0 +1,167 @@
+{
+  "name": "VIRA - MSG_BUFFER Cleanup (harian 03:00 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "3fd4c9e7-3edd-4592-b321-5b63e6904d10",
+      "name": "Every day 03:00 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "0daa5c5e-fb7e-45bc-8c69-6af8251f5c0d",
+      "name": "Read MSG_BUFFER (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PICK EXPIRED BLOCK — MSG_BUFFER housekeeping\n// MSG_BUFFER bersifat append-only => ts naik seiring nomor baris =>\n// baris kadaluarsa (paling lama) SELALU blok kontigu di bagian atas\n// (mulai baris 2). Jadi cukup 1x delete range (hemat kuota API).\n//\n// RETENTION_MS HARUS > MAX_AGE_MS (30 mnt) di node \"Cek_user_status\".\n// Baris > 30 mnt tidak pernah dipakai untuk merge, jadi 2 jam aman.\n// ====================================================================\nconst RETENTION_MS = 2 * 60 * 60 * 1000; // 2 jam\nconst cutoff = Date.now() - RETENTION_MS;\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.row_number !== undefined && Number(r.row_number) >= 2)\n  .sort((a, b) => Number(a.row_number) - Number(b.row_number)); // menaik (atas -> bawah)\n\nif (!rows.length) {\n  console.log('🧹 MSG_BUFFER kosong / hanya header — tidak ada yang dihapus.');\n  return [];\n}\n\n// Hitung run kontigu baris kadaluarsa mulai dari baris teratas.\n// Berhenti di baris pertama yang MASIH segar atau ts-nya tidak valid\n// (defensif: jangan pernah hapus baris yang tak bisa dipastikan umurnya).\nlet count = 0;\nfor (const r of rows) {\n  const ts = Number(r.ts);\n  const valid = Number.isFinite(ts) && ts > 0;\n  if (valid && ts < cutoff) {\n    count++;\n  } else {\n    if (!valid) {\n      console.warn(`⚠️ Baris ${r.row_number} ts tidak valid (\"${r.ts}\") — stop, tidak hapus lebih jauh.`);\n    }\n    break;\n  }\n}\n\nif (count === 0) {\n  console.log('🧹 Tidak ada baris berumur > 2 jam — buffer sudah ramping.');\n  return [];\n}\n\nconst startRow = Number(rows[0].row_number); // normalnya 2\nconsole.log(`🧹 Hapus ${count} baris kadaluarsa: baris ${startRow}..${startRow + count - 1}.`);\nreturn [{ json: { startRow, count } }];\n"
+      },
+      "id": "b1acad47-0ba4-4a1f-b469-9ad34e6db6f0",
+      "name": "Pick expired block (>2h)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "9d9c71dc-443f-4cb9-921f-fd189cdde8af",
+      "name": "Delete expired rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every day 03:00 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read MSG_BUFFER (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MSG_BUFFER (all)": {
+      "main": [
+        [
+          {
+            "node": "Pick expired block (>2h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick expired block (>2h)": {
+      "main": [
+        [
+          {
+            "node": "Delete expired rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "ZKsINjA7ZC8c9yRHWp3ud"
+  },
+  "versionId": "1f95099d-a8b6-4489-bcd7-e2b334297625",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "LkpnapMdpbwuwS09mSuEw",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

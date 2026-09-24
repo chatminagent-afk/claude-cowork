@@ -1,0 +1,14 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "\n// ============================================================\n// HUMAN-IN-THE-LOOP CHECK\n// Baca kolom \u0027bot_mode\u0027 dari STATS sheet untuk user ini.\n// Jika bot_mode = \u0027OFF\u0027 → Sam sedang handle manual → stop, jangan reply.\n// Jika kosong / \u0027ON\u0027 / apapun selain \u0027OFF\u0027 → bot aktif, lanjut.\n// ============================================================\n\nconst cc = $(\u0027Chat Counter\u0027).first().json;\nconst userWa = cc.user_wa;\nconst userLid = cc.user_lid;\n\n// Ambil data STATS dari node Read STATS (dijalankan sebelum node ini)\n// Node Read STATS membaca seluruh sheet, kita filter by No WA\nconst statsRows = $(\u0027Read STATS for HITL\u0027).all();\nconst userRow = statsRows.find(r =\u003e {\n  const lid = String(r.json[\u0027lid\u0027] || \u0027\u0027).trim();\n  return lid === String(userLid).trim();\n});\n\nconst botMode = userRow ? String(userRow.json[\u0027bot_mode\u0027] || \u0027\u0027).trim().toUpperCase() : \u0027\u0027;\n\nif (botMode === \u0027OFF\u0027) {\n  console.log(`👨‍💼 HITL AKTIF untuk ${userWa} — Sam sedang handle manual, bot berhenti.`);\n  return [];\n}\n\nconsole.log(`🤖 Bot mode AKTIF untuk ${userWa} (bot_mode=\"${botMode}\") — lanjut ke AI.`);\nreturn [$input.first()];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -16848,
+                     2544
+                 ],
+    "id":  "1c3891c6-111f-446b-a260-1fd7cd0486c8",
+    "name":  "HITL Check",
+    "alwaysOutputData":  false
+}

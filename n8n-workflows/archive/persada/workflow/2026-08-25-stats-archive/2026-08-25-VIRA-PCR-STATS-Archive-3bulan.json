@@ -1,0 +1,589 @@
+{
+  "name": "VIRA-PCR - STATS Archive & Cleanup (tiap 3 bulan, 02:00 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 1 */3 *"
+            }
+          ]
+        }
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000001",
+      "name": "Every 3 months 02:00 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -220,
+        0
+      ],
+      "notes": "1 Jan / 1 Apr / 1 Jul / 1 Okt, 02:00 WIB (timezone workflow = Asia/Jakarta). Satu jam sebelum MSG_BUFFER Cleanup harian 03:00."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1863977253,
+          "mode": "list",
+          "cachedResultName": "CONFIG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=1863977253"
+        },
+        "options": {}
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000002",
+      "name": "Read CONFIG ARC",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PARSE CONFIG ARC\n// Kredensial Kirimi TIDAK pernah ditulis plaintext di node — selalu dibaca\n// dari tab CONFIG. Pola sama persis dengan \"Parse Config FU\" di workflow\n// Follow-up (keputusan #5 di Pending Waiting Changes).\n// ====================================================================\nconst rows = $input.all().map(i => i.json);\n\nconst cfg = {};\nfor (const r of rows) {\n  const k = String(r.key || r.Key || '').trim();\n  if (!k) continue;\n  const v = (r.value !== undefined && r.value !== null)\n    ? r.value\n    : ((r.Value !== undefined && r.Value !== null) ? r.Value : '');\n  cfg[k] = v;\n}\n\nconst num = (k, d) => { const n = Number(cfg[k]); return Number.isFinite(n) ? n : d; };\n// Sheets kadang mengembalikan nomor telepon sebagai angka (\"628228...212.0\").\n// Buang ekor desimalnya DULU, baru sisakan digit — kalau tidak, \".0\" berubah\n// jadi dua digit palsu di ujung nomor.\nconst digits = v => String(v === undefined || v === null ? '' : v)\n  .trim().replace(/\\.0+$/, '').replace(/\\D/g, '');\n\n// Lead yang masih \"hangat\" tidak diarsipkan. Default 60 hari.\n// Ubah lewat CONFIG key `stats_archive_idle_days` — tanpa menyentuh kode.\nlet idleDays = num('stats_archive_idle_days', 60);\nif (idleDays < 7) idleDays = 7;        // lantai keras: jangan pernah arsipkan lead seminggu terakhir\nif (idleDays > 3650) idleDays = 3650;\n\n// Laporan housekeeping ini untuk Steven, bukan untuk admin klien.\n// Isi CONFIG `maintenance_phone` dengan nomor WA-mu; kalau kosong jatuh ke admin_phone.\nconst reportPhone = digits(cfg.maintenance_phone) || digits(cfg.admin_phone);\n\nreturn [{ json: {\n  config: {\n    kirimi_user_code: String(cfg.kirimi_user_code || '').trim(),\n    kirimi_secret: String(cfg.kirimi_secret || '').trim(),\n    kirimi_device_id: String(cfg.kirimi_device_id || '').trim(),\n    report_phone: reportPhone,\n    // Nomor tim sendiri: kalau sampai nyangkut di STATS, jangan pernah diarsipkan.\n    protected_numbers: [cfg.admin_phone, cfg.admin_phone_display, cfg.field_team_phone, cfg.media_team_phone]\n      .map(digits).filter(Boolean),\n    idle_days: idleDays,\n  },\n  now_epoch: Math.floor(Date.now() / 1000),\n} }];\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000003",
+      "name": "Parse Config ARC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "notes": "Kredensial Kirimi dibaca dari CONFIG, tidak pernah plaintext di node."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 824508993,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=824508993"
+        },
+        "options": {}
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000004",
+      "name": "Read STATS (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PLAN ARCHIVE — STATS housekeeping tiap 3 bulan (Persada Cisoka Residence)\n//\n// BEDA MENDASAR dari cleanup The Scholars: STATS di sini adalah DATABASE\n// LEAD, bukan sekadar state chat. Menghapus satu baris = kehilangan\n// lead_source, unit_interest, budget_range, riwayat survey, dan counter\n// follow-up milik klien. Karena itu alurnya:\n//     ARSIP dulu -> VERIFIKASI baca-ulang -> baru HAPUS.\n// Bukan hapus-langsung.\n//\n// TETAP TINGGAL DI STATS (tidak diarsipkan):\n//   1. bot_mode = OFF             -> sedang dipegang manusia / tim lapangan\n//   2. survey_status = scheduled  -> ada jadwal survey aktif\n//   3. flag_survey = Y            -> sudah survey; lead paling berharga\n//   4. aktivitas < idle_days      -> masih hangat. Kalau dihapus: VIRA nyapa\n//                                    ulang seperti orang asing DAN\n//                                    follow_up_count balik ke 0 sehingga\n//                                    lead lama kena follow-up dari awal lagi\n//   5. nomor admin/tim sendiri    -> jangan pernah disentuh\n//   6. tanpa timestamp apa pun    -> umurnya tak bisa dipastikan; sengaja\n//                                    TIDAK diarsipkan, tapi dilaporkan\n//                                    supaya bisa dicek manual\n//\n// Penghapusan memakai nomor baris yang BENAR-BENAR dibaca run ini, bukan\n// \"baris 2..N\" — jadi lead yang masuk setelah node Read tidak ikut kena.\n// ====================================================================\n\nconst base = $('Parse Config ARC').first().json;\nconst cfg = base.config;\nconst now = base.now_epoch;\nconst cutoff = now - cfg.idle_days * 86400;\n\nconst norm = v => String(v === undefined || v === null ? '' : v).trim().toUpperCase();\nconst digits = v => String(v === undefined || v === null ? '' : v)\n  .trim().replace(/\\.0+$/, '').replace(/\\D/g, '');\nconst YES = new Set(['Y', 'YA', 'YES', 'TRUE', '1', 'SUDAH', 'DONE']);\n\n// Kolom yang bisa menandakan \"kapan terakhir ada aktivitas\". Diambil yang paling baru.\nconst TS_COLS = ['last_reply_ts', 'last_follow_up_ts', 'buffer_done_ts', 'debounce_ts',\n                 'pending_survey_ts', 'unit_interest_ts', 'budget_range_ts',\n                 'nama_lengkap_ts', 'lokasi_kerja_ts'];\n\nfunction parseTanggal(v) {\n  const s = String(v === undefined || v === null ? '' : v).trim();\n  if (!s) return 0;\n  let m = s.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);              // 2026-08-21\n  if (m) return Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 1000);\n  m = s.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})/);          // 21/08/2026\n  if (m) return Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 1000);\n  return 0;\n}\n\nfunction lastActivity(r) {\n  let best = 0;\n  for (const c of TS_COLS) {\n    let n = Number(String(r[c] === undefined || r[c] === null ? '' : r[c]).trim());\n    if (!Number.isFinite(n) || n <= 0) continue;\n    if (n > 1e12) n = Math.floor(n / 1000);   // epoch milidetik -> detik\n    if (n > best) best = n;\n  }\n  if (!best) {\n    // Cadangan terakhir: kolom tanggal yang ditulis dalam format manusia.\n    best = parseTanggal(r['Tanggal Chat Terakhir']) || parseTanggal(r['Tanggal Chat Pertama']);\n  }\n  return best;\n}\n\n// --- Periode arsip -------------------------------------------------\n// Workflow jalan tanggal 1 Jan/Apr/Jul/Okt, jadi kuartal yang diarsipkan\n// adalah kuartal KEMARIN. Dihitung dari H-1 supaya tidak salah lompat.\nconst pParts = new Intl.DateTimeFormat('en-GB', {\n  timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit',\n}).formatToParts(new Date((now - 86400) * 1000));\nconst pYear = (pParts.find(x => x.type === 'year') || {}).value;\nconst pMonth = Number((pParts.find(x => x.type === 'month') || {}).value || 1);\nconst periode = pYear + '-Q' + Math.ceil(pMonth / 3);\n\nconst archivedAt = new Intl.DateTimeFormat('sv-SE', {\n  timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit',\n  hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,\n}).format(new Date(now * 1000));\n\nconst empty = extra => [{ json: Object.assign({\n  periode, archivedAt, idleDays: cfg.idle_days,\n  totalDataRows: 0, archiveCount: 0, keepCount: 0,\n  blocks: [], blockCount: 0, archiveRows: [], noTsRows: [],\n  reasons: { off: 0, scheduled: 0, sudah_survey: 0, masih_hangat: 0, nomor_tim: 0, tanpa_timestamp: 0 },\n}, extra) }];\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && typeof r === 'object'\n            && r.row_number !== undefined\n            && Number(r.row_number) >= 2);\n\nif (!rows.length) {\n  console.log('STATS kosong / hanya header — tidak ada yang diarsipkan.');\n  return empty({ report: '[VIRA-PCR] STATS Archive — ' + periode + '\\n\\nSTATS kosong, tidak ada yang diarsipkan.' });\n}\n\n// Guard: pastikan yang terbaca benar-benar tab STATS dengan skema yang diharapkan.\n// Lebih baik workflow gagal berisik daripada mengarsip/menghapus tab yang salah.\nconst sample = rows[0];\nconst REQUIRED = ['No WA', 'bot_mode', 'survey_status', 'flag_survey', 'last_reply_ts'];\nconst missing = REQUIRED.filter(c => !(c in sample));\nif (missing.length) {\n  throw new Error('Kolom wajib tidak ada di sheet yang terbaca: ' + missing.join(', ')\n    + '. Tab yang terbaca kemungkinan bukan STATS, atau skemanya berubah. ARSIP DIBATALKAN.');\n}\n\nconst archiveRows = [];\nconst archiveRowNums = [];\nconst noTsRows = [];\nconst reasons = { off: 0, scheduled: 0, sudah_survey: 0, masih_hangat: 0, nomor_tim: 0, tanpa_timestamp: 0 };\n\nfor (const r of rows) {\n  let keep = null;\n\n  if (norm(r.bot_mode) === 'OFF') keep = 'off';\n  else if (norm(r.survey_status) === 'SCHEDULED') keep = 'scheduled';\n  else if (YES.has(norm(r.flag_survey))) keep = 'sudah_survey';\n  else if (cfg.protected_numbers.indexOf(digits(r['No WA'])) !== -1) keep = 'nomor_tim';\n  else {\n    const act = lastActivity(r);\n    if (!act) keep = 'tanpa_timestamp';\n    else if (act >= cutoff) keep = 'masih_hangat';\n  }\n\n  if (keep) {\n    reasons[keep]++;\n    if (keep === 'tanpa_timestamp') {\n      noTsRows.push({ row: Number(r.row_number), no_wa: String(r['No WA'] || '').trim() });\n    }\n    continue;\n  }\n\n  const copy = Object.assign({}, r);\n  delete copy.row_number;          // kolom bawaan n8n, bukan kolom asli sheet\n  copy.archived_ts = archivedAt;\n  copy.periode = periode;\n  archiveRows.push(copy);\n  archiveRowNums.push(Number(r.row_number));\n}\n\n// --- Blok penghapusan ----------------------------------------------\n// Nomor baris yang mau dihapus dikelompokkan jadi blok kontigu, lalu diurutkan\n// MENURUN. Menghapus dari bawah ke atas membuat nomor baris di atasnya tetap\n// valid setelah blok di bawahnya hilang.\narchiveRowNums.sort((a, b) => a - b);\nconst blocks = [];\nfor (const n of archiveRowNums) {\n  const last = blocks[blocks.length - 1];\n  if (last && n === last.startRow + last.count) last.count++;\n  else blocks.push({ startRow: n, count: 1 });\n}\nblocks.reverse();\n\nconst keepCount = rows.length - archiveRows.length;\n\n// --- Laporan WA ------------------------------------------------------\nconst lines = [];\nlines.push('[VIRA-PCR] STATS Archive — ' + periode);\nlines.push('');\nif (!archiveRows.length) {\n  lines.push('Tidak ada baris yang perlu diarsipkan.');\n  lines.push('STATS: ' + rows.length + ' baris data, semuanya masih aktif atau dilindungi.');\n} else {\n  lines.push('Diarsipkan   : ' + archiveRows.length + ' baris -> tab STATS_ARCHIVE');\n  lines.push('Sisa di STATS: ' + keepCount + ' baris');\n  lines.push('');\n  lines.push('Yang tetap tinggal:');\n  lines.push('- Dipegang manusia (bot_mode OFF) : ' + reasons.off);\n  lines.push('- Jadwal survey aktif (scheduled) : ' + reasons.scheduled);\n  lines.push('- Sudah survey (flag_survey Y)    : ' + reasons.sudah_survey);\n  lines.push('- Masih hangat (< ' + cfg.idle_days + ' hari)' + '        : ' + reasons.masih_hangat);\n  if (reasons.nomor_tim) lines.push('- Nomor admin/tim                 : ' + reasons.nomor_tim);\n}\nif (reasons.tanpa_timestamp) {\n  lines.push('');\n  lines.push('PERLU DICEK: ' + reasons.tanpa_timestamp + ' baris tanpa timestamp apa pun — '\n    + 'umurnya tidak bisa dipastikan jadi sengaja TIDAK diarsipkan.');\n  lines.push('Baris: ' + noTsRows.slice(0, 15).map(x => x.row + '(' + (x.no_wa || '-') + ')').join(', ')\n    + (noTsRows.length > 15 ? ', +' + (noTsRows.length - 15) + ' lagi' : ''));\n}\nconst report = lines.join('\\n');\n\nconsole.log('STATS archive ' + periode + ': ' + rows.length + ' baris data | '\n  + archiveRows.length + ' diarsipkan dalam ' + blocks.length + ' blok | ' + keepCount + ' tetap tinggal.');\nif (blocks.length > 40) {\n  console.warn('⚠️ ' + blocks.length + ' blok hapus — mendekati kuota tulis Google Sheets (60/menit). '\n    + 'Node Delete sudah retry otomatis, tapi pantau hasilnya.');\n}\n\nreturn [{ json: {\n  periode, archivedAt,\n  idleDays: cfg.idle_days,\n  totalDataRows: rows.length,\n  archiveCount: archiveRows.length,\n  keepCount,\n  blocks,\n  blockCount: blocks.length,\n  reasons,\n  noTsRows,\n  archiveRows,\n  report,\n} }];\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000005",
+      "name": "Plan archive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "notes": "Memutuskan baris mana yang diarsipkan + menyusun blok hapus (menurun). Tidak menyentuh sheet."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "archive-count-gt-zero",
+              "leftValue": "={{ $json.archiveCount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000006",
+      "name": "IF Ada Yang Diarsipkan",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "notes": "Tidak ada kandidat -> langsung lapor, sheet tidak disentuh sama sekali."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pecah archiveRows jadi item terpisah supaya node Append menulis satu baris\n// per item. `row_number` sudah dibuang di node Plan archive.\nconst plan = $('Plan archive').first().json;\nconst rows = plan.archiveRows || [];\n\nif (!rows.length) {\n  console.log('Tidak ada baris untuk diarsipkan.');\n  return [];\n}\n\nconsole.log('Menyalin ' + rows.length + ' baris ke STATS_ARCHIVE (periode ' + plan.periode\n  + ') SEBELUM apa pun dihapus dari STATS.');\nreturn rows.map(r => ({ json: r }));\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000007",
+      "name": "Split archive rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS_ARCHIVE",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000008",
+      "name": "Append STATS_ARCHIVE",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1320,
+        -180
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Disalin ke arsip DULU. Kalau node ini gagal, belum ada satu baris pun yang dihapus dari STATS."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node Google Sheets jalan sekali PER ITEM. Kalau N item hasil Append diteruskan\n// apa adanya, node Read & Delete di belakangnya ikut jalan N kali dan menghapus\n// blok yang salah berulang-ulang. Ciutkan jadi tepat 1 item.\nconst plan = $('Plan archive').first().json;\nconsole.log('Append selesai — node mengembalikan ' + $input.all().length + ' item '\n  + '(rencana ' + plan.archiveCount + '). Verifikasi baca-ulang menyusul.');\nreturn [{ json: plan }];\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000009",
+      "name": "Collapse after append",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -180
+      ],
+      "notes": "Ciutkan jadi 1 item supaya node Read & Delete di belakangnya tidak jalan berkali-kali."
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS_ARCHIVE",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "pcrarc00-0000-4000-8000-00000000000a",
+      "name": "Read STATS_ARCHIVE (verify)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1760,
+        -180
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Baca ulang tab arsip sebagai bukti nyata bahwa salinannya benar-benar mendarat."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// GERBANG KESELAMATAN\n// Tidak ada satu baris pun dihapus dari STATS sebelum salinannya TERBUKTI\n// ada di STATS_ARCHIVE. Buktinya bukan \"node Append tidak error\", tapi hasil\n// BACA ULANG tab arsip: hitung baris ber-periode run ini.\n// Kalau kurang dari rencana -> lempar error. STATS utuh, tinggal jalankan\n// ulang setelah penyebabnya beres.\n// ====================================================================\nconst plan = $('Plan archive').first().json;\nconst expected = Number(plan.archiveCount || 0);\n\nconst found = $input.all()\n  .map(i => i.json)\n  .filter(r => r && String(r.periode === undefined || r.periode === null ? '' : r.periode).trim() === plan.periode)\n  .length;\n\nif (found < expected) {\n  throw new Error('Verifikasi arsip GAGAL: hanya ' + found + ' dari ' + expected\n    + ' baris periode ' + plan.periode + ' yang ketemu di STATS_ARCHIVE. '\n    + 'STATS TIDAK DIHAPUS. Cek header tab STATS_ARCHIVE (wajib ada kolom `periode` '\n    + 'dan `archived_ts`) lalu jalankan ulang.');\n}\n\nconsole.log('Verifikasi arsip OK: ' + found + ' baris periode ' + plan.periode\n  + ' aman di STATS_ARCHIVE. Lanjut hapus ' + plan.blockCount + ' blok dari STATS.');\nreturn [{ json: plan }];\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-00000000000b",
+      "name": "Verify archive",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -180
+      ],
+      "notes": "GERBANG: kalau jumlah baris arsip kurang dari rencana, workflow error dan STATS tetap utuh."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Keluarkan satu item per blok. Node Delete jalan sekali per item, jadi urutan\n// item = urutan penghapusan — dan blocks sudah diurutkan MENURUN di Plan archive\n// supaya penghapusan berjalan dari bawah ke atas.\nconst plan = $('Plan archive').first().json;\nconst blocks = plan.blocks || [];\n\nif (!blocks.length) {\n  console.log('Tidak ada blok untuk dihapus.');\n  return [];\n}\n\nconsole.log('Menghapus ' + blocks.length + ' blok (bawah -> atas): '\n  + blocks.map(b => b.startRow + '..' + (b.startRow + b.count - 1)).join(', '));\nreturn blocks.map(b => ({ json: b }));\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-00000000000c",
+      "name": "Prepare delete blocks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 824508993,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=824508993"
+        },
+        "toDelete": "rows",
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "pcrarc00-0000-4000-8000-00000000000d",
+      "name": "Delete archived blocks",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2420,
+        -180
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "Satu item = satu blok. Urut menurun (bawah -> atas) supaya nomor baris di atasnya tetap valid."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ciutkan lagi jadi 1 item supaya notifikasi WA terkirim sekali, bukan sekali per blok.\nconst plan = $('Plan archive').first().json;\nconsole.log('STATS bersih: ' + plan.archiveCount + ' baris pindah ke arsip, '\n  + plan.keepCount + ' baris tetap tinggal.');\nreturn [{ json: plan }];\n"
+      },
+      "id": "pcrarc00-0000-4000-8000-00000000000e",
+      "name": "Collapse after delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config ARC').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config ARC').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config ARC').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config ARC').first().json.config.report_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Plan archive').first().json.report }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "pcrarc00-0000-4000-8000-00000000000f",
+      "name": "Notify Maintenance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2860,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "Tujuan = CONFIG `maintenance_phone` (fallback `admin_phone`). Gagal kirim tidak membatalkan arsip yang sudah beres."
+    },
+    {
+      "parameters": {
+        "content": "## Kenapa urutannya begini\n\nSTATS di sini **database lead**, bukan state chat. Hapus baris = hilang\n`lead_source`, `unit_interest`, `budget_range`, riwayat survey, dan\n`follow_up_count` milik klien.\n\nUrutan **ARSIP -> VERIFIKASI BACA-ULANG -> HAPUS** disengaja, jangan dibalik:\n\n- Append gagal  -> belum ada yang dihapus -> nol kehilangan data\n- Verifikasi gagal -> berhenti sebelum hapus -> nol kehilangan data\n- Delete gagal  -> cuma duplikat di arsip -> nol kehilangan data\n\nPenghapusan pakai **nomor baris yang benar-benar dibaca run ini**, dikelompokkan\njadi blok kontigu dan dihapus **dari bawah ke atas**. Lead yang masuk setelah\nnode Read tidak ikut kena, dan baris yang tetap tinggal tidak berpindah tempat.",
+        "height": 420,
+        "width": 520,
+        "color": 4
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000010",
+      "name": "Sticky Alur Aman",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Sebelum diaktifkan (4 langkah)\n\n1. **Buat tab `STATS_ARCHIVE`** di `PCR_Database` — header = 33 kolom STATS\n   persis urutannya, lalu tambah `archived_ts` dan `periode` di paling kanan.\n   File siap-paste: `2026-08-25-header-STATS_ARCHIVE.tsv`.\n2. **CONFIG -> `maintenance_phone`** = nomor WA Steven (62xxx, tanpa + / spasi).\n   Kalau dikosongkan, laporan jatuh ke `admin_phone` (nomor klien).\n3. **CONFIG -> `stats_archive_idle_days`** (opsional, default 60) = berapa hari\n   lead dianggap masih hangat dan tidak diarsipkan.\n4. **Test dulu dengan workflow non-aktif**: Execute Workflow manual, cek output\n   node `Plan archive` (angka `archiveCount` / `keepCount` / `reasons`) sebelum\n   scheduler dinyalakan.\n\nJadwal: **1 Jan / 1 Apr / 1 Jul / 1 Okt, 02:00 WIB** — satu jam sebelum\nMSG_BUFFER Cleanup harian, di jam trafik nol.",
+        "height": 420,
+        "width": 520,
+        "color": 3
+      },
+      "id": "pcrarc00-0000-4000-8000-000000000011",
+      "name": "Sticky Setup",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        340,
+        220
+      ]
+    }
+  ],
+  "connections": {
+    "Every 3 months 02:00 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG ARC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG ARC": {
+      "main": [
+        [
+          {
+            "node": "Parse Config ARC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config ARC": {
+      "main": [
+        [
+          {
+            "node": "Read STATS (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS (all)": {
+      "main": [
+        [
+          {
+            "node": "Plan archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan archive": {
+      "main": [
+        [
+          {
+            "node": "IF Ada Yang Diarsipkan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Ada Yang Diarsipkan": {
+      "main": [
+        [
+          {
+            "node": "Split archive rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Maintenance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split archive rows": {
+      "main": [
+        [
+          {
+            "node": "Append STATS_ARCHIVE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append STATS_ARCHIVE": {
+      "main": [
+        [
+          {
+            "node": "Collapse after append",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse after append": {
+      "main": [
+        [
+          {
+            "node": "Read STATS_ARCHIVE (verify)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS_ARCHIVE (verify)": {
+      "main": [
+        [
+          {
+            "node": "Verify archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify archive": {
+      "main": [
+        [
+          {
+            "node": "Prepare delete blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare delete blocks": {
+      "main": [
+        [
+          {
+            "node": "Delete archived blocks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete archived blocks": {
+      "main": [
+        [
+          {
+            "node": "Collapse after delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse after delete": {
+      "main": [
+        [
+          {
+            "node": "Notify Maintenance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "rBsq-mGgHfqfwbz3YmwxI",
+    "executionTimeout": -1
+  },
+  "pinData": {},
+  "tags": [
+    {
+      "name": "pcr"
+    }
+  ]
+}

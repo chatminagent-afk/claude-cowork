@@ -1,0 +1,13 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "const chatCounter = $(\u0027Chat Counter\u0027).first().json;\n\n// DATA LANGSUNG DARI CHAT COUNTER NODE\nconst userNumber = chatCounter.user_wa;\nconst userName = chatCounter.user_name;\nconst userMessage = chatCounter.original_message;   // ← perbaikan utama\n\n// VALIDASI SEDERHANA\nif (!userNumber) {\n  throw new Error(\"user_wa tidak ditemukan di input!\");\n}\n\nconsole.log(\"✅ Data berhasil di-extract:\");\nconsole.log(\"- No WA:\", userNumber);\nconsole.log(\"- Nama:\", userName);\nconsole.log(\"- Pesan:\", userMessage);\n\nreturn [{\n  json: {\n    search_no_wa: userNumber,\n    user_name: userName,\n    user_message: userMessage,\n    timestamp: chatCounter.formatted_date + \u0027 \u0027 + chatCounter.formatted_time + \u0027 WIB\u0027,\n    source: \"chat_counter_node\",\n    is_valid: userNumber !== \"unknown\"\n  }\n}];"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -13136,
+                     2352
+                 ],
+    "id":  "c2481b36-68ba-41f6-81e5-82ea2110804f",
+    "name":  "Extract \u0026 Prepare Data"
+}

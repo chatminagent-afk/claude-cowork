@@ -1,0 +1,2714 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="theme-color" content="#0C6B4F" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Kertas" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" type="image/svg+xml" href="icon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<title>Kertas</title>
+<script>
+/* Dijalankan sebelum halaman dilukis. Tanpa ini, mode gelap akan berkedip
+   putih sepersekian detik tiap kali app dibuka. */
+(function(){
+  var pref="auto";
+  try{ var raw=localStorage.getItem("kertas.v1"); if(raw){ var p=JSON.parse(raw).theme; if(p) pref=p; } }catch(e){}
+  var dark = pref==="dark" || (pref==="auto" && window.matchMedia &&
+             window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme", dark?"dark":"light");
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root, [data-theme="light"]{
+  --paper:#E8EDEA; --surf:#FCFDFC; --surf2:#F1F4F2; --ink:#0E1A16; --ink2:#3A4A44;
+  --muted:#5A6C66; --line:#D6DEDA; --pine:#0C6B4F; --pine-soft:#E2EFEA;
+  --amber:#B7791F; --brick:#A83A2B;
+  /* Warna semantik: yang ini yang membuat mode gelap tidak sekadar dibalik. */
+  --inverse-bg:#0E1A16; --inverse-fg:#EAF1EE;   /* toast, chip aktif */
+  --on-pine:#FFFFFF;                            /* teks di atas warna pine */
+  --warn-bg:#FBF1DE; --warn-fg:#6B5416; --warn-line:#E8D5A8;
+  --err-bg:#F7E4E0;  --err-fg:#7A2A1E;  --err-line:#E9C3BB;
+  --code-bg:#101A17; --code-fg:#C8E0D6;
+  --box-line:#B6C6BF; --track-off:#C9D6D0;
+  --nav-bg:rgba(252,253,252,.94); --empty-bg:rgba(255,255,255,.45);
+  --gbtn-bg:#FFFFFF; --gbtn-fg:#3C4043; --gbtn-line:#DADCE0; --gbtn-active:#F8F9FA;
+  --btn-ghost:rgba(0,0,0,.08);
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --safe-top:env(safe-area-inset-top,0px); --safe-bot:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+/* Bukan pembalikan warna: hijau pine dicerahkan supaya tetap terbaca di atas
+   latar gelap, dan setiap permukaan naik sedikit ketimbang latar dasarnya. */
+[data-theme="dark"]{
+  --paper:#0E1613; --surf:#16211D; --surf2:#1D2A25; --ink:#E4ECE8; --ink2:#B7C7C0;
+  --muted:#82988F; --line:#27362F; --pine:#5CC69C; --pine-soft:#1B322A;
+  --amber:#E0B454; --brick:#E58A78;
+  --inverse-bg:#E4ECE8; --inverse-fg:#0E1613;
+  --on-pine:#06201A;
+  --warn-bg:#2C2617; --warn-fg:#E8CE93; --warn-line:#4A3F22;
+  --err-bg:#2E1A17;  --err-fg:#F0B3A6;  --err-line:#4C2A24;
+  --code-bg:#0A120F; --code-fg:#C8E0D6;
+  --box-line:#3D5148; --track-off:#33453D;
+  --nav-bg:rgba(22,33,29,.94); --empty-bg:rgba(255,255,255,.035);
+  --gbtn-bg:#131314; --gbtn-fg:#E3E3E3; --gbtn-line:#5F6368; --gbtn-active:#1E1F20;
+  --btn-ghost:rgba(255,255,255,.13);
+  color-scheme:dark;   /* kalender & jam bawaan HP ikut gelap */
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overscroll-behavior-y:none}
+body{background:var(--paper);color:var(--ink);font-family:'IBM Plex Sans',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;padding-top:var(--safe-top)}
+:focus-visible{outline:2px solid var(--pine);outline-offset:2px;border-radius:6px}
+button,input,textarea,select{font:inherit;color:inherit}
+button{border:0;background:none}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.h{font-family:'Bricolage Grotesque',Georgia,serif;font-weight:600;letter-spacing:-.025em;line-height:1.1}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+
+header{padding:12px 18px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex:0 0 auto}
+#title{font-size:26px}
+#sub{font-size:12px;color:var(--muted);margin-top:3px}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
+nav{flex:0 0 auto;display:flex;border-top:1px solid var(--line);background:var(--nav-bg);
+  backdrop-filter:blur(10px);padding:6px 8px calc(10px + var(--safe-bot))}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 0 4px;
+  color:var(--muted);font-size:10px;font-weight:500;border-radius:12px;position:relative;transition:.2s var(--ease)}
+nav button[data-on="1"]{color:var(--pine)}
+nav button[data-on="1"]::before{content:"";position:absolute;top:0;width:16px;height:2px;border-radius:2px;background:var(--pine)}
+nav button:active{transform:scale(.94)}
+svg{stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+nav svg{width:19px;height:19px}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 9px;border-radius:20px;font-size:11px;
+  font-weight:500;border:1px solid var(--line);background:var(--surf)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--pine);flex:0 0 auto}
+.dot.busy{background:var(--amber);animation:pulse 1.1s infinite}
+.dot.off{background:var(--brick)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.iconbtn{width:32px;height:32px;border-radius:10px;border:1px solid var(--line);background:var(--surf);
+  display:grid;place-items:center;color:var(--ink2);transition:.18s var(--ease);flex:0 0 auto}
+.iconbtn:active{transform:scale(.92)}
+.iconbtn svg{width:16px;height:16px}
+
+.sec{padding:2px 18px 4px;display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+.list{padding:0 18px}
+.row{position:relative;background:var(--surf);border:1px solid var(--line);border-radius:14px;
+  padding:12px 13px 12px 20px;margin-bottom:8px;transition:.2s var(--ease);animation:rise .38s var(--ease) both;
+  width:100%;text-align:left;display:block}
+.row:active{transform:scale(.99)}
+.spine{position:absolute;left:9px;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--line)}
+.spine.synced{background:linear-gradient(180deg,var(--pine),#7FB5A0)}
+.spine.pending{background:linear-gradient(180deg,var(--amber),#E5C48A)}
+.spine.offline{background:repeating-linear-gradient(180deg,var(--brick) 0 3px,transparent 3px 6px)}
+.rowtitle{font-size:14.5px;font-weight:600;letter-spacing:-.01em;line-height:1.3;word-break:break-word}
+.rowsnip{font-size:12.5px;color:var(--ink2);margin-top:3px;line-height:1.45;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rowmeta{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:10.5px;color:var(--muted);flex-wrap:wrap}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade{animation:fade .28s var(--ease) both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.chips{display:flex;gap:6px;padding:6px 18px 4px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--line);
+  background:var(--surf);color:var(--ink2);white-space:nowrap;transition:.18s var(--ease)}
+.chip[data-on="1"]{background:var(--inverse-bg);border-color:var(--inverse-bg);color:var(--inverse-fg)}
+.chip:active{transform:scale(.95)}
+
+.field{margin:4px 18px 2px;display:flex;align-items:center;gap:8px;background:var(--surf2);
+  border:1px solid transparent;border-radius:12px;padding:10px 12px;transition:.2s var(--ease)}
+.field:focus-within{background:var(--surf);border-color:var(--pine)}
+.field input{border:0;background:transparent;outline:0;font-size:16px;width:100%}
+.field svg{width:15px;height:15px;stroke:var(--muted);flex:0 0 auto}
+
+.task{display:flex;gap:11px;align-items:flex-start;background:var(--surf);border:1px solid var(--line);
+  border-radius:14px;padding:12px;margin-bottom:7px;animation:rise .38s var(--ease) both;
+  transition:height .3s var(--ease),padding .3s var(--ease),margin .3s var(--ease),
+             opacity .22s var(--ease),transform .3s var(--ease),background .2s var(--ease)}
+.box{width:21px;height:21px;border-radius:7px;border:1.6px solid var(--box-line);flex:0 0 auto;margin-top:1px;
+  display:grid;place-items:center;transition:.22s var(--ease);background:var(--surf)}
+.box[data-on="1"]{background:var(--pine);border-color:var(--pine)}
+.box svg{width:12px;height:12px;stroke:var(--on-pine);stroke-width:3.4;stroke-dasharray:24;stroke-dashoffset:24;
+  transition:stroke-dashoffset .3s var(--ease) .04s}
+.box[data-on="1"] svg{stroke-dashoffset:0}
+.box.pop{animation:pop .32s var(--ease)}
+@keyframes pop{0%{transform:scale(1)}42%{transform:scale(1.24)}100%{transform:scale(1)}}
+.tasktext{font-size:14.5px;font-weight:500;line-height:1.35;position:relative;display:inline-block;word-break:break-word}
+.tasktext::after{content:"";position:absolute;left:0;top:52%;height:1.4px;background:var(--muted);width:0;transition:width .34s var(--ease) .06s}
+.task[data-done="1"] .tasktext{color:var(--muted)}
+.task[data-done="1"] .tasktext::after{width:100%}
+
+/* Dicentang: centang menggambar dirinya dan coretannya menyapu dulu di tempat.
+   Baru setelah itu barisnya menyusut dan muncul di bagian Selesai. Tanpa jeda
+   itu tugasnya terasa "hilang", bukan "selesai" — dan orang jadi ragu apakah
+   tekanannya masuk. Ini yang ditiru dari Google Tasks. */
+.task.leaving{animation:none!important;opacity:0;transform:translateX(20px);
+  height:0!important;padding-top:0!important;padding-bottom:0!important;
+  margin-bottom:0!important;border-top-width:0!important;border-bottom-width:0!important;overflow:hidden}
+.task.landing{animation:land .42s var(--ease) both}
+@keyframes land{0%{opacity:0;transform:translateY(-12px) scale(.96)}
+  58%{opacity:1;transform:translateY(0) scale(1.015)}100%{opacity:1;transform:none}}
+/* Menyusun ulang daftar setelah satu centang tidak boleh membuat semua baris
+   lain ikut meluncur masuk lagi. Yang bergerak hanya yang memang pindah. */
+.list.quiet .task{animation:none}
+.list.quiet .task.landing{animation:land .42s var(--ease) both}
+.donefoot{font-size:11px;color:var(--muted);padding:2px 18px 4px;line-height:1.5}
+
+.donehead{display:flex;align-items:center;gap:8px;width:100%;padding:14px 18px 6px;text-align:left;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.donehead .caret{width:12px;height:12px;stroke-width:2.8;flex:0 0 auto;transition:transform .26s var(--ease)}
+.donehead .caret[data-open="1"]{transform:rotate(90deg)}
+.donehead .cnt{margin-left:auto;letter-spacing:.1em}
+.donewrap{overflow:hidden;transition:max-height .34s var(--ease),opacity .26s var(--ease)}
+.donewrap[data-open="1"]{max-height:3000px;opacity:1}
+.donewrap[data-open="0"]{max-height:0;opacity:0}
+/* Yang sudah selesai tidak lagi menuntut perhatian: kartunya dilepas,
+   tinggal teks tercoret di atas latar halaman. */
+.donewrap .task{background:transparent;border-color:transparent;padding:9px 12px;margin-bottom:1px}
+.donewrap .task .rowmeta{opacity:.7}
+.badge{font-size:10px;padding:2px 7px;border-radius:6px;background:var(--surf2);color:var(--ink2);font-weight:500;
+  display:inline-flex;align-items:center;gap:4px}
+.badge svg{width:10px;height:10px;stroke-width:2.4}
+.badge.late{background:var(--err-bg);color:var(--err-fg)}
+.badge.hi{background:var(--pine-soft);color:var(--pine)}
+.badge.bell{background:var(--warn-bg);color:var(--warn-fg)}
+/* Tag section di tiap thumbnail catatan. Sengaja diberi warna pine dan ditaruh
+   paling depan — dulu ia cuma teks abu-abu yang tenggelam di antara metadata. */
+.badge.fold{background:var(--pine-soft);color:var(--pine);font-weight:600}
+.badge.fold svg{stroke-width:2;opacity:.85}
+.chip.add{border-style:dashed;color:var(--pine);border-color:var(--box-line);
+  display:inline-flex;align-items:center;gap:5px;padding-left:9px}
+.chip.add svg{width:12px;height:12px;stroke-width:2.6}
+.folderrow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.folderrow .nm{flex:1;font-size:14px;font-weight:500}
+.folderrow .ct{font-size:11px;color:var(--muted)}
+.folderrow button{color:var(--brick);padding:7px 9px;border-radius:9px;font-size:12px;background:var(--btn-ghost)}
+
+.empty{padding:20px 14px;text-align:center;border:1px dashed var(--line);border-radius:14px;background:var(--empty-bg)}
+.empty b{display:block;font-size:13.5px;margin-top:6px}
+.empty span{font-size:11.5px;color:var(--muted)}
+
+.fab{position:fixed;right:16px;bottom:calc(80px + var(--safe-bot));width:52px;height:52px;border-radius:17px;
+  background:var(--pine);color:var(--on-pine);display:grid;place-items:center;z-index:5;
+  box-shadow:0 12px 26px -8px rgba(12,107,79,.6);transition:.22s var(--ease)}
+.fab:active{transform:scale(.9)}
+.fab svg{width:22px;height:22px;stroke:var(--on-pine);stroke-width:2.2}
+
+#editor{position:fixed;inset:0;background:var(--paper);z-index:20;display:none;flex-direction:column;padding-top:var(--safe-top)}
+#editor.on{display:flex;animation:sheet .3s var(--ease) both}
+@keyframes sheet{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:none}}
+#etitle{border:0;background:transparent;outline:0;width:100%;font-size:24px;padding:0 18px}
+#blocks{flex:1;overflow-y:auto;padding:8px 0 12px}
+.blk{display:flex;align-items:flex-start;gap:8px;padding:1px 18px;position:relative}
+.blk .gutter{flex:0 0 auto;display:flex;align-items:flex-start;justify-content:flex-end;min-width:18px;
+  padding-top:7px;font-size:14px;color:var(--muted);user-select:none}
+.blk .gutter .box{width:19px;height:19px;margin-top:-1px}
+.btext{flex:1;border:0;background:transparent;outline:0;resize:none;overflow:hidden;
+  font:inherit;font-size:16px;line-height:1.6;padding:4px 0;min-height:28px;width:100%}
+.blk[data-t="h1"] .btext{font-family:'Bricolage Grotesque',Georgia,serif;font-size:22px;font-weight:600;letter-spacing:-.02em;padding-top:12px}
+.blk[data-t="h2"] .btext{font-family:'Bricolage Grotesque',Georgia,serif;font-size:18px;font-weight:600;letter-spacing:-.015em;padding-top:10px}
+.blk[data-t="quote"] .btext{border-left:2px solid var(--pine);padding-left:11px;color:var(--ink2)}
+.blk[data-t="code"] .wrap{flex:1;background:var(--code-bg);border-radius:12px;padding:11px 12px;position:relative}
+.blk[data-t="code"] .btext{font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.65;color:var(--code-fg);white-space:pre}
+.blk[data-t="code"] .copy{position:absolute;top:7px;right:8px;font-size:10px;color:#7E9A8F;padding:4px 7px;border-radius:7px;background:rgba(255,255,255,.07)}
+.blk[data-checked="1"] .btext{color:var(--muted);text-decoration:line-through}
+.divider{flex:1;height:1px;background:var(--line);margin:14px 0}
+.tool{display:flex;gap:6px;padding:7px 14px;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--line);
+  background:var(--surf);padding-bottom:calc(7px + var(--safe-bot));flex:0 0 auto}
+.tool::-webkit-scrollbar{display:none}
+.tool .chip{display:inline-flex;align-items:center;gap:5px;padding:7px 11px}
+.tool .chip svg{width:13px;height:13px}
+
+#scrim{position:fixed;inset:0;background:rgba(14,26,22,.5);z-index:40;display:none;align-items:flex-end;justify-content:center}
+#scrim.on{display:flex}
+#scrim.center{align-items:center;padding:22px}
+.sheet{background:var(--surf);border-radius:22px 22px 0 0;padding:18px 18px calc(22px + var(--safe-bot));width:100%;
+  max-width:520px;max-height:88vh;overflow-y:auto;animation:up .3s var(--ease) both}
+#scrim.center .sheet{border-radius:20px;max-width:380px;animation:sheet .28s var(--ease) both}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.grab{width:36px;height:4px;border-radius:4px;background:var(--line);margin:-6px auto 14px}
+.frow{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid var(--line)}
+.frow svg{width:17px;height:17px;stroke:var(--muted);flex:0 0 auto}
+.frow label{font-size:13.5px;flex:1}
+.frow input,.frow select{border:1px solid var(--line);background:var(--surf2);border-radius:10px;padding:8px 10px;
+  font-size:15px;outline:0;max-width:176px}
+#toast{position:fixed;left:18px;right:18px;bottom:calc(76px + var(--safe-bot));background:var(--inverse-bg);color:var(--inverse-fg);
+  border-radius:13px;padding:12px 14px;font-size:12.5px;z-index:60;display:none}
+#toast.on{display:block;animation:sheet .3s var(--ease) both}
+
+.card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:8px}
+#banner{flex:0 0 auto;display:none;margin:0 18px 6px;padding:11px 13px;border-radius:13px;font-size:12.5px;
+  line-height:1.5;align-items:center;gap:10px;animation:rise .3s var(--ease) both}
+#banner.on{display:flex}
+#banner.warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-fg)}
+#banner.err{background:var(--err-bg);border:1px solid var(--err-line);color:var(--err-fg)}
+#banner button{background:var(--btn-ghost);border-radius:9px;padding:7px 11px;font-size:12px;font-weight:600;
+  margin-left:auto;white-space:nowrap;color:inherit}
+.lbl{font-size:11px;color:var(--muted);margin:14px 18px 6px;display:block}
+.ledger{background:var(--code-bg);border:1px solid var(--line);border-radius:14px;padding:12px;margin:0 18px;font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;line-height:1.75;color:#9DBBAF;max-height:170px;overflow:auto}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px;background:var(--surf);
+  border:1px solid var(--line);border-radius:13px;margin-bottom:7px;font-size:13.5px}
+.track{width:42px;height:24px;border-radius:20px;background:var(--track-off);position:relative;transition:.24s var(--ease);flex:0 0 auto}
+.track[data-on="1"]{background:var(--pine)}
+.knob{position:absolute;top:2.5px;left:2.5px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.24s var(--ease)}
+.track[data-on="1"] .knob{left:20.5px}
+.btn{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surf);
+  font-size:13.5px;font-weight:500;margin-bottom:7px;transition:.18s var(--ease);text-align:left;display:block}
+.btn:active{transform:scale(.99)}
+.btn.primary{background:var(--pine);border-color:var(--pine);color:var(--on-pine);text-align:center}
+.btn.danger{color:var(--brick)}
+.note{font-size:11.5px;color:var(--muted);line-height:1.55;padding:0 20px 14px}
+a{color:var(--pine)}
+
+.gbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:11px;padding:13px;border-radius:12px;
+  background:var(--gbtn-bg);border:1px solid var(--gbtn-line);font-size:14.5px;font-weight:600;color:var(--gbtn-fg);
+  box-shadow:0 1px 3px rgba(0,0,0,.16);transition:.18s var(--ease)}
+.gbtn:active{transform:scale(.985);background:var(--gbtn-active)}
+.gbtn[disabled]{opacity:.45}
+.gbtn svg{width:19px;height:19px;stroke:none}
+
+#setup{position:fixed;inset:0;z-index:70;background:var(--paper);overflow-y:auto;display:none;
+  padding:calc(26px + var(--safe-top)) 20px calc(30px + var(--safe-bot))}
+#setup.on{display:block}
+.step{display:flex;gap:12px;margin-bottom:16px}
+.stepn{width:24px;height:24px;border-radius:50%;background:var(--pine);color:var(--on-pine);flex:0 0 auto;
+  display:grid;place-items:center;font-size:12px;font-weight:600;margin-top:1px}
+.stepn:active{transform:scale(.88)}
+.step.done .stepn{background:var(--pine-soft);color:var(--pine)}
+.step.done .stept{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.stepb{flex:1;min-width:0}
+.stept{font-size:14px;font-weight:600;margin-bottom:4px}
+.stepd{font-size:12.5px;color:var(--ink2);line-height:1.55}
+.copybox{display:flex;align-items:center;gap:8px;background:var(--code-bg);border-radius:11px;padding:10px 11px;margin-top:8px}
+.copybox code{flex:1;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#9DE2C2;word-break:break-all}
+.copybox button{background:rgba(255,255,255,.1);color:#DCE9E3;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="h" id="title">Hari ini</div>
+    <div id="sub">—</div>
+  </div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="pill" onclick="K.syncNow()"><span class="dot" id="syncdot"></span><span id="synctext">—</span></button>
+    <button class="iconbtn" id="themebtn" onclick="K.toggleTheme()" aria-label="Ganti tema"></button>
+    <button class="iconbtn" onclick="K.go('settings')" aria-label="Pengaturan">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6h.09A1.65 1.65 0 0 0 10 3.09V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<div id="banner"></div>
+<main id="main"></main>
+
+<button class="fab" id="fab" onclick="K.quickAdd()" aria-label="Buat baru">
+  <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<nav>
+  <button data-tab="today" onclick="K.go('today')"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Hari ini</span></button>
+  <button data-tab="notes" onclick="K.go('notes')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg><span>Catatan</span></button>
+  <button data-tab="tasks" onclick="K.go('tasks')"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><span>Tugas</span></button>
+  <button data-tab="settings" onclick="K.go('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg><span>Sync</span></button>
+</nav>
+
+<div id="editor">
+  <header style="padding-bottom:4px">
+    <button class="iconbtn" onclick="K.closeEditor()" aria-label="Kembali"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="mono" id="esave" style="font-size:10.5px;color:var(--pine)"></span>
+    <div style="display:flex;gap:6px">
+      <button class="iconbtn" onclick="K.togglePin()" aria-label="Sematkan"><svg viewBox="0 0 24 24"><path d="M12 17v5M9 10.76V3h6v7.76l3 3.24H6z"/></svg></button>
+      <button class="iconbtn" onclick="K.pickFolder()" aria-label="Pindahkan ke section"><svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10a1 1 0 0 1-1 1H3z"/></svg></button>
+      <button class="iconbtn" onclick="K.deleteNote()" aria-label="Hapus"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>
+    </div>
+  </header>
+  <input id="etitle" class="h" placeholder="Tanpa judul" />
+  <div class="rowmeta" style="padding:6px 18px 0">
+    <button class="badge fold" id="efolder" onclick="K.pickFolder()">Personal</button><span class="mono" id="emeta"></span></div>
+  <div id="blocks"></div>
+  <div class="tool">
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('todo')"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Checklist</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('h2')"><svg viewBox="0 0 24 24"><path d="M4 12h8M4 18V6M12 18V6M17 18v-7l3-2"/></svg>Judul</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('bullet')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><path d="M10 12h10M10 6h10M10 18h10"/></svg>Poin</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('num')"><svg viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M4 5h1v5M4 14h2v2H4v2h2"/></svg>Nomor</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('code')"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>Kode</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('quote')"><svg viewBox="0 0 24 24"><path d="M6 17h3l2-4V7H5v6h3zM15 17h3l2-4V7h-6v6h3z"/></svg>Kutipan</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('divider')"><svg viewBox="0 0 24 24"><path d="M4 12h16"/></svg>Pemisah</button>
+    <button class="chip" onmousedown="event.preventDefault()" onclick="K.setType('text')">Teks biasa</button>
+  </div>
+</div>
+
+<input type="file" id="importfile" accept="application/json,.json" style="display:none"
+  onchange="K.importFile(this)" />
+<div id="scrim"><div class="sheet" id="sheet"></div></div>
+<div id="toast"></div>
+<div id="setup"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+"use strict";
+/* ==========================================================================
+   KERTAS PWA 1.2 — catatan blok + tugas berpengingat, tersimpan di Drive
+   ========================================================================== */
+
+/* ================= 1. LOGIKA MURNI (diuji, tanpa DOM) ==================== */
+
+const LOGIC = {
+  truncate(s,n){ s=String(s||""); return s.length<=n?s:s.slice(0,Math.max(0,n-1)).trimEnd()+"…"; },
+  dayKey(iso){ return String(iso||"").slice(0,10); },
+  today(){ const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); },
+  /* updatedAt disimpan dalam UTC. Mengirisnya mentah-mentah membuat tugas yang
+     diselesaikan lewat tengah malam WIB terhitung "kemarin". */
+  localDayKey(iso){
+    const d=new Date(iso);
+    return isNaN(d.getTime())?"":new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+  },
+  relTime(fromISO,now){
+    const a=new Date(fromISO).getTime(), b=(now?new Date(now):new Date()).getTime();
+    if(isNaN(a)||isNaN(b)) return "—";
+    const s=Math.round((b-a)/1000);
+    if(s<45) return "baru saja";
+    if(s<3600) return Math.round(s/60)+" mnt lalu";
+    if(s<86400) return Math.round(s/3600)+" jam lalu";
+    if(s<604800) return Math.round(s/86400)+" hr lalu";
+    return new Date(fromISO).toLocaleDateString("id-ID",{day:"numeric",month:"short"});
+  },
+
+  /* ---------- blok catatan ---------- */
+  newBlock(type,text){ return {id:"b"+Math.random().toString(36).slice(2,8),type:type||"text",text:text||"",checked:false}; },
+
+  /* Pintasan yang diketik langsung, seperti Samsung Notes / Notion. */
+  shortcut(text){
+    const m=[
+      [/^#\s/,"h1"],[/^##\s/,"h2"],[/^###\s/,"h2"],
+      [/^-\s\[\s?\]\s/,"todo"],[/^\[\s?\]\s/,"todo"],[/^\[x\]\s/i,"todo"],
+      [/^[-*+]\s/,"bullet"],[/^\d+[.)]\s/,"num"],
+      [/^>\s/,"quote"],[/^```/,"code"],[/^(---|___|\*\*\*)$/,"divider"]
+    ];
+    for(const [re,type] of m){
+      if(re.test(text)) return {type, text: type==="divider" ? "" : text.replace(re,"")};
+    }
+    return null;
+  },
+  splitBlock(block,caret){
+    const t=block.text||"";
+    const carry=(block.type==="bullet"||block.type==="num"||block.type==="todo")?block.type:"text";
+    return { left:{...block,text:t.slice(0,caret)}, right:LOGIC.newBlock(carry,t.slice(caret)) };
+  },
+  numberOf(blocks,i){
+    let n=1;
+    for(let k=i-1;k>=0;k--){ if(blocks[k]&&blocks[k].type==="num") n++; else break; }
+    return n;
+  },
+  blocksToMarkdown(blocks){
+    const out=[];
+    (blocks||[]).forEach((b,i)=>{
+      const t=b.text||"";
+      switch(b.type){
+        case "h1": out.push("# "+t); break;
+        case "h2": out.push("## "+t); break;
+        case "bullet": out.push("- "+t); break;
+        case "num": out.push(LOGIC.numberOf(blocks,i)+". "+t); break;
+        case "todo": out.push((b.checked?"- [x] ":"- [ ] ")+t); break;
+        case "quote": out.push("> "+t); break;
+        case "code": out.push("```\n"+t+"\n```"); break;
+        case "divider": out.push("---"); break;
+        default: out.push(t);
+      }
+    });
+    return out.join("\n\n").trim();
+  },
+  markdownToBlocks(md){
+    const lines=String(md||"").replace(/\r\n/g,"\n").split("\n");
+    const blocks=[];
+    for(let i=0;i<lines.length;i++){
+      const line=lines[i];
+      if(line.trim()==="") continue;
+      if(/^```/.test(line.trim())){
+        const buf=[]; i++;
+        while(i<lines.length&&!/^```\s*$/.test(lines[i].trim())){ buf.push(lines[i]); i++; }
+        blocks.push(LOGIC.newBlock("code",buf.join("\n"))); continue;
+      }
+      if(/^(---|___|\*\*\*)\s*$/.test(line.trim())){ blocks.push(LOGIC.newBlock("divider","")); continue; }
+      let m;
+      if((m=line.match(/^##\s+(.*)$/))) blocks.push(LOGIC.newBlock("h2",m[1]));
+      else if((m=line.match(/^#\s+(.*)$/))) blocks.push(LOGIC.newBlock("h1",m[1]));
+      else if((m=line.match(/^-\s\[([ xX])\]\s?(.*)$/))){
+        const b=LOGIC.newBlock("todo",m[2]); b.checked=m[1].toLowerCase()==="x"; blocks.push(b);
+      }
+      else if((m=line.match(/^[-*+]\s+(.*)$/))) blocks.push(LOGIC.newBlock("bullet",m[1]));
+      else if((m=line.match(/^\d+[.)]\s+(.*)$/))) blocks.push(LOGIC.newBlock("num",m[1]));
+      else if((m=line.match(/^>\s?(.*)$/))) blocks.push(LOGIC.newBlock("quote",m[1]));
+      else blocks.push(LOGIC.newBlock("text",line));
+    }
+    return blocks.length?blocks:[LOGIC.newBlock("text","")];
+  },
+  noteToMarkdown(n){
+    return ("# "+((n.title||"Tanpa judul").trim())+"\n\n"+LOGIC.blocksToMarkdown(n.blocks)).trim()+"\n";
+  },
+  markdownToNote(md){
+    const blocks=LOGIC.markdownToBlocks(md);
+    let title="";
+    if(blocks.length&&blocks[0].type==="h1"){ title=blocks[0].text; blocks.shift(); }
+    return { title, blocks: blocks.length?blocks:[LOGIC.newBlock("text","")] };
+  },
+  noteSnippet(n){
+    return (n.blocks||[]).map(b=>b.type==="todo"?(b.checked?"☑ ":"☐ ")+b.text:b.text).filter(Boolean).join(" · ");
+  },
+
+  /* ---------- tugas & pengingat ---------- */
+  dueAt(t){ return (t&&t.due) ? t.due+"T"+(t.time||"23:59")+":00" : null; },
+  remindAt(t){
+    const due=LOGIC.dueAt(t);
+    if(!due||t.remind===null||t.remind===undefined||t.remind==="") return null;
+    const ms=new Date(due).getTime()-Number(t.remind)*60000;
+    return isNaN(ms)?null:new Date(ms).toISOString();
+  },
+  isOverdue(t,todayKey){ return !!(t&&t.due&&!t.done&&LOGIC.dayKey(t.due)<todayKey); },
+  shouldNotify(t,nowMs,notified){
+    if(!t||t.done||t.deleted) return false;
+    if((notified||[]).includes(t.id+"@"+(t.updatedAt||""))) return false;
+    const at=LOGIC.remindAt(t); if(!at) return false;
+    const ms=new Date(at).getTime();
+    return ms<=nowMs && nowMs-ms<86400000;
+  },
+  sortTasks(tasks,mode,todayKey){
+    const live=(tasks||[]).filter(t=>t&&!t.deleted);
+    let pool;
+    if(mode==="done") pool=live.filter(t=>t.done);
+    else if(mode==="today") pool=live.filter(t=>!t.done&&t.due&&LOGIC.dayKey(t.due)<=todayKey);
+    else pool=live.filter(t=>!t.done&&(!t.due||LOGIC.dayKey(t.due)>todayKey));
+    const rank={high:0,normal:1,low:2};
+    return pool.slice().sort((a,b)=>{
+      if(mode==="done") return String(b.updatedAt||"").localeCompare(String(a.updatedAt||""));
+      const ad=(a.due||"9999-12-31")+"T"+(a.time||"23:59");
+      const bd=(b.due||"9999-12-31")+"T"+(b.time||"23:59");
+      if(ad!==bd) return ad<bd?-1:1;
+      const ar=rank[a.priority]??1, br=rank[b.priority]??1;
+      if(ar!==br) return ar-br;
+      return String(a.title).localeCompare(String(b.title));
+    });
+  },
+  /* Daftar "Selesai" yang tampil di bawah daftar aktif, seperti Google Tasks.
+     scope "today" hanya yang diselesaikan hari ini — kalau tidak, tab Hari ini
+     lama-lama jadi arsip seumur hidup. */
+  doneList(tasks,todayKey,scope){
+    let pool=(tasks||[]).filter(t=>t&&!t.deleted&&t.done);
+    if(scope==="today") pool=pool.filter(t=>LOGIC.localDayKey(t.updatedAt)===todayKey);
+    return pool.slice().sort((a,b)=>String(b.updatedAt||"").localeCompare(String(a.updatedAt||"")));
+  },
+  /* ---------- section catatan ---------- */
+  normalizeFolder(v){ return String(v||"").replace(/\s+/g," ").trim().slice(0,20); },
+  /* Mengembalikan alasan penolakan, atau null kalau namanya boleh dipakai.
+     "Semua" harus dijaga: ia bukan section, melainkan penyaring yang berarti
+     "jangan disaring" — kalau sampai jadi section, catatannya tak terlihat. */
+  folderError(v,existing){
+    const n=LOGIC.normalizeFolder(v);
+    if(!n) return "Nama section belum diisi.";
+    if(n.toLowerCase()==="semua") return '"Semua" dipakai sistem untuk menampilkan semuanya. Pilih nama lain.';
+    if((existing||[]).some(f=>String(f).toLowerCase()===n.toLowerCase())) return 'Section "'+n+'" sudah ada.';
+    return null;
+  },
+  /* Section yang datang dari HP lain lewat Drive harus ikut terdaftar di sini,
+     kalau tidak catatannya tersaring habis dan seolah hilang. */
+  mergeFolders(known,found){
+    const out=[...(known||[])];
+    for(const f of (found||[])){
+      const n=LOGIC.normalizeFolder(f);
+      if(n&&n.toLowerCase()!=="semua"&&!out.some(x=>String(x).toLowerCase()===n.toLowerCase())) out.push(n);
+    }
+    return out;
+  },
+  filterNotes(notes,query,folder){
+    const q=String(query||"").trim().toLowerCase();
+    let out=(notes||[]).filter(n=>n&&!n.deleted);
+    if(folder&&folder!=="Semua") out=out.filter(n=>n.folder===folder);
+    if(q) out=out.filter(n=>((n.title||"")+" "+LOGIC.noteSnippet(n)).toLowerCase().includes(q));
+    return out.slice().sort((a,b)=>{
+      if(!!b.pinned!==!!a.pinned) return b.pinned?1:-1;
+      return String(b.updatedAt).localeCompare(String(a.updatedAt));
+    });
+  },
+
+  /* ---------- CSV (Google Sheet) ---------- */
+  TASK_COLS:["id","title","due","time","remind","done","list","priority","notes","updatedAt"],
+  csvCell(v){ const s=String(v??""); return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; },
+  tasksToCsv(tasks){
+    const rows=(tasks||[]).filter(t=>!t.deleted).map(t=>[t.id,t.title,t.due||"",t.time||"",
+      (t.remind===null||t.remind===undefined||t.remind==="")?"":String(t.remind),
+      t.done?"TRUE":"FALSE",t.list||"Inbox",t.priority||"normal",t.notes||"",t.updatedAt||""]);
+    return [LOGIC.TASK_COLS,...rows].map(r=>r.map(LOGIC.csvCell).join(",")).join("\n");
+  },
+  parseCsv(text){
+    const rows=[]; let row=[],cell="",q=false;
+    const s=String(text||"").replace(/\r\n/g,"\n");
+    for(let i=0;i<s.length;i++){
+      const c=s[i];
+      if(q){ if(c==='"'){ if(s[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+      else if(c==='"') q=true;
+      else if(c===","){ row.push(cell); cell=""; }
+      else if(c==="\n"){ row.push(cell); rows.push(row); row=[]; cell=""; }
+      else cell+=c;
+    }
+    if(cell!==""||row.length){ row.push(cell); rows.push(row); }
+    return rows.filter(r=>r.length>1||(r[0]||"").trim()!=="");
+  },
+  csvToTasks(text){
+    const rows=LOGIC.parseCsv(text);
+    if(!rows.length) return [];
+    return rows.slice(1).filter(r=>r[0]).map(r=>({
+      id:r[0], title:r[1]||"", due:r[2]||null, time:r[3]||null,
+      remind:(r[4]===""||r[4]===undefined)?null:Number(r[4]),
+      done:r[5]==="TRUE", list:r[6]||"Inbox", priority:r[7]||"normal",
+      notes:r[8]||"", updatedAt:r[9]||new Date().toISOString()
+    }));
+  },
+  /* ---------- cadangan .json ---------- */
+  /* Berkas ini datang dari luar, jadi tidak boleh dipercaya bentuknya.
+     Yang penting: gagal dengan kalimat yang bisa ditindaklanjuti, bukan
+     melempar TypeError dan meninggalkan pengguna menatap layar diam. */
+  readBackup(text){
+    let d;
+    try{ d=JSON.parse(text); }
+    catch(e){ return {ok:false,error:"Berkas ini bukan JSON yang sah. Pastikan yang dipilih hasil Unduh cadangan."}; }
+    if(!d||typeof d!=="object"||Array.isArray(d))
+      return {ok:false,error:"Isinya tidak dikenali sebagai cadangan Kertas."};
+    if(!Array.isArray(d.notes)&&!Array.isArray(d.tasks))
+      return {ok:false,error:"Tidak ada daftar catatan maupun tugas di dalam berkas ini."};
+    const bersih=(a)=>Array.isArray(a)?a.filter(x=>x&&typeof x==="object"&&x.id):[];
+    return {ok:true,
+      notes:bersih(d.notes), tasks:bersih(d.tasks),
+      folders:Array.isArray(d.folders)?d.folders:[],
+      clientId:typeof d.clientId==="string"?d.clientId:"",
+      exportedAt:typeof d.exportedAt==="string"?d.exportedAt:null};
+  },
+  /* Yang lebih baru menang; seri dimenangkan yang sudah ada di HP ini —
+     kalau seri dimenangkan berkas cadangan, mengimpor cadangan lama akan
+     memundurkan catatan yang baru saja diketik. */
+  mergeNotes(local,incoming){
+    const map=new Map();
+    for(const n of (local||[])) if(n&&n.id) map.set(n.id,n);
+    for(const n of (incoming||[])){
+      if(!n||!n.id) continue;
+      const cur=map.get(n.id);
+      if(!cur||String(n.updatedAt||"")>String(cur.updatedAt||"")) map.set(n.id,n);
+    }
+    return [...map.values()];
+  },
+  /* Dipakai untuk memberi tahu SEBELUM menimpa: berapa yang baru, berapa yang
+     menggantikan versi lebih lama, berapa yang dilewati. */
+  importDiff(local,incoming){
+    const map=new Map((local||[]).filter(x=>x&&x.id).map(x=>[x.id,x]));
+    const masuk=[]; let lewat=0, baru=0;
+    for(const x of (incoming||[])){
+      const cur=map.get(x.id);
+      if(!cur){ baru++; masuk.push(x.id); }
+      else if(String(x.updatedAt||"")>String(cur.updatedAt||"")) masuk.push(x.id);
+      else lewat++;
+    }
+    return {baru, timpa:masuk.length-baru, lewat, ids:masuk};
+  },
+  mergeTasks(local,remote){
+    const map=new Map();
+    for(const t of (remote||[])) if(t&&t.id) map.set(t.id,t);
+    for(const t of (local||[])){
+      if(!t||!t.id) continue;
+      const r=map.get(t.id);
+      if(!r||String(t.updatedAt||"")>=String(r.updatedAt||"")) map.set(t.id,t);
+    }
+    return [...map.values()];
+  },
+
+  /* ---------- antrean & jaringan ---------- */
+  nextQueue(queue,op){
+    const key=op.entity+":"+op.id;
+    return [...(queue||[]).filter(o=>o.entity+":"+o.id!==key),op];
+  },
+  syncStateOf(entity,id,queue,online){
+    const queued=(queue||[]).some(o=>o.entity===entity&&o.id===id);
+    if(queued&&!online) return "offline";
+    if(queued) return "pending";
+    return "synced";
+  },
+  detectConflict(local,remoteModified){
+    return !!(local&&local.dirty&&remoteModified&&local.driveModified&&remoteModified>local.driveModified);
+  },
+  backoffMs(attempts){
+    const n=Math.max(1,Math.floor(attempts)||1);
+    return Math.min(300000,3000*Math.pow(2,n-1));
+  },
+  pendingCount(queue){ return (queue||[]).length; },
+  resolveTheme(pref,systemDark){
+    if(pref==="dark") return "dark";
+    if(pref==="light") return "light";
+    return systemDark?"dark":"light";     // "auto" dan nilai tak dikenal
+  },
+  validClientId(v){ return /^[0-9]+-[a-z0-9_]+\.apps\.googleusercontent\.com$/i.test(String(v||"").trim()); },
+  explainAuthError(code,origin){
+    const c=String(code||"");
+    if(/origin_mismatch|redirect_uri_mismatch/i.test(c))
+      return "Origin belum terdaftar. Di Google Cloud Console → Credentials → OAuth client, isi Authorized JavaScript origins dengan persis: "+origin;
+    if(/popup_closed|user_cancel|abort/i.test(c)) return "Jendela login ditutup sebelum selesai. Coba lagi.";
+    if(/popup_blocked|popup_failed/i.test(c)) return "Popup diblokir browser. Izinkan popup untuk situs ini, lalu tekan lagi.";
+    if(/access_denied/i.test(c)) return "Izin ditolak. Kertas butuh akses drive.file untuk menyimpan catatanmu.";
+    if(/invalid_client|unauthorized_client/i.test(c)) return "Client ID tidak dikenali. Pastikan tipenya Web application dan tersalin utuh.";
+    if(/idpiframe|cookie/i.test(c)) return "Browser memblokir cookie pihak ketiga. Matikan mode penyamaran atau izinkan cookie untuk accounts.google.com.";
+    return "Login gagal: "+c;
+  }
+};
+
+/* ================= 2. TES INTERNAL ====================================== */
+function selfTest(){
+  const out=[]; const ok=(n,f)=>{ try{ f(); out.push({n,pass:true}); }catch(e){ out.push({n,pass:false,e:e.message}); } };
+  const strip=b=>({type:b.type,text:b.text,checked:!!b.checked});
+
+  ok("Blok ↔ markdown: checklist, kode, kutipan utuh",()=>{
+    const blocks=[LOGIC.newBlock("h2","Rencana"),
+      Object.assign(LOGIC.newBlock("todo","beli kopi"),{checked:true}),
+      LOGIC.newBlock("todo","kirim invoice"),
+      LOGIC.newBlock("code","retry: {\n  max: 3\n}"),
+      LOGIC.newBlock("quote","tunggu approval"),
+      LOGIC.newBlock("divider",""),
+      LOGIC.newBlock("bullet","catatan kecil")];
+    const back=LOGIC.markdownToBlocks(LOGIC.blocksToMarkdown(blocks));
+    if(JSON.stringify(blocks.map(strip))!==JSON.stringify(back.map(strip))) throw new Error(JSON.stringify(back.map(strip)));
+  });
+  ok("Kode berisi baris kosong tidak pecah jadi dua blok",()=>{
+    const back=LOGIC.markdownToBlocks(LOGIC.blocksToMarkdown([LOGIC.newBlock("code","satu\n\ndua")]));
+    if(back.length!==1||back[0].text!=="satu\n\ndua") throw new Error(JSON.stringify(back));
+  });
+  ok("Nomor urut berlanjut, bukan 1 semua",()=>{
+    const md=LOGIC.blocksToMarkdown([LOGIC.newBlock("num","a"),LOGIC.newBlock("num","b"),LOGIC.newBlock("num","c")]);
+    if(!md.includes("2. b")||!md.includes("3. c")) throw new Error(md);
+  });
+  ok("Catatan kosong tidak jadi 'undefined' di Drive",()=>{
+    const md=LOGIC.noteToMarkdown({title:"",blocks:[LOGIC.newBlock("text","")]});
+    if(/undefined|null/.test(md)) throw new Error(md);
+  });
+  ok("Judul catatan bolak-balik lewat Google Doc",()=>{
+    const back=LOGIC.markdownToNote(LOGIC.noteToMarkdown({title:"Rapat UAT",blocks:[LOGIC.newBlock("text","isi")]}));
+    if(back.title!=="Rapat UAT"||back.blocks[0].text!=="isi") throw new Error(JSON.stringify(back));
+  });
+  ok("Pintasan ketik dikenali, tapi tidak di tengah kalimat",()=>{
+    if(LOGIC.shortcut("- [ ] beli").type!=="todo") throw new Error("todo");
+    if(LOGIC.shortcut("[] beli").type!=="todo") throw new Error("todo pendek");
+    if(LOGIC.shortcut("# Judul").type!=="h1") throw new Error("h1");
+    if(LOGIC.shortcut("1. satu").type!=="num") throw new Error("num");
+    if(LOGIC.shortcut("```").type!=="code") throw new Error("code");
+    if(LOGIC.shortcut("beli - [ ]")!==null) throw new Error("alarm palsu di tengah kalimat");
+    if(LOGIC.shortcut("- [ ] beli").text!=="beli") throw new Error("awalan tidak dibuang");
+  });
+  ok("Enter di tengah baris memecah tanpa kehilangan huruf",()=>{
+    const b=LOGIC.newBlock("todo","belikopi"); b.checked=true;
+    const {left,right}=LOGIC.splitBlock(b,4);
+    if(left.text!=="beli"||right.text!=="kopi") throw new Error(left.text+"|"+right.text);
+    if(right.type!=="todo") throw new Error("tipe tidak berlanjut");
+    if(right.checked) throw new Error("centang terbawa ke baris baru");
+  });
+  ok("Enter di kutipan kembali ke teks biasa",()=>{
+    if(LOGIC.splitBlock(LOGIC.newBlock("quote","abc"),3).right.type!=="text") throw new Error("masih kutipan");
+  });
+  ok("Waktu jatuh tempo memakai jam kalau diisi",()=>{
+    if(LOGIC.dueAt({due:"2026-08-04",time:"09:30"})!=="2026-08-04T09:30:00") throw new Error("dengan jam");
+    if(LOGIC.dueAt({due:"2026-08-04"})!=="2026-08-04T23:59:00") throw new Error("tanpa jam");
+    if(LOGIC.dueAt({})!==null) throw new Error("tanpa tanggal");
+  });
+  ok("Pengingat dihitung mundur dari jam jatuh tempo",()=>{
+    const at=LOGIC.remindAt({due:"2026-08-04",time:"09:00",remind:30});
+    if(new Date(at).getTime()!==new Date("2026-08-04T08:30:00").getTime()) throw new Error(at);
+    if(LOGIC.remindAt({due:"2026-08-04",time:"09:00",remind:null})!==null) throw new Error("tanpa pengingat");
+  });
+  ok("Pengingat berbunyi sekali, dan tidak untuk yang basi",()=>{
+    const t={id:"t1",updatedAt:"u1",due:"2026-08-04",time:"09:00",remind:0};
+    const now=new Date("2026-08-04T09:05:00").getTime();
+    if(!LOGIC.shouldNotify(t,now,[])) throw new Error("tidak berbunyi");
+    if(LOGIC.shouldNotify(t,now,["t1@u1"])) throw new Error("berbunyi dua kali");
+    if(LOGIC.shouldNotify(t,new Date("2026-08-06T09:00:00").getTime(),[])) throw new Error("pengingat basi dibunyikan");
+    if(LOGIC.shouldNotify({...t,done:true},now,[])) throw new Error("tugas selesai masih berbunyi");
+  });
+  ok("Urutan tugas menghormati jam, bukan cuma tanggal",()=>{
+    const r=LOGIC.sortTasks([{id:"sore",title:"s",due:"2026-08-04",time:"16:00"},
+      {id:"pagi",title:"p",due:"2026-08-04",time:"08:00"}],"today","2026-08-04").map(x=>x.id);
+    if(r[0]!=="pagi") throw new Error(r.join(","));
+  });
+  ok("Cadangan rusak ditolak dengan kalimat, bukan crash",()=>{
+    if(LOGIC.readBackup("bukan json").ok) throw new Error("teks sembarang diterima");
+    if(LOGIC.readBackup("[1,2,3]").ok) throw new Error("array diterima");
+    if(LOGIC.readBackup('{"halo":1}').ok) throw new Error("objek tanpa notes/tasks diterima");
+    if(!LOGIC.readBackup("bukan json").error) throw new Error("gagal tanpa penjelasan");
+  });
+  ok("Cadangan lama (tanpa section & clientId) tetap bisa dibaca",()=>{
+    const r=LOGIC.readBackup(JSON.stringify({notes:[{id:"a",title:"x"}],tasks:[],exportedAt:"2026-01-01"}));
+    if(!r.ok) throw new Error(r.error);
+    if(r.notes.length!==1||r.folders.length!==0||r.clientId!=="") throw new Error(JSON.stringify(r));
+  });
+  ok("Impor membuang baris tanpa id, bukan menyimpannya diam-diam",()=>{
+    const r=LOGIC.readBackup(JSON.stringify({notes:[{id:"a"},{title:"tanpa id"},null],tasks:[]}));
+    if(r.notes.length!==1) throw new Error("masuk "+r.notes.length);
+  });
+  ok("Impor: yang lebih baru menang, seri dimenangkan HP ini",()=>{
+    const lokal=[{id:"a",title:"lokal baru",updatedAt:"2026-08-05T00:00:00Z"},
+                 {id:"b",title:"lokal seri",updatedAt:"2026-08-05T00:00:00Z"}];
+    const masuk=[{id:"a",title:"cadangan lama",updatedAt:"2026-08-01T00:00:00Z"},
+                 {id:"b",title:"cadangan seri",updatedAt:"2026-08-05T00:00:00Z"},
+                 {id:"c",title:"cadangan baru",updatedAt:"2026-08-09T00:00:00Z"}];
+    const g=LOGIC.mergeNotes(lokal,masuk);
+    if(g.length!==3) throw new Error("jumlah "+g.length);
+    if(g.find(x=>x.id==="a").title!=="lokal baru") throw new Error("cadangan lama menimpa yang baru");
+    if(g.find(x=>x.id==="b").title!=="lokal seri") throw new Error("seri tidak dimenangkan HP ini");
+    if(g.find(x=>x.id==="c").title!=="cadangan baru") throw new Error("yang benar-benar baru tidak masuk");
+  });
+  ok("Hitungan pratinjau impor jujur sebelum menimpa",()=>{
+    const d=LOGIC.importDiff(
+      [{id:"a",updatedAt:"2026-08-05T00:00:00Z"},{id:"b",updatedAt:"2026-08-05T00:00:00Z"}],
+      [{id:"a",updatedAt:"2026-08-09T00:00:00Z"},{id:"b",updatedAt:"2026-08-01T00:00:00Z"},
+       {id:"c",updatedAt:"2026-08-09T00:00:00Z"}]);
+    if(d.baru!==1||d.timpa!==1||d.lewat!==1) throw new Error(JSON.stringify(d));
+    if(d.ids.join()!=="a,c"&&d.ids.join()!=="c,a") throw new Error("id yang diantrekan salah: "+d.ids);
+  });
+  ok("Unduh lalu pulihkan: isinya kembali utuh",()=>{
+    const asal={kertas:1,exportedAt:"2026-08-07T00:00:00Z",clientId:"812345678901-a1b.apps.googleusercontent.com",
+      folders:["BCA","Riset"],
+      notes:[{id:"n1",title:"Rapat",blocks:[LOGIC.newBlock("text","isi")],folder:"Riset",updatedAt:"2026-08-07T00:00:00Z"}],
+      tasks:[{id:"t1",title:"Kirim",due:"2026-08-08",done:false,updatedAt:"2026-08-07T00:00:00Z"}]};
+    const r=LOGIC.readBackup(JSON.stringify(asal));
+    if(!r.ok) throw new Error(r.error);
+    if(r.notes[0].title!=="Rapat"||r.tasks[0].title!=="Kirim") throw new Error("isi berubah");
+    if(r.folders.join()!=="BCA,Riset") throw new Error("section tidak ikut");
+    if(!LOGIC.validClientId(r.clientId)) throw new Error("clientId tidak ikut");
+  });
+  ok("Nama section: yang kosong, kembar, dan 'Semua' ditolak",()=>{
+    const ada=["BCA","Klien"];
+    if(LOGIC.folderError("Riset",ada)) throw new Error("nama sah ditolak");
+    if(!LOGIC.folderError("   ",ada)) throw new Error("kosong lolos");
+    if(!LOGIC.folderError("bca",ada)) throw new Error("kembar beda huruf besar lolos");
+    if(!LOGIC.folderError("Semua",ada)) throw new Error("'Semua' lolos — chip penyaring akan tertimpa");
+    if(LOGIC.normalizeFolder("  Riset   Pasar  ")!=="Riset Pasar") throw new Error("spasi tidak dirapikan");
+    if(LOGIC.normalizeFolder("x".repeat(40)).length!==20) throw new Error("tidak dipotong 20");
+  });
+  ok("Section dari HP lain ikut terdaftar, bukan bikin catatan hilang",()=>{
+    const r=LOGIC.mergeFolders(["BCA","Personal"],["Riset","bca","","Semua",null]);
+    if(r.join("|")!=="BCA|Personal|Riset") throw new Error(r.join("|"));
+  });
+  ok("Menyaring per section, dan 'Semua' berarti tanpa saringan",()=>{
+    const notes=[{id:"a",title:"a",folder:"BCA",updatedAt:"2"},{id:"b",title:"b",folder:"Riset",updatedAt:"1"}];
+    if(LOGIC.filterNotes(notes,"","Riset").map(n=>n.id).join()!=="b") throw new Error("saringan section");
+    if(LOGIC.filterNotes(notes,"","Semua").length!==2) throw new Error("'Semua' ikut menyaring");
+  });
+  ok("Yang dicentang keluar dari daftar aktif, masuk daftar Selesai",()=>{
+    const tasks=[{id:"a",title:"a",due:"2026-08-04",done:false,updatedAt:"2026-08-04T01:00:00Z"},
+                 {id:"b",title:"b",due:"2026-08-04",done:true, updatedAt:"2026-08-04T02:00:00Z"}];
+    const aktif=LOGIC.sortTasks(tasks,"today","2026-08-04").map(x=>x.id);
+    const selesai=LOGIC.doneList(tasks,"2026-08-04","all").map(x=>x.id);
+    if(aktif.join()!=="a") throw new Error("aktif: "+aktif.join());
+    if(selesai.join()!=="b") throw new Error("selesai: "+selesai.join());
+  });
+  ok("Daftar Selesai: yang paling baru dicentang di paling atas",()=>{
+    const r=LOGIC.doneList([{id:"lama",done:true,updatedAt:"2026-08-04T01:00:00Z"},
+      {id:"baru",done:true,updatedAt:"2026-08-04T09:00:00Z"}],"2026-08-04","all").map(x=>x.id);
+    if(r[0]!=="baru") throw new Error(r.join(","));
+  });
+  ok("Selesai lewat tengah malam WIB tetap terhitung hari ini",()=>{
+    // 01:30 WIB tanggal 5 = 18:30 UTC tanggal 4. Mengiris UTC mentah-mentah
+    // akan membuangnya ke "kemarin" dan tugasnya seolah hilang.
+    const iso=new Date(new Date("2026-08-05T01:30:00").getTime()).toISOString();
+    if(LOGIC.localDayKey(iso)!=="2026-08-05") throw new Error(LOGIC.localDayKey(iso));
+    if(LOGIC.localDayKey("bukan tanggal")!=="") throw new Error("tanggal rusak tidak ditangani");
+  });
+  ok("Tombol tema membalik, bukan menumpuk 'auto'",()=>{
+    if(LOGIC.resolveTheme("auto",true)!=="dark") throw new Error("auto+gelap");
+    if(LOGIC.resolveTheme("auto",false)!=="light") throw new Error("auto+terang");
+    if(LOGIC.resolveTheme("light",true)!=="light") throw new Error("pilihan pengguna kalah");
+  });
+  ok("CSV bolak-balik dengan jam & pengingat",()=>{
+    const t=[{id:"1",title:'Telepon, lalu "email"\nsusulan',due:"2026-08-04",time:"09:30",remind:15,
+      done:false,list:"Klien",priority:"high",notes:"bawa berkas",updatedAt:"x"}];
+    const back=LOGIC.csvToTasks(LOGIC.tasksToCsv(t));
+    if(JSON.stringify(back)!==JSON.stringify(t)) throw new Error(JSON.stringify(back));
+  });
+  ok("CSV: tugas tanpa jam tetap tanpa jam, bukan 0",()=>{
+    const back=LOGIC.csvToTasks(LOGIC.tasksToCsv([{id:"1",title:"a",due:"2026-08-04",time:null,remind:null,
+      done:false,list:"Inbox",priority:"normal",notes:"",updatedAt:"x"}]))[0];
+    if(back.time!==null||back.remind!==null) throw new Error(JSON.stringify(back));
+  });
+  ok("CSV: baris rusak tidak bikin crash",()=>{ LOGIC.csvToTasks("id,title\n\n,,,,\nabc"); });
+  ok("Gabung tugas: versi terbaru menang, tak ada yang hilang",()=>{
+    const m=LOGIC.mergeTasks(
+      [{id:"a",title:"A baru",updatedAt:"2026-08-04T10:00:00Z"},{id:"c",title:"C offline",updatedAt:"2026-08-04T09:00:00Z"}],
+      [{id:"a",title:"A lama",updatedAt:"2026-08-04T08:00:00Z"},{id:"b",title:"B laptop",updatedAt:"2026-08-04T09:30:00Z"}]);
+    if(m.length!==3) throw new Error("jumlah "+m.length);
+    if(m.find(t=>t.id==="a").title!=="A baru") throw new Error("yang lama menang");
+  });
+  ok("Antrean selamat melewati tutup-app",()=>{
+    let q=LOGIC.nextQueue([],{entity:"note",id:"n1",kind:"update"});
+    q=LOGIC.nextQueue(q,{entity:"task",id:"n1",kind:"create"});
+    if(LOGIC.pendingCount(JSON.parse(JSON.stringify(q)))!==2) throw new Error("hilang saat disimpan");
+  });
+  ok("50 kali edit jadi 1 antrean tulis",()=>{
+    let q=[]; for(let i=0;i<50;i++) q=LOGIC.nextQueue(q,{entity:"note",id:"n1",rev:i});
+    if(q.length!==1||q[0].rev!==49) throw new Error("antrean "+q.length);
+  });
+  ok("Status sync membedakan offline dan menunggu",()=>{
+    const q=[{entity:"note",id:"n"}];
+    if(LOGIC.syncStateOf("note","n",q,false)!=="offline") throw new Error("offline");
+    if(LOGIC.syncStateOf("note","n",q,true)!=="pending") throw new Error("pending");
+    if(LOGIC.syncStateOf("note","z",q,true)!=="synced") throw new Error("synced");
+  });
+  ok("Konflik hanya kalau dua sisi berubah",()=>{
+    if(!LOGIC.detectConflict({dirty:true,driveModified:"2026-08-01"},"2026-08-02")) throw new Error("terlewat");
+    if(LOGIC.detectConflict({dirty:false,driveModified:"2026-08-01"},"2026-08-02")) throw new Error("alarm palsu");
+  });
+  ok("Jeda coba-ulang naik lalu berhenti di 5 menit",()=>{
+    if(LOGIC.backoffMs(1)!==3000) throw new Error("percobaan 1");
+    if(LOGIC.backoffMs(20)!==300000) throw new Error("tidak dibatasi");
+  });
+  ok("Client ID salah ketik ditolak sebelum dipakai",()=>{
+    if(!LOGIC.validClientId("812345678901-a1b2c3.apps.googleusercontent.com")) throw new Error("yang benar ditolak");
+    if(LOGIC.validClientId("812345678901-a1b2c3")) throw new Error("potongan diterima");
+    if(LOGIC.validClientId("https://812345.apps.googleusercontent.com")) throw new Error("URL diterima");
+  });
+  ok("Error OAuth diterjemahkan jadi instruksi",()=>{
+    const m=LOGIC.explainAuthError("origin_mismatch","https://a.github.io");
+    if(!m.includes("https://a.github.io")) throw new Error("origin tidak disebut");
+    if(!LOGIC.explainAuthError("popup_blocked","x").toLowerCase().includes("popup")) throw new Error("popup");
+  });
+  ok("Batas telat tepat di tengah malam",()=>{
+    if(LOGIC.isOverdue({due:"2026-08-04"},"2026-08-04")) throw new Error("hari ini dianggap telat");
+    if(!LOGIC.isOverdue({due:"2026-08-03"},"2026-08-04")) throw new Error("kemarin tidak telat");
+  });
+  ok("Cari menembus isi checklist",()=>{
+    const n={id:"1",title:"A",blocks:[LOGIC.newBlock("todo","kirim invoice")],updatedAt:"1"};
+    if(LOGIC.filterNotes([n]," INVOICE ","Semua").length!==1) throw new Error("tidak ketemu");
+  });
+  ok("Pemilihan tema: kunci manual mengalahkan pengaturan HP",()=>{
+    if(LOGIC.resolveTheme("auto",true)!=="dark") throw new Error("auto+HP gelap");
+    if(LOGIC.resolveTheme("auto",false)!=="light") throw new Error("auto+HP terang");
+    if(LOGIC.resolveTheme("dark",false)!=="dark") throw new Error("kunci gelap diabaikan");
+    if(LOGIC.resolveTheme("light",true)!=="light") throw new Error("kunci terang diabaikan");
+    if(LOGIC.resolveTheme(undefined,true)!=="dark") throw new Error("nilai kosong harus jatuh ke auto");
+  });
+  ok("Tautan penyiapan membawa Client ID yang sah",()=>{
+    const cid="812345678901-abc123.apps.googleusercontent.com";
+    const url="https://a.github.io/kertas/?cid="+encodeURIComponent(cid);
+    const got=new URLSearchParams(url.slice(url.indexOf("?"))).get("cid");
+    if(got!==cid) throw new Error("cid rusak saat dikodekan: "+got);
+    if(!LOGIC.validClientId(got)) throw new Error("ditolak validator");
+  });
+  ok("Menyimpan 300 catatan tetap di bawah 150ms",()=>{
+    const big={notes:[],tasks:[]};
+    for(let i=0;i<300;i++) big.notes.push({id:"b"+i,title:"Nota "+i,
+      blocks:[LOGIC.newBlock("text","isi panjang ".repeat(20)+i)],updatedAt:"1"});
+    const t0=Date.now(); JSON.stringify(big); const dt=Date.now()-t0;
+    if(dt>150) throw new Error(dt+"ms — penyimpanan harus ditunda, bukan tiap ketikan");
+  });
+  ok("Filter 500 catatan di bawah 40ms",()=>{
+    const big=[]; for(let i=0;i<500;i++) big.push({id:"b"+i,title:"Nota "+i,blocks:[LOGIC.newBlock("text","isi "+i)],updatedAt:"1"});
+    const t0=Date.now(); const r=LOGIC.filterNotes(big,"isi 499","Semua");
+    if(r.length!==1) throw new Error("hasil salah");
+    if(Date.now()-t0>40) throw new Error("lambat");
+  });
+  return out;
+}
+
+/* ================= 3. STATE ============================================= */
+
+/* Isi sekali di sini kalau kamu sudah punya Client ID, lalu penyiapan
+   tidak pernah muncul lagi di perangkat mana pun yang membuka berkas ini.
+   Client ID bukan rahasia — yang rahasia adalah client secret, dan Kertas
+   memang tidak memakainya. */
+const CONFIG={ clientId:"" };
+
+const STORE_KEY="kertas.v1";
+/* Section catatan dulunya konstanta, jadi tidak ada cara menambahnya.
+   Sekarang tinggal di dalam state. "Semua" tidak ikut disimpan — ia penyaring,
+   bukan section. */
+const DEFAULT_FOLDERS=["BCA","Klien","Personal"];
+const REMIND_OPTIONS=[["","Tanpa pengingat"],["0","Tepat waktu"],["5","5 menit sebelum"],
+  ["15","15 menit sebelum"],["30","30 menit sebelum"],["60","1 jam sebelum"],["1440","1 hari sebelum"]];
+
+function load(){ try{ const r=localStorage.getItem(STORE_KEY); if(r) return JSON.parse(r); }catch(e){} return null; }
+
+let storageFull=false;
+/* Menulis seluruh state ke localStorage berarti men-stringify semua catatan.
+   Kalau itu dilakukan tiap ketikan, mengetik di catatan besar mulai tersendat.
+   Penulisan penting tetap langsung; ketikan cukup ditunda sebentar. */
+function save(){
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify(S));
+    storageFull=false;
+  }catch(e){
+    // Kuota penuh tidak boleh gagal diam-diam — itu kehilangan data yang
+    // tak disadari. Buang dulu yang paling tidak penting, lalu beri tahu.
+    try{
+      S.ledger=S.ledger.slice(0,10); S.notified=S.notified.slice(-40);
+      localStorage.setItem(STORE_KEY,JSON.stringify(S));
+      storageFull=false;
+    }catch(e2){
+      storageFull=true;
+      try{ renderBanner(); }catch(e3){}
+    }
+  }
+}
+let saveTimer=null;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer=setTimeout(save,400); }
+function flushSave(){ clearTimeout(saveTimer); save(); }
+
+const S = load() || {
+  clientId:CONFIG.clientId, notes:[], tasks:[], queue:[], ledger:[], notified:[],
+  ids:{root:null,notes:null,tasks:null},
+  lastSync:null, tab:"today", folder:"Semua", taskMode:"today", query:"",
+  autoSync:true, tasksModified:null, offlineSim:false, syncAttempts:0, lastError:null,
+  calendarReminders:false, everConnected:false, theme:"auto", doneOpen:true, setupDone:[],
+  folders:[...DEFAULT_FOLDERS]
+};
+S.queue=S.queue||[]; S.ledger=S.ledger||[]; S.ids=S.ids||{}; S.notified=S.notified||[];
+if(!S.theme) S.theme="auto";
+if(S.doneOpen===undefined) S.doneOpen=true;
+S.setupDone=S.setupDone||[];
+/* Data lama tidak punya daftar section. Selain memasang bawaannya, nama section
+   yang sudah terlanjur menempel di catatan ikut diangkat — kalau tidak,
+   catatan itu tidak punya chip dan tidak akan pernah bisa ditemukan lagi. */
+if(!Array.isArray(S.folders)||!S.folders.length) S.folders=[...DEFAULT_FOLDERS];
+S.folders=LOGIC.mergeFolders(S.folders,(S.notes||[]).map(n=>n&&n.folder));
+/* Chip "Selesai" digantikan bagian Selesai yang selalu menempel di bawah daftar,
+   jadi mode lama itu tidak punya tampilan lagi. */
+if(S.taskMode==="done") S.taskMode="today";
+if(!S.clientId && CONFIG.clientId) S.clientId=CONFIG.clientId;
+/* ?cid=... memungkinkan HP kedua ikut tersiapkan cukup dengan membuka tautan,
+   tanpa mengulang seluruh urusan Cloud Console. */
+(function adoptLink(){
+  try{
+    const cid=new URLSearchParams(location.search).get("cid");
+    if(cid&&LOGIC.validClientId(cid)&&cid!==S.clientId){
+      S.clientId=cid.trim(); save();
+      history.replaceState(null,"",location.pathname);
+    }
+  }catch(e){}
+})();
+
+/* Migrasi dari versi lama yang menyimpan isi catatan sebagai satu blok teks. */
+(function migrate(){
+  let changed=false;
+  for(const n of S.notes){
+    if(!n.blocks){ n.blocks=LOGIC.markdownToBlocks(n.body||""); delete n.body; changed=true; }
+  }
+  for(const t of S.tasks){
+    if(t.time===undefined){ t.time=null; changed=true; }
+    if(t.remind===undefined){ t.remind=null; changed=true; }
+    if(t.notes===undefined) t.notes="";
+  }
+  if(changed){ save(); }
+})();
+
+/* Chrome memancarkan beforeinstallprompt sekali saja, jauh sebelum pengguna
+   membuka tab Sync. Kalau tidak ditangkap di sini, tawarannya hilang dan
+   tombol pasang di dalam app tidak pernah bisa muncul. */
+let installPrompt=null, installed=false;
+window.addEventListener("beforeinstallprompt",(e)=>{
+  e.preventDefault(); installPrompt=e;
+  try{ if(S.tab==="settings") render(); }catch(err){}
+});
+window.addEventListener("appinstalled",()=>{
+  installPrompt=null; installed=true;
+  try{ toast("Kertas terpasang. Buka lewat ikonnya mulai sekarang."); render(); }catch(e){}
+});
+
+let token=null, tokenExp=0, tokenClient=null, editing=null, busy=false;
+let netDown=false, focusBlock=null;
+const online=()=>navigator.onLine && !S.offlineSim;
+const reachable=()=>online() && !netDown;
+const signedIn=()=>!!token && Date.now()<tokenExp;
+const appOrigin=()=>location.origin;
+
+const ENV=(()=>{
+  const ua=navigator.userAgent||"";
+  const iOS=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  // Di iOS semua browser memakai mesin Safari, jadi Chrome/Firefox di sana
+  // TIDAK bisa memasang app — ini penyebab kebingungan yang paling sering.
+  const iOSSafari=iOS&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const iOSOther=iOS&&!iOSSafari;
+  const standalone=(window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+  return {iOS,iOSSafari,iOSOther,android:/Android/.test(ua),standalone};
+})();
+
+async function installDiag(){
+  const out=[];
+  const add=(ok,label,fix)=>out.push({ok,label,fix:ok?"":fix});
+  const secure=location.protocol==="https:"||location.hostname==="localhost";
+  add(secure,"Alamat aman (https)","App dibuka lewat "+location.protocol+". Pemasangan hanya bisa dari alamat https:// — unggah dulu ke GitHub Pages.");
+
+  let reg=null;
+  try{ reg=navigator.serviceWorker?await navigator.serviceWorker.getRegistration():null; }catch(e){}
+  add(!!reg,"Service worker aktif","Berkas sw.js tidak termuat. Pastikan sw.js ikut terunggah di folder yang sama dengan index.html.");
+
+  let mOk=false, mNote="";
+  try{
+    const r=await fetch("manifest.json",{cache:"no-store"});
+    const ct=(r.headers.get("content-type")||"").toLowerCase();
+    const j=await r.json();
+    mOk=r.ok&&!!j.icons&&!!j.start_url;
+    if(r.ok&&!/json/.test(ct)) mNote=" (tipe berkas dilaporkan '"+ct+"', seharusnya mengandung json)";
+  }catch(e){ mNote=" ("+e.message+")"; }
+  add(mOk,"Manifest terbaca"+mNote,"manifest.json tidak terbaca. Pastikan berkas itu ikut terunggah dan namanya persis manifest.json.");
+
+  const kurang=[];
+  for(const f of ["icon-192.png","icon-512.png","icon-maskable-192.png",
+                  "icon-maskable-512.png","apple-touch-icon.png","icon.svg"]){
+    try{ const r=await fetch(f,{cache:"no-store"}); if(!r.ok) kurang.push(f); }catch(e){ kurang.push(f); }
+  }
+  add(!kurang.length,"Ikon lengkap ("+(6-kurang.length)+"/6)",
+    "Belum terunggah: "+kurang.join(", ")+". Unggah dari folder pwa/ ke tempat yang sama dengan index.html.");
+
+  if(ENV.iOSOther) add(false,"Browser mendukung pemasangan","Di iPhone hanya Safari yang bisa memasang app. Buka alamat yang sama di Safari, lalu ulangi.");
+  else if(ENV.iOSSafari) add(true,"Browser mendukung pemasangan (Safari)","");
+  else add(true,"Browser mendukung pemasangan","");
+
+  return out;
+}
+
+const systemDark=()=>!!(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches);
+function applyTheme(){
+  const dark=LOGIC.resolveTheme(S.theme,systemDark())==="dark";
+  document.documentElement.setAttribute("data-theme",dark?"dark":"light");
+  const m=document.querySelector('meta[name="theme-color"]');
+  // Warna bilah status HP ikut, kalau tidak batas atas layar terlihat menyala.
+  if(m) m.setAttribute("content",dark?"#0E1613":"#0C6B4F");
+}
+function log(msg,level){
+  S.ledger.unshift({t:new Date().toLocaleTimeString("id-ID",{hour12:false}),msg,level:level||"info"});
+  S.ledger=S.ledger.slice(0,60); save();
+}
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("on");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("on"),3000);
+}
+function queueOp(entity,id,kind){ S.queue=LOGIC.nextQueue(S.queue,{entity,id,kind,at:Date.now()}); saveSoon(); }
+
+/* ================= 4. AUTENTIKASI ====================================== */
+
+const SCOPE_DRIVE="https://www.googleapis.com/auth/drive.file";
+const SCOPE_CAL="https://www.googleapis.com/auth/calendar.events";
+const scopes=()=>SCOPE_DRIVE+(S.calendarReminders?" "+SCOPE_CAL:"");
+
+function initAuth(){
+  if(!window.google||!google.accounts||!google.accounts.oauth2) return false;
+  if(!LOGIC.validClientId(S.clientId)) return false;
+  tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:S.clientId.trim(), scope:scopes(),
+    callback:(resp)=>{
+      if(resp.error){
+        const msg=LOGIC.explainAuthError(resp.error,appOrigin());
+        log("login gagal: "+resp.error,"err"); S.lastError=msg; save();
+        toast(msg); renderSetup(); render(); return;
+      }
+      token=resp.access_token; tokenExp=Date.now()+(Number(resp.expires_in||3600)-120)*1000;
+      S.everConnected=true; S.lastError=null; save();
+      log("terhubung ke Google");
+      closeSetup(); render(); syncNow();
+    },
+    error_callback:(err)=>{
+      const msg=LOGIC.explainAuthError((err&&err.type)||"popup_closed",appOrigin());
+      log("login dibatalkan","warn"); toast(msg); render();
+    }
+  });
+  return true;
+}
+function signIn(consent){
+  if(!LOGIC.validClientId(S.clientId)){ openSetup(); return; }
+  if(!tokenClient&&!initAuth()){ toast("Pustaka Google belum siap. Periksa koneksi lalu coba lagi."); return; }
+  try{ tokenClient.requestAccessToken({prompt:consent?"consent":""}); }
+  catch(e){ toast(LOGIC.explainAuthError("popup_blocked",appOrigin())); }
+}
+function signOut(){
+  if(token&&window.google&&google.accounts.oauth2) google.accounts.oauth2.revoke(token,()=>{});
+  token=null; tokenExp=0; log("keluar dari Google");
+  toast("Sudah keluar. Catatan di HP dan di Drive tetap aman."); render();
+}
+
+/* ================= 5. DRIVE + CALENDAR ================================= */
+
+const DRIVE="https://www.googleapis.com/drive/v3";
+const UPLOAD="https://www.googleapis.com/upload/drive/v3";
+const CAL="https://www.googleapis.com/calendar/v3";
+
+async function api(url,opts={},retry=true){
+  if(!signedIn()) throw new Error("belum login");
+  if(S.offlineSim) throw new Error("mode offline (uji coba) aktif");
+  let r;
+  try{ r=await fetch(url,{...opts,headers:{Authorization:"Bearer "+token,...(opts.headers||{})}}); netDown=false; }
+  catch(e){ netDown=true; throw new Error("tidak ada koneksi"); }
+  if(r.status===401&&retry){ token=null; signIn(false); throw new Error("sesi habis, coba lagi"); }
+  if(r.status===429||r.status===403){
+    const body=await r.text();
+    if(/rateLimit|userRateLimit/i.test(body)){ await new Promise(s=>setTimeout(s,1500)); return api(url,opts,false); }
+    throw new Error("Google menolak: "+body.slice(0,110));
+  }
+  if(!r.ok) throw new Error("HTTP "+r.status+" "+(await r.text()).slice(0,110));
+  const ct=r.headers.get("content-type")||"";
+  return ct.includes("json")?r.json():r.text();
+}
+async function ensureFolder(name,parent){
+  const q=[`name='${name.replace(/'/g,"\\'")}'`,"mimeType='application/vnd.google-apps.folder'","trashed=false",
+    parent?`'${parent}' in parents`:"'root' in parents"].join(" and ");
+  const found=await api(`${DRIVE}/files?q=${encodeURIComponent(q)}&fields=files(id)&spaces=drive`);
+  if(found.files&&found.files.length) return found.files[0].id;
+  const made=await api(`${DRIVE}/files?fields=id`,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name,mimeType:"application/vnd.google-apps.folder",parents:[parent||"root"]})});
+  log("folder "+name+" dibuat"); return made.id;
+}
+function multipart(meta,body,ct){
+  const b="kertas"+Date.now();
+  return { headers:{"Content-Type":"multipart/related; boundary="+b},
+    body:`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n`+
+         `--${b}\r\nContent-Type: ${ct}; charset=UTF-8\r\n\r\n${body}\r\n--${b}--` };
+}
+const createFile=(meta,body,ct)=>api(`${UPLOAD}/files?uploadType=multipart&fields=id,modifiedTime`,{method:"POST",...multipart(meta,body,ct)});
+async function updateFile(id,body,ct,meta){
+  if(meta) await api(`${DRIVE}/files/${id}`,{method:"PATCH",
+    headers:{"Content-Type":"application/json"},body:JSON.stringify(meta)});
+  return api(`${UPLOAD}/files/${id}?uploadType=media&fields=id,modifiedTime`,
+    {method:"PATCH",headers:{"Content-Type":ct+"; charset=UTF-8"},body});
+}
+async function exportFile(id,mime){
+  try{ return await api(`${DRIVE}/files/${id}/export?mimeType=${encodeURIComponent(mime)}`); }
+  catch(e){ if(mime==="text/markdown") return api(`${DRIVE}/files/${id}/export?mimeType=text/plain`); throw e; }
+}
+/* files.list hanya mengembalikan satu halaman. Tanpa mengikuti nextPageToken,
+   catatan ke-201 dan seterusnya tidak pernah ikut tersinkron. */
+async function listNoteFiles(){
+  const out=[]; let pageToken="";
+  const q=`'${S.ids.notes}' in parents and trashed=false`;
+  do{
+    const url=`${DRIVE}/files?q=${encodeURIComponent(q)}`+
+      `&fields=nextPageToken,files(id,name,modifiedTime,appProperties)&pageSize=100`+
+      (pageToken?`&pageToken=${encodeURIComponent(pageToken)}`:"");
+    const r=await api(url);
+    out.push(...(r.files||[]));
+    pageToken=r.nextPageToken||"";
+  }while(pageToken);
+  return out;
+}
+
+async function ensureTree(){
+  if(!S.ids.root) S.ids.root=await ensureFolder("Kertas",null);
+  if(!S.ids.notes) S.ids.notes=await ensureFolder("Notes",S.ids.root);
+  save();
+}
+
+/* Alarm yang tetap bunyi saat app tertutup hanya bisa datang dari sistem
+   operasi. Karena itu tugas berpengingat dicerminkan jadi acara Google
+   Calendar — aplikasinya sudah terpasang di Android maupun iPhone. */
+async function syncCalendar(t){
+  if(!S.calendarReminders) return;
+  const at=LOGIC.dueAt(t);
+  const wanted=!!(at&&t.remind!==null&&t.remind!==undefined&&t.remind!==""&&!t.done&&!t.deleted);
+  try{
+    if(!wanted){
+      if(t.calEventId){ await api(`${CAL}/calendars/primary/events/${t.calEventId}`,{method:"DELETE"}); t.calEventId=null; }
+      return;
+    }
+    const start=new Date(at), end=new Date(start.getTime()+30*60000);
+    const body={summary:t.title,description:"Dari Kertas"+(t.notes?"\n\n"+t.notes:""),
+      start:{dateTime:start.toISOString()},end:{dateTime:end.toISOString()},
+      reminders:{useDefault:false,overrides:[{method:"popup",minutes:Number(t.remind)}]}};
+    if(t.calEventId){
+      await api(`${CAL}/calendars/primary/events/${t.calEventId}`,{method:"PATCH",
+        headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+    }else{
+      const ev=await api(`${CAL}/calendars/primary/events`,{method:"POST",
+        headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      t.calEventId=ev.id;
+    }
+  }catch(e){ log("pengingat kalender gagal: "+e.message,"warn"); }
+}
+
+/* ================= 6. SINKRONISASI ===================================== */
+
+async function syncNow(manual){
+  if(busy) return;
+  if(!signedIn()){ if(manual) signIn(false); render(); return; }
+  if(!online()){ if(manual) toast("Masih offline. "+S.queue.length+" perubahan aman di HP."); return; }
+  busy=true; render();
+  try{
+    await ensureTree();
+    // Satu panggilan daftar dipakai bersama oleh push dan pull. Sebelumnya
+    // tiap catatan yang diunggah butuh satu GET tambahan hanya untuk mengecek
+    // versi Drive — 20 catatan berarti 20 permintaan yang sia-sia.
+    const files=await listNoteFiles();
+    const remoteMap=new Map(files.map(f=>[f.id,f]));
+    await pushAll(remoteMap);
+    await pullAll(files);
+    S.lastSync=new Date().toISOString(); S.syncAttempts=0; S.lastError=null; save();
+    log("sinkron selesai"+(S.queue.length?" ("+S.queue.length+" ditahan)":""));
+  }catch(e){
+    S.syncAttempts=(S.syncAttempts||0)+1; S.lastError=e.message; save();
+    log("sync gagal ("+S.syncAttempts+"×): "+e.message,"err");
+    if(manual) toast("Sync gagal: "+e.message);
+    scheduleRetry();
+  }finally{ busy=false; save(); render(); scheduleReminders(); }
+}
+let retryTimer=null;
+function scheduleRetry(){
+  clearTimeout(retryTimer);
+  if(!S.queue.length) return;
+  const wait=LOGIC.backoffMs(S.syncAttempts||1);
+  log("coba lagi dalam "+Math.round(wait/1000)+" detik");
+  retryTimer=setTimeout(()=>{ if(reachable()&&signedIn()) syncNow(); },wait);
+}
+async function pushAll(remoteMap){
+  const ops=S.queue.slice();
+  for(const op of ops.filter(o=>o.entity==="note")){
+    const r=await pushNote(op,remoteMap);
+    if(r==="conflict"){ log("catatan "+op.id+" ditahan, menunggu keputusan","warn"); continue; }
+    S.queue=S.queue.filter(o=>!(o.entity==="note"&&o.id===op.id)); save();
+  }
+  if(ops.some(o=>o.entity==="task")){
+    for(const t of S.tasks.filter(x=>ops.some(o=>o.entity==="task"&&o.id===x.id))) await syncCalendar(t);
+    await pushTasks();
+    S.queue=S.queue.filter(o=>o.entity!=="task");
+    S.tasks=S.tasks.filter(t=>!t.deleted);
+    save();
+  }
+}
+async function pushNote(op,remoteMap){
+  const n=S.notes.find(x=>x.id===op.id);
+  if(!n) return;
+  if(n.deleted){
+    if(n.fileId) await api(`${DRIVE}/files/${n.fileId}`,{method:"PATCH",
+      headers:{"Content-Type":"application/json"},body:JSON.stringify({trashed:true})});
+    return;
+  }
+  const md=LOGIC.noteToMarkdown(n);
+  const name=(n.title||"Tanpa judul").slice(0,80);
+  if(n.fileId){
+    // Sebelum menimpa, pastikan versi Drive belum bergerak selagi kita offline.
+    let f=remoteMap?remoteMap.get(n.fileId):null;
+    if(!f&&remoteMap){
+      // Tidak ada di folder: mungkin dibuang, mungkin dipindah pengguna.
+      // Baru di sinilah satu GET benar-benar diperlukan.
+      try{
+        const meta=await api(`${DRIVE}/files/${n.fileId}?fields=modifiedTime,trashed`);
+        if(meta&&!meta.trashed) f={id:n.fileId,modifiedTime:meta.modifiedTime};
+      }catch(e){}
+      if(!f){ n.fileId=null; n.driveModified=null; }
+    }
+    if(f&&n.driveModified&&f.modifiedTime!==n.driveModified){ askConflict(n,f); return "conflict"; }
+  }
+  /* Section disimpan sebagai appProperties, bukan di dalam isi dokumennya —
+     supaya tidak ikut terbaca sebagai teks saat catatannya dibuka di Google Docs,
+     tapi tetap ikut turun ke HP lain. */
+  const props={kertasFolder:n.folder||defaultFolder()};
+  if(n.fileId){
+    const r=await updateFile(n.fileId,md,"text/markdown",{name,appProperties:props});
+    n.driveModified=r.modifiedTime;
+    /* Daftar berkas diambil SEBELUM push, jadi entri ini sudah basi. Kalau
+       dibiarkan, pullAll di bawah menganggapnya berubah di Drive dan menimpa
+       balik section yang baru saja diubah pengguna dengan nilai lamanya. */
+    const f0=remoteMap?remoteMap.get(n.fileId):null;
+    if(f0){ f0.modifiedTime=r.modifiedTime; f0.appProperties={...(f0.appProperties||{}),...props}; }
+  }else{
+    const r=await createFile({name,parents:[S.ids.notes],appProperties:props,
+      mimeType:"application/vnd.google-apps.document"},md,"text/markdown");
+    n.fileId=r.id; n.driveModified=r.modifiedTime; log("catatan baru dibuat sebagai Google Doc");
+  }
+  n.dirty=false; save();
+}
+async function pushTasks(){
+  if(S.ids.tasks&&S.tasksModified){
+    try{
+      const meta=await api(`${DRIVE}/files/${S.ids.tasks}?fields=modifiedTime`);
+      if(meta.modifiedTime!==S.tasksModified){
+        const remote=LOGIC.csvToTasks(await exportFile(S.ids.tasks,"text/csv"));
+        S.tasks=LOGIC.mergeTasks(S.tasks,remote);
+        log("tugas digabung dengan versi Drive");
+      }
+    }catch(e){ log("gagal cek sheet: "+e.message,"warn"); }
+  }
+  const csv=LOGIC.tasksToCsv(S.tasks);
+  if(!S.ids.tasks){
+    const q="name='Kertas Tasks' and trashed=false and '"+S.ids.root+"' in parents";
+    const found=await api(`${DRIVE}/files?q=${encodeURIComponent(q)}&fields=files(id)`);
+    if(found.files&&found.files.length) S.ids.tasks=found.files[0].id;
+  }
+  if(S.ids.tasks){ const r=await updateFile(S.ids.tasks,csv,"text/csv"); S.tasksModified=r.modifiedTime; }
+  else{
+    const r=await createFile({name:"Kertas Tasks",parents:[S.ids.root],
+      mimeType:"application/vnd.google-apps.spreadsheet"},csv,"text/csv");
+    S.ids.tasks=r.id; S.tasksModified=r.modifiedTime; log("sheet Kertas Tasks dibuat");
+  }
+  save();
+}
+async function pullAll(files){
+  for(const f of (files||[])){
+    const local=S.notes.find(n=>n.fileId===f.id);
+    if(local&&local.driveModified===f.modifiedTime) continue;
+    if(local&&LOGIC.detectConflict(local,f.modifiedTime)){ askConflict(local,f); continue; }
+    const parsed=LOGIC.markdownToNote(await exportFile(f.id,"text/markdown"));
+    /* Berkas lama (dibuat sebelum section ikut tersimpan) belum punya penanda
+       ini — jatuhkan ke bawaan, jangan sampai jadi section kosong bernama "". */
+    const seksi=LOGIC.normalizeFolder((f.appProperties||{}).kertasFolder)||defaultFolder();
+    S.folders=LOGIC.mergeFolders(S.folders,[seksi]);
+    if(local){
+      local.title=parsed.title||f.name; local.blocks=parsed.blocks; local.folder=seksi;
+      local.driveModified=f.modifiedTime; local.updatedAt=f.modifiedTime; local.dirty=false;
+    }else{
+      S.notes.unshift({id:"n"+Math.random().toString(36).slice(2,8),fileId:f.id,
+        title:parsed.title||f.name,blocks:parsed.blocks,folder:seksi,pinned:false,
+        updatedAt:f.modifiedTime,driveModified:f.modifiedTime,dirty:false});
+      log("catatan ditarik dari Drive: "+f.name);
+    }
+  }
+  if(S.ids.tasks){
+    const meta=await api(`${DRIVE}/files/${S.ids.tasks}?fields=modifiedTime`);
+    if(meta.modifiedTime!==S.tasksModified&&!S.queue.some(o=>o.entity==="task")){
+      S.tasks=LOGIC.csvToTasks(await exportFile(S.ids.tasks,"text/csv"));
+      S.tasksModified=meta.modifiedTime; log("daftar tugas ditarik dari Sheet");
+    }
+  }
+  save();
+}
+function askConflict(local,f){
+  openSheet(`<div class="grab"></div>
+    <div class="h" style="font-size:17px;margin-bottom:6px">Catatan ini berubah di dua tempat</div>
+    <p style="font-size:12.5px;color:var(--ink2);line-height:1.55;margin:0 0 14px">
+      Kamu mengubah "${esc(LOGIC.truncate(local.title||"Tanpa judul",30))}" di HP ini, sementara versi di Drive juga berubah.
+      Tidak ada yang dihapus sampai kamu memilih.</p>
+    <button class="btn primary" onclick="K.resolve('${local.id}','${f.id}','both')">Simpan dua-duanya</button>
+    <button class="btn" onclick="K.resolve('${local.id}','${f.id}','local')">Pakai versi HP ini</button>
+    <button class="btn" onclick="K.resolve('${local.id}','${f.id}','remote')">Pakai versi Drive</button>`);
+}
+
+/* ================= 7. PENGINGAT ========================================
+   Dua jalur, dan bedanya mendasar:
+
+   - Di browser/PWA, penjadwalan cuma bisa lewat setTimeout, yang hidup
+     selama tabnya hidup. Begitu app ditutup, timernya ikut mati. Itu batas
+     platform — makanya ada cerminan ke Google Calendar.
+   - Di shell native (Capacitor), penjadwalan diserahkan ke alarm OS. Alarmnya
+     tetap bunyi walau app sudah ditutup total, tanpa server mana pun.
+
+   Berkas ini tetap satu dan sama untuk dua-duanya: kalau Capacitor tidak ada,
+   semuanya jatuh kembali ke perilaku web lama tanpa perubahan apa pun. */
+
+const NATIVE={
+  get on(){ const c=window.Capacitor; return !!(c&&c.isNativePlatform&&c.isNativePlatform()); },
+  get ln(){ const c=window.Capacitor; return (c&&c.Plugins&&c.Plugins.LocalNotifications)||null; }
+};
+
+/* Android menuntut ID notifikasi berupa angka 32-bit; id tugas Kertas berupa
+   teks. Hash ini harus stabil — kalau berubah, alarm lama tidak bisa dibatalkan
+   dan tugas yang sudah dihapus tetap berbunyi. */
+function notifId(id){
+  let h=0;
+  for(let i=0;i<String(id).length;i++) h=(Math.imul(h,31)+String(id).charCodeAt(i))|0;
+  return (Math.abs(h)%2000000000)||1;
+}
+
+/* Android membatasi jumlah alarm tertunda per app. Ambil yang paling dekat saja. */
+const NATIVE_MAX=64;
+
+async function syncNativeReminders(){
+  const LN=NATIVE.ln; if(!LN) return false;
+  try{
+    const pend=await LN.getPending();
+    if(pend&&pend.notifications&&pend.notifications.length)
+      await LN.cancel({notifications:pend.notifications.map(n=>({id:n.id}))});
+
+    const now=Date.now(), due=[];
+    for(const t of S.tasks){
+      if(t.done||t.deleted) continue;
+      const at=LOGIC.remindAt(t); if(!at) continue;
+      const ms=new Date(at).getTime();
+      if(isNaN(ms)||ms<=now) continue;      // yang sudah lewat ditangani catchUpReminders
+      due.push({ms,t});
+    }
+    due.sort((a,b)=>a.ms-b.ms);
+    const dipakai=due.slice(0,NATIVE_MAX);
+    if(due.length>dipakai.length)
+      log((due.length-dipakai.length)+" pengingat terjauh belum dijadwalkan (batas OS)","warn");
+
+    if(dipakai.length) await LN.schedule({notifications:dipakai.map(({ms,t})=>({
+      id:notifId(t.id),
+      title:t.title,
+      body:(t.time?"Pukul "+t.time:"Hari ini")+(t.notes?" · "+LOGIC.truncate(t.notes,50):""),
+      schedule:{at:new Date(ms),allowWhileIdle:true},
+      extra:{taskId:t.id}
+    }))});
+    return true;
+  }catch(e){ log("pengingat native gagal: "+e.message,"warn"); return false; }
+}
+
+/* null = belum diperiksa. Dipakai tab Sync supaya sakelarnya tidak berbohong. */
+let nativeNotifOK=null;
+async function checkNativePerm(){
+  const LN=NATIVE.ln; if(!LN) return;
+  try{
+    const r=await LN.checkPermissions();
+    const v=!!(r&&r.display==="granted");
+    if(v!==nativeNotifOK){ nativeNotifOK=v; if(S.tab==="settings") render(); }
+  }catch(e){}
+}
+
+let reminderTimers=[];
+function scheduleReminders(){
+  reminderTimers.forEach(clearTimeout); reminderTimers=[];
+  if(NATIVE.on){ syncNativeReminders(); return; }
+  if(!("Notification" in window)||Notification.permission!=="granted") return;
+  const now=Date.now();
+  for(const t of S.tasks){
+    if(t.done||t.deleted) continue;
+    const at=LOGIC.remindAt(t); if(!at) continue;
+    const ms=new Date(at).getTime()-now;
+    if(ms>0&&ms<24*3600*1000) reminderTimers.push(setTimeout(()=>fireReminder(t.id),ms));
+  }
+}
+function fireReminder(id){
+  const t=S.tasks.find(x=>x.id===id);
+  if(!t||!LOGIC.shouldNotify(t,Date.now(),S.notified)) return;
+  const body=(t.time?"Pukul "+t.time:"Hari ini")+(t.notes?" · "+LOGIC.truncate(t.notes,50):"");
+  try{
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+      navigator.serviceWorker.ready
+        .then(r=>r.showNotification(t.title,{body,icon:"icon-192.png",badge:"icon-192.png",tag:"kertas-"+t.id}))
+        .catch(()=>{ new Notification(t.title,{body,icon:"icon-192.png"}); });
+    }else new Notification(t.title,{body,icon:"icon-192.png"});
+  }catch(e){ toast("Pengingat: "+t.title); }
+  S.notified=[...S.notified,t.id+"@"+(t.updatedAt||"")].slice(-200); save();
+}
+/* Kalau ada pengingat yang lewat selagi app tertutup, sebutkan sekali —
+   jangan pura-pura tidak terjadi apa-apa. */
+function catchUpReminders(){
+  const now=Date.now(); const late=[];
+  for(const t of S.tasks) if(LOGIC.shouldNotify(t,now,S.notified)) late.push(t);
+  if(!late.length) return;
+  late.forEach(t=>{ S.notified=[...S.notified,t.id+"@"+(t.updatedAt||"")]; });
+  S.notified=S.notified.slice(-200); save();
+  toast(late.length===1?"Pengingat lewat: "+LOGIC.truncate(late[0].title,32)
+    :late.length+" pengingat terlewat selagi app tertutup.");
+}
+async function askNotify(){
+  if(NATIVE.on){
+    const LN=NATIVE.ln;
+    if(!LN){ toast("Plugin notifikasi tidak termuat."); return false; }
+    try{
+      const r=await LN.requestPermissions();
+      const ok=!!(r&&r.display==="granted");
+      nativeNotifOK=ok;
+      toast(ok?"Pengingat aktif. Bunyi walau Kertas ditutup."
+              :"Izin notifikasi ditolak. Aktifkan di Setelan HP → Aplikasi → Kertas.");
+      if(ok) await syncNativeReminders();
+      return ok;
+    }catch(e){ toast("Gagal meminta izin: "+e.message); return false; }
+  }
+  if(!("Notification" in window)){ toast("Browser ini tidak mendukung notifikasi."); return false; }
+  if(Notification.permission==="granted"){ toast("Notifikasi sudah aktif."); return true; }
+  if(Notification.permission==="denied"){ toast("Notifikasi diblokir di pengaturan browser. Aktifkan dulu di sana."); return false; }
+  const p=await Notification.requestPermission();
+  if(p==="granted"){ scheduleReminders(); toast("Pengingat aktif selama app terbuka."); return true; }
+  return false;
+}
+
+/* ================= 8. RENDER =========================================== */
+
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* Nama section ditentukan pengguna, jadi bisa berisi kutip atau tanda kutip
+   satu. Menempelkannya mentah ke onclick="..." akan mematahkan atributnya. */
+const jsArg=v=>esc(JSON.stringify(v));
+const defaultFolder=()=>S.folders.includes("Personal")?"Personal":(S.folders[0]||"Personal");
+const ICON={
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  bell:'<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>',
+  note:'<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg>',
+  star:'<svg viewBox="0 0 24 24"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"/></svg>',
+  sun:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 1.8v2.5M12 19.7v2.5M1.8 12h2.5M19.7 12h2.5M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M19.2 4.8l-1.8 1.8M6.6 17.4l-1.8 1.8"/></svg>',
+  moon:'<svg viewBox="0 0 24 24"><path d="M20.8 13.4A8.5 8.5 0 0 1 10.6 3.2a8.5 8.5 0 1 0 10.2 10.2z"/></svg>',
+  fold:'<svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10a1 1 0 0 1-1 1H3z"/></svg>',
+  g:'<svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.2a5.3 5.3 0 0 1-2.3 3.5v2.9h3.7c2.2-2 3.4-5 3.4-8.6z"/><path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3C3.7 21.4 7.6 24 12 24z"/><path fill="#FBBC05" d="M5.6 14.7a7.2 7.2 0 0 1 0-4.6v-3H1.8a12 12 0 0 0 0 10.6l3.8-3z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3C17.7 1.2 15.1 0 12 0 7.6 0 3.7 2.6 1.8 6.1l3.8 3C6.5 6.7 9 4.8 12 4.8z"/></svg>'
+};
+
+function render(){
+  const t=LOGIC.today();
+  document.querySelectorAll("nav button").forEach(b=>b.dataset.on=(b.dataset.tab===S.tab)?"1":"0");
+  const dot=document.getElementById("syncdot");
+  const state=!online()?"off":busy?"busy":!signedIn()?"off":S.queue.length?"busy":"ok";
+  dot.className="dot"+(state==="busy"?" busy":(state==="ok"?"":" off"));
+  document.getElementById("synctext").textContent=
+    !online()?(S.queue.length?S.queue.length+" menunggu":"Offline")
+    :busy?"Menyinkron…":!signedIn()?"Sambungkan"
+    :S.queue.length?S.queue.length+" menunggu":"Tersinkron";
+
+  const titles={today:"Hari ini",notes:"Catatan",tasks:"Tugas",settings:"Sync"};
+  document.getElementById("title").textContent=titles[S.tab];
+  renderSub();
+  paintThemeBtn();
+  document.getElementById("fab").style.display=(S.tab==="settings")?"none":"grid";
+
+  renderBanner();
+  const m=document.getElementById("main");
+  m.className="fade"; void m.offsetWidth;
+  m.innerHTML=S.tab==="today"?viewToday(t):S.tab==="notes"?viewNotes():S.tab==="tasks"?viewTasks(t):viewSettings();
+}
+function renderSub(){
+  const due=LOGIC.sortTasks(S.tasks,"today",LOGIC.today()).length;
+  document.getElementById("sub").textContent=
+    S.tab==="today"?new Date().toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long"})+" · "+due+" tugas"
+    :S.tab==="notes"?LOGIC.filterNotes(S.notes,"","Semua").length+" catatan di Drive"
+    :S.tab==="tasks"?"Satu baris per tugas di Kertas Tasks"
+    :S.lastSync?"Terakhir sinkron "+LOGIC.relTime(S.lastSync):"Belum pernah sinkron";
+}
+/* Tombol tema menunjukkan ke mana ia akan pergi, bukan di mana ia sedang berada —
+   ikon matahari berarti "tekan untuk terang", bukan "sekarang terang". */
+function paintThemeBtn(){
+  const b=document.getElementById("themebtn"); if(!b) return;
+  const dark=LOGIC.resolveTheme(S.theme,systemDark())==="dark";
+  b.innerHTML=dark?ICON.sun:ICON.moon;
+  const lbl=dark?"Ganti ke mode terang":"Ganti ke mode gelap";
+  b.setAttribute("aria-label",lbl); b.title=lbl;
+}
+function renderBanner(){
+  const b=document.getElementById("banner"); const q=S.queue.length; let cls="",html="";
+  if(storageFull){
+    cls="err";
+    html=`<span><b>Penyimpanan HP penuh.</b> Ketikan baru mungkin tidak tersimpan. Sinkronkan ke Drive, lalu hapus catatan lama.</span>
+          <button onclick="K.syncNow()">Sinkronkan</button>`;
+  }else if(!S.clientId){
+    cls="warn";
+    html=`<span>Belum tersambung ke Google. Catatanmu aman di HP ini.</span>
+          <button onclick="K.openSetup()">Sambungkan</button>`;
+  }else if(!online()){
+    cls="warn";
+    html=`<span>${S.offlineSim?"Mode offline (uji coba).":"Kamu sedang offline."} `+
+      (q?`<b>${q} perubahan</b> tersimpan di HP, naik sendiri nanti.`:`Semua yang kamu tulis tetap tersimpan.`)+`</span>`;
+  }else if(!signedIn()){
+    cls="warn";
+    html=`<span>Sesi Google berakhir.${q?` <b>${q} perubahan</b> menunggu.`:""}</span>
+          <button onclick="K.signIn(false)">Sambungkan</button>`;
+  }else if(q&&S.lastError){
+    cls="err";
+    html=`<span><b>${q} perubahan</b> belum naik — ${esc(LOGIC.truncate(S.lastError,52))}</span>
+          <button onclick="K.syncNow()">Coba lagi</button>`;
+  }else if(q&&!busy){
+    cls="warn";
+    html=`<span><b>${q} perubahan</b> menunggu dikirim.</span><button onclick="K.syncNow()">Kirim</button>`;
+  }
+  b.className=cls?("on "+cls):""; b.innerHTML=html;
+}
+
+const spineOf=(e,id)=>LOGIC.syncStateOf(e,id,S.queue,online());
+const emptyBox=(b,s)=>`<div class="empty"><b>${b}</b><span>${s}</span></div>`;
+
+function noteRow(n){
+  const snip=LOGIC.noteSnippet(n);
+  return `<button class="row" onclick="K.openNote('${n.id}')">
+    <span class="spine ${spineOf("note",n.id)}"></span>
+    <div class="rowtitle">${n.pinned?"📌 ":""}${esc(LOGIC.truncate(n.title||"Tanpa judul",38))}</div>
+    ${snip?`<div class="rowsnip">${esc(LOGIC.truncate(snip,96))}</div>`:""}
+    <div class="rowmeta"><span class="badge fold">${ICON.fold}${esc(n.folder||defaultFolder())}</span>
+      <span class="mono">${LOGIC.relTime(n.updatedAt)}</span>
+      <span style="margin-left:auto">${n.fileId?"Docs":"belum di Drive"}</span></div></button>`;
+}
+/* Diisi sesaat oleh toggleTask supaya baris yang baru pindah bisa "mendarat"
+   dengan animasi, bukan tiba-tiba sudah ada di sana. */
+let justMoved=null;
+function taskRow(t,todayKey){
+  const late=LOGIC.isOverdue(t,todayKey);
+  const hasRemind=(t.remind!==null&&t.remind!==undefined&&t.remind!=="");
+  return `<div class="task${justMoved===t.id?" landing":""}" data-id="${t.id}" data-done="${t.done?1:0}">
+    <span class="box" data-on="${t.done?1:0}" onclick="K.toggleTask('${t.id}')" role="checkbox"
+      aria-checked="${!!t.done}" tabindex="0"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+    <div style="flex:1;min-width:0" onclick="K.openTask('${t.id}')">
+      <div class="tasktext">${esc(LOGIC.truncate(t.title,60))}</div>
+      ${t.notes?`<div class="rowsnip" style="margin-top:2px">${esc(LOGIC.truncate(t.notes,70))}</div>`:""}
+      <div class="rowmeta">
+        ${t.due?`<span class="badge ${late?"late":""}">${ICON.cal}${late?"telat · ":""}${esc(LOGIC.dayKey(t.due).slice(5))}${t.time?" "+esc(t.time):""}</span>`:""}
+        ${hasRemind?`<span class="badge bell">${ICON.bell}${Number(t.remind)===0?"tepat waktu":Number(t.remind)>=1440?"H-1":t.remind+"m"}</span>`:""}
+        ${t.priority==="high"?'<span class="badge hi">penting</span>':""}
+        <span>${esc(t.list||"Inbox")}</span>
+        <span style="margin-left:auto" class="mono">${spineOf("task",t.id)}</span>
+      </div>
+    </div></div>`;
+}
+/* Bagian "Selesai" ditulis sekali dan dipakai tab Hari ini maupun tab Tugas,
+   supaya keduanya berperilaku sama persis saat sebuah tugas dicentang. */
+/* Daftar Selesai dibatasi supaya bagian ini tidak tumbuh tanpa henti dan
+   supaya tinggi lipatannya bisa dianimasikan. Sisanya tidak hilang — tetap
+   ada di localStorage dan di sheet Kertas Tasks — dan jumlahnya disebutkan. */
+const DONE_MAX=25;
+function doneSection(list,t,label){
+  const open=S.doneOpen!==false;
+  const hide=list.length?"":';display:none';
+  return `<button class="donehead" id="donehead" onclick="K.toggleDone()" aria-expanded="${open}" style="margin:0${hide}">
+      <svg class="caret" viewBox="0 0 24 24" data-open="${open?1:0}"><path d="M9 6l6 6-6 6"/></svg>
+      <span>${label||"Selesai"}</span><span class="cnt" id="donecount">${list.length}</span></button>
+    <div class="list donewrap" id="donelist" data-open="${open&&list.length?1:0}">
+      ${doneRows(list,t)}</div>`;
+}
+function doneRows(list,t){
+  return list.slice(0,DONE_MAX).map(x=>taskRow(x,t)).join("")
+    +(list.length>DONE_MAX?`<div class="donefoot">+${list.length-DONE_MAX} tugas selesai yang lebih lama —
+        tidak ditampilkan di sini, tapi tetap tersimpan di sheet Kertas Tasks.</div>`:"");
+}
+function viewToday(t){
+  const due=LOGIC.sortTasks(S.tasks,"today",t);
+  const done=LOGIC.doneList(S.tasks,t,"today");
+  const recent=LOGIC.filterNotes(S.notes,"","Semua").slice(0,3);
+  return `<div class="sec"><span class="eyebrow">Jatuh tempo</span><span class="eyebrow" id="duecount">${due.length}</span></div>
+  <div class="list" id="activelist">${due.map(x=>taskRow(x,t)).join("")||emptyBox("Tidak ada yang jatuh tempo.","Tambah dari tab Tugas.")}</div>
+  ${doneSection(done,t,"Selesai hari ini")}
+  <div class="sec"><span class="eyebrow">Terakhir disentuh</span></div>
+  <div class="list" style="padding-bottom:90px">${recent.map(noteRow).join("")||emptyBox("Belum ada catatan.","Tekan + untuk menulis.")}</div>`;
+}
+function viewNotes(){
+  const notes=LOGIC.filterNotes(S.notes,S.query,S.folder);
+  return `<div class="field">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+    <input id="q" value="${esc(S.query)}" placeholder="Cari judul, isi, dan checklist" oninput="K.search(this.value)"></div>
+  <div class="chips">${["Semua",...S.folders].map(f=>
+      `<button class="chip" data-on="${S.folder===f?1:0}" onclick="K.setFolder(${jsArg(f)})">${esc(f)}</button>`).join("")}
+    <button class="chip add" onclick="K.manageFolders()" aria-label="Kelola section">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Section</button></div>
+  <div class="list" id="notelist" style="margin-top:8px;padding-bottom:96px">
+    ${notes.map(noteRow).join("")||emptyBox(S.query?"Tidak ada yang cocok.":"Folder ini kosong.",S.query?"Coba kata lain.":"Tekan + untuk menulis.")}</div>`;
+}
+function viewTasks(t){
+  const modes=[["today","Hari ini"],["upcoming","Nanti"]];
+  const list=LOGIC.sortTasks(S.tasks,S.taskMode,t);
+  const done=LOGIC.doneList(S.tasks,t,"all");
+  return `<div class="chips">${modes.map(([k,l])=>`<button class="chip" data-on="${S.taskMode===k?1:0}" onclick="K.setMode('${k}')">${l}</button>`).join("")}</div>
+  <div class="field" style="margin-top:8px">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    <input id="newtask" placeholder="Tulis tugas, tekan Enter" onkeydown="if(event.key==='Enter')K.addTask(this.value,this)"></div>
+  <div class="list" id="activelist" style="margin-top:10px">
+    ${list.map(x=>taskRow(x,t)).join("")||emptyBox("Kosong.","Ketik di atas untuk menambah.")}</div>
+  ${doneSection(done,t,"Selesai")}
+  <div style="height:96px"></div>`;
+}
+
+/* ---------- centang → coret → pindah ke Selesai ----------
+   Sengaja tidak lewat render() penuh: render() mengganti seluruh isi <main>,
+   jadi elemen yang baru dicentang dibuang sebelum satu frame pun dilukis dan
+   animasi centangnya tidak pernah terlihat. Di sini elemennya disentuh di
+   tempat dulu, baru daftarnya disusun ulang setelah animasinya selesai. */
+const moveTimers=new Map();
+
+function collapseThen(el,after){
+  if(!el||!el.parentNode){ after(); return; }
+  el.style.height=el.offsetHeight+"px";
+  void el.offsetWidth;                    // paksa reflow: tanpa ini tidak ada titik awal untuk transisi
+  el.classList.add("leaving");
+  setTimeout(after,300);
+}
+
+function refreshTaskLists(){
+  const a=document.getElementById("activelist"), d=document.getElementById("donelist");
+  if(!a||!d||(S.tab!=="today"&&S.tab!=="tasks")){ render(); return; }
+  const t=LOGIC.today();
+  const isToday=S.tab==="today";
+  const active=LOGIC.sortTasks(S.tasks,isToday?"today":S.taskMode,t);
+  const done=LOGIC.doneList(S.tasks,t,isToday?"today":"all");
+
+  a.innerHTML=active.map(x=>taskRow(x,t)).join("")||
+    (isToday?emptyBox("Tidak ada yang jatuh tempo.","Tambah dari tab Tugas.")
+            :emptyBox("Kosong.","Ketik di atas untuk menambah."));
+  d.innerHTML=doneRows(done,t);
+  d.dataset.open=(S.doneOpen!==false&&done.length)?"1":"0";
+  a.classList.add("quiet"); d.classList.add("quiet");
+
+  const head=document.getElementById("donehead"), cnt=document.getElementById("donecount");
+  if(cnt) cnt.textContent=done.length;
+  if(head) head.style.display=done.length?"":"none";
+  const due=document.getElementById("duecount");
+  if(due) due.textContent=LOGIC.sortTasks(S.tasks,"today",t).length;
+  renderSub();
+  justMoved=null;
+}
+function viewSettings(){
+  const link=S.ids.root?`https://drive.google.com/drive/folders/${S.ids.root}`:null;
+  const notif=("Notification" in window)?Notification.permission:"unsupported";
+  return `
+  <span class="lbl">Pasang di layar utama</span>
+  <div style="padding:0 18px">
+    ${ENV.standalone
+      ? `<div class="card"><div style="font-size:13.5px;font-weight:600;color:var(--pine)">Sudah terpasang</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5">Kamu sedang membuka Kertas lewat ikonnya sendiri.</div></div>`
+      : ENV.iOSOther
+      ? `<div class="card" style="background:var(--warn-bg);border-color:var(--warn-line);color:var(--warn-fg)">
+          <div style="font-size:13.5px;font-weight:600">Buka lewat Safari dulu</div>
+          <div style="font-size:12px;margin-top:5px;line-height:1.55">Di iPhone, hanya Safari yang bisa memasang app ke layar utama — Chrome dan Firefox di iPhone memakai mesin Safari tapi tidak diberi kemampuan ini. Salin alamat app ini, buka di Safari, lalu ulangi.</div></div>
+         <button class="btn" onclick="K.copyAppLink()">Salin alamat app</button>`
+      : ENV.iOS
+      ? `<div class="card">
+          <div style="font-size:13.5px;font-weight:600">Cara memasang di iPhone</div>
+          <div style="font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.7">
+            1. Ketuk tombol <b>Bagikan</b> di bilah bawah Safari (kotak dengan panah ke atas)<br>
+            2. Gulir ke bawah, pilih <b>Add to Home Screen</b><br>
+            3. Ketuk <b>Add</b></div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5">Kalau pilihan itu tidak ada, kamu sedang di mode Penjelajahan Pribadi — keluar dari mode itu dulu.</div></div>`
+      : installPrompt
+      ? `<button class="btn primary" onclick="K.install()">Pasang Kertas di layar utama</button>`
+      : `<div class="card">
+          <div style="font-size:13.5px;font-weight:600">Belum ditawarkan oleh browser</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5">Coba lewat menu titik tiga Chrome → <b>Install app</b>. Kalau tidak ada juga, jalankan pemeriksaan di bawah untuk tahu apa yang kurang.</div></div>`}
+    <button class="btn" onclick="K.checkInstall()">Periksa kenapa belum bisa dipasang</button>
+    <div id="diagout"></div>
+  </div>
+
+  <span class="lbl">Akun Google</span>
+  <div style="padding:0 18px">
+    ${signedIn()?`<div class="card">
+        <div style="font-size:13.5px;font-weight:600;color:var(--pine)">Tersambung</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5">
+          Izin: <span class="mono">drive.file</span>${S.calendarReminders?' + <span class="mono">calendar.events</span>':''} — Kertas hanya melihat file buatannya sendiri.</div></div>
+      <button class="btn" onclick="K.signOut()">Keluar dari Google</button>`
+    :`<button class="gbtn" onclick="K.connect()">${ICON.g}<span>Sambungkan dengan Google</span></button>
+      <div class="note" style="padding:10px 2px 6px">${S.clientId?"Client ID sudah tersimpan — tinggal tekan tombol di atas.":"Perlu sekali persiapan, sekitar 10 menit."}</div>
+      <button class="btn" onclick="K.openSetup()">Buka panduan penyiapan</button>`}
+    <button class="btn" onclick="K.syncNow()">Sinkronkan sekarang</button>
+    ${link?`<a class="btn" style="text-decoration:none" href="${link}" target="_blank" rel="noopener">Buka folder Kertas di Drive →</a>`:""}
+    ${S.clientId?`<button class="btn" onclick="K.copySetupLink()">Salin tautan penyiapan untuk HP lain</button>
+      <div class="note" style="padding:6px 2px 0">Buka tautan itu di HP keduamu dan Client ID langsung terisi — tidak perlu mengulang urusan Cloud Console.</div>`:""}
+  </div>
+
+  <span class="lbl">Tampilan</span>
+  <div style="padding:0 18px">
+    <div class="card" style="display:flex;align-items:center;gap:11px">
+      <span class="iconbtn" style="pointer-events:none">${LOGIC.resolveTheme(S.theme,systemDark())==="dark"?ICON.sun:ICON.moon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13.5px;font-weight:600">Terang / gelap ada di kanan atas</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.5">
+          ${S.theme==="auto"
+            ? "Sekarang ikut HP: "+(systemDark()?"gelap":"terang")+". Sekali kamu tekan tombolnya, pilihanmu yang dipakai."
+            : "Dikunci "+(S.theme==="dark"?"gelap":"terang")+" — tidak ikut pengaturan HP lagi."}</div></div></div>
+    ${S.theme!=="auto"?`<button class="btn" onclick="K.useSystemTheme()">Ikut pengaturan HP lagi</button>`:""}
+  </div>
+
+  <span class="lbl">Pengingat</span>
+  <div style="padding:0 18px">
+    ${NATIVE.on?`
+    <div class="sw" onclick="K.askNotify()"><span>Notifikasi Kertas
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${nativeNotifOK===true?"Aktif · dijadwalkan oleh Android":nativeNotifOK===false?"Ditolak — aktifkan di Setelan HP":"Belum diizinkan"}</div></span>
+      <span class="track" data-on="${nativeNotifOK===true?1:0}"><span class="knob"></span></span></div>
+    <div class="note" style="padding:4px 2px 10px">Kamu memakai versi terpasang (APK). Alarmnya dititipkan ke penjadwal Android,
+      jadi tetap berbunyi walau Kertas ditutup total dan HP di saku — tanpa server mana pun.</div>`
+    :`
+    <div class="sw" onclick="K.askNotify()"><span>Notifikasi di perangkat ini
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${notif==="granted"?"Aktif":notif==="denied"?"Diblokir browser":"Belum diizinkan"} · hanya bunyi selama app terbuka</div></span>
+      <span class="track" data-on="${notif==="granted"?1:0}"><span class="knob"></span></span></div>`}
+    <div class="sw" onclick="K.toggleCalendar()"><span>Kirim pengingat ke Google Calendar
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${NATIVE.on?"Berguna kalau kamu juga buka Kertas dari iPhone atau laptop":"Ini yang bikin alarm tetap bunyi walau Kertas tertutup"}</div></span>
+      <span class="track" data-on="${S.calendarReminders?1:0}"><span class="knob"></span></span></div>
+    ${NATIVE.on?"":`<div class="note" style="padding:4px 2px 0">Browser tidak bisa membunyikan alarm terjadwal saat app tertutup — itu batas platform, bukan pilihan desain. Karena itu tugas berpengingat dicerminkan jadi acara Google Calendar, yang notifikasinya ditangani sistem dan bunyi di Android maupun iPhone.</div>`}
+  </div>
+
+  <span class="lbl">Perubahan yang menunggu</span>
+  <div style="padding:0 18px">
+    <div class="card">
+      <div style="font-size:13.5px;font-weight:600">${S.queue.length?S.queue.length+" perubahan belum naik":"Semua sudah di Drive"}</div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5">
+        ${S.queue.length?"Tersimpan permanen di HP. Tutup app, matikan HP, tetap aman.":"Tidak ada yang menggantung."}</div>
+      ${S.queue.length?`<div class="mono" style="font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.7">`+
+        S.queue.slice(0,6).map(o=>`${esc(o.kind)} ${esc(o.entity)} · ${esc(String(o.id))}`).join("<br>")+
+        (S.queue.length>6?`<br>+${S.queue.length-6} lagi`:"")+`</div>`:""}
+      ${S.lastError?`<div style="font-size:11.5px;color:var(--brick);margin-top:8px">Terakhir gagal: ${esc(S.lastError)}</div>`:""}
+    </div>
+  </div>
+
+  <span class="lbl">Perilaku</span>
+  <div style="padding:0 18px">
+    <div class="sw" onclick="K.toggleAuto()"><span>Sinkron otomatis saat ada perubahan</span>
+      <span class="track" data-on="${S.autoSync?1:0}"><span class="knob"></span></span></div>
+    <div class="sw" onclick="K.toggleOffline()"><span>Mode offline (uji coba)
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">Putuskan sambungan tanpa mode pesawat</div></span>
+      <span class="track" data-on="${S.offlineSim?1:0}"><span class="knob"></span></span></div>
+  </div>
+
+  <span class="lbl">Pemeriksaan mandiri</span>
+  <div style="padding:0 18px"><button class="btn" onclick="K.runTests()">Jalankan tes internal</button><div id="testout"></div></div>
+
+  <span class="lbl">Catatan aktivitas</span>
+  <div class="ledger">${S.ledger.length?S.ledger.map(l=>
+    `<div><span style="color:#5E7A70">${l.t}</span>  <span style="color:${l.level==="err"?"#E88E7E":l.level==="warn"?"#E5C48A":"#9DBBAF"}">${esc(l.msg)}</span></div>`).join("")
+    :"— belum ada aktivitas —"}</div>
+
+  <span class="lbl">Data</span>
+  <div style="padding:0 18px 40px">
+    <button class="btn" onclick="K.backup()">Unduh cadangan (.json)</button>
+    <button class="btn" onclick="K.importPick()">Pulihkan dari cadangan (.json)</button>
+    <div class="note" style="padding:6px 2px 12px">Cara pindah HP tanpa Google: unduh cadangan di HP lama,
+      kirim berkasnya ke HP baru (WhatsApp ke diri sendiri juga bisa), lalu pulihkan di sini.
+      Catatan, tugas, section, dan Client ID ikut terbawa.</div>
+    <button class="btn danger" onclick="K.wipe()">Hapus data lokal di HP ini</button>
+    <div class="note" style="padding:6px 2px 0">Menghapus data lokal tidak menyentuh file di Drive.</div>
+  </div>`;
+}
+
+/* ---------- editor blok ---------- */
+function renderBlocks(){
+  const n=S.notes.find(x=>x.id===editing); if(!n) return;
+  const el=document.getElementById("blocks");
+  el.innerHTML=n.blocks.map((b,i)=>{
+    if(b.type==="divider") return `<div class="blk" data-t="divider" data-i="${i}"><span class="gutter"></span>
+      <div class="divider"></div>
+      <button class="iconbtn" style="width:26px;height:26px;margin-top:8px" onclick="K.removeBlock(${i})" aria-label="Hapus pemisah">
+        <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>`;
+    const gut=
+      b.type==="todo"?`<span class="box" data-on="${b.checked?1:0}" onclick="K.check(${i})" role="checkbox" aria-checked="${!!b.checked}"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>`
+      :b.type==="bullet"?`<span style="padding-top:1px;color:var(--pine);font-size:17px">•</span>`
+      :b.type==="num"?`<span class="mono" style="font-size:13px;padding-top:2px">${LOGIC.numberOf(n.blocks,i)}.</span>`
+      :"";
+    const ta=`<textarea class="btext" data-i="${i}" rows="1" placeholder="${i===0?"Mulai menulis…":""}"
+        spellcheck="${b.type==="code"?"false":"true"}" autocapitalize="${b.type==="code"?"off":"sentences"}"
+        autocorrect="${b.type==="code"?"off":"on"}">${esc(b.text)}</textarea>`;
+    return `<div class="blk" data-t="${b.type}" data-i="${i}" data-checked="${b.type==="todo"&&b.checked?1:0}">
+      <span class="gutter">${gut}</span>
+      ${b.type==="code"?`<div class="wrap">${ta}<button class="copy" onclick="K.copyCode(${i})">salin</button></div>`:ta}
+    </div>`;
+  }).join("");
+  el.querySelectorAll(".btext").forEach(ta=>{
+    grow(ta);
+    ta.addEventListener("input",onBlockInput);
+    ta.addEventListener("keydown",onBlockKey);
+    ta.addEventListener("focus",()=>{ focusBlock=Number(ta.dataset.i); });
+  });
+}
+function grow(ta){ ta.style.height="auto"; ta.style.height=ta.scrollHeight+"px"; }
+function focusAt(i,caret){
+  const put=()=>{
+    const ta=document.querySelector('.btext[data-i="'+i+'"]');
+    if(!ta) return false;
+    ta.focus();
+    const p=(caret===undefined)?ta.value.length:caret;
+    try{ ta.setSelectionRange(p,p); }catch(e){}
+    focusBlock=i; grow(ta);
+    return true;
+  };
+  // Sinkron dulu: masih di dalam gestur, jadi keyboard tetap terbuka.
+  if(put()) return;
+  requestAnimationFrame(put);
+}
+function onBlockInput(e){
+  const n=S.notes.find(x=>x.id===editing); if(!n) return;
+  const i=Number(e.target.dataset.i), b=n.blocks[i]; if(!b) return;
+  grow(e.target);
+  b.text=e.target.value;
+  if(b.type!=="code"){
+    const sc=LOGIC.shortcut(b.text);
+    if(sc){
+      b.type=sc.type; b.text=sc.text;
+      if(sc.type==="divider"){
+        n.blocks.splice(i+1,0,LOGIC.newBlock("text",""));
+        touchNote(n); renderBlocks(); focusAt(i+1,0); return;
+      }
+      touchNote(n); renderBlocks(); focusAt(i,b.text.length); return;
+    }
+  }
+  touchNote(n);
+}
+function onBlockKey(e){
+  const n=S.notes.find(x=>x.id===editing); if(!n) return;
+  const ta=e.target, i=Number(ta.dataset.i), b=n.blocks[i];
+  if(!b) return;
+  const caret=ta.selectionStart;
+
+  if(e.key==="Enter"&&!e.shiftKey){
+    if(b.type==="code"){
+      // Di blok kode Enter memang menambah baris. Dua Enter di ujung = keluar.
+      if(caret===ta.value.length&&/\n$/.test(ta.value)){
+        e.preventDefault();
+        b.text=ta.value.replace(/\n$/,"");
+        n.blocks.splice(i+1,0,LOGIC.newBlock("text",""));
+        touchNote(n); renderBlocks(); focusAt(i+1,0);
+      }
+      return;
+    }
+    e.preventDefault();
+    // Enter di baris daftar yang kosong = keluar dari daftar
+    if(!b.text.trim()&&(b.type==="bullet"||b.type==="num"||b.type==="todo")){
+      b.type="text"; b.checked=false; touchNote(n); renderBlocks(); focusAt(i,0); return;
+    }
+    const parts=LOGIC.splitBlock(b,caret);
+    n.blocks[i]=parts.left; n.blocks.splice(i+1,0,parts.right);
+    touchNote(n); renderBlocks(); focusAt(i+1,0); return;
+  }
+  if(e.key==="Backspace"&&caret===0&&ta.selectionEnd===0){
+    if(b.type!=="text"){
+      e.preventDefault(); b.type="text"; b.checked=false;
+      touchNote(n); renderBlocks(); focusAt(i,0); return;
+    }
+    if(i>0){
+      e.preventDefault();
+      const prev=n.blocks[i-1];
+      if(prev.type==="divider"){ n.blocks.splice(i-1,1); touchNote(n); renderBlocks(); focusAt(i-1,0); return; }
+      const at=(prev.text||"").length;
+      prev.text=(prev.text||"")+b.text;
+      n.blocks.splice(i,1);
+      touchNote(n); renderBlocks(); focusAt(i-1,at); return;
+    }
+  }
+  if(e.key==="ArrowUp"&&caret===0&&i>0){ e.preventDefault(); focusAt(i-1); }
+  if(e.key==="ArrowDown"&&caret===ta.value.length&&i<n.blocks.length-1){ e.preventDefault(); focusAt(i+1,0); }
+}
+function touchNote(n){
+  n.dirty=true; n.updatedAt=new Date().toISOString();
+  queueOp("note",n.id,"update");
+  const s=document.getElementById("esave"); if(s) s.textContent="tersimpan di HP";
+  saveSoon(); scheduleSync();
+}
+
+/* ---------- lembar bawah ---------- */
+function openSheet(html,center){
+  document.getElementById("sheet").innerHTML=html;
+  document.getElementById("scrim").className="on"+(center?" center":"");
+}
+function closeSheet(){ document.getElementById("scrim").className=""; }
+
+function taskSheet(t){
+  return `<div class="grab"></div>
+    <input id="tk_title" value="${esc(t.title)}" placeholder="Nama tugas"
+      style="width:100%;border:0;outline:0;background:transparent;font-size:19px;font-weight:600;margin-bottom:6px">
+    <div class="frow">${ICON.cal}<label>Tanggal</label><input type="date" id="tk_due" value="${esc(t.due||"")}"></div>
+    <div class="frow">${ICON.clock}<label>Jam</label><input type="time" id="tk_time" value="${esc(t.time||"")}"></div>
+    <div class="frow">${ICON.bell}<label>Pengingat</label>
+      <select id="tk_remind">${REMIND_OPTIONS.map(([v,l])=>
+        `<option value="${v}" ${String(t.remind??"")===v?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="frow">${ICON.note}<label>Daftar</label>
+      <select id="tk_list">${["Inbox","BCA","Klien","Personal"].map(l=>
+        `<option ${(t.list||"Inbox")===l?"selected":""}>${l}</option>`).join("")}</select></div>
+    <div class="frow">${ICON.star}<label>Prioritas</label>
+      <select id="tk_pri">${[["normal","Biasa"],["high","Penting"],["low","Santai"]].map(([v,l])=>
+        `<option value="${v}" ${(t.priority||"normal")===v?"selected":""}>${l}</option>`).join("")}</select></div>
+    <textarea id="tk_notes" placeholder="Catatan tambahan" rows="2"
+      style="width:100%;margin-top:12px;border:1px solid var(--line);background:var(--surf2);border-radius:11px;
+      padding:10px;font-size:15px;outline:0;resize:none">${esc(t.notes||"")}</textarea>
+    ${!S.calendarReminders?`<div class="note" style="padding:10px 0 0">Agar pengingat tetap bunyi saat Kertas tertutup, nyalakan <b>Kirim pengingat ke Google Calendar</b> di tab Sync.</div>`:""}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn danger" style="width:auto;flex:0 0 auto;padding:12px 16px;margin:0" onclick="K.deleteTask('${t.id}')">Hapus</button>
+      <button class="btn primary" style="margin:0" onclick="K.saveTask('${t.id}')">Simpan</button>
+    </div>`;
+}
+
+/* ---------- pulihkan dari cadangan ---------- */
+let pendingImport=null;
+
+function importSheet(r,namaBerkas){
+  const dn=LOGIC.importDiff(S.notes,r.notes), dt=LOGIC.importDiff(S.tasks,r.tasks);
+  const baris=(label,d,total)=>`<div class="frow"><label>${label}</label>
+    <span style="font-size:12.5px;color:var(--muted);text-align:right;max-width:none">
+      ${total} di berkas · <b style="color:var(--pine)">${d.baru} baru</b>${d.timpa?` · <b style="color:var(--amber)">${d.timpa} lebih baru</b>`:""}${d.lewat?` · ${d.lewat} dilewati`:""}</span></div>`;
+  const punyaData=S.notes.length||S.tasks.length;
+  return `<div class="grab"></div>
+    <div class="h" style="font-size:17px;margin-bottom:3px">Pulihkan dari cadangan</div>
+    <p style="font-size:12px;color:var(--ink2);line-height:1.55;margin:0 0 4px">
+      <span class="mono" style="font-size:11px">${esc(LOGIC.truncate(namaBerkas,42))}</span>${
+      r.exportedAt?` · dibuat ${esc(LOGIC.relTime(r.exportedAt))}`:""}</p>
+    ${baris("Catatan",dn,r.notes.length)}
+    ${baris("Tugas",dt,r.tasks.length)}
+    ${r.folders.length?`<div class="frow"><label>Section</label>
+      <span style="font-size:12.5px;color:var(--muted);text-align:right;max-width:none">${r.folders.map(esc).join(", ")}</span></div>`:""}
+    ${(!LOGIC.validClientId(S.clientId)&&LOGIC.validClientId(r.clientId))?`<div class="frow"><label>Client ID Google</label>
+      <span style="font-size:12.5px;color:var(--pine);text-align:right;max-width:none">ikut dipulihkan</span></div>`:""}
+    <div class="note" style="padding:12px 2px 2px">
+      ${dn.lewat+dt.lewat?`${dn.lewat+dt.lewat} item dilewati karena yang di HP ini sudah lebih baru. `:""}
+      Yang dipulihkan akan ikut naik ke Drive pada sinkron berikutnya.</div>
+    <button class="btn primary" style="margin-top:10px" onclick="K.importApply('merge')">
+      Gabungkan${dn.baru+dn.timpa+dt.baru+dt.timpa?` (${dn.baru+dn.timpa+dt.baru+dt.timpa} item)`:""}</button>
+    ${punyaData?`<button class="btn danger" onclick="K.importConfirmReplace()">Ganti semua — buang isi HP ini dulu</button>`:""}
+    <button class="btn" onclick="K.closeSheet()">Batal</button>`;
+}
+
+/* ---------- section catatan ---------- */
+const folderCount=f=>S.notes.filter(n=>n&&!n.deleted&&(n.folder||defaultFolder())===f).length;
+
+function folderSheet(msg){
+  return `<div class="grab"></div>
+    <div class="h" style="font-size:17px;margin-bottom:3px">Section catatan</div>
+    <p style="font-size:12px;color:var(--ink2);line-height:1.55;margin:0 0 12px">
+      Section cuma cara mengelompokkan catatan di dalam Kertas. Di Drive semuanya tetap satu folder.</p>
+    <div class="field" style="margin:0">
+      <svg viewBox="0 0 24 24"><path d="M3 7h6l2 2h10v10a1 1 0 0 1-1 1H3z"/></svg>
+      <input id="fname" placeholder="Nama section baru" maxlength="20" autocapitalize="words"
+        autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')K.saveFolder()"></div>
+    <div id="fmsg" style="font-size:11.5px;margin:7px 2px 0;line-height:1.5;color:${msg?"var(--brick)":"var(--muted)"}">
+      ${msg?esc(msg):"Maksimal 20 huruf."}</div>
+    <button class="btn primary" style="margin-top:11px" onclick="K.saveFolder()">Tambah section</button>
+    <div style="margin-top:14px">
+      ${S.folders.map(f=>{
+        const c=folderCount(f);
+        return `<div class="folderrow">
+          <span class="badge fold">${ICON.fold}${esc(f)}</span>
+          <span class="nm"></span>
+          <span class="ct">${c} catatan</span>
+          ${S.folders.length>1?`<button onclick="K.deleteFolder(${jsArg(f)})">Hapus</button>`:""}</div>`;
+      }).join("")}</div>
+    <div class="note" style="padding:12px 2px 0">Menghapus section tidak menghapus catatannya —
+      isinya dipindahkan ke section pertama yang tersisa.</div>`;
+}
+
+/* ---------- layar penyiapan ---------- */
+function openSetup(){ renderSetup(); document.getElementById("setup").classList.add("on"); }
+function closeSetup(){ document.getElementById("setup").classList.remove("on"); }
+function renderSetup(){
+  const o=appOrigin();
+  const valid=LOGIC.validClientId(S.clientId);
+  const secure=(location.protocol==="https:")||location.hostname==="localhost";
+  /* Setiap langkah menyebut nama tombol yang benar-benar ada di layar Google,
+     bukan "atur izinnya". Nomornya bisa diketuk supaya kalau penyiapan ini
+     ditinggal di tengah jalan, posisinya masih ketahuan waktu dibuka lagi. */
+  const step=(n,title,body,href,linkLabel)=>{
+    const done=S.setupDone.includes(String(n));
+    return `<div class="step ${done?"done":""}">
+      <button class="stepn" onclick="K.stepDone('${n}')" aria-pressed="${done}"
+        aria-label="Tandai langkah ${n} selesai">${done?"✓":n}</button>
+      <div class="stepb">
+        <div class="stept">${title}</div>
+        <div class="stepd">${body}</div>
+        <a class="btn" style="margin-top:9px;text-decoration:none;font-size:12.5px" target="_blank"
+           rel="noopener" href="${href}">${linkLabel} →</a>
+      </div></div>`;
+  };
+  const el=document.getElementById("setup");
+  const keep=el.scrollTop;
+  el.innerHTML=`
+  <div style="max-width:520px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <div class="h" style="font-size:24px">Sambungkan ke Google</div>
+      <button class="iconbtn" onclick="K.closeSetup()" aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <p style="font-size:13px;color:var(--ink2);line-height:1.6;margin:0 0 14px">
+      Kertas menulis langsung ke Drive milikmu, jadi kamu sendiri yang memberi izinnya — sekali saja,
+      sekitar 10 menit. Tidak ada server Kertas di tengah.</p>
+    <p style="font-size:11.5px;color:var(--muted);line-height:1.6;margin:0 0 18px">
+      Kerjakan di HP atau laptop, bebas — asal semuanya dengan akun Google yang sama.
+      Ketuk angka di kiri tiap langkah untuk menandainya selesai, jadi kalau terputus kamu tahu sampai mana.</p>
+
+    ${!secure?`<div class="card" style="background:var(--err-bg);border-color:var(--err-line);color:var(--err-fg);font-size:12.5px;line-height:1.55">
+      Halaman ini dibuka lewat <b>${esc(location.protocol)}</b>. Login Google hanya bekerja di alamat <b>https://</b> atau <b>localhost</b>.
+      Unggah dulu berkasnya ke GitHub Pages atau Cloudflare Pages, lalu buka dari sana.</div>`:""}
+
+    ${step(1,"Buat project bernama kertas",
+      `Tekan tombol di bawah. Isi <b>Project name</b> dengan <span class="mono">kertas</span>, biarkan
+       <b>Location</b> apa adanya, lalu tekan <b>CREATE</b>.
+       <br><br>Tunggu sampai lonceng notifikasi di kanan atas selesai berputar, lalu <b>pastikan nama project
+       di bar biru paling atas sudah berbunyi "kertas"</b> — kalau masih project lain, klik namanya dan pilih kertas.
+       Semua langkah berikutnya harus dikerjakan di dalam project ini.`,
+      "https://console.cloud.google.com/projectcreate","Buka halaman buat project")}
+
+    ${step(2,"Nyalakan Google Drive API",
+      `Tombol di bawah membuka halaman Drive API di project tadi. Tekan tombol biru <b>ENABLE</b>.
+       <br><br>Selesai kalau tombolnya berubah jadi tulisan <b>API enabled</b> dan halaman berpindah sendiri
+       ke layar "Google Drive API".`,
+      "https://console.cloud.google.com/apis/library/drive.googleapis.com","Buka Google Drive API")}
+
+    ${S.calendarReminders?step(2.5,"Nyalakan Google Calendar API",
+      `Kamu menyalakan pengingat lewat Calendar, jadi API-nya perlu dinyalakan juga. Tekan <b>ENABLE</b>
+       di halaman ini persis seperti langkah 2.`,
+      "https://console.cloud.google.com/apis/library/calendar-json.googleapis.com","Buka Google Calendar API"):""}
+
+    ${step(3,"Daftarkan aplikasinya (Google Auth Platform)",
+      `Di halaman itu tekan <b>Get started</b>, lalu isi empat layar berurutan:
+       <br><br>
+       <b>App Information</b> — App name: <span class="mono">Kertas</span>. User support email: pilih emailmu sendiri. <b>Next</b><br>
+       <b>Audience</b> — pilih <b>External</b>. <b>Next</b><br>
+       <b>Contact Information</b> — isi emailmu lagi. <b>Next</b><br>
+       <b>Finish</b> — centang persetujuan, tekan <b>Continue</b> lalu <b>CREATE</b>.
+       <br><br>Kalau halaman langsung menampilkan menu kiri (Branding, Audience, Clients, Data Access),
+       berarti langkah ini sudah pernah selesai — lanjut saja.`,
+      "https://console.cloud.google.com/auth/overview","Buka Google Auth Platform")}
+
+    ${step(4,"Tambahkan izin drive.file",
+      `Halaman <b>Data Access</b>. Tekan <b>ADD OR REMOVE SCOPES</b> — panel geser muncul dari kanan.
+       <br><br>Di kotak <b>Filter</b> ketik <span class="mono">drive.file</span>. Centang baris yang kolom Scope-nya
+       persis <span class="mono" style="font-size:11px">.../auth/drive.file</span>${S.calendarReminders?`, lalu ulangi filternya dengan <span class="mono">calendar.events</span> dan centang <span class="mono" style="font-size:11px">.../auth/calendar.events</span>`:""}.
+       <br><br>Tekan <b>UPDATE</b> di bawah panel, lalu <b>SAVE</b> di halaman utamanya. Dua-duanya harus ditekan —
+       kalau cuma UPDATE, izinnya tidak tersimpan.`,
+      "https://console.cloud.google.com/auth/scopes","Buka Data Access")}
+
+    ${step(5,"Tekan Publish app",
+      `Halaman <b>Audience</b>. Di bagian <b>Publishing status</b> masih tertulis <b>Testing</b>.
+       Tekan <b>PUBLISH APP</b>, lalu <b>CONFIRM</b> di kotak yang muncul.
+       <br><br>Ini bukan langkah opsional: selama statusnya Testing, izin login mati otomatis tiap <b>7 hari</b>
+       dan kamu harus menyambungkan ulang tiap minggu. Setelah Published, statusnya bertahan.`,
+      "https://console.cloud.google.com/auth/audience","Buka Audience")}
+
+    ${step(6,"Buat OAuth client — di sinilah alamat app didaftarkan",
+      `Halaman <b>Clients</b>. Tekan <b>CREATE CLIENT</b>.
+       <br><br>
+       <b>Application type</b> — pilih <b>Web application</b> (bukan Android, bukan Desktop).<br>
+       <b>Name</b> — isi <span class="mono">Kertas</span>.<br>
+       <b>Authorized JavaScript origins</b> — tekan <b>+ ADD URI</b>, lalu tempel alamat ini:
+       <div class="copybox"><code>${esc(o)}</code><button onclick="K.copyOrigin()">Salin</button></div>
+       <div style="font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.55">
+         Persis segini saja — tanpa <span class="mono">/</span> di ujung, tanpa <span class="mono">/index.html</span>,
+         tanpa nama folder. Salah satu huruf beda saja, nanti muncul <span class="mono">Error 400: origin_mismatch</span>.</div>
+       <b>Authorized redirect URIs</b> — <b>biarkan kosong</b>. Kertas tidak memakainya.
+       <br><br>Tekan <b>CREATE</b>. Muncul kotak berisi Client ID — <b>salin isinya</b>, itu yang dipakai di langkah berikut.
+       Client secret di kotak yang sama tidak usah dipakai sama sekali.`,
+      "https://console.cloud.google.com/auth/clients","Buka Clients")}
+
+    <div class="step ${valid?"done":""}"><div class="stepn">7</div><div class="stepb">
+      <div class="stept">Tempel Client ID di sini</div>
+      <div class="field" style="margin:8px 0 0">
+        <input id="cid" value="${esc(S.clientId)}" placeholder="xxxxx.apps.googleusercontent.com"
+          oninput="K.checkClientId(this.value)" autocapitalize="off" autocorrect="off" spellcheck="false"></div>
+      <div id="cidmsg" style="font-size:11.5px;margin-top:7px;line-height:1.5;color:${valid?"var(--pine)":"var(--muted)"}">
+        ${valid?"Formatnya benar. Lanjut ke tombol di bawah.":"Bentuknya seperti 812345678901-abc123.apps.googleusercontent.com"}</div>
+    </div></div>
+
+    <button class="gbtn" id="gobtn" ${valid?"":"disabled"} onclick="K.connect()">${ICON.g}<span>Sambungkan dengan Google</span></button>
+    ${S.lastError?`<div class="card" style="margin-top:12px;background:var(--err-bg);border-color:var(--err-line);color:var(--err-fg);font-size:12.5px;line-height:1.55">${esc(S.lastError)}</div>`:""}
+
+    <div class="card" style="margin-top:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Yang muncul saat pertama login</div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.65">
+        Google akan bilang <b>"Google hasn't verified this app"</b>. Itu wajar — appnya memang cuma milikmu sendiri
+        dan tidak pernah didaftarkan untuk publik. Tekan <b>Advanced</b> di kiri bawah, lalu
+        <b>Go to Kertas (unsafe)</b>. Setelah itu centang izin Drive dan tekan <b>Continue</b>.
+        <br><br>Layar ini hanya keluar sekali per perangkat.</div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Kalau macet</div>
+      <div style="font-size:12px;color:var(--ink2);line-height:1.7">
+        <b>Error 400: origin_mismatch</b> — alamat di langkah 6 tidak sama persis dengan
+        <span class="mono" style="font-size:11px">${esc(o)}</span>. Perbaiki, lalu tunggu 1–2 menit; Google butuh waktu menyebarkannya.<br><br>
+        <b>Error 401: invalid_client</b> — Client ID kurang lengkap saat ditempel, atau tipenya bukan Web application. Ulangi langkah 6.<br><br>
+        <b>Access blocked / app tidak dikenal</b> — langkah 4 belum di-SAVE, atau langkah 5 (Publish) terlewat.<br><br>
+        <b>Diminta login ulang tiap minggu</b> — status masih Testing. Kembali ke langkah 5.<br><br>
+        <b>Popup langsung tertutup</b> — browser memblokir popup, atau kamu sedang mode penyamaran. Izinkan popup untuk situs ini.</div>
+    </div>
+
+    <div class="note" style="padding:14px 2px 0">Client ID bukan rahasia — aman disimpan di HP dan aman ditempel di sini.
+      Yang rahasia adalah client secret, dan Kertas memang tidak pernah memakainya.
+      Setelah beres di satu HP, pakai <b>Salin tautan penyiapan</b> di tab Sync supaya HP keduamu tidak perlu mengulang semua ini.</div>
+  </div>`;
+  el.scrollTop=keep;   // menandai langkah selesai tidak boleh melempar balik ke atas
+}
+
+/* ================= 9. AKSI ============================================= */
+
+const K={
+  go(tab){ S.tab=tab; save(); render(); },
+  search(v){
+    S.query=v;
+    const el=document.getElementById("notelist");
+    if(el){
+      const notes=LOGIC.filterNotes(S.notes,S.query,S.folder);
+      el.innerHTML=notes.map(noteRow).join("")||emptyBox("Tidak ada yang cocok.","Coba kata lain.");
+    }
+  },
+  setFolder(f){ S.folder=f; save(); render(); },
+  manageFolders(){
+    openSheet(folderSheet());
+    setTimeout(()=>{ const e=document.getElementById("fname"); if(e) e.focus(); },80);
+  },
+  saveFolder(){
+    const el=document.getElementById("fname"); if(!el) return;
+    const err=LOGIC.folderError(el.value,S.folders);
+    if(err){
+      const m=document.getElementById("fmsg");
+      if(m){ m.textContent=err; m.style.color="var(--brick)"; }
+      el.focus(); return;
+    }
+    const nama=LOGIC.normalizeFolder(el.value);
+    S.folders=[...S.folders,nama];
+    S.folder=nama;                       // langsung pindah ke section barunya
+    save(); closeSheet(); render();
+    toast('Section "'+nama+'" dibuat.');
+  },
+  deleteFolder(f){
+    if(S.folders.length<=1){ toast("Section terakhir tidak bisa dihapus."); return; }
+    const sisa=S.folders.filter(x=>x!==f);
+    const tujuan=sisa[0];
+    const pindah=S.notes.filter(n=>n&&!n.deleted&&(n.folder||defaultFolder())===f);
+    for(const n of pindah){
+      n.folder=tujuan; n.dirty=true; n.updatedAt=new Date().toISOString();
+      queueOp("note",n.id,"update");     // section ikut naik ke Drive, jadi HP lain tahu
+    }
+    S.folders=sisa;
+    if(S.folder===f) S.folder="Semua";
+    save(); render(); openSheet(folderSheet()); scheduleSync();
+    toast(pindah.length?pindah.length+' catatan dipindahkan ke "'+tujuan+'".':'Section "'+f+'" dihapus.');
+  },
+  pickFolder(){
+    const n=S.notes.find(x=>x.id===editing); if(!n) return;
+    const kini=n.folder||defaultFolder();
+    openSheet(`<div class="grab"></div>
+      <div class="h" style="font-size:17px;margin-bottom:10px">Pindahkan ke section</div>
+      ${S.folders.map(f=>`<button class="btn" style="display:flex;align-items:center;gap:10px"
+          onclick="K.setNoteFolder(${jsArg(f)})">
+          <span class="badge fold">${ICON.fold}${esc(f)}</span>
+          <span style="margin-left:auto;color:var(--pine)">${f===kini?"✓":""}</span></button>`).join("")}
+      <button class="btn" onclick="K.manageFolders()">+ Bikin section baru</button>`);
+  },
+  setNoteFolder(f){
+    const n=S.notes.find(x=>x.id===editing); if(!n) return;
+    n.folder=f;
+    document.getElementById("efolder").textContent=f;
+    closeSheet(); touchNote(n);
+  },
+  setMode(m){ S.taskMode=m; save(); render(); },
+  toggleAuto(){ S.autoSync=!S.autoSync; save(); render(); },
+  install(){
+    if(!installPrompt){ toast("Browser belum menawarkan pemasangan. Jalankan pemeriksaan di bawah."); return; }
+    installPrompt.prompt();
+    installPrompt.userChoice.then(r=>{
+      if(r&&r.outcome==="accepted") toast("Sedang dipasang…");
+      installPrompt=null; render();
+    }).catch(()=>{});
+  },
+  copyAppLink(){
+    const url=location.origin+location.pathname;
+    (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
+      .then(()=>toast("Alamat disalin. Tempel di Safari."))
+      .catch(()=>toast(url));
+  },
+  checkInstall(){
+    const el=document.getElementById("diagout");
+    el.innerHTML=`<div class="card"><div style="font-size:12.5px;color:var(--muted)">Memeriksa…</div></div>`;
+    installDiag().then(list=>{
+      const bad=list.filter(x=>!x.ok);
+      el.innerHTML=`<div class="card">
+        <div style="font-size:13.5px;font-weight:600;color:${bad.length?"var(--brick)":"var(--pine)"}">
+          ${bad.length?bad.length+" hal perlu dibereskan":"Semua syarat terpenuhi"}</div>
+        ${list.map(x=>`<div style="font-size:12px;margin-top:8px;line-height:1.5;color:${x.ok?"var(--ink2)":"var(--brick)"}">
+          ${x.ok?"✓":"✗"} ${esc(x.label)}${x.fix?`<div style="color:var(--muted);margin-top:3px">${esc(x.fix)}</div>`:""}</div>`).join("")}
+        ${!bad.length&&!ENV.standalone?`<div style="font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5">
+          Syaratnya lengkap. Chrome kadang baru menawarkan pemasangan setelah kamu memakai halamannya sebentar — coba menu titik tiga → Install app.</div>`:""}
+      </div>`;
+    });
+  },
+  toggleOffline(){
+    S.offlineSim=!S.offlineSim; save();
+    toast(S.offlineSim?"Sekarang berlaku seperti tanpa internet.":"Tersambung lagi. Mengirim yang tertunda.");
+    render(); if(!S.offlineSim) syncNow();
+  },
+  toggleCalendar(){
+    if(!S.calendarReminders){
+      S.calendarReminders=true; save();
+      toast("Perlu izin tambahan untuk Google Calendar.");
+      // Token lama tetap dipegang: kalau pengguna membatalkan layar izin,
+      // sinkronisasi Drive harus tetap jalan seperti semula.
+      tokenClient=null;
+      if(initAuth()) signIn(true); else openSetup();
+    }else{
+      S.calendarReminders=false; save();
+      toast("Pengingat kalender dimatikan. Acara yang sudah dibuat tetap ada.");
+    }
+    render();
+  },
+  askNotify(){ askNotify().then(()=>render()); },
+
+  openSetup(){ openSetup(); },
+  closeSetup(){ closeSetup(); },
+  stepDone(n){
+    n=String(n);
+    S.setupDone=S.setupDone.includes(n)?S.setupDone.filter(x=>x!==n):[...S.setupDone,n];
+    save(); renderSetup();
+  },
+  copySetupLink(){
+    const url=location.origin+location.pathname+"?cid="+encodeURIComponent(S.clientId);
+    (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject())
+      .then(()=>toast("Tautan disalin. Buka di HP satunya, lalu tekan Sambungkan."))
+      .catch(()=>toast(url));
+  },
+  copyOrigin(){
+    const v=appOrigin();
+    (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject())
+      .then(()=>toast("Alamat disalin. Tempel di Authorized JavaScript origins."))
+      .catch(()=>toast("Salin manual: "+v));
+  },
+  checkClientId(v){
+    S.clientId=v.trim(); save();
+    const valid=LOGIC.validClientId(S.clientId);
+    const msg=document.getElementById("cidmsg"), btn=document.getElementById("gobtn");
+    if(msg){
+      msg.textContent=valid?"Formatnya benar. Lanjut ke tombol di bawah."
+        :S.clientId?"Belum lengkap — harus berakhiran .apps.googleusercontent.com"
+        :"Bentuknya seperti 812345678901-abc123.apps.googleusercontent.com";
+      msg.style.color=valid?"var(--pine)":(S.clientId?"var(--brick)":"var(--muted)");
+    }
+    if(btn) btn.disabled=!valid;
+    if(valid){ tokenClient=null; initAuth(); }
+  },
+  connect(){
+    if(!LOGIC.validClientId(S.clientId)){ toast("Tempel Client ID yang lengkap dulu."); openSetup(); return; }
+    tokenClient=null;
+    if(!initAuth()){ toast("Pustaka Google belum termuat. Periksa koneksi lalu coba lagi."); return; }
+    signIn(true);
+  },
+  signIn(c){ signIn(c); },
+  signOut(){ signOut(); },
+  syncNow(){ syncNow(true); },
+
+  quickAdd(){
+    if(S.tab==="tasks"){ const el=document.getElementById("newtask"); if(el) el.focus(); return; }
+    K.newNote();
+  },
+  newNote(){
+    const n={id:"n"+Math.random().toString(36).slice(2,8),title:"",blocks:[LOGIC.newBlock("text","")],
+      folder:S.folder==="Semua"?defaultFolder():S.folder,pinned:false,updatedAt:new Date().toISOString(),dirty:true};
+    S.notes.unshift(n); save(); K.openNote(n.id); focusAt(0,0);
+  },
+  openNote(id){
+    editing=id; focusBlock=null;
+    const n=S.notes.find(x=>x.id===id); if(!n) return;
+    if(!n.blocks||!n.blocks.length) n.blocks=[LOGIC.newBlock("text","")];
+    document.getElementById("etitle").value=n.title||"";
+    document.getElementById("efolder").textContent=n.folder||defaultFolder();
+    document.getElementById("emeta").textContent=n.fileId?"tersimpan di Drive":"belum diunggah";
+    document.getElementById("esave").textContent=LOGIC.relTime(n.updatedAt);
+    renderBlocks();
+    document.getElementById("editor").classList.add("on");
+  },
+  closeEditor(){
+    const n=S.notes.find(x=>x.id===editing);
+    if(n&&!n.fileId&&!(n.title||"").trim()&&!LOGIC.noteSnippet(n).trim()){
+      S.notes=S.notes.filter(x=>x.id!==n.id);
+      S.queue=S.queue.filter(o=>!(o.entity==="note"&&o.id===n.id));
+      save();
+    }
+    document.getElementById("editor").classList.remove("on");
+    editing=null; render();
+  },
+  setType(type){
+    const n=S.notes.find(x=>x.id===editing); if(!n) return;
+    let i=focusBlock;
+    if(i===null||i===undefined||!n.blocks[i]) i=n.blocks.length-1;
+    if(type==="divider"){
+      n.blocks.splice(i+1,0,LOGIC.newBlock("divider",""),LOGIC.newBlock("text",""));
+      touchNote(n); renderBlocks(); focusAt(i+2,0); return;
+    }
+    const b=n.blocks[i];
+    b.type=(b.type===type)?"text":type;
+    if(b.type!=="todo") b.checked=false;
+    touchNote(n); renderBlocks(); focusAt(i);
+  },
+  check(i){
+    const n=S.notes.find(x=>x.id===editing); if(!n||!n.blocks[i]) return;
+    const b=n.blocks[i]; b.checked=!b.checked;
+    // Sentuh hanya dua atribut. Render ulang seluruh daftar akan menutup
+    // keyboard dan melompatkan posisi gulir hanya untuk satu centang.
+    const blk=document.querySelector('.blk[data-i="'+i+'"]');
+    if(blk){
+      blk.dataset.checked=b.checked?"1":"0";
+      const box=blk.querySelector('.box');
+      if(box){ box.dataset.on=b.checked?"1":"0"; box.setAttribute("aria-checked",String(!!b.checked)); }
+    }else renderBlocks();
+    touchNote(n);
+    if(navigator.vibrate) navigator.vibrate(8);
+  },
+  removeBlock(i){
+    const n=S.notes.find(x=>x.id===editing); if(!n) return;
+    n.blocks.splice(i,1);
+    if(!n.blocks.length) n.blocks=[LOGIC.newBlock("text","")];
+    touchNote(n); renderBlocks();
+  },
+  copyCode(i){
+    const n=S.notes.find(x=>x.id===editing); if(!n||!n.blocks[i]) return;
+    (navigator.clipboard?navigator.clipboard.writeText(n.blocks[i].text||""):Promise.reject())
+      .then(()=>toast("Kode disalin.")).catch(()=>toast("Browser ini tidak mengizinkan salin otomatis."));
+  },
+  togglePin(){
+    const n=S.notes.find(x=>x.id===editing); if(!n) return;
+    n.pinned=!n.pinned; touchNote(n); toast(n.pinned?"Disematkan.":"Lepas sematan.");
+  },
+  deleteNote(){
+    const n=S.notes.find(x=>x.id===editing); if(!n) return;
+    n.deleted=true; n.dirty=true; queueOp("note",n.id,"delete"); save();
+    document.getElementById("editor").classList.remove("on"); editing=null;
+    toast("Dibuang ke sampah Drive. Bisa dipulihkan 30 hari."); render(); scheduleSync();
+  },
+
+  addTask(title,el){
+    title=(title||"").trim(); if(!title) return;
+    const id="t"+Math.random().toString(36).slice(2,8);
+    S.tasks.push({id,title,due:S.taskMode==="upcoming"?null:LOGIC.today(),time:null,remind:null,
+      done:false,list:"Inbox",priority:"normal",notes:"",updatedAt:new Date().toISOString()});
+    queueOp("task",id,"create"); save(); if(el) el.value="";
+    render(); scheduleSync();
+    setTimeout(()=>{ const e=document.getElementById("newtask"); if(e) e.focus(); },60);
+  },
+  openTask(id){
+    const t=S.tasks.find(x=>x.id===id); if(!t) return;
+    openSheet(taskSheet(t));
+  },
+  saveTask(id){
+    const t=S.tasks.find(x=>x.id===id); if(!t) return;
+    const g=k=>document.getElementById(k);
+    const title=(g("tk_title").value||"").trim();
+    if(title) t.title=title;
+    t.due=g("tk_due").value||null;
+    t.time=g("tk_time").value||null;
+    const rv=g("tk_remind").value;
+    t.remind=(rv==="")?null:Number(rv);
+    t.list=g("tk_list").value;
+    t.priority=g("tk_pri").value;
+    t.notes=g("tk_notes").value;
+    if(t.remind!==null&&!t.due){ t.due=LOGIC.today(); toast("Pengingat butuh tanggal — diisi hari ini."); }
+    t.updatedAt=new Date().toISOString();
+    queueOp("task",id,"update"); save(); closeSheet(); render(); scheduleReminders(); scheduleSync();
+    // Bare `Notification` melempar ReferenceError di browser yang tidak
+    // punya API-nya — harus dicek lewat window.
+    if(t.remind!==null&&("Notification" in window)&&Notification.permission==="default") askNotify();
+  },
+  toggleTask(id){
+    const t=S.tasks.find(x=>x.id===id); if(!t) return;
+    t.done=!t.done; t.updatedAt=new Date().toISOString();
+    queueOp("task",id,"update"); save(); scheduleReminders(); scheduleSync();
+    if(navigator.vibrate) navigator.vibrate(t.done?[7,45,12]:7);
+
+    const el=document.querySelector('.task[data-id="'+id+'"]');
+    if(!el||(S.tab!=="today"&&S.tab!=="tasks")){ render(); return; }
+
+    // 1. Centang menggambar dirinya dan coretan menyapu, di tempat.
+    el.dataset.done=t.done?"1":"0";
+    const box=el.querySelector(".box");
+    if(box){
+      box.dataset.on=t.done?"1":"0";
+      box.setAttribute("aria-checked",String(!!t.done));
+      box.classList.remove("pop"); void box.offsetWidth;
+      if(t.done) box.classList.add("pop");
+    }
+
+    // 2. Baru pindah bagian. Kalau dibatalkan sebelum jedanya habis, barisnya
+    //    memang sudah berada di bagian yang benar — tidak perlu ke mana-mana.
+    const prev=moveTimers.get(id); if(prev) clearTimeout(prev);
+    if(!!el.closest("#donelist")===!!t.done){ moveTimers.delete(id); return; }
+    moveTimers.set(id,setTimeout(()=>{
+      moveTimers.delete(id);
+      collapseThen(el,()=>{ justMoved=id; refreshTaskLists(); });
+    },t.done?600:400));
+  },
+  toggleDone(){
+    S.doneOpen=(S.doneOpen===false); save();
+    const d=document.getElementById("donelist"),
+          c=document.querySelector("#donehead .caret"),
+          h=document.getElementById("donehead");
+    if(d) d.dataset.open=(S.doneOpen&&d.children.length)?"1":"0";
+    if(c) c.dataset.open=S.doneOpen?"1":"0";
+    if(h) h.setAttribute("aria-expanded",String(!!S.doneOpen));
+  },
+  toggleTheme(){
+    S.theme=(LOGIC.resolveTheme(S.theme,systemDark())==="dark")?"light":"dark";
+    save(); applyTheme(); paintThemeBtn();
+    if(S.tab==="settings") render();
+  },
+  useSystemTheme(){
+    S.theme="auto"; save(); applyTheme(); render();
+    toast("Tema ikut HP lagi — sekarang "+(systemDark()?"gelap":"terang")+".");
+  },
+  deleteTask(id){
+    const t=S.tasks.find(x=>x.id===id); if(!t) return;
+    t.deleted=true; t.updatedAt=new Date().toISOString();
+    queueOp("task",id,"delete"); save(); closeSheet(); render(); scheduleSync();
+    toast("Tugas dihapus.");
+  },
+
+  resolve(localId,fileId,how){
+    closeSheet();
+    const n=S.notes.find(x=>x.id===localId); if(!n) return;
+    (async()=>{
+      try{
+        const remote=LOGIC.markdownToNote(await exportFile(fileId,"text/markdown"));
+        if(how==="remote"){
+          n.title=remote.title; n.blocks=remote.blocks; n.dirty=false;
+          S.queue=S.queue.filter(o=>!(o.entity==="note"&&o.id===n.id));
+        }else if(how==="both"){
+          n.blocks=[...n.blocks,LOGIC.newBlock("divider",""),LOGIC.newBlock("quote","Versi dari Drive"),...remote.blocks];
+          n.dirty=true; queueOp("note",n.id,"update");
+        }else{ n.dirty=true; queueOp("note",n.id,"update"); }
+        const meta=await api(`${DRIVE}/files/${fileId}?fields=modifiedTime`);
+        n.driveModified=meta.modifiedTime; n.updatedAt=new Date().toISOString();
+        save(); log("konflik diselesaikan: "+how); render(); syncNow();
+      }catch(e){ toast("Gagal menyelesaikan konflik: "+e.message); }
+    })();
+  },
+  runTests(){
+    const r=selfTest(), pass=r.filter(x=>x.pass).length;
+    document.getElementById("testout").innerHTML=
+      `<div class="card"><div style="font-size:13.5px;font-weight:600;color:${pass===r.length?"var(--pine)":"var(--brick)"}">${pass}/${r.length} lolos</div>`+
+      r.map(x=>`<div style="font-size:11.5px;margin-top:6px;color:${x.pass?"var(--ink2)":"var(--brick)"}">${x.pass?"✓":"✗"} ${esc(x.n)}${x.e?" — "+esc(x.e):""}</div>`).join("")+`</div>`;
+  },
+  backup(){
+    /* Section dan Client ID ikut dibawa: tanpa keduanya, memulihkan di HP baru
+       menyisakan catatan tanpa chip dan penyiapan Google yang harus diulang
+       dari Cloud Console. Client ID memang bukan rahasia. */
+    const data={kertas:1,exportedAt:new Date().toISOString(),clientId:S.clientId||"",
+      folders:S.folders,notes:S.notes,tasks:S.tasks};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download="kertas-backup-"+LOGIC.today()+".json"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+    toast(S.notes.length+" catatan & "+S.tasks.length+" tugas diunduh.");
+  },
+  importPick(){ document.getElementById("importfile").click(); },
+  importFile(el){
+    const f=el.files&&el.files[0];
+    el.value="";        // tanpa ini, memilih berkas yang sama dua kali tidak memicu apa pun
+    if(!f) return;
+    const rd=new FileReader();
+    rd.onerror=()=>toast("Berkas tidak terbaca.");
+    rd.onload=()=>{
+      const r=LOGIC.readBackup(String(rd.result||""));
+      if(!r.ok){ toast(r.error); return; }
+      if(!r.notes.length&&!r.tasks.length){ toast("Cadangan ini kosong — tidak ada yang bisa dipulihkan."); return; }
+      pendingImport=r;
+      openSheet(importSheet(r,f.name));
+    };
+    rd.readAsText(f);
+  },
+  importConfirmReplace(){
+    const r=pendingImport; if(!r) return;
+    openSheet(`<div class="h" style="font-size:16px;margin-bottom:6px">Ganti semua isi HP ini?</div>
+      <p style="font-size:12.5px;color:var(--ink2);line-height:1.55;margin:0 0 14px">
+        ${S.notes.length} catatan dan ${S.tasks.length} tugas yang sekarang ada di HP ini akan dibuang,
+        diganti isi cadangan. Berkas di Google Drive tidak ikut terhapus.
+        <br><br>Kalau cuma mau memindahkan isi HP lama, pilih <b>Gabungkan</b> — itu tidak membuang apa pun.</p>
+      <button class="btn danger" onclick="K.importApply('replace')">Ya, ganti semua</button>
+      <button class="btn" onclick="K.importBack()">Kembali</button>`,true);
+  },
+  importBack(){
+    if(!pendingImport){ closeSheet(); return; }
+    openSheet(importSheet(pendingImport,"cadangan"));
+  },
+  importApply(mode){
+    const r=pendingImport; if(!r) return;
+    const dn=LOGIC.importDiff(S.notes,r.notes), dt=LOGIC.importDiff(S.tasks,r.tasks);
+
+    if(mode==="replace"){
+      S.notes=r.notes.slice(); S.tasks=r.tasks.slice();
+    }else{
+      S.notes=LOGIC.mergeNotes(S.notes,r.notes);
+      S.tasks=LOGIC.mergeTasks(S.tasks,r.tasks);
+    }
+
+    // Catatan versi lawas menyimpan isinya sebagai satu teks; ubah seperti saat migrasi biasa.
+    for(const n of S.notes){
+      if(!n.blocks){ n.blocks=LOGIC.markdownToBlocks(n.body||""); delete n.body; }
+      if(!n.blocks.length) n.blocks=[LOGIC.newBlock("text","")];
+    }
+    for(const t of S.tasks){
+      if(t.time===undefined) t.time=null;
+      if(t.remind===undefined) t.remind=null;
+      if(t.notes===undefined) t.notes="";
+    }
+
+    const dasar=(mode==="replace")?(r.folders.length?r.folders:[...DEFAULT_FOLDERS]):S.folders;
+    S.folders=LOGIC.mergeFolders(LOGIC.mergeFolders(dasar,r.folders),S.notes.map(n=>n&&n.folder));
+    if(!S.folders.some(f=>f===S.folder)&&S.folder!=="Semua") S.folder="Semua";
+
+    if(!LOGIC.validClientId(S.clientId)&&LOGIC.validClientId(r.clientId)) S.clientId=r.clientId.trim();
+
+    // Hanya yang benar-benar masuk yang diantrekan — bukan seluruh isi HP.
+    const idsN=(mode==="replace")?r.notes.map(n=>n.id):dn.ids;
+    const idsT=(mode==="replace")?r.tasks.map(t=>t.id):dt.ids;
+    for(const id of idsN){
+      const n=S.notes.find(x=>x.id===id);
+      if(n&&!n.deleted){ n.dirty=true; queueOp("note",id,"update"); }
+    }
+    for(const id of idsT){
+      const t=S.tasks.find(x=>x.id===id);
+      if(t&&!t.deleted) queueOp("task",id,"update");
+    }
+
+    pendingImport=null; save(); closeSheet();
+    const n=(mode==="replace")?r.notes.length:dn.baru+dn.timpa;
+    const t=(mode==="replace")?r.tasks.length:dt.baru+dt.timpa;
+    log("cadangan dipulihkan: "+n+" catatan, "+t+" tugas");
+    toast(n+" catatan & "+t+" tugas dipulihkan.");
+    render(); scheduleReminders(); scheduleSync();
+  },
+  wipe(){
+    openSheet(`<div class="h" style="font-size:16px;margin-bottom:6px">Hapus data lokal?</div>
+      <p style="font-size:12.5px;color:var(--ink2);line-height:1.55;margin:0 0 14px">
+        File di Google Drive tidak ikut terhapus. Sambungkan lagi nanti dan semuanya ditarik ulang.</p>
+      <button class="btn danger" onclick="K.wipeConfirm()">Ya, hapus data di HP ini</button>
+      <button class="btn" onclick="K.closeSheet()">Batal</button>`,true);
+  },
+  closeSheet(){ closeSheet(); },
+  wipeConfirm(){
+    const cid=S.clientId;
+    try{ localStorage.setItem(STORE_KEY,JSON.stringify({clientId:cid,notes:[],tasks:[],queue:[],ledger:[],
+      notified:[],ids:{},lastSync:null,tab:"today",folder:"Semua",taskMode:"today",query:"",autoSync:true,
+      everConnected:false})); }catch(e){}
+    location.reload();
+  }
+};
+
+/* ================= 10. SIKLUS HIDUP ==================================== */
+
+let syncTimer=null;
+function scheduleSync(){
+  if(!S.autoSync) return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(()=>{ if(reachable()&&signedIn()) syncNow(); },5000);
+}
+document.getElementById("etitle").addEventListener("input",e=>{
+  const n=S.notes.find(x=>x.id===editing); if(!n) return;
+  n.title=e.target.value; touchNote(n);
+});
+document.getElementById("scrim").addEventListener("click",e=>{ if(e.target.id==="scrim") closeSheet(); });
+
+window.addEventListener("online",()=>{
+  netDown=false; S.syncAttempts=0; S.lastError=null; save();
+  log("jaringan pulih");
+  toast(S.queue.length?"Kembali online. Mengunggah "+S.queue.length+" perubahan.":"Kembali online.");
+  render(); syncNow();
+});
+window.addEventListener("offline",()=>{
+  log("jaringan putus","warn");
+  toast("Offline. Semua perubahan tetap tersimpan di HP ini.");
+  clearTimeout(retryTimer); render();
+});
+// Karena penulisan kini ditunda 400ms, ia harus dipaksa selesai sebelum
+// sistem membekukan atau mematikan app — kalau tidak, ketikan terakhir hilang.
+if(window.matchMedia){
+  const mq=window.matchMedia("(prefers-color-scheme: dark)");
+  const onChange=()=>{ if(S.theme==="auto"){ applyTheme(); paintThemeBtn(); if(S.tab==="settings") render(); } };
+  if(mq.addEventListener) mq.addEventListener("change",onChange);
+  else if(mq.addListener) mq.addListener(onChange);
+}
+window.addEventListener("pagehide",flushSave);
+window.addEventListener("blur",flushSave);
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){ flushSave(); return; }
+  render(); catchUpReminders(); scheduleReminders();
+  if(NATIVE.on) checkNativePerm();
+  if(signedIn()&&reachable()&&(S.queue.length||!S.lastSync||Date.now()-Date.parse(S.lastSync)>60000)) syncNow();
+});
+setInterval(()=>{ if(!document.hidden&&S.queue.length&&reachable()&&signedIn()&&!busy) syncNow(); },60000);
+
+window.addEventListener("load",()=>{
+  setTimeout(()=>{
+    if(LOGIC.validClientId(S.clientId)&&initAuth()&&S.everConnected) signIn(false);
+    else if(!S.clientId&&!S.notes.length&&!S.tasks.length) openSetup();
+    render();
+  },600);
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+  catchUpReminders(); scheduleReminders();
+  if(NATIVE.on) checkNativePerm();
+  const p=new URLSearchParams(location.search);
+  if(p.get("do")==="note"){ K.go("notes"); K.newNote(); }
+  if(p.get("do")==="task"){ K.go("tasks"); }
+});
+
+applyTheme();
+render();
+</script>
+</body>
+</html>

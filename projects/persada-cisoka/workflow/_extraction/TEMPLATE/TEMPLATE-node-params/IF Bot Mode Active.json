@@ -1,0 +1,36 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  2
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "botmode-check-001",
+                                                                 "leftValue":  "={{ $(\u0027Read User STATS\u0027).item.json.bot_mode }}",
+                                                                 "rightValue":  "OFF",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "notEquals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.2,
+    "position":  [
+                     -17744,
+                     2640
+                 ],
+    "id":  "95b2820f-3ac7-4df1-88fd-5397daea038a",
+    "name":  "IF Bot Mode Active"
+}

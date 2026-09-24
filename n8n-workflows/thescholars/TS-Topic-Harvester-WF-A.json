@@ -1,0 +1,540 @@
+{
+  "name": "Topic Harvester (WF-A)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1,7,13,19 * * *"
+            }
+          ]
+        }
+      },
+      "id": "db8a7848-c47f-4447-a4bc-21dc3d4a3165",
+      "name": "Every 6h (01/07/13/19 WIB)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2320,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ANALYTICS_STATE",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "24c6275a-ca4a-41e1-ba13-fd3054f5010e",
+      "name": "Read State",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2544,
+        -544
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 932041221,
+          "mode": "list",
+          "cachedResultName": "MSG_BUFFER",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=932041221"
+        },
+        "options": {}
+      },
+      "id": "67906a4f-cdd5-4b1e-8f30-c071ced47788",
+      "name": "Read MSG_BUFFER",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2768,
+        -544
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const SYSTEM_PROMPT = \"Kamu adalah pengklasifikasi topik untuk VIRA, asisten WhatsApp milik The Scholars — konsultan pendidikan Indonesia yang menjual program beasiswa Singapura. Penanyanya orang tua dan siswa Indonesia. Bahasanya informal, banyak typo, sering campur Inggris.\\n\\nTugasmu: beri SATU label topik untuk setiap pesan.\\n\\nTAKSONOMI:\\nminat_asean_scholarship: Menyebut ASEAN Scholarship / MOE-ASEAN — minat, info, atau persiapannya.\\nsyarat_usia_kelas: Menanyakan apakah anak di kelas/usia tertentu memenuhi syarat ikut program.\\nprogram_senior_admisi_uni: Program Seniors, mentoring admisi universitas, jalur kuliah S1 luar negeri.\\nminat_program_batch_generik: Minat program/batch tanpa menyebut program spesifik. Termasuk template klik-iklan \\\"Halo Sam! Saya mau tanya tentang program The Scholars Batch N\\\".\\nbeasiswa_umum_luar_negeri: Beasiswa luar negeri secara umum, di luar ASEAN Scholarship dan UOB.\\ntanya_tanpa_topik_spesifik: Menyatakan ingin bertanya tapi belum menyebut topiknya sama sekali (\\\"mau tanya dong\\\", \\\"izin bertanya kak\\\").\\nstatus_pendaftaran_dan_ketersediaan: Pendaftaran masih buka/tutup, kuota, batch berikutnya kapan, masih available atau tidak.\\nakses_webinar_zoom: Masalah teknis akses webinar/Zoom — link invalid, minta passcode, tidak bisa masuk, minta rekaman.\\nuob_cli_scholarship: Menyebut UOB atau CLI scholarship secara spesifik.\\nbiaya_program: Harga, biaya, tarif, cara bayar, cicilan.\\nlokasi_cabang: Lokasi kantor/cabang, alamat, apakah ada di kota tertentu, online atau offline.\\ninfo_program_general: Minta penjelasan umum tentang The Scholars atau isi programnya, tanpa mengarah ke satu program.\\nkonsultasi_langsung: Minta bicara dengan orang/Sam, minta dihubungi, minta jadwal konsultasi.\\njadwal_kelas_waktu: Jadwal kelas, hari apa, jam berapa, durasi, frekuensi pertemuan.\\nles_privat_lain: Les privat atau bimbingan mata pelajaran lain di luar program beasiswa.\\nielts_english_test: Persiapan IELTS, TOEFL, SAT, atau tes bahasa Inggris lain.\\n\\nATURAN:\\n1. Pilih satu topik yang paling menggambarkan apa yang user INGINKAN, bukan sekadar kata yang muncul.\\n2. Kalau pesan tidak cocok ke topik mana pun TAPI membawa maksud bisnis yang jelas, keluarkan \\\"NEW:<label_singkat_snake_case>\\\". Contoh: \\\"NEW:minta_brosur\\\". Pakai ini seperlunya — hanya kalau benar-benar ada maksud yang tidak tertampung.\\n3. Kalau pesan cuma sapaan, ucapan terima kasih, penutup, konfirmasi nomor, atau fragmen tanpa maksud apa pun, beri \\\"lainnya\\\".\\n4. Jangan pernah mengarang topik di luar taksonomi kecuali lewat prefiks \\\"NEW:\\\".\\n\\nFORMAT KELUARAN — WAJIB JSON array, tanpa teks lain, tanpa markdown fence:\\n[{\\\"i\\\":0,\\\"topic\\\":\\\"biaya_program\\\"},{\\\"i\\\":1,\\\"topic\\\":\\\"lainnya\\\"}]\\n\\nSetiap pesan input diberi nomor. Kembalikan satu objek per nomor, urut, tidak ada yang dilewat.\";\n\n// Ambil watermark, saring pesan baru, potong jadi batch.\n// Nomor WhatsApp TIDAK pernah dikirim ke AI — hanya indeks + teks.\nconst BATCH_SIZE = 40;\nconst MAX_CHARS = 400;\n\nlet watermark = 0;\nfor (const item of $('Read State').all()) {\n  const r = item.json || {};\n  if (String(r.key || '').trim() === 'msg_buffer_watermark') {\n    watermark = Number(r.value) || 0;\n  }\n}\n\nconst fresh = [];\nfor (const item of $('Read MSG_BUFFER').all()) {\n  const r = item.json || {};\n  const ts = Number(r.ts) || 0;\n  const msg = String(r.message == null ? '' : r.message).trim();\n  const key = String(r.no_wa == null ? '' : r.no_wa).trim();\n  if (ts <= watermark) continue;   // sudah dipanen di run sebelumnya\n  if (!msg || !key) continue;      // baris rusak, lewati\n  fresh.push({ ts: ts, key: key, msg: msg });\n}\n\n// Tidak ada yang baru -> hentikan cabang. Tidak ada panggilan AI, tidak ada write.\nif (fresh.length === 0) return [];\n\nfresh.sort(function (a, b) { return a.ts - b.ts; });\nconst newWatermark = fresh[fresh.length - 1].ts;\n\nconst out = [];\nfor (let i = 0; i < fresh.length; i += BATCH_SIZE) {\n  const chunk = fresh.slice(i, i + BATCH_SIZE);\n  const lines = chunk.map(function (c, n) {\n    return n + '. ' + c.msg.replace(/\\s+/g, ' ').slice(0, MAX_CHARS);\n  });\n  out.push({\n    json: {\n      batch_index: out.length,\n      count: chunk.length,\n      watermark: watermark,\n      new_watermark: newWatermark,\n      payload: lines.join('\\n'),\n      items: chunk,\n      system_prompt: SYSTEM_PROMPT\n    }\n  });\n}\nreturn out;\n"
+      },
+      "id": "455a1646-b97a-46c1-bc3b-cee8ad52c8ca",
+      "name": "Prepare Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2992,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'claude-haiku-4-5-20251001',\n  max_tokens: 2000,\n  temperature: 0,\n  system: $json.system_prompt,\n  messages: [{ role: 'user', content: $json.payload }]\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "4389ed68-8a46-407e-984f-be4a466dd12c",
+      "name": "Classify Batch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3200,
+        -544
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "anthropicApi": {
+          "id": "oO9D2lMQoz5UOhu8",
+          "name": "Anthropic The Scholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Gabungkan label AI dengan pesannya, lalu BUANG teksnya.\n// Yang keluar dari node ini hanya: bulan, user, topik, hitungan, rentang waktu.\nconst batches = $('Prepare Batches').all().map(function (i) { return i.json; });\nconst responses = $input.all().map(function (i) { return i.json; });\n\nfunction bulanWIB(ts) {\n  const d = new Date(Number(ts));\n  const parts = new Intl.DateTimeFormat('en-GB', {\n    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit'\n  }).formatToParts(d);\n  const y = parts.find(function (p) { return p.type === 'year'; }).value;\n  const m = parts.find(function (p) { return p.type === 'month'; }).value;\n  return y + '-' + m;\n}\n\nfunction parseLabels(resp) {\n  try {\n    const content = resp && resp.content;\n    if (!Array.isArray(content) || !content.length) return null;\n    let text = '';\n    for (const c of content) { if (c && c.type === 'text') text += c.text; }\n    text = text.trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();\n    const parsed = JSON.parse(text);\n    return Array.isArray(parsed) ? parsed : null;\n  } catch (e) { return null; }\n}\n\nconst agg = {};\nlet classified = 0, failedBatches = 0, newTopics = 0;\n\nfor (let b = 0; b < batches.length; b++) {\n  const batch = batches[b];\n  const labels = parseLabels(responses[b]);\n\n  if (!labels) {\n    // Batch gagal diparse. Jangan tebak — biarkan tidak terhitung.\n    failedBatches++;\n    continue;\n  }\n\n  const byIndex = {};\n  for (const l of labels) {\n    if (l && l.i != null) byIndex[Number(l.i)] = String(l.topic || '').trim();\n  }\n\n  for (let n = 0; n < batch.items.length; n++) {\n    const it = batch.items[n];\n    let topic = byIndex[n] || '';\n    if (!topic) topic = 'lainnya';\n    if (topic.indexOf('NEW:') === 0) newTopics++;\n\n    const bulan = bulanWIB(it.ts);\n    const rowKey = bulan + '|' + it.key + '|' + topic;\n\n    if (!agg[rowKey]) {\n      agg[rowKey] = {\n        row_key: rowKey, bulan: bulan, user_key: it.key, topic: topic,\n        jumlah_pesan: 0, first_ts: it.ts, last_ts: it.ts\n      };\n    }\n    const a = agg[rowKey];\n    a.jumlah_pesan += 1;\n    if (it.ts < a.first_ts) a.first_ts = it.ts;\n    if (it.ts > a.last_ts) a.last_ts = it.ts;\n    classified++;\n  }\n}\n\n// Kalau SEMUA batch gagal, jangan majukan watermark — biar dicoba lagi run berikutnya.\nif (failedBatches === batches.length) {\n  throw new Error('Semua batch gagal diklasifikasi (' + failedBatches + '). Watermark tidak dimajukan.');\n}\n\nconst rows = Object.keys(agg).map(function (k) { return agg[k]; });\nconst meta = {\n  new_watermark: batches[0].new_watermark,\n  batches_total: batches.length,\n  batches_failed: failedBatches,\n  classified: classified,\n  new_topic_hits: newTopics\n};\n\nreturn rows.map(function (r) { return { json: Object.assign({}, r, { _meta: meta }) }; });\n"
+      },
+      "id": "18df8c21-0f60-4193-a01e-e331f78ef46f",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3424,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "TOPIC_LOG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "00394f77-74ad-4414-8f7b-f0f3457b7e69",
+      "name": "Read TOPIC_LOG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3648,
+        -544
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tambahkan hitungan lama dari TOPIC_LOG supaya appendOrUpdate tidak menimpa histori.\nconst existing = {};\nfor (const item of $('Read TOPIC_LOG').all()) {\n  const r = item.json || {};\n  const k = String(r.row_key || '').trim();\n  if (!k) continue;\n  existing[k] = {\n    jumlah_pesan: Number(r.jumlah_pesan) || 0,\n    first_ts: Number(r.first_ts) || 0,\n    last_ts: Number(r.last_ts) || 0\n  };\n}\n\n// PENTING: baris agregat diambil dari $('Aggregate'), BUKAN $input.\n// Di n8n, $input sebuah node = output node TEPAT SEBELUMNYA -- di sini itu\n// \"Read TOPIC_LOG\" (isi sheet), bukan hasil Aggregate. Memakai $input di sini\n// membuat baris yang ditulis kosong semua.\nreturn $('Aggregate').all().map(function (item) {\n  const r = Object.assign({}, item.json);\n  const prev = existing[r.row_key];\n  if (prev) {\n    r.jumlah_pesan = prev.jumlah_pesan + r.jumlah_pesan;\n    if (prev.first_ts && prev.first_ts < r.first_ts) r.first_ts = prev.first_ts;\n    if (prev.last_ts && prev.last_ts > r.last_ts) r.last_ts = prev.last_ts;\n  }\n  return { json: r };\n});\n"
+      },
+      "id": "7a517286-77a9-425e-95d5-996178109972",
+      "name": "Merge Counts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3872,
+        -544
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "TOPIC_LOG",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_key": "={{ $json.row_key }}",
+            "bulan": "={{ $json.bulan }}",
+            "user_key": "={{ $json.user_key }}",
+            "topic": "={{ $json.topic }}",
+            "jumlah_pesan": "={{ $json.jumlah_pesan }}",
+            "first_ts": "={{ $json.first_ts }}",
+            "last_ts": "={{ $json.last_ts }}"
+          },
+          "matchingColumns": [
+            "row_key"
+          ],
+          "schema": [
+            {
+              "id": "row_key",
+              "displayName": "row_key",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bulan",
+              "displayName": "bulan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "user_key",
+              "displayName": "user_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topic",
+              "displayName": "topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "jumlah_pesan",
+              "displayName": "jumlah_pesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "first_ts",
+              "displayName": "first_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_ts",
+              "displayName": "last_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "c66e4308-5a69-405b-819a-73f9e599a651",
+      "name": "Write TOPIC_LOG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4080,
+        -544
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ANALYTICS_STATE",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "msg_buffer_watermark",
+            "value": "={{ $('Aggregate').first().json._meta.new_watermark }}",
+            "updated_at": "={{ new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) }}"
+          },
+          "matchingColumns": [
+            "key"
+          ],
+          "schema": [
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "value",
+              "displayName": "value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "6afd3880-7a76-4f43-8d9a-2a0bf7059bdf",
+      "name": "Update Watermark",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4304,
+        -544
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 6h (01/07/13/19 WIB)": {
+      "main": [
+        [
+          {
+            "node": "Read State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read State": {
+      "main": [
+        [
+          {
+            "node": "Read MSG_BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MSG_BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Prepare Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Batches": {
+      "main": [
+        [
+          {
+            "node": "Classify Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Batch": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Read TOPIC_LOG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read TOPIC_LOG": {
+      "main": [
+        [
+          {
+            "node": "Merge Counts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Counts": {
+      "main": [
+        [
+          {
+            "node": "Write TOPIC_LOG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write TOPIC_LOG": {
+      "main": [
+        [
+          {
+            "node": "Update Watermark",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "ZKsINjA7ZC8c9yRHWp3ud"
+  },
+  "versionId": "bc60108d-8de3-4292-8587-6a95dcee3de0",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "53SnbaFfbxETx7KvUw6_U",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

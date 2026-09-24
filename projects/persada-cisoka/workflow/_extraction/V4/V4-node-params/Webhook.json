@@ -1,0 +1,19 @@
+﻿{
+    "parameters":  {
+                       "httpMethod":  "POST",
+                       "path":  "=wa-inbound",
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.webhook",
+    "typeVersion":  2.1,
+    "position":  [
+                     -5408,
+                     2816
+                 ],
+    "id":  "a01f49fd-d8be-4cd7-96ae-eb4b250002cf",
+    "name":  "Webhook",
+    "webhookId":  "88be0884-4d4d-4973-abb9-19c8043bb515",
+    "executeOnce":  false
+}

@@ -1,0 +1,13 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "// ============================================================\n// BOOTSTRAP CONFIG  (SATU-SATUNYA tempat edit per klien)\n// Tempel Google Sheet ID milik klien di bawah ini. Semua config\n// lain (persona, program, whitelist) ada di tab CONFIG sheet itu.\n// ============================================================\nconst SHEET_ID = \u0027PASTE_CLIENT_GOOGLE_SHEET_ID_HERE\u0027;   // \u003c-- EDIT INI per klien\n\nconst wh = $input.first() ? $input.first().json : {};\nreturn [{ json: { ...wh, sheet_id: SHEET_ID } }];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -18560,
+                     2480
+                 ],
+    "id":  "be007ecdc72baa4c",
+    "name":  "Bootstrap Config"
+}

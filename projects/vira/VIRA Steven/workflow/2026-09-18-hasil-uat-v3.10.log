@@ -1,0 +1,1238 @@
+========================================================================
+
+UAT PERILAKU — VIRA Personal v3.2 (2026-09-06b)
+
+berkas: 2026-09-18-VIRA-Personal-Main-v3.10.json
+
+========================================================================
+
+
+
+------------------------------------------------------------------------
+
+A. GERBANG MASUK — siapa yang boleh dibalas (P0-1, P1-7, P2-12)
+
+------------------------------------------------------------------------
+
+  LOLOS  A0  IF (Whitelist) tidak lagi punya kabel keluar
+
+  LOLOS  A0b IF (Whitelist) disabled
+
+  LOLOS  A0c IF From Me menyambung langsung ke Bootstrap Config
+
+  LOLOS  A0d tidak ada node lain yang menyambung ke IF (Whitelist)
+
+  LOLOS  A1  prospek iklan (nomor acak) LOLOS
+
+  LOLOS  A2  whitelist aktif + nomor asing ditolak
+
+  LOLOS  A3  whitelist aktif + nomor terdaftar lolos
+
+  LOLOS  A4  whitelist aktif tapi daftar KOSONG -> tetap lolos (fail-open)
+
+  LOLOS  A5  nomor di blocklist ditolak
+
+  LOLOS  A6  nomor bot sendiri ditolak (anti-loop)
+
+  LOLOS  A7  pengirim @lid tetap dievaluasi lewat originLid
+
+  LOLOS  A8  blocklist mengenali lid
+
+  LOLOS  A9  If From Group: payload tanpa field -> false (bukan error)
+
+  LOLOS  A10 If From Group: field true tetap terdeteksi
+
+  LOLOS  A9  IF From Me: payload tanpa field -> false (bukan error)
+
+  LOLOS  A10 IF From Me: field true tetap terdeteksi
+
+
+
+------------------------------------------------------------------------
+
+B. CHAT COUNTER — gerbang tipe pesan (P2-9b)
+
+------------------------------------------------------------------------
+
+  LOLOS  B1  pesan teks diteruskan
+
+  LOLOS  B2  user_phone & media_kind benar
+
+  LOLOS  B3  reaction dibuang
+
+  LOLOS  B4  gambar diteruskan sebagai media_kind=image
+
+  LOLOS  B5  stiker jadi media_kind=other (tidak dikirim ke Vision)
+
+  LOLOS  B6  vision_mode=off membuang media
+
+  LOLOS  B7  $vars tidak tersedia -> TIDAK error (P2-9b)
+
+  LOLOS  B8  pesan kosong tanpa media dibuang
+
+
+
+------------------------------------------------------------------------
+
+C. RATE LIMITER (P2-9)
+
+------------------------------------------------------------------------
+
+  LOLOS  C1  batas 15/menit dipatuhi (bukan 5)
+
+  LOLOS  C2  batas mengikuti CONFIG.rate_limit_max
+
+
+
+------------------------------------------------------------------------
+
+D. RESOLVE USER ROW — identitas & balasan terakhir (P0-2a)
+
+------------------------------------------------------------------------
+
+  LOLOS  D1  cocok lewat No WA
+
+  LOLOS  D2  last_bot_reply ikut terbawa (P0-2a)
+
+  LOLOS  D3  cocok lewat lid, kunci tetap No WA
+
+  LOLOS  D4  user baru -> kunci = nomor, row_found false
+
+  LOLOS  D5  user baru tidak mewarisi last_bot_reply orang lain
+
+  LOLOS  D6  identitas kosong -> error keras (bukan diam-diam rows[0])
+
+  LOLOS  D7  STATS kosong tidak menjatuhkan node
+
+
+
+------------------------------------------------------------------------
+
+I. DETECT LEAD SOURCE (P2-10)
+
+------------------------------------------------------------------------
+
+  LOLOS  I1  'chat masuk tinggi banget' BUKAN Instagram
+
+  LOLOS  I2  'bagi info dong' BUKAN Instagram
+
+  LOLOS  I3  'aku lihat di IG' -> Instagram
+
+  LOLOS  I4  'dari instagram' -> Instagram
+
+  LOLOS  I5  'nemu di gmaps' -> Google
+
+  LOLOS  I6  sumber pertama dipertahankan
+
+
+
+------------------------------------------------------------------------
+
+E. CEK_USER_STATUS — buffer + jaring pengaman ingatan (P0-2b)
+
+------------------------------------------------------------------------
+
+  LOLOS  E1  tiga pesan dalam window debounce digabung
+
+  LOLOS  E2  bot_mode OFF setelah debounce -> berhenti
+
+  LOLOS  E3  blok BALASAN TERAKHIRMU disuntikkan saat segar
+
+  LOLOS  E3b blok berdiri SEBELUM CRITICAL INSTRUCTION
+
+  LOLOS  E3c blok tidak mengganggu pemisah [USER QUERY]
+
+  LOLOS  E4  balasan lebih tua dari 24 jam TIDAK disuntikkan
+
+  LOLOS  E5  kolom kosong (sheet belum ditambah) tetap jalan normal
+
+  LOLOS  E6  greeting_sent kosong -> IS_NEW_USER true
+
+  LOLOS  E6b kolom greeting_sent hilang dari hasil debounce -> jatuh ke Resolve User Row
+
+  LOLOS  E7  MSG_BUFFER kosong -> jatuh ke pesan terakhir, tidak kosong
+
+  LOLOS  E8  gambar tanpa caption -> teks netral, vision_on true
+
+
+
+------------------------------------------------------------------------
+
+F. PREPROCESS — tidak lagi mendorong bot bunuh diri (P1-5)
+
+------------------------------------------------------------------------
+
+  LOLOS  F1  'chat paling ramai hari senin' TIDAK mendorong [TALK_TO_ADMIN]
+
+  LOLOS  F1  'besok jam 10 gimana' TIDAK mendorong [TALK_TO_ADMIN]
+
+  LOLOS  F1  'mau mulai minggu depan' TIDAK mendorong [TALK_TO_ADMIN]
+
+  LOLOS  F1  'biasanya sore sih ramenya' TIDAK mendorong [TALK_TO_ADMIN]
+
+  LOLOS  F1  'tanggal 1 bulan depan bisa?' TIDAK mendorong [TALK_TO_ADMIN]
+
+  LOLOS  F2  'aku kirim foto ya' TIDAK dianggap minta file
+
+  LOLOS  F2  'ini gambar dashboard aku' TIDAK dianggap minta file
+
+  LOLOS  F2  'fotonya udah aku kirim' TIDAK dianggap minta file
+
+  LOLOS  F3  'boleh minta brosurnya?' dianggap minta file
+
+  LOLOS  F3  'ada contoh decknya ga' dianggap minta file
+
+  LOLOS  F3  'mau lihat portfolio dong' dianggap minta file
+
+  LOLOS  F4  '20an chat per hari' TIDAK memicu konteks harga
+
+  LOLOS  F4  'kira kira berapa ya orangnya' TIDAK memicu konteks harga
+
+  LOLOS  F4  'ada berapa admin' TIDAK memicu konteks harga
+
+  LOLOS  F5  'harganya berapa ya' memicu konteks harga
+
+  LOLOS  F5  'biaya bulanannya gimana' memicu konteks harga
+
+  LOLOS  F5  'paket premium berapa harganya' memicu konteks harga
+
+  LOLOS  F6  'mau ngobrol langsung sama steven dong' terdeteksi niat bicara
+
+  LOLOS  F6  'boleh minta nomor stevennya' terdeteksi niat bicara
+
+  LOLOS  F6  'bisa ditelpon ga' terdeteksi niat bicara
+
+  LOLOS  F6  'mau meeting bisa?' terdeteksi niat bicara
+
+  LOLOS  F7  SYSTEM_DATA dipertahankan utuh
+
+  LOLOS  F8  [USER QUERY] tepat satu
+
+  LOLOS  F9  actualUserMessage bersih dari blok sistem
+
+
+
+------------------------------------------------------------------------
+
+G. PROCESS ALL — inti insiden 2026-09-05 (P0-2, P0-3, P1-4, P1-6)
+
+------------------------------------------------------------------------
+
+  LOLOS  G0  node tidak error
+
+  LOLOS  G1  balasan TIDAK diganti pertanyaan kaleng (akar insiden)
+
+  LOLOS  G1b balasan yang dikirim = tulisan AI
+
+  LOLOS  G1c deckRejected tetap terdeteksi (brief tetap disimpan)
+
+  LOLOS  G2  'boleh' setelah tawaran deck dikenali sebagai permintaan (P1-4)
+
+  LOLOS  G2b deckNotify true -> Steven pasti dinotifikasi
+
+  LOLOS  G2c last_bot_reply = teks final yang dikirim
+
+  LOLOS  G2d replyOverridden false (tidak ada penggantian teks)
+
+  LOLOS  G2e tag tidak bocor ke prospek
+
+  LOLOS  G3  'boleh' tanpa tawaran deck TIDAK dianggap minta deck
+
+  LOLOS  G4  prospek minta ditelepon -> bot dimatikan
+
+  LOLOS  G5  tag TALK_TO_ADMIN tanpa permintaan bicara -> bot TETAP HIDUP (P1-6)
+
+  LOLOS  G5b Steven tetap dinotifikasi (isTalkToAdmin true)
+
+  LOLOS  G4b 'mau ngobrol langsung sama steven dong' -> bot dimatikan
+
+  LOLOS  G4b 'boleh minta kontak stevennya' -> bot dimatikan
+
+  LOLOS  G4b 'bisa meeting minggu ini?' -> bot dimatikan
+
+  LOLOS  G4b 'ada cp yang bisa dihubungi?' -> bot dimatikan
+
+  LOLOS  G6  dua tag SEND_MEDIA tidak lagi melempar ReferenceError (P0-3)
+
+  LOLOS  G6b media pertama & kedua sama-sama terisi
+
+  LOLOS  G6c URL Drive dirapikan ke bentuk direct download
+
+  LOLOS  G7  key tidak ada -> eskalasi manual
+
+  LOLOS  G7b balasan diganti supaya tidak menjanjikan file
+
+  LOLOS  G7c penggantian ditandai replyOverridden (P0-2d)
+
+  LOLOS  G7d last_bot_reply mengikuti teks pengganti, bukan tulisan AI
+
+  LOLOS  G8  dua kandidat -> sistem bertanya balik, media tidak dikirim
+
+  LOLOS  G8b ditandai replyOverridden
+
+  LOLOS  G9  FACTS terparse
+
+  LOLOS  G9b fakta lama yang tidak disebut tetap dipertahankan
+
+  LOLOS  G9c tag FACTS tidak bocor ke prospek
+
+  LOLOS  G9d penanda perubahan benar
+
+  LOLOS  G10 output AI kosong -> ada kalimat cadangan, bukan pesan kosong
+
+  LOLOS  G11 [UNKNOWN] terdeteksi & tag dibuang
+
+  LOLOS  G12 blok DECK_REQUEST terpotong -> tag tidak bocor ke prospek
+
+  LOLOS  G12b brief yang sempat tertangkap tetap tersimpan
+
+  LOLOS  G12c keluaran terpotong di tengah blok -> brief yang sempat tertulis tetap terbaca (P1-8b)
+
+  LOLOS  G12d prospek tetap menerima kalimat yang masuk akal
+
+  LOLOS  G13 markdown dibersihkan untuk WhatsApp
+
+  LOLOS  G14 link tipe website ditempel sebagai teks, bukan diunduh
+
+
+
+------------------------------------------------------------------------
+
+H. MERGE BRIEF — gerbang notifikasi ke Steven (P1-4b)
+
+------------------------------------------------------------------------
+
+  LOLOS  H1  brief PERTAMA selalu dinotifikasi walau tingkat 1 belum lengkap
+
+  LOLOS  H1b kelengkapan dihitung
+
+  LOLOS  H2  brief yang isinya sama TIDAK dinotifikasi lagi (anti spam)
+
+  LOLOS  H3  brief bertambah isi -> dinotifikasi lagi
+
+  LOLOS  H3b isian lama tidak hilang
+
+  LOLOS  H4  prospek meminta eksplisit -> selalu dinotifikasi
+
+  LOLOS  H5  identitas bisnis berubah -> brief lama dibuang, tidak menyeret field asing
+
+  LOLOS  H6  tidak ada brief sama sekali -> tidak ada notifikasi
+
+  LOLOS  H7  perintah generate deck memakai nomor yang benar
+
+
+
+------------------------------------------------------------------------
+
+J. RAKIT KONTEKS — data prospek & kebocoran catatan internal (P2-11)
+
+------------------------------------------------------------------------
+
+  LOLOS  J1  greeting_sent='Y' -> IS_NEW_USER false
+
+  LOLOS  J1b fakta tersimpan muncul di DATA PROSPEK
+
+  LOLOS  J2  greeting_sent kosong -> IS_NEW_USER true
+
+  LOLOS  J3  greeting_sent='N' -> IS_NEW_USER true (konsisten dgn Cek_user_status, P2-11)
+
+  LOLOS  J4  catatan internal PROGRAM tidak dikirim ke AI
+
+  LOLOS  J5  baris ABOUT 'Boleh Dibagikan=Tidak' masuk aturan internal, bukan fakta
+
+  LOLOS  J6  deck_requested=Y muncul sebagai sudah_minta_pitch_deck
+
+  LOLOS  J7  fakta lebih tua dari TTL dibuang
+
+
+
+------------------------------------------------------------------------
+
+K. KONSISTENSI WORKFLOW (statis)
+
+------------------------------------------------------------------------
+
+  LOLOS  K1  semua rujukan $('NodeLain') menunjuk node yang ada
+
+  LOLOS  K2  jalur utama tersambung dari Webhook sampai pengiriman WA
+
+  LOLOS  K2b IF (Whitelist) TIDAK terjangkau lagi
+
+  LOLOS  K3  tidak ada node aktif yang menggantung di luar jalur
+
+  LOLOS  K4  model chat prospek = deepseek-v4-pro
+
+  LOLOS  K5  model ringkasan ke Steven = deepseek-v4-flash (eksplisit atau default node)
+
+  LOLOS  K6  temperature chat tetap 0.7 (keputusan Steven, jangan diturunkan)
+
+  LOLOS  K7  maxTokens chat cukup untuk brief 33 baris + [FACTS]
+
+  LOLOS  K8  Kirimi mengirim Process All.cleanOutput
+
+  LOLOS  K9  STATS.last_bot_reply diisi dari cleanOutput yang sama
+
+  LOLOS  K10 STATS.last_bot_reply_ts ikut ditulis
+
+  LOLOS  K11 bot_mode hanya OFF lewat matikanBot
+
+  LOLOS  K12 deck_requested konsisten di dua node penulis STATS
+
+  LOLOS  K13 system message memuat aturan BALASAN TERAKHIRKU
+
+  LOLOS  K14 system message memuat aturan 'satu kata = jawaban'
+
+  LOLOS  K15 placeholder {{ $json.prospect_context }} terpasang
+
+  LOLOS  K15 placeholder {{ $json.brief_context }} terpasang
+
+  LOLOS  K15 placeholder {{ $json.about_context }} terpasang
+
+  LOLOS  K15 placeholder {{ $json.program_context }} terpasang
+
+  LOLOS  K15 placeholder {{ $json.links_context }} terpasang
+
+  LOLOS  K15 placeholder {{ $json.faq_context }} terpasang
+
+  LOLOS  K16 kolom last_bot_reply ditulis DAN dibaca
+
+  LOLOS  K17 override 'Boleh tahu nama bisnisnya' sudah tidak ada di kode
+
+  LOLOS  K18 setiap penggantian teks yang tersisa menandai replyOverridden
+
+  LOLOS  K19 rapikanUrl berada di lingkup atas (bukan di dalam if)
+
+
+
+------------------------------------------------------------------------
+
+L. PENGERASAN 2026-09-06 — dua error produksi (H1, H2)
+
+------------------------------------------------------------------------
+
+  LOLOS  L1  input Chat Counter kosong ({}) -> berhenti tanpa error
+
+  LOLOS  L2  alasannya dicatat di log, bukan didiamkan total
+
+  LOLOS  L3  payload berisi tapi tanpa identitas -> TETAP throw
+
+  LOLOS  L4  pesan normal tetap resolve seperti biasa
+
+  LOLOS  L5  Chat Counter membuang reaction
+
+  LOLOS  L6  CONFIG lengkap -> tidak throw
+
+  LOLOS  L7  nilai kirimi terbaca utuh
+
+  LOLOS  L8  tab CONFIG 0 baris -> throw menyebut tab CONFIG
+
+  LOLOS  L9  satu item kosong (efek alwaysOutputData) -> throw juga
+
+  LOLOS  L10 pesannya menyebut sheet_id supaya bisa dicek aksesnya
+
+  LOLOS  L11 kunci kirimi_user_code hilang -> throw menyebut kunci itu
+
+  LOLOS  L12 pesannya membedakan 'barisnya ketemu' dari 'nilainya kosong'
+
+  LOLOS  L13 dua kunci lain dilaporkan ADA barisnya
+
+  LOLOS  L14 nilai ada barisnya tapi kosong -> tetap throw
+
+  LOLOS  L15 kunci non-kritis kosong -> TIDAK throw
+
+  LOLOS  L16 whitelist_enabled default false (mode iklan)
+
+
+
+------------------------------------------------------------------------
+
+M. GERBANG IDENTITAS — event perangkat Kirimi (H3)
+
+------------------------------------------------------------------------
+
+  LOLOS  M1  device.last_active dibuang di Chat Counter
+
+  LOLOS  M2  alasannya terekam beserta nama event
+
+  LOLOS  M3  daftar field payload ikut dicatat untuk forensik
+
+  LOLOS  M4  Resolve User Row diam saat Chat Counter sudah membuang
+
+  LOLOS  M5  event 'session.status' tanpa pengenal ikut terbuang
+
+  LOLOS  M5  event 'device.disconnected' tanpa pengenal ikut terbuang
+
+  LOLOS  M5  event 'qr.updated' tanpa pengenal ikut terbuang
+
+  LOLOS  M5  event 'ack' tanpa pengenal ikut terbuang
+
+  LOLOS  M6  event perangkat tanpa teks juga dibuang
+
+  LOLOS  M7  pesan normal tetap lolos
+
+  LOLOS  M8  pengirim @lid tetap lolos
+
+  LOLOS  M9  pesan yang pengenalnya cuma di senderAlt TIDAK dibuang
+
+  LOLOS  M10 gambar tanpa caption tetap lolos
+
+  LOLOS  M11 reaction dari nomor sah tetap dibuang (gerbang 1 utuh)
+
+  LOLOS  M12 gerbang identitas berada sebelum gerbang DROP_TYPES
+
+  LOLOS  M13 gerbang identitas memakai warn, bukan throw
+
+
+
+------------------------------------------------------------------------
+
+L. HARGA — insiden studysipil 2026-09-07 (kebocoran angka ke lead dingin)
+
+------------------------------------------------------------------------
+
+  LOLOS  L1  pesan insiden TIDAK memicu konteks harga
+
+  LOLOS  L1b pesan insiden tidak menyuntik blok [CONTEXT] harga
+
+  LOLOS  L2  'pelanggan sering nanya harga sama ongkir' = cerita pelanggan, bukan tanya harga
+
+  LOLOS  L2  'customer pd nanyain harga terus' = cerita pelanggan, bukan tanya harga
+
+  LOLOS  L2  'mereka biasanya tanya harga, stok, sama ukuran' = cerita pelanggan, bukan tanya harga
+
+  LOLOS  L2  'yang ditanya itu itu aja sih, harga sama jadwal' = cerita pelanggan, bukan tanya harga
+
+  LOLOS  L2  'calon murid pasti nanya biaya dulu' = cerita pelanggan, bukan tanya harga
+
+  LOLOS  L3  'biaya adminku sebulan sekitar 3 juta' = angka miliknya (jawaban TINGKAT 2B)
+
+  LOLOS  L3  'harga kelasku 500rb per murid' = angka miliknya (jawaban TINGKAT 2B)
+
+  LOLOS  L3  'paket kelas aku ada 3 kak' = angka miliknya (jawaban TINGKAT 2B)
+
+  LOLOS  L3  'adminku ada 2 orang, biayanya 4 juta' = angka miliknya (jawaban TINGKAT 2B)
+
+  LOLOS  L4  'harganya berapa ya' TETAP memicu konteks harga
+
+  LOLOS  L4  'biaya bulanannya gimana' TETAP memicu konteks harga
+
+  LOLOS  L4  'paket premium berapa harganya' TETAP memicu konteks harga
+
+  LOLOS  L4  'harganya gabisa kurang ya?' TETAP memicu konteks harga
+
+  LOLOS  L4  'boleh minta pricelist?' TETAP memicu konteks harga
+
+  LOLOS  L4  'mahal ga sih?' TETAP memicu konteks harga
+
+  LOLOS  L4  'ada diskon ga kak?' TETAP memicu konteks harga
+
+  LOLOS  L4  'kalau paket basic dapat apa aja?' TETAP memicu konteks harga
+
+  LOLOS  L4  'berapa biaya setupnya?' TETAP memicu konteks harga
+
+  LOLOS  L4  'oh gitu, btw harga viranya berapa kak?' TETAP memicu konteks harga
+
+  LOLOS  L5  cerita + pertanyaan asli di satu giliran tetap memicu harga
+
+  LOLOS  L6  'lagi promo buka kelas nih' (promo/bayar dicabut) TIDAK memicu harga
+
+  LOLOS  L6  'pelanggan bayar lewat transfer' (promo/bayar dicabut) TIDAK memicu harga
+
+  LOLOS  L6  'abis promo biasanya sepi' (promo/bayar dicabut) TIDAK memicu harga
+
+  LOLOS  L7  aiContext harga TIDAK lagi imperatif tanpa syarat
+
+  LOLOS  L7b aiContext harga memuat syarat eksplisit
+
+  LOLOS  L8  pesan netral tidak menyuntik [CONTEXT] apa pun
+
+  LOLOS  L9  gerbang CERITA_ORANG_LAIN / MILIK_DIA / TANYA_HARGA_KITA terpasang
+
+  LOLOS  L10 'promo' dan 'bayar' tidak lagi ada di KATA_HARGA
+
+
+
+------------------------------------------------------------------------
+
+M. PROMPT v3.6 — aturan harga & pendalaman pain point
+
+------------------------------------------------------------------------
+
+  LOLOS  M1  prefix '=' (expression mode) dipertahankan
+
+  LOLOS  M2  enam ekspresi {{ }} tetap utuh
+
+  LOLOS  M3  # HARGA melarang angka saat kata harga milik orang lain
+
+  LOLOS  M4  # HARGA menyuruh menahan angka saat ragu
+
+  LOLOS  M5  MENGGALI punya pendalaman pain point sekali
+
+  LOLOS  M6  pendalaman menanyakan AKIBAT, bukan 'ada kendala lain?'
+
+  LOLOS  M7  spek pain_points menyebut pemisah titik koma
+
+  LOLOS  M8  spek pain_points melarang mengulang masalah_utama
+
+  LOLOS  M9  suntingan tangan di n8n live ikut tersalin (tidak tertimpa)
+
+  LOLOS  M10 larangan harga di kalimat tawaran deck (v3.5) tidak hilang
+
+  LOLOS  M11 pain_points tetap ada di daftar field [DECK_REQUEST]
+
+  LOLOS  M12 fungsi pecah_pain ditemukan di buat_deck.py
+
+  LOLOS  M13 satu kalimat pain_points = hanya 2 poin (gejala lama)
+
+  LOLOS  M14 pain_points dipisah ';' menghasilkan 4 poin
+
+  LOLOS  M15 masalah_utama tetap jadi poin pertama
+
+  LOLOS  M16 batas atas 6 poin dihormati
+
+
+
+------------------------------------------------------------------------
+
+N. PROCESS ALL — detektor galian & penangkap jawaban (2026-09-14)
+
+------------------------------------------------------------------------
+
+  LOLOS  N0  node tidak error
+
+  LOLOS  N1  detektor 'Halo kak, aku Steven versi AI. Aku dibangun sama Steven' -> ['nama_lengkap']
+
+  LOLOS  N1  detektor 'Aku panggilnya siapa nih kak?' -> ['nama_lengkap']
+
+  LOLOS  N1  detektor 'Boleh kenalan dulu kak?' -> ['nama_lengkap']
+
+  LOLOS  N1  detektor 'Ini dengan kak siapa ya?' -> ['nama_lengkap']
+
+  LOLOS  N1  detektor 'mau aku mintakan Steven buatkan deck khusus buat bisnis' -> ['nama_bisnis']
+
+  LOLOS  N1  detektor 'Biar Steven tulis di decknya, usahanya namanya apa kak?' -> ['nama_bisnis']
+
+  LOLOS  N1  detektor 'Nama brandnya apa kak?' -> ['nama_bisnis']
+
+  LOLOS  N1  detektor 'Usahanya di bidang apa kak?' -> ['industri']
+
+  LOLOS  N1  detektor 'Bisnisnya apa kak?' -> ['industri']
+
+  LOLOS  N1  detektor 'Kakak jualan apa?' -> ['industri']
+
+  LOLOS  N1  detektor 'Soal chat, yang paling bikin repot sekarang apa kak?' -> ['masalah_utama']
+
+  LOLOS  N1  detektor 'Kendalanya apa sekarang kak?' -> ['masalah_utama']
+
+  LOLOS  N1  detektor 'Kira-kira sehari ada berapa chat masuk kak?' -> ['volume_chat']
+
+  LOLOS  N1  detektor 'Chatnya berapa per hari kak?' -> ['volume_chat']
+
+  LOLOS  N1  detektor 'Kalau sekarang siapa yang balas chatnya kak?' -> []
+
+  LOLOS  N1  detektor 'Ada kendala lain kak?' -> []
+
+  LOLOS  N1  detektor 'Kalau chat lagi numpuk gitu, biasanya ada yang sampai k' -> []
+
+  LOLOS  N1  detektor 'VIRA bisa dipakai buat bisnis apa aja kak.' -> []
+
+  LOLOS  N1  detektor 'Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 ' -> []
+
+  LOLOS  N1  detektor 'Biaya satu kelas kira-kira berapa kak?' -> []
+
+  LOLOS  N1  detektor 'Steven sendiri yang akan menghubungi kakak langsung.' -> []
+
+  LOLOS  N1  detektor 'mau aku mintakan Steven buatkan deck khusus buat bisnis' -> []
+
+  LOLOS  N1  detektor 'Usahanya di bidang apa kak? Sehari ada berapa chat masu' -> ['industri', 'volume_chat']
+
+  LOLOS  N1  detektor 'Btw boleh tau nama kakak siapa, dan nama usahanya apa?' -> ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  N1  detektor 'Nama adminnya siapa, dan nama brandnya apa?' -> ['nama_bisnis']
+
+  LOLOS  N2  nama dari 'Budi' -> Budi
+
+  LOLOS  N2  nama dari 'aku Callista' -> Callista
+
+  LOLOS  N2  nama dari 'panggil aja Rina kak' -> Rina
+
+  LOLOS  N2  nama dari 'nama saya Dewi' -> Dewi
+
+  LOLOS  N2  nama dari 'saya Andi, owner Andi Bakery' -> Andi
+
+  LOLOS  N2  nama dari 'halo kak, budi santoso' -> Budi Santoso
+
+  LOLOS  N2  nama dari 'Budi 😊' -> Budi
+
+  LOLOS  N2  nama dari 'Budi / mau tanya harga vira' -> Budi
+
+  LOLOS  N2  nama dari 'ehm, Budi kak' -> Budi
+
+  LOLOS  N2  nama dari 'dengan aldi / mo ty ini bs apa aj / apa sm ky chatbot biasa?' -> Aldi
+
+  LOLOS  N2  nama dari 'ini dengan aldi' -> Aldi
+
+  LOLOS  N2  nama dari 'saya dengan Rina' -> Rina
+
+  LOLOS  N2  nama dari 'sama budi kak' -> Budi
+
+  LOLOS  N3  'oke' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'kenapa emang?' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'rahasia hehe' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'nanti aja' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'mau tanya harga dulu' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'berapa harganya?' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'saya mau tanya soal VIRA dong' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'hmm' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'ehm' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'wah' BUKAN nama -> tidak disimpan
+
+  LOLOS  N3  'hmm kak' BUKAN nama -> tidak disimpan
+
+  LOLOS  N4  [FACTS] dari model menang atas penangkap
+
+  LOLOS  N5  nilai lama tidak pernah ditimpa
+
+  LOLOS  N6  balasan lalu tidak bertanya -> tidak ada yang ditangkap
+
+  LOLOS  N7  nama usaha dari 'boleh kak, namanya Teamsultan' -> 'Teamsultan'
+
+  LOLOS  N7  nama usaha dari 'Teamsultan' -> 'Teamsultan'
+
+  LOLOS  N7  nama usaha dari 'usahaku namanya Kopi Senja kak' -> 'Kopi Senja'
+
+  LOLOS  N7  nama usaha dari 'belum ada nama kak' -> ''
+
+  LOLOS  N8  bidang usaha dari 'konsultan sipil' -> 'konsultan sipil'
+
+  LOLOS  N8  bidang usaha dari 'aku jualan skincare kak' -> 'jualan skincare'
+
+  LOLOS  N8  bidang usaha dari 'bergerak di bidang pendidikan' -> 'pendidikan'
+
+  LOLOS  N8  bidang usaha dari 'gimana ya' -> ''
+
+  LOLOS  N9  masalah dari 'tenggelam balesin chat satu satu pas promo' -> 'tenggelam balesin chat satu satu pas promo'
+
+  LOLOS  N9  masalah dari 'aman aja' -> ''
+
+  LOLOS  N9  masalah dari 'nggak ada sih' -> ''
+
+  LOLOS  N10 jumlah chat dari '20an kak' -> '20an'
+
+  LOLOS  N10 jumlah chat dari 'puluhan lah' -> 'puluhan lah'
+
+  LOLOS  N10 jumlah chat dari 'boleh' -> ''
+
+  LOLOS  N10 jumlah chat dari 'belum tau' -> ''
+
+  LOLOS  N11 dua pertanyaan sekaligus -> tidak ditebak
+
+  LOLOS  N12 nama usaha yang ditangkap ikut masuk brief deck (tanpa blok dari model)
+
+  LOLOS  N13 isi blok [DECK_REQUEST] mengisi kolom STATS yang kosong
+
+  LOLOS  N13b 'belum disebut' di blok tidak mengisi apa pun
+
+  LOLOS  N14 blok deck tidak menimpa kolom STATS yang sudah terisi
+
+  LOLOS  N15 bahasa 'halo mau tanya harganya berapa ya kak' -> 'ID'
+
+  LOLOS  N15 bahasa 'hi, how much is the price for your service?' -> 'EN'
+
+  LOLOS  N15 bahasa 'mau tanya dong, how does it work for my business?' -> 'campur'
+
+  LOLOS  N15 bahasa 'Budi' -> 'EN'
+
+  LOLOS  N15 bahasa 'ok' -> ''
+
+  LOLOS  N15b bahasa_deck dari blok tetap diutamakan
+
+  LOLOS  N16 regresi insiden 2026-09-05: 'boleh' tidak ditangkap sebagai isian apa pun
+
+
+
+------------------------------------------------------------------------
+
+O. RAKIT KONTEKS — galian_berikutnya (2026-09-14)
+
+------------------------------------------------------------------------
+
+  LOLOS  O1  pesan perkenalan -> tanya nama DAN nama usaha
+
+  LOLOS  O1  perkenalan, nama sudah ada -> tanya nama usaha saja
+
+  LOLOS  O1  perkenalan, keduanya sudah ada -> tidak menggali apa pun
+
+  LOLOS  O1  giliran 2, nama usaha kosong -> tanya ulang
+
+  LOLOS  O1  giliran 2, nama usaha ada -> bidang usaha
+
+  LOLOS  O1  bidang usaha baru ditanyakan & belum dijawab -> jeda satu balasan
+
+  LOLOS  O1  giliran 4 -> jendela tanya ulang habis, bidang usaha
+
+  LOLOS  O1  giliran 6 -> bidang usaha masih dalam jendela (v3.10: 2-6)
+
+  LOLOS  O1  giliran 7 -> jendela bidang usaha habis, lanjut masalah
+
+  LOLOS  O1  bidang usaha ada -> masalah
+
+  LOLOS  O1  giliran 2, nama usaha & bidang sudah ada -> langsung masalah
+
+  LOLOS  O1  masalah baru ditanyakan -> jeda
+
+  LOLOS  O1  giliran 8 -> masalah masih dalam jendela (v3.10: 2-8)
+
+  LOLOS  O1  giliran 9 -> jendela masalah habis
+
+  LOLOS  O1  masalah ada -> jumlah chat
+
+  LOLOS  O1  giliran 10 -> jumlah chat masih dalam jendela (v3.10: 3-10)
+
+  LOLOS  O1  giliran 11 -> jendela jumlah chat habis
+
+  LOLOS  O1  semua terisi -> tidak menggali
+
+  LOLOS  O1  nama tidak ditanya lagi di luar perkenalan
+
+  LOLOS  O1  Counter kosong (kontak import) + sudah disapa -> tidak menggali
+
+  LOLOS  O2  budget & minat paket TIDAK PERNAH digali (408 kombinasi)
+
+  LOLOS  O3  nama akun WA tidak menggugurkan pertanyaan nama
+
+  LOLOS  O4  IS_NEW_USER tetap baris terakhir
+
+  LOLOS  O5  Counter rusak tidak menjatuhkan node
+
+
+
+------------------------------------------------------------------------
+
+P. NOTIF — nama asli sampai ke Steven (2026-09-14)
+
+------------------------------------------------------------------------
+
+  LOLOS  P1  notif brief deck: baris WA memuat nama asli
+
+  LOLOS  P1b tanpa nama -> 'nama belum disebut'
+
+  LOLOS  P1c perintah generate deck tetap memakai nomor
+
+  LOLOS  P2  notif media: nama asli + akun WA
+
+  LOLOS  P2b tanpa nama asli: akun WA ditandai
+
+  LOLOS  P2c nama asli = akun WA -> tidak diulang
+
+  LOLOS  P2d dua-duanya kosong -> '(belum ada nama)'
+
+  LOLOS  P3  notif UNKNOWN: nama asli + akun WA
+
+  LOLOS  P3b notif UNKNOWN tanpa nama asli
+
+  LOLOS  P4  EVENTS handover mencatat nama asli
+
+  LOLOS  P4b EVENTS tanpa nama asli -> akun WA
+
+
+
+------------------------------------------------------------------------
+
+Q. PROMPT v3.8 — nama, galian, [FACTS]
+
+------------------------------------------------------------------------
+
+  LOLOS  Q1  prefix '=' dipertahankan
+
+  LOLOS  Q2  enam ekspresi {{ }} tetap utuh
+
+  LOLOS  Q3  bagian # NAMA LAWAN BICARA tepat satu, sebelum # GAYA
+
+  LOLOS  Q4  nama ditanya SEKALI di perkenalan, tidak diulang
+
+  LOLOS  Q5  PERKENALAN tetap intro biasa + tanya nama & nama usaha
+
+  LOLOS  Q6  ALUR 7 mengikuti galian_berikutnya
+
+  LOLOS  Q7  empat galian hanya lewat baris itu
+
+  LOLOS  Q8  nama_wa BUKAN nama asli
+
+  LOLOS  Q9  [FACTS] wajib saat menjawab galian
+
+  LOLOS  Q10 budget tetap Tingkat 3 (tidak pernah ditanya)
+
+  LOLOS  Q11 prompt tidak menyuruh menanyakan minat paket
+
+  LOLOS  Q12 prompt merujuk baris galian_berikutnya yang benar-benar dibuat Rakit Konteks
+
+  LOLOS  Q13 empat contoh kalimat galian ditemukan
+
+  LOLOS  Q14 contoh prompt 'oh iya, nama usahanya apa kak?' terbaca detektor sebagai ['nama_bisnis']
+
+  LOLOS  Q14 contoh prompt 'usahanya bergerak di bidang apa kak, boleh cerita sedikit?' terbaca detektor sebagai ['industri']
+
+  LOLOS  Q14 contoh prompt 'soal chat, yang paling bikin repot sekarang apa kak?' terbaca detektor sebagai ['masalah_utama']
+
+  LOLOS  Q14 contoh prompt 'kira-kira sehari ada berapa chat masuk kak?' terbaca detektor sebagai ['volume_chat']
+
+  LOLOS  Q15 bagian NAMA punya contoh kalimat tanya nama
+
+  LOLOS  Q15 contoh tanya nama 'btw boleh tau nama kakak siapa, dan nama usahanya apa?' terbaca sebagai ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  Q16 kalimat tawaran deck (suntingan live) terbaca sebagai nama_bisnis
+
+  LOLOS  Q17 contoh Tingkat 2/2B 'biasanya mereka paling sering nanya apa ' tidak dikira galian STATS
+
+  LOLOS  Q17 contoh Tingkat 2/2B 'dari chat sampai akhirnya beli, biasanya' tidak dikira galian STATS
+
+  LOLOS  Q17 contoh Tingkat 2/2B 'biaya satu kelas kira-kira berapa kak?' tidak dikira galian STATS
+
+
+
+------------------------------------------------------------------------
+
+S. INSIDEN 2026-09-15 — nama tidak dipakai menyapa, pertanyaan dijawab dulu
+
+------------------------------------------------------------------------
+
+  LOLOS  S1  GAYA tidak lagi menyuruh memakai nama
+
+  LOLOS  S1b GAYA: nama TIDAK PERNAH dipakai di balasan
+
+  LOLOS  S2  bagian NAMA tidak lagi menyuruh 'panggil dia dengan nama itu'
+
+  LOLOS  S3  spek [FACTS] tidak lagi 'memanggilnya dengan nama itu'
+
+  LOLOS  S4  tidak ada 'kamu' di luar kutipan larangan
+
+  LOLOS  S5  insiden: nama tersimpan 'Aldi', bukan 'Dengan Aldi'
+
+  LOLOS  S5b insiden: 'Aldi' dihapus dari balasan yang terkirim
+
+  LOLOS  S5c insiden: sapaan jadi 'Halo kak', kalimat tetap utuh
+
+  LOLOS  S5d last_bot_reply = teks yang sudah dibersihkan
+
+  LOLOS  S5e penghapusan nama bukan penggantian balasan (replyOverridden tetap false)
+
+  LOLOS  S6  'kak Aldi' -> 'kak'
+
+  LOLOS  S6  'Makasih Aldi' -> 'Makasih kak'
+
+  LOLOS  S6  nama dari [FACTS] giliran ini ikut dihapus
+
+  LOLOS  S6  'Pak Budi' -> 'Pak'
+
+  LOLOS  S6  nama yang juga bagian nama usaha TIDAK disentuh
+
+  LOLOS  S6  nama = kata umum ('Indah') TIDAK disentuh
+
+  LOLOS  S6  nama < 3 huruf TIDAK disentuh
+
+  LOLOS  S6  kata yang hanya MEMUAT nama tidak disentuh
+
+  LOLOS  S6  tanpa nama -> tidak berubah
+
+  LOLOS  S7  insiden: pesan berisi pertanyaan -> galian DITUNDA (pertanyaan dijawab dulu)
+
+  LOLOS  S7b baris panggilan: kak muncul begitu nama tersimpan
+
+  LOLOS  S8  'bisa integrasi ke IG?' (bertanya) -> galian ditunda
+
+  LOLOS  S8  'harganya berapa' (bertanya) -> galian ditunda
+
+  LOLOS  S8  'gimana cara kerjanya' (bertanya) -> galian ditunda
+
+  LOLOS  S8  'kapan bisa mulai' (bertanya) -> galian ditunda
+
+  LOLOS  S9  'dengan aldi' (tidak bertanya) -> galian bidang usaha jalan
+
+  LOLOS  S9  'oh gitu oke kak' (tidak bertanya) -> galian bidang usaha jalan
+
+  LOLOS  S9  'sip, masuk akal' (tidak bertanya) -> galian bidang usaha jalan
+
+  LOLOS  S10 pesan perkenalan yang bertanya tetap menanyakan nama
+
+  LOLOS  S11 tanpa nama tersimpan -> tidak ada baris panggilan
+
+  LOLOS  S11b IS_NEW_USER tetap baris terakhir
+
+
+
+------------------------------------------------------------------------
+
+T. UJI 2026-09-17 — nama usaha di perkenalan, jawaban gabungan, balasan ringkas
+
+------------------------------------------------------------------------
+
+  LOLOS  T1  PERKENALAN memberi contoh SATU kalimat nama + nama usaha
+
+  LOLOS  T1b contoh itu terbaca detektor sebagai dua slot
+
+  LOLOS  T2  'apa yang bikin dia tertarik' dibuang dari prompt
+
+  LOLOS  T2b pesan perkenalan dilarang menanyakan hal lain (bidang, masalah, alasan tertarik)
+
+  LOLOS  T3  larangan lama menggabung nama + nama usaha sudah dihapus
+
+  LOLOS  T3b cara membaca jawaban gabungan dijelaskan (jenis usaha -> industri)
+
+  LOLOS  T4  TINGKAT 1: nama usaha tidak lagi 'saat menawarkan decknya'
+
+  LOLOS  T4b kalimat tawaran deck tetap jadi jaring terakhir
+
+  LOLOS  T4c [FACTS] menjelaskan pertanyaan gabungan
+
+  LOLOS  T5  target panjang: DUA kalimat, 20-35 kata
+
+  LOLOS  T5b batas keras 3 kalimat tetap ada
+
+  LOLOS  T5c larangan mengulang ucapan prospek
+
+  LOLOS  T5d ALUR 10 menyuruh membuang kalimat yang mengulang sebelum mengirim
+
+  LOLOS  T5e dua contoh balasan 'pas' ditemukan
+
+  LOLOS  T5f contoh pas 'Dua-duanya bisa dipegang AI ka...' <= 2 kalimat & <= 35 kata (1 kal, 16 kata)
+
+  LOLOS  T5f contoh pas 'Lumayan buat dibalas sendiri s...' <= 2 kalimat & <= 35 kata (2 kal, 19 kata)
+
+  LOLOS  T5g contoh buruk memuat pembuka terlarang 'Jadi alurnya ada dua'
+
+  LOLOS  T5h tidak ada nama prospek uji di prompt
+
+  LOLOS  T5i tidak ada tanda seru di contoh 'pas'
+
+  LOLOS  T6  detektor ' Btw boleh tau nama kakak siapa, dan nama usahanya apa?' -> ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  T6  detektor 'Boleh tau nama kakak siapa dan nama usahanya apa kak?' -> ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  T6  detektor 'Namanya siapa kak, usahanya namanya apa?' -> ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  T6  detektor 'eh kenalan kak, namanya siapa dan usahanya namanya apa?' -> ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  T6  detektor 'Kalau boleh tau dengan kak siapa, dan nama tokonya apa?' -> ['nama_bisnis', 'nama_lengkap']
+
+  LOLOS  T6  detektor ' AI customer service? Btw, boleh tau namanya siapa kak?' -> ['industri', 'nama_lengkap']
+
+  LOLOS  T6  detektor 'Nama usahanya apa, dan yang balas chat siapa?' -> ['nama_bisnis']
+
+  LOLOS  T6  detektor 'Nama pelanggannya siapa aja kak?' -> []
+
+  LOLOS  T6  detektor 'Oh iya, nama usahanya apa kak?' -> ['nama_bisnis']
+
+  LOLOS  T6  detektor 'hanya bergerak di bidang apa kak, boleh cerita sedikit?' -> ['industri']
+
+  LOLOS  T7  'Rina, Dapur Mama' -> nama='Rina' usaha='Dapur Mama' bidang=''
+
+  LOLOS  T7  'Rina kak, usahaku namanya Dapur Mama' -> nama='Rina' usaha='Dapur Mama' bidang=''
+
+  LOLOS  T7  'aku Rina dari Dapur Mama' -> nama='Rina' usaha='Dapur Mama' bidang=''
+
+  LOLOS  T7  'aku Rina, usahaku Dapur Mama' -> nama='Rina' usaha='Dapur Mama' bidang=''
+
+  LOLOS  T7  'Rina owner Kopi Senja' -> nama='Rina' usaha='Kopi Senja' bidang=''
+
+  LOLOS  T7  'Nama saya Rina, usaha saya Kopi Senja' -> nama='Rina' usaha='Kopi Senja' bidang=''
+
+  LOLOS  T7  'Rina / Kopi Senja' -> nama='Rina' usaha='Kopi Senja' bidang=''
+
+  LOLOS  T7  'Rina - Kopi Senja kak' -> nama='Rina' usaha='Kopi Senja' bidang=''
+
+  LOLOS  T7  'usahaku Kopi Senja, aku Rina' -> nama='Rina' usaha='Kopi Senja' bidang=''
+
+  LOLOS  T7  'Kopi Senja, aku Rina' -> nama='Rina' usaha='Kopi Senja' bidang=''
+
+  LOLOS  T7  'oke kak, aku Rina dari Toko Berkah Jaya' -> nama='Rina' usaha='Berkah Jaya' bidang=''
+
+  LOLOS  T7  'Nadia kak, bisnis aku katering, chat suka numpuk pas malem' -> nama='Nadia' usaha='' bidang='katering'
+
+  LOLOS  T7  'Rina, katering rumahan' -> nama='Rina' usaha='' bidang='katering rumahan'
+
+  LOLOS  T7  'Rina, usahaku katering' -> nama='Rina' usaha='' bidang='katering'
+
+  LOLOS  T7  'aku Rina, jualan skincare' -> nama='Rina' usaha='' bidang='jualan skincare'
+
+  LOLOS  T7  'Rina' -> nama='Rina' usaha='' bidang=''
+
+  LOLOS  T7  'Rina kak' -> nama='Rina' usaha='' bidang=''
+
+  LOLOS  T7  'Rina dari Surabaya' -> nama='Rina' usaha='' bidang=''
+
+  LOLOS  T7  'Rina / mau tanya harganya dong' -> nama='Rina' usaha='' bidang=''
+
+  LOLOS  T7  'Rina, belum ada nama usahanya kak' -> nama='Rina' usaha='' bidang=''
+
+  LOLOS  T7  'dengan aldi / mo ty ini bs apa aj / apa sm ky chatbot biasa?' -> nama='Aldi' usaha='' bidang=''
+
+  LOLOS  T7  'harganya berapa kak?' -> nama='' usaha='' bidang=''
+
+  LOLOS  T7  'rahasia hehe' -> nama='' usaha='' bidang=''
+
+  LOLOS  T8  [FACTS] dari model menang atas penangkap gabungan
+
+  LOLOS  T8b [FACTS] hanya nama -> nama usaha tetap ditangkap penangkap
+
+  LOLOS  T8c nama usaha lama tidak pernah ditimpa
+
+  LOLOS  T8d slotTertangkap mencatat dua kolom
+
+  LOLOS  T9  jawaban tanya ulang nama usaha ditangkap (jalur satu slot)
+
+  LOLOS  T9b tanpa pertanyaan nama orang -> penangkap gabungan tidak jalan
+
+  LOLOS  T10 uji 17/09: 'Salam kenal Nadia' -> 'Salam kenal kak' walau nama tidak tersimpan
+
+  LOLOS  T10b kata 'katering' di balasan tidak tersentuh
+
+  LOLOS  T10c perkenalan lama (bidang + nama) tetap tidak ditebak: nama tidak disimpan
+
+  LOLOS  T10d nama tebakan hanya dihapus sesudah sapaan, tidak di tengah kalimat
+
+  LOLOS  T10e tebakan yang ternyata bukan nama ('katering') tidak merusak balasan
+
+  LOLOS  T10f tanpa pertanyaan nama sebelumnya -> tidak ada tebakan
+
+  LOLOS  T11 pesan 1: galian = nama DAN nama usaha, satu kalimat
+
+  LOLOS  T11b pesan 1, nama sudah disebut -> nama usaha saja
+
+  LOLOS  T11c perkenalan tidak pernah menggali bidang/masalah/jumlah chat
+
+  LOLOS  T12 pesan 2 (jawaban uji 17/09 atas perkenalan baru): nama & bidang tersimpan, nama usaha kosong
+
+  LOLOS  T12b nama tidak dipakai menyapa
+
+  LOLOS  T13 giliran 2, nama usaha belum tercatat -> tanya ulang (walau perkenalan baru saja menanyakannya)
+
+  LOLOS  T13b baris tanya ulang memberi jalan keluar kalau nama usahanya ternyata sudah disebut
+
+  LOLOS  T13c giliran 2 tapi prospek bertanya -> galian ditunda (pertanyaan dijawab dulu)
+
+  LOLOS  T13d tanya ulang yang tertunda jalan di giliran 3
+
+  LOLOS  T13e tanya ulang sudah dilakukan & tidak dijawab -> lanjut bidang usaha, TIDAK diulang lagi
+
+  LOLOS  T13f nama usaha tidak pernah ditanya ulang sesudah giliran 3 (30 kombinasi)
+
+  LOLOS  T14 giliran 3, nama usaha sudah ada -> bidang usaha + cerita singkat
+
+  LOLOS  T14b giliran 3, bidang sudah ada -> masalah
+
+  LOLOS  T14c contoh galian bidang di prompt ikut kena jeda satu balasan
+
+
+
+------------------------------------------------------------------------
+
+R. BEDAH REGRESI v3.10 vs export live — yang tidak disebut patch tidak tersentuh
+
+------------------------------------------------------------------------
+
+  LOLOS  R1  jumlah & nama node sama dengan export live
+
+  LOLOS  R2  koneksi identik
+
+  LOLOS  R3  86 node lain identik byte per byte dengan export live
+
+  LOLOS  R4  node yang diubah: tipe/versi/posisi/kredensial tetap
+
+  LOLOS  R4b settings workflow tetap
+
+  LOLOS  R5  Process All: baris lama yang diganti hanya di detektor nama & jaring nama
+
+  LOLOS  R6  Rakit Konteks: baris lama yang diganti hanya di detektor, komentar, dan GALIAN
+
+  LOLOS  R7  detektor galian tetap IDENTIK di Process All dan Rakit Konteks
+
+  LOLOS  R7b detektor memang berubah dari export live (pertanyaan gabungan)
+
+  LOLOS  R8  system prompt: baris lama yang diganti hanya di 9 wilayah sasaran patch
+
+  LOLOS  R9  AI Agent: selain systemMessage identik
+
+  LOLOS  R10 DeepSeek Personal Chat: temperature tetap 0.7 (panjang diatur lewat prompt, bukan parameter)
+
+
+
+========================================================================
+
+RINGKASAN UAT
+
+========================================================================
+
+  LOLOS : 491
+
+  GAGAL : 0
+
+
+
+------------------------------------------------------------------------
+
+UAT MANUAL — wajib dijalankan di nomor asli sebelum iklan menyala
+
+------------------------------------------------------------------------
+
+  1. SUDAH: kolom last_bot_reply + last_bot_reply_ts ada di tab STATS (terverifikasi 2026-09-06).
+
+  2. SUDAH: whitelist_enabled=false, bot_wa_number=6285155202354 (terverifikasi 2026-09-06).
+
+  3. CONFIG: pastikan sel A10 berbunyi kirimi_user_code (sempat tertimpa huruf f), dan naikkan rate_limit_max 5 -> 15.
+
+  4. Import 2026-09-18-VIRA-Personal-Main-v3.10.json, matikan v3.9 dulu, lalu aktifkan v3.10. Tidak ada kolom baru.
+
+  5. Diamkan ~15 menit tanpa chat apa pun. Kirimi mengirim device.last_active berkala; sesudah v3.2 tidak boleh ada execution merah dari denyut itu lagi.
+
+  6. Chat dari nomor KETIGA (bukan 2 nomor uji lama) - harus dibalas. Ini bukti P0-1 beres.
+
+  7. Ulang persis alur 2026-09-05: tanya AI CS -> sebut bidang -> tanya harga -> 'udah itu aja' -> terima tawaran deck dengan 'boleh' -> jawab nama bisnis. VIRA harus mengenali nama bisnis itu, dan Steven harus menerima notif brief.
+
+  8. Kirim 'boleh minta brosurnya' saat LINKS tidak punya brosur - balasan tidak boleh menjanjikan file.
+
+  9. Kirim 'chat paling ramai hari senin' - VIRA harus tetap membalas (bot tidak mati).
+
+  10. Kirim 'mau ngobrol langsung sama Steven' - notif handover masuk DAN bot berhenti.
+
+  11. Cek kolom STATS.last_bot_reply terisi teks balasan terakhir.
+
+  12. HARGA (insiden 2026-09-07) — ulang persis: 'mau tanya soal AI customer service' -> sebut bidang usaha -> lalu kirim 'biasanya pas lg promo buka kelas, ads itu pasti pd tanya hal yg sama, harga kuota apa aja yg didapet, sama jadwalnya kapan'. VIRA TIDAK BOLEH menyebut Rp3.000.000 / Rp5.000.000 di balasan itu.
+
+  13. HARGA (kontrol) — di percakapan yang sama, lanjut 'kalau paket basic berapa ya?'. Di sini VIRA HARUS menyebut kisaran dan mengarahkan ke Steven.
+
+  14. PAIN POINT — setelah prospek menyebut masalah utamanya, VIRA harus menanyakan AKIBATNYA satu kali (mis. 'ada yang sampai kelewat nggak kak?'), tidak dua kali.
+
+  15. PAIN POINT — cek notif brief: baris 'Keluhan lain' harus berisi lebih dari satu keluhan dipisah ';', dan tidak boleh mengulang kalimat 'Masalah utama'.
+
+  16. DECK — generate deck dari brief itu, pastikan slide Pain Points memuat 3+ poin.
+
+  17. PERKENALAN — nomor uji (baris STATS-nya dihapus dulu) kirim 'Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.': perkenalan + SATU kalimat 'nama kakak siapa, dan nama usahanya apa?'. TIDAK ada pertanyaan bidang usaha atau alasan tertarik.
+
+  18. NAMA + USAHA — ulang uji 17/09: jawab 'Nadia kak, bisnis aku katering, chat suka numpuk pas malem'. Balasan menyapa 'kak' TANPA nama dan menanyakan ulang nama usaha (sekali). STATS: nama_lengkap = Nadia, industri = katering, nama_bisnis kosong.
+
+  19. NAMA USAHA — jawab 'Dapur Nadia': STATS.nama_bisnis = Dapur Nadia. Balasan berikutnya tidak menanyakan nama usaha lagi, lanjut masalah (bidang sudah ada) atau bidang usaha + cerita singkat.
+
+  20. NAMA + USAHA SEKALIGUS — nomor uji baru, jawab perkenalan dengan 'Rina, Kopi Senja': balasan TIDAK menanyakan nama usaha lagi. STATS: nama_lengkap = Rina, nama_bisnis = Kopi Senja.
+
+  21. RINGKAS — sepanjang uji, balasan galian umumnya 2 kalimat (maks 3) dan TIDAK membuka dengan merangkum jawaban ('Jadi...', 'Berarti...', 'Paham, berarti...', 'Nah itu...'). Bandingkan dengan transkrip 17/09.
+
+  22. NAMA — ulang insiden 2026-09-15: jawab 'dengan aldi' + 'mo ty ini bs apa aj' + 'apa sm ky chatbot biasa?'. VIRA menyapa 'kak' (TANPA nama), MENJAWAB pertanyaannya, dan tidak menanyakan bidang usaha di balasan itu. STATS.nama_lengkap = Aldi.
+
+  23. GALIAN — lanjut chat biasa: berikutnya VIRA menanyakan bidang usaha, lalu masalah, lalu jumlah chat per hari (satu per balasan). Setiap jawaban muncul di STATS: industri, masalah_utama, volume_chat, bahasa.
+
+  24. GALIAN — abaikan satu pertanyaan: balasan berikutnya TIDAK mengulangnya.
+
+  25. DECK — sampai tawaran deck: REQUESTS.nama_bisnis SUDAH terisi dari awal, notif brief ke Steven berbaris 'WA: 62xxx · Nadia', dan deck yang digenerate tidak lagi bernama 'tanpa-nama.pdf'.
+
+  26. BUDGET/PAKET — sepanjang uji, VIRA tidak pernah menanyakan anggaran atau Basic/Premium.
+

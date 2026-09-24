@@ -1,0 +1,1175 @@
+{
+  "name": "VIRA_MockBooking",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 1 * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        1056
+      ],
+      "id": "ee90cfed-8886-4640-8758-fc4e72a0b172",
+      "name": "Schedule: 1st of Month"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Runs on the 1st of each month.\n// Generates slots for the NEXT month.\n// Days: Monday(1), Tuesday(2), Thursday(4), Friday(5) — skip Wednesday & weekend.\n// Time: 19:30 – 21:30 WIB\n\nconst WEEKDAY_ID = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];\nconst MONTH_ID   = [\n  'Januari','Februari','Maret','April','Mei','Juni',\n  'Juli','Agustus','September','Oktober','November','Desember'\n];\n\nconst now        = new Date();\nconst nextFirst  = new Date(now.getFullYear(), now.getMonth() + 1, 1);\nconst year       = nextFirst.getFullYear();\nconst month      = nextFirst.getMonth(); // 0-indexed\n\nconst slots = [];\nconst d     = new Date(year, month, 1);\n\nwhile (d.getMonth() === month) {\n  const dow = d.getDay();\n  // Include Mon(1), Tue(2), Thu(4), Fri(5)\n  if ([1, 2, 4, 5].includes(dow)) {\n    const dd    = String(d.getDate()).padStart(2, '0');\n    const mm    = String(month + 1).padStart(2, '0');\n    const yyyy  = String(year);\n    const id    = `SLOT-${yyyy}${mm}${dd}`;\n    const label = `${WEEKDAY_ID[dow]}, ${d.getDate()} ${MONTH_ID[month]} ${year}`;\n    slots.push({\n      ID          : id,\n      Tanggal     : label,\n      JamMulai    : '19:30',\n      JamSelesai  : '21:30',\n      Booked      : '',\n      NamaPemesan : '',\n      NoWaPemesan : '',\n    });\n  }\n  d.setDate(d.getDate() + 1);\n}\n\nif (slots.length === 0) throw new Error('No slots generated — check month logic.');\n\n// Store summary for notify node\n$vars.slotCount  = slots.length;\n$vars.monthLabel = `${MONTH_ID[month]} ${year}`;\n\nreturn slots.map(s => ({ json: s }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1056
+      ],
+      "id": "8304a15e-c68f-4a0a-8ab8-90059a5969c7",
+      "name": "Generate Slots for Next Month"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Tanggal": "={{ $json.Tanggal }}",
+            "JamMulai": "={{ $json.JamMulai }}",
+            "JamSelesai": "={{ $json.JamSelesai }}",
+            "Booked": "",
+            "NamaPemesan": "",
+            "NoWaPemesan": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "JamMulai",
+              "displayName": "JamMulai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "JamSelesai",
+              "displayName": "JamSelesai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Booked",
+              "displayName": "Booked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NamaPemesan",
+              "displayName": "NamaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "NoWaPemesan",
+              "displayName": "NoWaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        1056
+      ],
+      "id": "a282469d-7d1c-43a1-aca2-b8b67c24d71d",
+      "name": "Append Slots to MOCK_SLOTS",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate results and build summary\nconst items     = $input.all();\nconst count     = items.length;\nconst monthLabel = $vars.monthLabel || 'bulan depan';\nreturn [{ json: { count, monthLabel } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        1056
+      ],
+      "id": "bf8ff267-3a17-430d-a59a-da0125fc5e85",
+      "name": "Summarize"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"🗓️ [JADWAL MOCK INTERVIEW]\\nJadwal \" + $json.monthLabel + \" sudah di-generate: \" + $json.count + \" sesi (Senin, Selasa, Kamis, Jumat · 19:30–21:30 WIB).\\n\\nCek sheet MOCK_SLOTS untuk detail.\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1792,
+        1056
+      ],
+      "id": "2faa80ab-01c0-41c5-9c60-e55244cda2d8",
+      "name": "Notify Sam (Slots Generated)",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "content": "## Slot Generator — Auto-generate jadwal bulanan\n\n**Jadwal:** Trigger pada tanggal 1 setiap bulan (jam 01:00 WIB) → generate slot untuk bulan BERIKUTNYA.\n\n**Rules:**\n- Hari: Senin, Selasa, Kamis, Jumat (skip Rabu & weekend)\n- Jam: 19:30 – 21:30 WIB\n- ID format: SLOT-YYYYMMDD\n\n**Flow:**\nSchedule → Generate code → Append ke MOCK_SLOTS (satu row per slot) → Notify Sam via WA\n\n**Catatan:** Jika perlu skip tanggal tertentu (libur nasional, dll), hapus manual di sheet MOCK_SLOTS setelah generate.",
+        "height": 220,
+        "width": 680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "82f9e9f7-7d1e-4742-8810-82fa47d37112",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "path": "mock-booking-slots",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        1344
+      ],
+      "id": "cc63588a-940f-45ec-997a-dfb8ccbc8794",
+      "name": "Webhook GET (get_slots)",
+      "webhookId": "mock-booking-get"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mock-booking-submit",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        1744
+      ],
+      "id": "b6c95f3d-3cfd-4bbf-913b-a1649343ffe6",
+      "name": "Webhook POST (submit)",
+      "webhookId": "mock-booking-post"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        1344
+      ],
+      "id": "6b3a1e0b-6381-4e7d-ae77-47565e2d4a5f",
+      "name": "Read MOCK_SLOTS",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\n\nconst slots = rows\n  .filter(r => String(r.json['Booked'] || '').trim().toUpperCase() !== 'Y')\n  .map(r => ({\n    id        : String(r.json['ID']         || '').trim(),\n    tanggal   : String(r.json['Tanggal']    || '').trim(),\n    jamMulai  : String(r.json['JamMulai']   || '').trim(),\n    jamSelesai: String(r.json['JamSelesai'] || '').trim(),\n    booked    : false,\n  }))\n  .filter(s => s.id && s.tanggal && s.jamMulai && s.jamSelesai);\n\nreturn [{ json: { slots } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        1344
+      ],
+      "id": "57d9bd68-64bd-4755-a826-2b2be75fc1a7",
+      "name": "Format Slots"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.slots) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1712,
+        1344
+      ],
+      "id": "aeae1c03-61da-4720-94c3-74059b40c677",
+      "name": "Return Slots"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst required = [\n  'idBooking', 'tanggal', 'noWaAnak', 'namaAnak', 'namaOrangTua',\n  'asalKota', 'sekolah', 'kelas', 'kurikulumSekolah', 'targetUniJurusan',\n  'jamMulai', 'jamSelesai', 'slotId'\n];\nconst missing = required.filter(k => !body[k] || String(body[k]).trim() === '');\nif (missing.length > 0) throw new Error('Missing fields: ' + missing.join(', '));\n\nconst wa = String(body.noWaAnak).trim();\nif (!/^(08\\d{8,12}|628\\d{8,12})$/.test(wa)) throw new Error('Format noWaAnak tidak valid: ' + wa);\n\nreturn [{ json: {\n  idBooking        : String(body.idBooking).trim(),\n  tanggal          : String(body.tanggal).trim(),\n  noWaAnak         : wa,\n  namaAnak         : String(body.namaAnak).trim(),\n  namaOrangTua     : String(body.namaOrangTua).trim(),\n  asalKota         : String(body.asalKota).trim(),\n  sekolah          : String(body.sekolah).trim(),\n  kelas            : String(body.kelas).trim(),\n  kurikulumSekolah : String(body.kurikulumSekolah).trim(),\n  targetUniJurusan : String(body.targetUniJurusan).trim(),\n  bimbingan        : 'University Mock Interview',\n  jamMulai         : String(body.jamMulai).trim(),\n  jamSelesai       : String(body.jamSelesai).trim(),\n  slotId           : String(body.slotId).trim(),\n  status           : 'Pending',\n  timestamp        : body.timestamp || Math.floor(Date.now() / 1000),\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        1744
+      ],
+      "id": "384adfa3-bd19-4177-8929-3a28303170ff",
+      "name": "Validate Payload",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\": \"BAD_REQUEST\", \"message\": \"Invalid payload\"}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        1968
+      ],
+      "id": "5577240c-e7a5-4cce-a14b-bceba01c921c",
+      "name": "Return 400 Bad Request"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $json.slotId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        1744
+      ],
+      "id": "a70c69d2-6895-4527-a2eb-9bdac2e58e69",
+      "name": "Read Slot by ID",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const slotRows = $input.all();\nconst payload  = $('Validate Payload').first().json;\n\nif (slotRows.length === 0) {\n  return [{ json: { slotTaken: true, reason: 'SLOT_NOT_FOUND', ...payload } }];\n}\n\nconst slot   = slotRows[0].json;\nconst Booked = String(slot['Booked'] || '').trim().toUpperCase();\n\nif (Booked === 'Y') {\n  return [{ json: { slotTaken: true, reason: 'SLOT_TAKEN', ...payload } }];\n}\n\nreturn [{ json: { slotTaken: false, rowNumber: slot.row_number, ...payload } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        1744
+      ],
+      "id": "9d199033-7886-4957-be2e-187107e8435d",
+      "name": "Check Slot Availability"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "slot-taken-check",
+              "leftValue": "={{ $json.slotTaken }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        1744
+      ],
+      "id": "9e587b3a-5490-4786-8656-f11782657f79",
+      "name": "Slot Taken?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"error\": \"SLOT_TAKEN\", \"message\": \"Slot sudah dibooked.\"}",
+        "options": {
+          "responseCode": 409,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2272,
+        1632
+      ],
+      "id": "707c22e0-ec55-4371-aa06-61fa90f845a2",
+      "name": "Return 409 Slot Taken"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_SLOTS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 0,
+            "ID": "={{ $json.slotId }}",
+            "Booked": "Y",
+            "NamaPemesan": "={{ $json.namaAnak }}",
+            "NoWaPemesan": "={{ $json.noWaAnak }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "JamMulai",
+              "displayName": "JamMulai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "JamSelesai",
+              "displayName": "JamSelesai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Booked",
+              "displayName": "Booked",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NamaPemesan",
+              "displayName": "NamaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NoWaPemesan",
+              "displayName": "NoWaPemesan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2272,
+        1872
+      ],
+      "id": "a71a9340-0e19-49f4-a2cb-8455ac028b7d",
+      "name": "Flag Slot Booked",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MOCK_INTERVIEW_BOOKING",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID Booking": "={{ $('Check Slot Availability').first().json.idBooking }}",
+            "Tanggal": "={{ $('Check Slot Availability').first().json.tanggal }}",
+            "Jam Mulai": "={{ $('Check Slot Availability').first().json.jamMulai }}",
+            "Jam Selesai": "={{ $('Check Slot Availability').first().json.jamSelesai }}",
+            "Sesi": "={{ $('Check Slot Availability').first().json.tanggal + ' · ' + $('Check Slot Availability').first().json.jamMulai + '–' + $('Check Slot Availability').first().json.jamSelesai + ' WIB' }}",
+            "Nama Anak": "={{ $('Check Slot Availability').first().json.namaAnak }}",
+            "Nama Orang Tua": "={{ $('Check Slot Availability').first().json.namaOrangTua }}",
+            "No WA Anak": "={{ $('Check Slot Availability').first().json.noWaAnak }}",
+            "Asal Kota": "={{ $('Check Slot Availability').first().json.asalKota }}",
+            "Sekolah": "={{ $('Check Slot Availability').first().json.sekolah }}",
+            "Kelas": "={{ $('Check Slot Availability').first().json.kelas }}",
+            "Kurikulum Sekolah": "={{ $('Check Slot Availability').first().json.kurikulumSekolah }}",
+            "Target Uni Jurusan": "={{ $('Check Slot Availability').first().json.targetUniJurusan }}",
+            "Bimbingan": "University Mock Interview",
+            "Status": "Pending",
+            "Timestamp": "={{ $('Check Slot Availability').first().json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Booking",
+              "displayName": "ID Booking",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam Mulai",
+              "displayName": "Jam Mulai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam Selesai",
+              "displayName": "Jam Selesai",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sesi",
+              "displayName": "Sesi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama Anak",
+              "displayName": "Nama Anak",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama Orang Tua",
+              "displayName": "Nama Orang Tua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No WA Anak",
+              "displayName": "No WA Anak",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Asal Kota",
+              "displayName": "Asal Kota",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sekolah",
+              "displayName": "Sekolah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kelas",
+              "displayName": "Kelas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kurikulum Sekolah",
+              "displayName": "Kurikulum Sekolah",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Target Uni Jurusan",
+              "displayName": "Target Uni Jurusan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bimbingan",
+              "displayName": "Bimbingan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan Sam",
+              "displayName": "Catatan Sam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2512,
+        1872
+      ],
+      "id": "3bf3a2d6-66e7-459f-b647-d821c715f443",
+      "name": "Append to MOCK_INTERVIEW_BOOKING",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"📅 [BOOKING MOCK INTERVIEW]\\n\" + \"ID: \" + $('Check Slot Availability').first().json.idBooking + \"\\n\\n\" + \"👤 Nama Anak: \" + $('Check Slot Availability').first().json.namaAnak + \"\\n\" + \"👨‍👩‍👧 Orang Tua: \" + $('Check Slot Availability').first().json.namaOrangTua + \"\\n\" + \"📱 No WA: \" + $('Check Slot Availability').first().json.noWaAnak + \"\\n\\n\" + \"🏫 Sekolah: \" + $('Check Slot Availability').first().json.sekolah + \" (Kelas \" + $('Check Slot Availability').first().json.kelas + \")\" + \"\\n\" + \"📚 Kurikulum: \" + $('Check Slot Availability').first().json.kurikulumSekolah + \"\\n\" + \"🌆 Asal Kota: \" + $('Check Slot Availability').first().json.asalKota + \"\\n\" + \"🎯 Target: \" + $('Check Slot Availability').first().json.targetUniJurusan + \"\\n\\n\" + \"🗓️ Jadwal: \" + $('Check Slot Availability').first().json.tanggal + \" · \" + $('Check Slot Availability').first().json.jamMulai + \"–\" + $('Check Slot Availability').first().json.jamSelesai + \" WIB\" + \"\\n\\n\" + \"Cek sheet MOCK_INTERVIEW_BOOKING\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2752,
+        1872
+      ],
+      "id": "65a9291c-b15f-4288-a3ab-89367f83a6fe",
+      "name": "Notify Sam",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, notifyFailed: false, idBooking: $('Check Slot Availability').first().json.idBooking }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2992,
+        1792
+      ],
+      "id": "28c25db9-3dc5-4855-9cd9-c360781107e9",
+      "name": "Return 200 OK"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: false, error: 'NOTIFY_FAILED', notifyFailed: true, idBooking: $('Check Slot Availability').first().json.idBooking, message: 'Booking berhasil disimpan tetapi notifikasi ke Sam gagal terkirim.' }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2992,
+        1968
+      ],
+      "id": "d1b38379-bf5a-4478-8eba-11211002a0e9",
+      "name": "Return 200 Notify Failed"
+    },
+    {
+      "parameters": {
+        "content": "## Mock Booking Workflow\n\n**Submit flow:**\n1. Validate payload (all required fields)\n2. Check slot availability in MOCK_SLOTS\n3. If taken → 409\n4. Flag slot as Booked=Y\n5. Append to MOCK_INTERVIEW_BOOKING sheet\n6. Notify Sam via kirimi.id\n   - Success → Return 200 OK  `{ ok: true, notifyFailed: false }`\n   - Fail    → Return 200 Notify Failed  `{ ok: false, error: 'NOTIFY_FAILED' }`\n\n**Sheet columns required in MOCK_INTERVIEW_BOOKING:**\nID Booking | Tanggal | Jam Mulai | Jam Selesai | Sesi | Nama Anak | Nama Orang Tua | No WA Anak | Asal Kota | Sekolah | Kelas | Kurikulum Sekolah | Target Uni Jurusan | Bimbingan | Status | Catatan Sam | Timestamp\n\n**URLs:**\n[mock booking](https://tinyurl.com/mockbooking)\n[notes chatbot](https://docs.google.com/document/d/1E-TAxZImdeAFhtD9rAK2Lk_j2wYaehSze8SfH6ztWQM/edit?tab=t.0)\n[the scholars database](https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?gid=30643684#gid=30643684)",
+        "height": 340,
+        "width": 820
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2256,
+        1136
+      ],
+      "typeVersion": 1,
+      "id": "99d75e9d-011b-447f-add1-f95bedabf1e8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Edit ganti no hp Sam",
+        "height": 80,
+        "width": 228
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1760,
+        960
+      ],
+      "typeVersion": 1,
+      "id": "b74de03a-e6db-452a-91f0-11120138c238",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Edit ganti no hp Sam",
+        "height": 80,
+        "width": 228
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2688,
+        2048
+      ],
+      "typeVersion": 1,
+      "id": "cd55642e-49e5-4727-abf1-23aa0f71ffab",
+      "name": "Sticky Note3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule: 1st of Month": {
+      "main": [
+        [
+          {
+            "node": "Generate Slots for Next Month",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Slots for Next Month": {
+      "main": [
+        [
+          {
+            "node": "Append Slots to MOCK_SLOTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Slots to MOCK_SLOTS": {
+      "main": [
+        [
+          {
+            "node": "Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize": {
+      "main": [
+        [
+          {
+            "node": "Notify Sam (Slots Generated)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook GET (get_slots)": {
+      "main": [
+        [
+          {
+            "node": "Read MOCK_SLOTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MOCK_SLOTS": {
+      "main": [
+        [
+          {
+            "node": "Format Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Slots": {
+      "main": [
+        [
+          {
+            "node": "Return Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook POST (submit)": {
+      "main": [
+        [
+          {
+            "node": "Validate Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payload": {
+      "main": [
+        [
+          {
+            "node": "Read Slot by ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 400 Bad Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Slot by ID": {
+      "main": [
+        [
+          {
+            "node": "Check Slot Availability",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Slot Availability": {
+      "main": [
+        [
+          {
+            "node": "Slot Taken?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slot Taken?": {
+      "main": [
+        [
+          {
+            "node": "Return 409 Slot Taken",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Flag Slot Booked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flag Slot Booked": {
+      "main": [
+        [
+          {
+            "node": "Append to MOCK_INTERVIEW_BOOKING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append to MOCK_INTERVIEW_BOOKING": {
+      "main": [
+        [
+          {
+            "node": "Notify Sam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Sam": {
+      "main": [
+        [
+          {
+            "node": "Return 200 OK",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return 200 Notify Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "d9ca8037-2ad0-45f7-af72-79c3d0ce07e5",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "JCQ3_a8u2FS2Xa5eL5Kz3",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "user_code",
+                                                                     "value":  "KM40LI0426"
+                                                                 },
+                                                                 {
+                                                                     "name":  "secret",
+                                                                     "value":  "REDACTED"
+                                                                 },
+                                                                 {
+                                                                     "name":  "device_id",
+                                                                     "value":  "D-4ZV1F"
+                                                                 },
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $(\u0027Chat Counter\u0027).first().json.user_wa }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "Maaf, saya belum bisa membantu menjawab pertanyaan tersebut. Bisa tolong diulang kembali? Atau, kalau mau ngobrol langsung dengan Sam, tinggal ketik \u0027mau ngomong sama Sam\u0027 ya."
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     304,
+                     3328
+                 ],
+    "id":  "8996132b-4a9e-4699-bbd5-7aeeca9bc908",
+    "name":  "Reply Error",
+    "alwaysOutputData":  true,
+    "retryOnFail":  true,
+    "waitBetweenTries":  2000,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput"
+}

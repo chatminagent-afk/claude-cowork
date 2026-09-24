@@ -1,0 +1,183 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "581061c1-a4b6-449e-9245-5dc6fad29660",
+              "leftValue": "={{ $('Process All').first().json.isSendMedia2 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        560
+      ],
+      "id": "0d91acae-84e0-4420-85d9-4a91c9f93d56",
+      "name": "IF Send Media 2"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1696,
+        560
+      ],
+      "id": "56691b8f-13ce-4cc8-a321-fd381ce5f34e",
+      "name": "Wait Media 2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Process All').first().json.mediaUrl2 }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        560
+      ],
+      "id": "f0eb94e7-e92b-4cc5-bf92-f66b77ea5b4b",
+      "name": "Download Media 2",
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message-file",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Chat Counter').first().json.user_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Process All').first().json.mediaCaption2 }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2144,
+        560
+      ],
+      "id": "9efa3e0c-e4d9-4671-853c-8f77e9cf2999",
+      "name": "Send Media Kirimi 2",
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "alwaysOutputData": true
+    }
+  ],
+  "connections": {
+    "IF Send Media 2": {
+      "main": [
+        [
+          {
+            "node": "Wait Media 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Wait Media 2": {
+      "main": [
+        [
+          {
+            "node": "Download Media 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Media 2": {
+      "main": [
+        [
+          {
+            "node": "Send Media Kirimi 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin Media Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Media Kirimi 2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Notify Admin Media Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "vira-pcr-media2-patch"
+  }
+}

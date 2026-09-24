@@ -1,0 +1,2207 @@
+{
+  "name": "TIM_Rekap_Harian_Whatsapp",
+  "nodes": [
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -736,
+        -32
+      ],
+      "id": "cf26b40e-a942-4275-8729-33664555ba4d",
+      "name": "Baca Semua Data Sheet",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua item dari node sebelumnya\nconst allItems = $input.all();\nconst rows = allItems.map(item => item.json);\n\n// Filter: hanya Status_Workflow = 'pending' atau 'reported'\nconst activeRows = rows.filter(r =>\n  r.Status_Workflow === 'pending' || r.Status_Workflow === 'reported'\n);\n\nif (activeRows.length === 0) {\n  return [{\n    json: {\n      hasItems: false,\n      waMessage: '',\n      rowsToUpdateNotify: [],\n      rowsToUpdateStatus: [],\n      rowsToUpdateFinalize: []\n    }\n  }];\n}\n\n// ── Group by Nama_Project ──────────────────────────────────────\nconst projects = {};\nactiveRows.forEach(row => {\n  const proj = row.Nama_Project || 'Tidak Diketahui';\n  if (!projects[proj]) projects[proj] = [];\n  projects[proj].push(row);\n});\n\n// ── Format tanggal hari ini ─────────────────────────────────────\nconst now = new Date();\nconst formattedDate = now.toLocaleDateString('id-ID', {\n  day: '2-digit', month: '2-digit', year: '2-digit'\n});\n\n// ── Build pesan WhatsApp ────────────────────────────────────────\nlet msg = `📋 *To Do List (${formattedDate})*\\n\\n`;\n\nconst projectNames = Object.keys(projects);\nprojectNames.forEach((proj, idx) => {\n  msg += `${idx+1}. *${proj}*\\n`;\n\n  projects[proj].forEach(item => {\n    const pendingMark = item.Status_Workflow === 'pending' ? ' 🆕' : '';\n    const statusPekerjaanLower = (item.Status_Pekerjaan || '').toLowerCase();\n    let pekerjaanMark = '';\n    if (statusPekerjaanLower === 'selesai') pekerjaanMark = ' ✅';\n    if (statusPekerjaanLower === 'reject') pekerjaanMark = ' 🗑️';\n    const highMark = item.Prioritas === 'Tinggi' ? ' 🔴' : '';\n    msg += `• ${item.Komplain}${pendingMark}${pekerjaanMark}${highMark}\\n`;\n  });\n  msg += '\\n';\n});\n\nmsg += `━━━━━━━━━━━━━━━\\n`;\nconst total    = activeRows.length;\nconst reported = activeRows.filter(r => r.Status_Workflow === 'reported').length;\nconst pending  = activeRows.filter(r => r.Status_Workflow === 'pending').length;\nmsg += `📊 *Summary:* Total ${total} | ⏳ Pending: ${pending} | 📌 Reported: ${reported}\\n\\n`;\nmsg += `_Dikirim otomatis setiap hari_`;\n\n// ── 1. Update Notify_Count untuk semua activeRows ───────────────\nconst rowsToUpdateNotify = activeRows.map(r => ({\n  row_number: r.row_number,\n  Notify_Count: (r.Notify_Count || 0) + 1\n}));\n\n// ── 2. Update Status_Workflow: pending → reported ───────────────\n//    (setelah WA dikirim, komplain yang masih pending dianggap sudah dilaporkan)\nconst rowsToUpdateStatus = activeRows\n  .filter(r => r.Status_Workflow === 'pending')\n  .map(r => ({\n    row_number: r.row_number,\n    Status: 'reported'          // field 'Status' akan dipakai di node update sheet\n  }));\n\n// ── 3. Finalize untuk item yang selesai/reject dan belum di-resolve ──\nconst rowsToUpdateFinalize = activeRows\n  .filter(r => {\n    const statusLower = (r.Status_Pekerjaan || '').toLowerCase();\n    return (statusLower === 'selesai' || statusLower === 'reject') && (r.Status_Pekerjaan_Counter || 0) === 0;\n  })\n  .map(r => ({\n    row_number: r.row_number,\n    Status_Workflow: 'resolved',\n    Status_Pekerjaan_Counter: 1\n  }));\n\nreturn [{\n  json: {\n    hasItems: true,\n    waMessage: msg,\n    rowsToUpdateNotify: rowsToUpdateNotify,\n    rowsToUpdateStatus: rowsToUpdateStatus,     // ← baru\n    rowsToUpdateFinalize: rowsToUpdateFinalize,\n    summary: { total, pending, reported }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        -32
+      ],
+      "id": "504dc206-b34f-4017-bd78-88d3c5fe6809",
+      "name": "Format Pesan Rekapan",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tidak ada komplain aktif hari ini - workflow berhenti di sini\nconsole.log('[Tim Interior] Tidak ada komplain pending/resolved hari ini. Tidak ada WA yang dikirim.');\nreturn [{ json: { skipped: true, reason: 'Tidak ada komplain aktif' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        256
+      ],
+      "id": "a75cea04-ef79-4180-b17b-dbae078513d1",
+      "name": "Tidak Ada Komplain (Skip)"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b50a0f64-7dc4-4018-b4ae-e034786b79a1",
+              "leftValue": "={{ $json.hasItems }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -288,
+        -32
+      ],
+      "id": "e96eef7a-5489-477a-a1f7-515686c64b97",
+      "name": "If",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const formatNode = $node[\"Format Pesan Rekapan\"];\nconst rows = formatNode.json.rowsToUpdateNotify || [];\nif (rows.length === 0) return [];\nreturn rows.map(row => ({ json: row }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -320
+      ],
+      "id": "7b0b9f7b-8721-46d7-98f0-86e82c3a6743",
+      "name": "Notify_Count"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Notify_Count": "={{ $json.Notify_Count }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Tanggal_Komplain",
+              "displayName": "Tanggal_Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nama_Project",
+              "displayName": "Nama_Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC_Mandor",
+              "displayName": "PIC_Mandor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC_Pengawas",
+              "displayName": "PIC_Pengawas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Komplain",
+              "displayName": "Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Pekerjaan",
+              "displayName": "Status_Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tipe_Laporan",
+              "displayName": "Tipe_Laporan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Pengaju",
+              "displayName": "Pengaju",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_1",
+              "displayName": "URL_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_2",
+              "displayName": "URL_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_3",
+              "displayName": "URL_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_4",
+              "displayName": "URL_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_5",
+              "displayName": "URL_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Update_Notes",
+              "displayName": "Update_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_1",
+              "displayName": "Up_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_2",
+              "displayName": "Up_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_3",
+              "displayName": "Up_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_4",
+              "displayName": "Up_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_5",
+              "displayName": "Up_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Update",
+              "displayName": "Tanggal_Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Submit",
+              "displayName": "Tanggal_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Pekerjaan_Counter",
+              "displayName": "Status_Pekerjaan_Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        -320
+      ],
+      "id": "bf9ba216-a5c3-42a1-a9c2-32ee95b96b92",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const formatNode = $node[\"Format Pesan Rekapan\"];\nconst rows = formatNode.json.rowsToUpdateStatus || [];\nif (rows.length === 0) return [];\nreturn rows.map(row => ({ json: row }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -128
+      ],
+      "id": "461e74d0-cbfa-428b-9d9c-6ea10a068f97",
+      "name": "Ekstrak Pending → Reported"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Status_Workflow": "={{ $json.Status }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Tanggal_Komplain",
+              "displayName": "Tanggal_Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nama_Project",
+              "displayName": "Nama_Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC_Mandor",
+              "displayName": "PIC_Mandor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC_Pengawas",
+              "displayName": "PIC_Pengawas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Komplain",
+              "displayName": "Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Pekerjaan",
+              "displayName": "Status_Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tipe_Laporan",
+              "displayName": "Tipe_Laporan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Pengaju",
+              "displayName": "Pengaju",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_1",
+              "displayName": "URL_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_2",
+              "displayName": "URL_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_3",
+              "displayName": "URL_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_4",
+              "displayName": "URL_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_5",
+              "displayName": "URL_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Update_Notes",
+              "displayName": "Update_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_1",
+              "displayName": "Up_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_2",
+              "displayName": "Up_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_3",
+              "displayName": "Up_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_4",
+              "displayName": "Up_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_5",
+              "displayName": "Up_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Update",
+              "displayName": "Tanggal_Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Submit",
+              "displayName": "Tanggal_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Pekerjaan_Counter",
+              "displayName": "Status_Pekerjaan_Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        -128
+      ],
+      "id": "cba99ff8-ec1a-4524-a97b-0fe7d5add5cc",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const formatNode = $node[\"Format Pesan Rekapan\"];\nconst rows = formatNode.json.rowsToUpdateFinalize || [];\nif (rows.length === 0) return [];\nreturn rows.map(row => ({ json: row }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -512
+      ],
+      "id": "bcde72e1-7922-483b-941f-d80e058ceb22",
+      "name": "Ekstrak Finalize"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "list",
+          "cachedResultName": "TIM Interior",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 980388961,
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk/edit#gid=980388961"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Status_Workflow": "={{ $json.Status_Workflow }}",
+            "Status_Pekerjaan_Counter": "={{ $json.Status_Pekerjaan_Counter }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Tanggal_Komplain",
+              "displayName": "Tanggal_Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Nama_Project",
+              "displayName": "Nama_Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC_Mandor",
+              "displayName": "PIC_Mandor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "PIC_Pengawas",
+              "displayName": "PIC_Pengawas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Komplain",
+              "displayName": "Komplain",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Pekerjaan",
+              "displayName": "Status_Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tipe_Laporan",
+              "displayName": "Tipe_Laporan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Pengaju",
+              "displayName": "Pengaju",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_1",
+              "displayName": "URL_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_2",
+              "displayName": "URL_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_3",
+              "displayName": "URL_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_4",
+              "displayName": "URL_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "URL_5",
+              "displayName": "URL_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Update_Notes",
+              "displayName": "Update_Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_1",
+              "displayName": "Up_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_2",
+              "displayName": "Up_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_3",
+              "displayName": "Up_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_4",
+              "displayName": "Up_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Up_5",
+              "displayName": "Up_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Update",
+              "displayName": "Tanggal_Update",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tanggal_Submit",
+              "displayName": "Tanggal_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Pekerjaan_Counter",
+              "displayName": "Status_Pekerjaan_Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        -512
+      ],
+      "id": "fdbd86ce-0c1e-4ae3-be2b-7206728a09a6",
+      "name": "Update Finalize (Status & Counter)",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            },
+            {
+              "triggerAtHour": 13
+            },
+            {
+              "triggerAtHour": 19
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -960,
+        -32
+      ],
+      "id": "1bb8a16c-c6fd-4341-a683-0f0c69075dc8",
+      "name": "Jadwal - Setiap Hari",
+      "notes": "Cron: 0 1 * * * = jam 01:00 UTC = 08:00 WIB"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        256
+      ],
+      "id": "fbac3fa8-f2d7-4143-80d0-3b153f29e099",
+      "name": "Wait",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        64
+      ],
+      "id": "fc3d58f7-550d-4648-86ff-5cc34ff2f374",
+      "name": "Wait1",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "628170703500"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Pesan Rekapan').item.json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -64,
+        -224
+      ],
+      "id": "7a310fa1-200c-439a-97b5-86a0be7afe59",
+      "name": "Kirim Rekapan ke ko Ronald",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6288801314745"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Pesan Rekapan').item.json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        64
+      ],
+      "id": "1f3c3026-f034-4721-af8d-34a197b94e01",
+      "name": "Niki (Tantan)",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        64
+      ],
+      "id": "7dcba82f-411a-47ed-8ca0-3d01d3208916",
+      "name": "Wait2",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        64
+      ],
+      "id": "98acf345-27f1-4fea-a9de-87260e352dfa",
+      "name": "Wait3",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1504,
+        64
+      ],
+      "id": "4e56440d-4b0e-49bb-b46a-eeb6b09fd497",
+      "name": "Wait4",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6285967173987"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Pesan Rekapan').item.json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        832,
+        64
+      ],
+      "id": "476b2070-c0ca-47dc-b36b-f25cba4da603",
+      "name": "Rudi",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "628119221980"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Pesan Rekapan').item.json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1280,
+        64
+      ],
+      "id": "8669ca44-fb24-4551-adfb-c9c1c1a0534d",
+      "name": "Hendrik",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6281292780911"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Pesan Rekapan').item.json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1728,
+        64
+      ],
+      "id": "41a5cc02-fccc-4190-b9ef-d3c4fdc61795",
+      "name": "Hendi",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1952,
+        64
+      ],
+      "id": "0b7cecb6-6240-4ebe-bc62-b4b8d260820c",
+      "name": "Wait5",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        256
+      ],
+      "id": "32c9d94c-5e69-4a67-a808-75b966bb2a9f",
+      "name": "Wait6",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1504,
+        256
+      ],
+      "id": "95808b00-01a4-49ce-b90a-cba5c2f0dd68",
+      "name": "Wait7",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1952,
+        256
+      ],
+      "id": "c6272b34-b8c0-4f73-9a2e-049b7780d190",
+      "name": "Wait8",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6285967173987"
+            },
+            {
+              "name": "message",
+              "value": "=🎉 *Selamat! Semua To Do List Selesai!* 🎉\n\nKeren banget, tim! Saat ini nggak ada komplain atau tambahan yang pending.\nSilakan nikmati waktu istirahat, ngopi santai, atau jalan-jalan sejenak ☕️😎\n\n*Pesan:* Istirahat yang cukup, besok siap beraksi lagi! 💪\n\n_Dikirim otomatis setiap hari_"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1280,
+        256
+      ],
+      "id": "3f1c7e61-039a-4b6a-ae27-f489470c3a33",
+      "name": "Rudi1",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "628119221980"
+            },
+            {
+              "name": "message",
+              "value": "=🎉 *Selamat! Semua To Do List Selesai!* 🎉\n\nKeren banget, tim! Saat ini nggak ada komplain atau tambahan yang pending.\nSilakan nikmati waktu istirahat, ngopi santai, atau jalan-jalan sejenak ☕️😎\n\n*Pesan:* Istirahat yang cukup, besok siap beraksi lagi! 💪\n\n_Dikirim otomatis setiap hari_"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1728,
+        256
+      ],
+      "id": "0f08d5b0-5e4a-4db6-a9ff-1ef31b9457e0",
+      "name": "Hendrik1",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6281292780911"
+            },
+            {
+              "name": "message",
+              "value": "=🎉 *Selamat! Semua To Do List Selesai!* 🎉\n\nKeren banget, tim! Saat ini nggak ada komplain atau tambahan yang pending.\nSilakan nikmati waktu istirahat, ngopi santai, atau jalan-jalan sejenak ☕️😎\n\n*Pesan:* Istirahat yang cukup, besok siap beraksi lagi! 💪\n\n_Dikirim otomatis setiap hari_"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2176,
+        256
+      ],
+      "id": "1ed9a0be-05dd-4c5e-81df-003bde8559ec",
+      "name": "Hendi1",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2400,
+        256
+      ],
+      "id": "c335a9ff-6d19-4d1a-8bf1-332897213182",
+      "name": "Wait9",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6285711577854"
+            },
+            {
+              "name": "message",
+              "value": "=🎉 *Selamat! Semua To Do List Selesai!* 🎉\n\nKeren banget, tim! Saat ini nggak ada komplain atau tambahan yang pending.\nSilakan nikmati waktu istirahat, ngopi santai, atau jalan-jalan sejenak ☕️😎\n\n*Pesan:* Istirahat yang cukup, besok siap beraksi lagi! 💪\n\n_Dikirim otomatis setiap hari_"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2624,
+        256
+      ],
+      "id": "8205c520-6668-4dd7-8170-54d0fd1efdfd",
+      "name": "Mita1",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "=🎉 *Selamat! Semua To Do List Selesai!* 🎉\n\nKeren banget, tim! Saat ini nggak ada komplain atau tambahan yang pending.\nSilakan nikmati waktu istirahat, ngopi santai, atau jalan-jalan sejenak ☕️😎\n\n*Pesan:* Istirahat yang cukup, besok siap beraksi lagi! 💪\n\n_Dikirim otomatis setiap hari_"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        384,
+        256
+      ],
+      "id": "cd411c3c-c51e-44e4-b88d-1a64e5ab53bb",
+      "name": "Kirim Rekapan Tidak Ada ko Ronald",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        256
+      ],
+      "id": "c30d2fb9-a829-402d-bfce-db895dbe48b3",
+      "name": "Wait10",
+      "webhookId": "348514fe-9b53-405f-b576-dec4a932feff"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6288801314745"
+            },
+            {
+              "name": "message",
+              "value": "=🎉 *Selamat! Semua To Do List Selesai!* 🎉\n\nKeren banget, tim! Saat ini nggak ada komplain atau tambahan yang pending.\nSilakan nikmati waktu istirahat, ngopi santai, atau jalan-jalan sejenak ☕️😎\n\n*Pesan:* Istirahat yang cukup, besok siap beraksi lagi! 💪\n\n_Dikirim otomatis setiap hari_"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        832,
+        256
+      ],
+      "id": "7ff7846c-13d2-4adb-818e-2a9955edd657",
+      "name": "Niki (Tantan)1",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "6285711577854"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Pesan Rekapan').item.json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2176,
+        64
+      ],
+      "id": "ce462e36-f358-4c6f-a4d8-a673214a8f4e",
+      "name": "Mita",
+      "retryOnFail": true,
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Baca Semua Data Sheet": {
+      "main": [
+        [
+          {
+            "node": "Format Pesan Rekapan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Pesan Rekapan": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Kirim Rekapan ke ko Ronald",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tidak Ada Komplain (Skip)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify_Count": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ekstrak Pending → Reported": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ekstrak Finalize": {
+      "main": [
+        [
+          {
+            "node": "Update Finalize (Status & Counter)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tidak Ada Komplain (Skip)": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jadwal - Setiap Hari": {
+      "main": [
+        [
+          {
+            "node": "Baca Semua Data Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Kirim Rekapan Tidak Ada ko Ronald",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Niki (Tantan)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim Rekapan ke ko Ronald": {
+      "main": [
+        [
+          {
+            "node": "Ekstrak Pending → Reported",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify_Count",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Ekstrak Finalize",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Rudi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Hendrik",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Hendi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Niki (Tantan)": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rudi": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hendrik": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Mita",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hendi": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait6": {
+      "main": [
+        [
+          {
+            "node": "Rudi1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait7": {
+      "main": [
+        [
+          {
+            "node": "Hendrik1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait8": {
+      "main": [
+        [
+          {
+            "node": "Hendi1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rudi1": {
+      "main": [
+        [
+          {
+            "node": "Wait7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hendrik1": {
+      "main": [
+        [
+          {
+            "node": "Wait8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hendi1": {
+      "main": [
+        [
+          {
+            "node": "Wait9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait9": {
+      "main": [
+        [
+          {
+            "node": "Mita1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim Rekapan Tidak Ada ko Ronald": {
+      "main": [
+        [
+          {
+            "node": "Wait10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait10": {
+      "main": [
+        [
+          {
+            "node": "Niki (Tantan)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Niki (Tantan)1": {
+      "main": [
+        [
+          {
+            "node": "Wait6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Bangkok",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "801d00ad-0f5d-4631-b423-931b43b15923",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "mSqXMoiQf2LpE3E4aCIGq",
+  "tags": [
+    {
+      "updatedAt": "2026-04-17T03:59:31.467Z",
+      "createdAt": "2026-04-17T03:59:31.467Z",
+      "id": "ffzAjus91osOPTcs",
+      "name": "TIM Interior"
+    }
+  ]
+}

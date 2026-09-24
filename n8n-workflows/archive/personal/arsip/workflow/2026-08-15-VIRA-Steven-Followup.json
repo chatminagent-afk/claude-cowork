@@ -1,0 +1,572 @@
+{
+  "name": "VIRA Steven — Follow-up",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        224
+      ],
+      "id": "eefee232-36ac-44c3-a670-bb02e6f9b2e0",
+      "name": "Schedule Trigger FU",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        224
+      ],
+      "id": "ea36720b-1247-46ca-95ba-7ea8fd51ea17",
+      "name": "Read CONFIG FU",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_ME_VIRA_STEVEN_GSA",
+          "name": "Google Service Account VIRA Steven"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Baca CONFIG (key/value) -> objek cfg + gate followup_enabled + gate jam etis WIB.\nconst rows = $input.all().map(i => i.json);\nconst cfg = {};\nfor (const r of rows) {\n  const k = String(r.key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value : '';\n}\nconst num = (k, d) => {\n  const raw = cfg[k];\n  if (raw === undefined || raw === '') return d;\n  const n = Number(raw);\n  return isNaN(n) ? d : n;\n};\n\n// Kill switch utama -- WAJIB string \"true\" persis, bukan truthy sembarangan.\nif (String(cfg.followup_enabled || '').trim().toLowerCase() !== 'true') {\n  console.log('follow-up dimatikan (followup_enabled != \"true\") -- run berhenti di sini.');\n  return [];\n}\n\nlet templates = [];\ntry { templates = JSON.parse(cfg.followup_templates || '[]'); } catch (e) { templates = []; }\nif (!Array.isArray(templates) || !templates.length) {\n  console.log('followup_templates kosong/tidak valid -- tidak ada yang bisa dikirim, run berhenti.');\n  return [];\n}\n\nconst openH = num('followup_open_hour', 9);\nconst closeH = num('followup_close_hour', 21);\nconst wibParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());\nconst wibHour = Number((wibParts.find(p => p.type === 'hour') || {}).value || 0);\nconst wibMin = Number((wibParts.find(p => p.type === 'minute') || {}).value || 0);\n\n// Di luar jam etis -> stop; trigger jam berikutnya coba lagi. Kandidat yang\n// \"ketinggalan\" otomatis terkirim di slot berikutnya (antrian tidak hilang).\nif (wibHour < openH || wibHour >= closeH) {\n  console.log('di luar jendela follow-up [' + openH + '-' + closeH + ') WIB -- run berhenti.');\n  return [];\n}\n\n// Jeda antar kirim & plafon per run TIDAK diwajibkan sebagai CONFIG key baru di\n// brief, jadi dipakai default aman di sini. Kalau Steven menambahkan\n// followup_min_delay_sec / followup_max_delay_sec / followup_max_per_run ke\n// CONFIG nanti, nilainya otomatis dipakai (opsional, tidak wajib diisi).\nlet minDelay = num('followup_min_delay_sec', 20);\nlet maxDelay = num('followup_max_delay_sec', 45);\nif (minDelay < 3) minDelay = 3;\nif (maxDelay < minDelay) maxDelay = minDelay + 5;\nlet maxPerRun = num('followup_max_per_run', 20);\nif (maxPerRun < 1) maxPerRun = 1;\nif (maxPerRun > 300) maxPerRun = 300;\n\nconst adminPhone = String(cfg.admin_phone || '').replace(/\\D/g, '') || '6285171701168';\n\nreturn [{ json: {\n  config: {\n    kirimi_user_code: String(cfg.kirimi_user_code || '').trim(),\n    kirimi_secret: String(cfg.kirimi_secret || '').trim(),\n    kirimi_device_id: String(cfg.kirimi_device_id || '').trim(),\n    admin_phone: adminPhone,\n    admin_phone_display: String(cfg.admin_phone_display || '').trim(),\n    bot_wa_number: String(cfg.bot_wa_number || '').replace(/\\D/g, ''),\n    followup_max: num('followup_max', 2),\n    followup_interval_hours: num('followup_interval_hours', 24),\n    templates: templates,\n    min_delay: minDelay,\n    max_delay: maxDelay,\n    max_per_run: maxPerRun,\n    open_hour: openH,\n    close_hour: closeH\n  },\n  now_epoch: Math.floor(Date.now() / 1000)\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "4020f2a8-e89a-4831-8562-ba5b11a03630",
+      "name": "Parse Config FU"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        224
+      ],
+      "id": "63efde30-e7ac-4160-9134-f42bf470b53d",
+      "name": "Read STATS FU",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_ME_VIRA_STEVEN_GSA",
+          "name": "Google Service Account VIRA Steven"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Saring baris STATS -> user layak follow-up sekarang, lalu batasi jumlah per run\n// supaya tidak memberondong (throttle waktu + plafon config).\nconst base = $('Parse Config FU').first().json;\nconst cfg = base.config;\nconst now = base.now_epoch;\nconst intervalSec = (cfg.followup_interval_hours || 24) * 3600;\n\nconst wibParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date());\nconst wibHour = Number((wibParts.find(p => p.type === 'hour') || {}).value || 0);\nconst wibMin = Number((wibParts.find(p => p.type === 'minute') || {}).value || 0);\n\nconst excludeNumbers = [cfg.admin_phone, cfg.admin_phone_display, cfg.bot_wa_number]\n  .map(v => String(v || '').replace(/\\D/g, '')).filter(Boolean);\n\n// Isi placeholder {key} dengan value dari STATS. Kalau value kosong, placeholder\n// dihapus dan sisa kalimat dirapikan (bukan cuma string-replace polos) supaya\n// tidak pernah terkirim kalimat rusak seperti \"Halo kak ,\".\nfunction fillPlaceholder(text, key, value) {\n  const re = new RegExp('\\\\{\\\\s*' + key + '\\\\s*\\\\}', 'gi');\n  if (value) return text.replace(re, value);\n  // Pola umum \"kak {placeholder}\" -> tinggal \"kak\" (honorific tanpa nama).\n  text = text.replace(new RegExp('\\\\s*\\\\bkak\\\\s*' + re.source, 'gi'), ' kak');\n  // Sisa placeholder polos (tanpa 'kak' di depan) -> hapus + rapikan spasi/koma.\n  text = text.replace(re, '');\n  text = text.replace(/\\s+,/g, ',');\n  text = text.replace(/,\\s*,/g, ',');\n  text = text.replace(/\\s{2,}/g, ' ');\n  text = text.replace(/\\s+([.,!?])/g, '$1');\n  return text.trim();\n}\n\nconst out = [];\nconst seen = new Set();\n\nfor (const item of $input.all()) {\n  const row = item.json;\n  const noWa = String(row['No WA'] || '').trim();\n  if (!noWa) continue;                                          // wajib ada No WA\n  const digits = noWa.replace(/\\D/g, '');\n  if (!digits) continue;\n  if (seen.has(digits)) continue;                                // dedupe kalau STATS ada baris ganda\n  if (excludeNumbers.includes(digits)) continue;                 // nomor Steven sendiri dikecualikan\n\n  if (/^off$/i.test(String(row['bot_mode'] || '').trim())) continue;         // HITL aktif, jangan diganggu\n  if (Number(row['Counter'] || 0) < 1) continue;                 // belum pernah chat\n\n  const lastReply = Number(row['last_reply_ts'] || 0);\n  if (!lastReply) continue;                                      // belum pernah dibalas bot\n  if (now - lastReply < intervalSec) continue;                   // belum lewat interval sejak balasan terakhir\n\n  const lastFu = Number(row['last_follow_up_ts'] || 0);\n  if (lastFu && now - lastFu < intervalSec) continue;             // belum lewat interval sejak follow-up terakhir\n\n  const fuCount = Number(row['follow_up_count'] || 0);\n  if (fuCount >= cfg.followup_max) continue;                      // follow_up_count harus < followup_max\n\n  if (/^y$/i.test(String(row['deck_requested'] || '').trim())) continue;  // sudah minta deck -> Steven pegang manual\n\n  const namaVal = String(row['Nama'] || '').trim();\n  const bisnisVal = String(row['nama_bisnis'] || '').trim();\n  let msg = String(cfg.templates[fuCount % cfg.templates.length] || '');\n  msg = fillPlaceholder(msg, 'nama', namaVal);\n  msg = fillPlaceholder(msg, 'nama_bisnis', bisnisVal);\n\n  seen.add(digits);\n  out.push({ json: {\n    no_wa: noWa,\n    lid: String(row['lid'] || '').trim(),\n    nama: namaVal,\n    follow_up_count: fuCount,\n    prev_last_fu: lastFu || '',                                   // untuk rollback kalau kirim gagal\n    last_reply_ts: lastReply,\n    message: msg\n  } });\n}\n\n// Prioritas antrian: yang belum pernah di-follow-up dulu, lalu yang paling lama tidak dibalas.\nout.sort((a, b) => {\n  const af = Number(a.json.follow_up_count), bf = Number(b.json.follow_up_count);\n  if (af !== bf) return af - bf;\n  return Number(a.json.last_reply_ts) - Number(b.json.last_reply_ts);\n});\n\n// Batas per-run = min(plafon config, kapasitas waktu tersisa sebelum jam tutup) -- supaya tidak memberondong.\nconst avgDelay = ((cfg.min_delay + cfg.max_delay) / 2) + 2;       // +2s estimasi latency API\nconst minutesToClose = Math.max(0, (cfg.close_hour - wibHour) * 60 - wibMin);\nconst capByTime = Math.floor((minutesToClose * 60) / avgDelay);\nconst cap = Math.max(0, Math.min(cfg.max_per_run, capByTime));\n\nreturn out.slice(0, cap);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        224
+      ],
+      "id": "59f61bbb-b3ae-4703-9bd1-6f80714d0328",
+      "name": "Filter Kandidat",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        224
+      ],
+      "id": "af6173d0-a916-4c62-8673-fe2089b4f68a",
+      "name": "Loop Kandidat"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $json.no_wa }}",
+            "lid": "={{ $json.lid }}",
+            "follow_up_count": "={{ Number($json.follow_up_count) + 1 }}",
+            "last_follow_up_ts": "={{ Math.floor(Date.now()/1000) }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_up_count",
+              "displayName": "follow_up_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_follow_up_ts",
+              "displayName": "last_follow_up_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        96
+      ],
+      "id": "a1514585-7b75-4387-9bbf-3cac62799181",
+      "name": "Claim STATS FU",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_ME_VIRA_STEVEN_GSA",
+          "name": "Google Service Account VIRA Steven"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor( $('Parse Config FU').first().json.config.min_delay + Math.random() * ($('Parse Config FU').first().json.config.max_delay - $('Parse Config FU').first().json.config.min_delay + 1) ) }}",
+        "unit": "seconds"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        96
+      ],
+      "id": "394a0847-8ffd-494a-bb49-8a9cecf60f23",
+      "name": "Wait FU",
+      "webhookId": "6ad96f0d-8634-416f-9541-868cf35658d8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Loop Kandidat').first().json.no_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Loop Kandidat').first().json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1792,
+        96
+      ],
+      "id": "b38157cd-77da-4643-bbd7-6593b04bd12a",
+      "name": "Kirim Follow-up",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Loop Kandidat').first().json.no_wa }}",
+            "follow_up_count": "={{ Number($('Loop Kandidat').first().json.follow_up_count) }}",
+            "last_follow_up_ts": "={{ $('Loop Kandidat').first().json.prev_last_fu }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_up_count",
+              "displayName": "follow_up_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_follow_up_ts",
+              "displayName": "last_follow_up_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2016,
+        272
+      ],
+      "id": "4130e452-ea63-44b6-a734-7e0e3e8debfd",
+      "name": "Rollback STATS FU",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_ME_VIRA_STEVEN_GSA",
+          "name": "Google Service Account VIRA Steven"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config FU').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ '🚨 [VIRA Steven] Gagal kirim follow-up ke ' + $('Loop Kandidat').first().json.no_wa + ' (sudah di-rollback, akan dicoba lagi cycle berikutnya)' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2240,
+        272
+      ],
+      "id": "075121e8-dbd2-4f3b-a0a7-4e6a64e07091",
+      "name": "Notify Admin FU Error",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## NONAKTIF saat import -- WAJIB\nWorkflow ini sengaja diimpor dengan **`active: false`** dan trigger **`Schedule Trigger FU` dalam keadaan disabled**. Jangan diaktifkan otomatis oleh proses apa pun -- Steven yang akan menyalakannya sendiri secara manual, setelah CONFIG (`kirimi_user_code`/`kirimi_secret`/`followup_enabled`) siap dan template sudah dicek.\n\n## Syarat follow-up terkirim (uji manual sebelum go-live)\n- No WA: bukan nomor admin_phone/bot_wa_number Steven sendiri\n- bot_mode: kosong atau ON (bukan OFF)\n- Counter: >= 1\n- deck_requested: kosong atau bukan \"Y\"\n- last_reply_ts: mundurkan lebih dari followup_interval_hours (mis. epoch sekarang - 100000)\n- follow_up_count & last_follow_up_ts: kosongkan\n- followup_enabled di CONFIG: harus persis \"true\" (string, huruf kecil)",
+        "height": 300,
+        "width": 620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "f54f56c5-88b8-40fa-a3c6-a269af1ff03e",
+      "name": "Sticky Note - Nonaktif & Syarat Uji"
+    },
+    {
+      "parameters": {
+        "content": "## Jeda acak & plafon per run\nBrief tidak mewajibkan CONFIG key baru untuk ini, jadi dipakai default aman langsung di kode (`Parse Config FU`):\n- Jeda antar kirim: 20-45 detik acak (jitter, bukan pola bot)\n- Plafon per run: 20 nomor (juga dibatasi otomatis oleh sisa waktu ke `followup_close_hour`)\n\nKalau nanti Steven menambahkan `followup_min_delay_sec` / `followup_max_delay_sec` / `followup_max_per_run` ke CONFIG, nilainya otomatis dipakai menggantikan default -- tidak wajib diisi.\n\n## Anti-duplikat (claim-before-send)\nSTATS ditandai (`follow_up_count` + `last_follow_up_ts`) SEBELUM kirim, jadi run yang tumpang tindih otomatis tidak mengirim dobel. Kirim gagal -> **Rollback STATS FU** mengembalikan nilai lama -> **Notify Admin FU Error** -> dicoba lagi cycle berikutnya.\n\n## Catatan follow_up_max\nAturan dipakai persis seperti brief: `follow_up_count < followup_max`. Kalau `followup_max` diisi 0, TIDAK ADA yang lolos (bukan \"0 = unlimited\" seperti versi Persada). CONFIG VIRA Steven saat ini terisi `followup_max=2`.",
+        "height": 380,
+        "width": 620
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1120,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "683ef6e4-6776-4d1b-855b-d76c7813517c",
+      "name": "Sticky Note - Jeda & Plafon"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger FU": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG FU": {
+      "main": [
+        [
+          {
+            "node": "Parse Config FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config FU": {
+      "main": [
+        [
+          {
+            "node": "Read STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Filter Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Kandidat": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Kandidat": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Claim STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Wait FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait FU": {
+      "main": [
+        [
+          {
+            "node": "Kirim Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rollback STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rollback STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin FU Error": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "AqXFe-13tHisDFIAIwEaq"
+  },
+  "versionId": "",
+  "id": "",
+  "tags": [
+    {
+      "updatedAt": "2026-08-15T00:00:00.000Z",
+      "createdAt": "2026-08-15T00:00:00.000Z",
+      "id": "uFkh64Z3DrxyMFaWVlgbm",
+      "name": "vira-steven"
+    }
+  ]
+}

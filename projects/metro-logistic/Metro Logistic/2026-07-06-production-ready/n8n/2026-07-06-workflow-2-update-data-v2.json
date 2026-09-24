@@ -1,0 +1,562 @@
+{
+  "name": "WF2 - Update Data Tracking (v2 Log_History)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tracking-update",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-post",
+      "name": "Webhook POST tracking-update",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        400
+      ],
+      "webhookId": "tracking-update"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF2 - Node Code: validasi input update.\n// Field wajib: no_resi, nama_admin, status, lokasi.\n// Tidak boleh kosong / hanya spasi. Status harus salah satu enum.\n// Jika invalid => set flag valid=false + pesan error (respond 400 nanti).\n// ============================================================\n\nconst ENUM_STATUS = [\n  \"Manifest\", \"On Process\", \"Transit\",\n  \"Out for Delivery\", \"Delivered\", \"Failed/Return\"\n];\n\nconst body = ($json.body) ? $json.body : $json;\nfunction bersih(v) { return (v === undefined || v === null) ? \"\" : String(v).trim(); }\n\nconst no_resi = bersih(body.no_resi).toUpperCase();\nconst nama_admin = bersih(body.nama_admin);\nconst status = bersih(body.status);\nconst lokasi = bersih(body.lokasi);\nconst client_id = bersih(body.client_id);\n\nconst errors = [];\nif (!no_resi) errors.push(\"no_resi wajib diisi\");\nif (!nama_admin) errors.push(\"nama_admin wajib diisi\");\nif (!status) errors.push(\"status wajib diisi\");\nif (!lokasi) errors.push(\"lokasi wajib diisi\");\nif (status && !ENUM_STATUS.includes(status)) {\n  errors.push(\"status tidak valid. Pilihan: \" + ENUM_STATUS.join(\", \"));\n}\n\nif (errors.length > 0) {\n  return [{ json: { valid: false, error: errors.join(\"; \") } }];\n}\n\nreturn [{ json: {\n  valid: true, no_resi, nama_admin, status, lokasi, client_id\n} }];\n"
+      },
+      "id": "code-validasi",
+      "name": "Code Validasi Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-valid",
+      "name": "IF Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Log_History",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read-log",
+      "name": "Baca Sheet Log_History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        860,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read-tracking",
+      "name": "Baca Sheet Tracking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1060,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF2 - Node Code: siapkan penulisan LOG_HISTORY + SNAPSHOT TRACKING.\n// [ENHANCEMENT 2026-07-06]\n//   - Setiap update SELALU ditulis sebagai satu baris baru di sheet\n//     Log_History (kolom terpisah): Timestamp_Update, No_Resi, Status,\n//     Lokasi, Nama_Admin, Client_ID.\n//   - Sheet Tracking hanya menyimpan SNAPSHOT TERBARU per resi\n//     (satu baris per resi, kolom terpisah, tanpa JSON riwayat).\n//   - Idempotensi: bila Client_ID sudah ada di Log_History, request ini\n//     adalah retry/duplikat => tidak menulis apa pun, balas sukses.\n// Output: satu item berisi field Log_* (untuk append Log_History) +\n//   field snapshot Tracking + mode ('update'/'append') + duplikat + row_number.\n// ============================================================\n\nconst val = $items('Code Validasi Input')[0].json;\nconst no_resi = val.no_resi;\nconst nama_admin = val.nama_admin;\nconst status = val.status;\nconst lokasi = val.lokasi;\nconst client_id = val.client_id || '';\n\n// Waktu sekarang ISO 8601 dengan offset +07:00 (Asia/Jakarta).\nfunction nowJakartaISO() {\n  const d = new Date(Date.now() + 7 * 60 * 60 * 1000);\n  const pad = (n) => String(n).padStart(2, '0');\n  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}` +\n         `T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}+07:00`;\n}\nconst waktu = nowJakartaISO();\n\n// Rows dari sheet Log_History (untuk idempotensi + hitung total riwayat).\nconst logRows = $items('Baca Sheet Log_History').map(i => i.json)\n  .filter(r => String(r.No_Resi || '').trim() !== '');\n\n// IDEMPOTENSI: Client_ID sudah pernah tercatat => duplikat.\nif (client_id) {\n  const sudahAda = logRows.some(r => String(r.Client_ID || '') === client_id);\n  if (sudahAda) {\n    const totalResi = logRows.filter(r =>\n      String(r.No_Resi || '').trim().toUpperCase() === no_resi).length;\n    return [{ json: {\n      duplikat: true,\n      mode: 'noop',\n      No_Resi: no_resi,\n      total_riwayat: totalResi\n    } }];\n  }\n}\n\n// Hitung total riwayat resi ini SETELAH update ini (existing + 1).\nconst totalSebelum = logRows.filter(r =>\n  String(r.No_Resi || '').trim().toUpperCase() === no_resi).length;\nconst total_riwayat = totalSebelum + 1;\n\n// Cari snapshot resi di sheet Tracking.\nconst trackingRows = $items('Baca Sheet Tracking').map(i => i.json);\nlet baris = null;\nfor (const row of trackingRows) {\n  if (String(row.No_Resi || '').trim().toUpperCase() === no_resi) { baris = row; break; }\n}\n\nconst out = {\n  duplikat: false,\n  // ── Field untuk append ke Log_History ──\n  Log_Timestamp_Update: waktu,\n  Log_No_Resi: no_resi,\n  Log_Status: status,\n  Log_Lokasi: lokasi,\n  Log_Nama_Admin: nama_admin,\n  Log_Client_ID: client_id,\n  // ── Field snapshot Tracking ──\n  No_Resi: no_resi,\n  Status_Terakhir: status,\n  Lokasi_Terakhir: lokasi,\n  Nama_Admin: nama_admin,\n  Timestamp_Update: waktu,\n  total_riwayat: total_riwayat\n};\n\nif (baris) {\n  out.mode = 'update';\n  out.row_number = baris.row_number;\n} else {\n  out.mode = 'append';\n}\n\nreturn [{ json: out }];\n"
+      },
+      "id": "code-proses",
+      "name": "Code Proses Update Snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-dup",
+              "leftValue": "={{ $json.duplikat }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-duplikat",
+      "name": "IF Duplikat?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Log_History",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp_Update": "={{ $json.Log_Timestamp_Update }}",
+            "No_Resi": "={{ $json.Log_No_Resi }}",
+            "Status": "={{ $json.Log_Status }}",
+            "Lokasi": "={{ $json.Log_Lokasi }}",
+            "Nama_Admin": "={{ $json.Log_Nama_Admin }}",
+            "Client_ID": "={{ $json.Log_Client_ID }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets-append-log",
+      "name": "Append ke Log_History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1720,
+        200
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-mode",
+              "leftValue": "={{ $('Code Proses Update Snapshot').first().json.mode }}",
+              "rightValue": "update",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-mode",
+      "name": "IF Mode Update?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Code Proses Update Snapshot').first().json.row_number }}",
+            "No_Resi": "={{ $('Code Proses Update Snapshot').first().json.No_Resi }}",
+            "Status_Terakhir": "={{ $('Code Proses Update Snapshot').first().json.Status_Terakhir }}",
+            "Lokasi_Terakhir": "={{ $('Code Proses Update Snapshot').first().json.Lokasi_Terakhir }}",
+            "Nama_Admin": "={{ $('Code Proses Update Snapshot').first().json.Nama_Admin }}",
+            "Timestamp_Update": "={{ $('Code Proses Update Snapshot').first().json.Timestamp_Update }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets-update-tracking",
+      "name": "Update Snapshot Tracking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2160,
+        120
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No_Resi": "={{ $('Code Proses Update Snapshot').first().json.No_Resi }}",
+            "Status_Terakhir": "={{ $('Code Proses Update Snapshot').first().json.Status_Terakhir }}",
+            "Lokasi_Terakhir": "={{ $('Code Proses Update Snapshot').first().json.Lokasi_Terakhir }}",
+            "Nama_Admin": "={{ $('Code Proses Update Snapshot').first().json.Nama_Admin }}",
+            "Timestamp_Update": "={{ $('Code Proses Update Snapshot').first().json.Timestamp_Update }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "sheets-append-tracking",
+      "name": "Append Snapshot Tracking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        2160,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"no_resi\": $('Code Proses Update Snapshot').first().json.No_Resi, \"total_riwayat\": $('Code Proses Update Snapshot').first().json.total_riwayat, \"data\": { \"total_riwayat\": $('Code Proses Update Snapshot').first().json.total_riwayat }, \"message\": \"Update berhasil disimpan (Log_History + snapshot Tracking).\" } }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-sukses",
+      "name": "Respond Sukses",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": false, \"error\": $json.error, \"message\": $json.error } }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-error",
+      "name": "Respond Error 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        860,
+        560
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook POST tracking-update": {
+      "main": [
+        [
+          {
+            "node": "Code Validasi Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Validasi Input": {
+      "main": [
+        [
+          {
+            "node": "IF Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Valid?": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Log_History",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error 400",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Log_History": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Tracking": {
+      "main": [
+        [
+          {
+            "node": "Code Proses Update Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Proses Update Snapshot": {
+      "main": [
+        [
+          {
+            "node": "IF Duplikat?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Duplikat?": {
+      "main": [
+        [
+          {
+            "node": "Respond Sukses",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append ke Log_History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append ke Log_History": {
+      "main": [
+        [
+          {
+            "node": "IF Mode Update?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Mode Update?": {
+      "main": [
+        [
+          {
+            "node": "Update Snapshot Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append Snapshot Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Snapshot Tracking": {
+      "main": [
+        [
+          {
+            "node": "Respond Sukses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Snapshot Tracking": {
+      "main": [
+        [
+          {
+            "node": "Respond Sukses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "metro-logistik-fase-a"
+  }
+}

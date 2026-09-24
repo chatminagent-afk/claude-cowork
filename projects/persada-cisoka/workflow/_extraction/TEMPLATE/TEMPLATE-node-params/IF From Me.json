@@ -1,0 +1,35 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "strict",
+                                                          "version":  3
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "2d6d8b0f-513d-4b52-a9b8-328ee8ccc1c7",
+                                                                 "leftValue":  "={{ $json.body.isFromMe }}",
+                                                                 "rightValue":  false,
+                                                                 "operator":  {
+                                                                                  "type":  "boolean",
+                                                                                  "operation":  "equals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.3,
+    "position":  [
+                     -18640,
+                     2640
+                 ],
+    "id":  "527cb109-cd1c-45ce-b5db-d606a0fdbb8a",
+    "name":  "IF From Me"
+}

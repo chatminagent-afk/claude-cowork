@@ -1,0 +1,5579 @@
+{
+ "v3.12": [
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh cerita sedikit soal bisnisnya? Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 42,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "abdul\naku owner humanizer\njualan parfum\nkdg ribet balesin org ty 1 1",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang bagian mananya?\n\n[FACTS nama=\"Abdul\" nama_bisnis=\"humanizer\" industri=\"jualan parfum\" masalah_utama=\"kdg ribet balesin org ty 1 1\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang bagian mananya?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100 an chat",
+     "mentah": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS volume_chat=\"100 an chat\"]",
+     "kirim": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya2 dlu, trs minta pricelist, dan pesen",
+     "mentah": "Biasanya mereka paling sering nanya apa aja kak?",
+     "kirim": "Biasanya mereka paling sering nanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "aroma, ketahanan, sama ready stok ga",
+     "mentah": "Dari chat pertama sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat pertama sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "iya kadang ada yg kelewat",
+     "mentah": "Siap kak. Chat masuknya lewat mana aja biasanya?",
+     "kirim": "Siap kak. Chat masuknya lewat mana aja biasanya?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Abdul",
+    "nama_bisnis": "humanizer",
+    "industri": "jualan parfum",
+    "masalah_utama": "kdg ribet balesin org ty 1 1",
+    "volume_chat": "100 an chat",
+    "deck_requested": ""
+   },
+   "judul": "S1 Humanizer — ulang uji Steven 23/09 (jawaban pendek-pendek)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, mau tanya soal chatbot",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nMau tanya soal chatbot yang mana nih kak? Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 45,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Nadia kak, bisnis aku katering, chat suka numpuk pas malem",
+     "mentah": "Salam kenal kak. Nama usahanya apa ya kak?\n\n[FACTS nama=\"Nadia\" industri=\"katering\" masalah_utama=\"chat suka numpuk pas malem\"]",
+     "kirim": "Salam kenal kak. Nama usahanya apa ya kak?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dapur Nadia",
+     "mentah": "Noted kak. Kira-kira sehari ada berapa chat masuk?\n\n[FACTS nama_bisnis=\"Dapur Nadia\"]",
+     "kirim": "Noted kak. Kira-kira sehari ada berapa chat masuk?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sekitar 20-30 chat sehari",
+     "mentah": "Pas lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS volume_chat=\"sekitar 20-30 chat sehari\"]",
+     "kirim": "Pas lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "biasanya tanya menu dulu, trus harga, baru pesen",
+     "mentah": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "kirim": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "ada yg sampe kelewat sih kak kadang",
+     "mentah": "Kalau ada yang kelewat gitu, biasanya karena apa kak?",
+     "kirim": "Kalau ada yang kelewat gitu, biasanya karena apa kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Nadia",
+    "nama_bisnis": "Dapur Nadia",
+    "industri": "katering",
+    "masalah_utama": "chat suka numpuk pas malem",
+    "volume_chat": "sekitar 20-30 chat sehari",
+    "deck_requested": ""
+   },
+   "judul": "S2 Katering — ulang uji 17/09",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo, ini bisa buat apa aja ya?",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nVIRA itu AI customer service WhatsApp 24 jam kak, buat bisnis yang chat-nya ramai dan pertanyaannya banyak yang berulang. Dia bisa balas otomatis, jawab FAQ, jadwalin booking, sampai follow-up calon pembeli.\n\nBtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. VIRA itu AI customer service WhatsApp 24 jam kak, buat bisnis yang chat-nya ramai dan pertanyaannya banyak yang berulang. Dia bisa balas otomatis, jawab FAQ, jadwalin booking, sampai follow-up calon pembeli. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 67,
+      "kalimat": 5,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 68,
+      "kalimat": 5,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Budi, Klinik Sehat Gigi",
+     "mentah": "Salam kenal kak. Soal chat di Klinik Sehat Gigi, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Salam kenal kak. Soal chat di Klinik Sehat Gigi, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harganya berapa kak?",
+     "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan kak. Setup dan integrasi awalnya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak ngobrol langsung sama Steven biar angkanya pas.",
+     "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan kak. Setup dan integrasi awalnya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak ngobrol langsung sama Steven biar angkanya pas.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 33,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 33,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bisa connect ke IG juga ga?",
+     "mentah": "Bisa kak, VIRA menangani chat yang masuk lewat Instagram juga — jadi semua pertanyaan pelanggan tetap kebalas, apa pun channel-nya. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak?",
+     "kirim": "Bisa kak, VIRA menangani chat yang masuk lewat Instagram juga, jadi semua pertanyaan pelanggan tetap kebalas, apa pun channel-nya. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 29,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 30,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "oke, chat masuk sehari 50an",
+     "mentah": "Siap kak, udah aku teruskan ke Steven dan dia sendiri yang bakal susun deck-nya buat Klinik Sehat Gigi. Sambil nunggu, kakak bebas tanya apa aja ke aku.\n\n[DECK_REQUEST]\nnama: Budi\njabatan: belum disebut\nnama_bisnis: Klinik Sehat Gigi\nindustri: klinik\ndeskripsi_bisnis: klinik gigi\ntarget_pelanggan: belum disebut\nchannel: WhatsApp dan Instagram\nsumber_leads: belum disebut\nvolume_chat_harian: 50an chat per hari\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: belum disebut\npain_points: belum disebut\naksi_utama: belum disebut\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: integrasi Instagram\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: Instagram\ndata_tersedia: belum disebut\nkutipan_asli: \"bisa connect ke IG juga ga?\" | \"oke, chat masuk sehari 50an\"\n[/DECK_REQUEST]\n\n[FACTS nama=\"Budi\" nama_bisnis=\"Klinik Sehat Gigi\" industri=\"klinik\" volume_chat=\"50an per hari\"]",
+     "kirim": "Siap kak, udah aku teruskan ke Steven dan dia sendiri yang bakal susun deck-nya buat Klinik Sehat Gigi. Sambil nunggu, kakak bebas tanya apa aja ke aku.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 27,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 136,
+      "kalimat": 35,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Budi",
+    "nama_bisnis": "Klinik Sehat Gigi",
+    "industri": "klinik",
+    "masalah_utama": "",
+    "volume_chat": "50an per hari",
+    "deck_requested": "Y"
+   },
+   "judul": "S3 Klinik — prospek banyak BERTANYA (jawaban tidak boleh terpotong)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Sari dari Bimbel Cerdas Mandiri",
+     "mentah": "Salam kenal kak, boleh cerita soal chat, yang paling bikin repot sekarang apa?\n\n[FACTS nama=\"Sari\" nama_bisnis=\"Bimbel Cerdas Mandiri\" industri=\"bimbel\"]",
+     "kirim": "Salam kenal kak, boleh cerita soal chat, yang paling bikin repot sekarang apa?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+     "mentah": "Kalau lagi ramai gitu, biasanya ada chat yang sampai kelewat nggak kak?",
+     "kirim": "Kalau lagi ramai gitu, biasanya ada chat yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sehari bisa 40 chat kalo lagi musim daftar",
+     "mentah": "Itu lumayan padat ya kak. Dari chat pertama sampai orang tuanya daftar, biasanya lewat langkah apa aja?",
+     "kirim": "Itu lumayan padat ya kak. Dari chat pertama sampai orang tuanya daftar, biasanya lewat langkah apa aja?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya biaya, jadwal, trus daftar lewat form",
+     "mentah": "Yang paling sering ditanyain orang tua biasanya apa aja kak?",
+     "kirim": "Yang paling sering ditanyain orang tua biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 10,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 10,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Sari",
+    "nama_bisnis": "Bimbel Cerdas Mandiri",
+    "industri": "bimbel",
+    "masalah_utama": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+    "volume_chat": "sehari bisa 40 chat kalo lagi musim daftar",
+    "deck_requested": ""
+   },
+   "judul": "S4 Bimbel — prospek bercerita panjang",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, aku Rina dari Kopi Senja, lagi cari AI buat bales chat",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin buat kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin buat kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "coffee shop kak, chat reservasi numpuk pas weekend",
+     "mentah": "[FACTS nama=\"Rina\" nama_bisnis=\"Kopi Senja\" industri=\"kopi\" masalah_utama=\"chat reservasi numpuk pas weekend\"]\n\nSiap kak. Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "kirim": "Siap kak. Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100an chat pas weekend",
+     "mentah": "[FACTS volume_chat=\"100an chat pas weekend\"]\n\n100 chat itu lumayan ya. Dari chat reservasi masuk sampai orangnya beneran dateng, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat reservasi masuk sampai orangnya beneran dateng, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "gema",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 14,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 19,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "boleh dong dibuatin deck",
+     "mentah": "[DECK_REQUEST]\nnama: Rina\njabatan: belum disebut\nnama_bisnis: Kopi Senja\nindustri: kopi\ndeskripsi_bisnis: coffee shop\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 100an chat pas weekend\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: chat reservasi numpuk pas weekend\npain_points: belum disebut\naksi_utama: reservasi\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: \"chat reservasi numpuk pas weekend | 100an chat pas weekend\"\n[/DECK_REQUEST]\n\nSiap kak, briefnya sudah aku teruskan ke Steven. Dia yang bakal susun decknya dan langsung hubungi kakak. Sambil nunggu, kakak bebas tanya apa aja ke aku.",
+     "kirim": "Siap kak, briefnya sudah aku teruskan ke Steven. Dia yang bakal susun decknya dan langsung hubungi kakak. Sambil nunggu, kakak bebas tanya apa aja ke aku.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 26,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 134,
+      "kalimat": 36,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    },
+    {
+     "pesan": "makasih kak",
+     "mentah": "Sama-sama kak. Kira-kira pertanyaan yang paling sering masuk ke chat Kopi Senja apa aja kak?",
+     "kirim": "Sama-sama kak. Kira-kira pertanyaan yang paling sering masuk ke chat Kopi Senja apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rina",
+    "nama_bisnis": "Kopi Senja",
+    "industri": "kopi",
+    "masalah_utama": "chat reservasi numpuk pas weekend",
+    "volume_chat": "100an chat pas weekend",
+    "deck_requested": "Y"
+   },
+   "judul": "S5 Kopi — sampai minta deck",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh cerita dulu, bisnis kakak bergerak di bidang apa? Dan btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Dan btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 47,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "rehan\nusahaku sewa raket padel",
+     "mentah": "Salam kenal kak. Usaha sewa raket padel itu bergerak di bidang apa persisnya — penyewaan alatnya saja, atau ada lapangan dan jasa lainnya juga?",
+     "kirim": "Salam kenal kak. Usaha sewa raket padel itu bergerak di bidang apa persisnya, penyewaan alatnya saja, atau ada lapangan dan jasa lainnya juga?",
+     "detik": 0.0,
+     "galian": "bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 23,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 24,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "persewaan aja sih",
+     "mentah": "Soal chat, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "balesin chat 1 1 sih\nsuka tenggelem",
+     "mentah": "Kira-kira sehari ada berapa chat masuk kak?",
+     "kirim": "Kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "10-20 an",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "gimana prosedurnya dan lain-lain",
+     "mentah": "Maksud kakak prosedur pemasangan VIRA-nya, atau prosedur sewanya?",
+     "kirim": "Maksud kakak prosedur pemasangan VIRA-nya, atau prosedur sewanya?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harga dulu, trs klo udah aman baru ke payment",
+     "mentah": "VIRA Basic mulai Rp3.000.000 per bulan, Premium mulai Rp5.000.000 per bulan, dan setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, dan soal payment nanti dibicarakan langsung sama Steven.\n\nMau aku mintakan Steven buatkan deck khusus buat bisnis sewa raket padel kakak?",
+     "kirim": "VIRA Basic mulai Rp3.000.000 per bulan, Premium mulai Rp5.000.000 per bulan, dan setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, dan soal payment nanti dibicarakan langsung sama Steven. Mau aku mintakan Steven buatkan deck khusus buat bisnis sewa raket padel kakak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 44,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": true,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 44,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": true,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "okee",
+     "mentah": "[DECK_REQUEST]\nnama: Rehan\njabatan: belum disebut\nnama_bisnis: sewa raket padel\nindustri: persewaan raket padel\ndeskripsi_bisnis: usaha persewaan raket padel saja, tanpa lapangan atau jasa lain\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 10-20 chat\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: balas chat satu-satu, sering tenggelam\npain_points: belum disebut\naksi_utama: belum disebut\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: \"balesin chat 1 1 sih | suka tenggelem | harga dulu, trs klo udah aman baru ke payment\"\n[/DECK_REQUEST]\n\nSiap kak, brief-nya sudah aku teruskan ke Steven — dia sendiri yang akan menyusun deck-nya dan menghubungi kakak langsung. Sambil menunggu, kakak bebas tanya apa pun ke aku.",
+     "kirim": "Siap kak, brief-nya sudah aku teruskan ke Steven, dia sendiri yang akan menyusun deck-nya dan menghubungi kakak langsung. Sambil menunggu, kakak bebas tanya apa pun ke aku.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 27,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 154,
+      "kalimat": 35,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rehan",
+    "nama_bisnis": "sewa raket padel",
+    "industri": "persewaan aja",
+    "masalah_utama": "balesin chat 1 1 sih suka tenggelem",
+    "volume_chat": "10-20 an",
+    "deck_requested": "Y"
+   },
+   "judul": "S6 Padel — ulang uji live Steven 23/09 13:22 (Rehan, sewa raket padel)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nbtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dimas, Laundry Kilat",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama=\"Dimas\" nama_bisnis=\"Laundry Kilat\" industri=\"laundry\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "chat numpuk tiap pagi, sering telat bales",
+     "mentah": "Kira-kira sehari ada berapa chat masuk kak?\n\n[FACTS masalah_utama=\"chat numpuk tiap pagi, sering telat bales\"]",
+     "kirim": "Kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "kpn bs ngmng sm steven?",
+     "mentah": "Boleh kak, aku sambungkan. Steven nanti yang menghubungi kakak langsung ya.\n\n[TALK_TO_ADMIN]",
+     "kirim": "Boleh kak, aku sambungkan. Steven nanti yang menghubungi kakak langsung ya.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": true,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "oke",
+     "mentah": "Siap kak, ditunggu kabar dari Steven ya.\n\n[FACTS volume_chat_harian=\"belum disebut\"]",
+     "kirim": "Siap kak, ditunggu kabar dari Steven ya.",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Dimas",
+    "nama_bisnis": "Laundry Kilat",
+    "industri": "laundry",
+    "masalah_utama": "chat numpuk tiap pagi, sering telat bales",
+    "volume_chat": "",
+    "deck_requested": ""
+   },
+   "judul": "S7 Laundry — minta ngobrol dengan Steven, bahasa singkat (uji live 14:05)",
+   "ulang": 1
+  }
+ ],
+ "v3.13": [
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin buat kliennya, jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh cerita dulu, bisnis kakak bergerak di bidang apa? Dan btw, boleh tau nama kakak siapa, dan nama usahanya apa?\n\n[FACTS nama_bisnis=\"belum disebut\" industri=\"belum disebut\" nama=\"belum disebut\"]",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin buat kliennya, jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Dan btw, boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 37,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 47,
+      "kalimat": 3,
+      "tanya": 2,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "abdul\naku owner humanizer\njualan parfum\nkdg ribet balesin org ty 1 1",
+     "mentah": "Salam kenal kak. Soal chat yang ribet dibales satu-satu itu, yang paling bikin repot biasanya bagian mananya kak?\n\n[FACTS nama=\"Abdul\" nama_bisnis=\"humanizer\" industri=\"jualan parfum\" masalah_utama=\"kdg ribet balesin org ty 1 1\"]",
+     "kirim": "Salam kenal kak. Soal chat yang ribet dibales satu-satu itu, yang paling bikin repot biasanya bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 18,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 18,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100 an chat",
+     "mentah": "Dari 100-an chat itu, yang paling sering ditanyain biasanya apa aja kak?\n\n[FACTS volume_chat=\"100 an chat\"]",
+     "kirim": "Dari 100-an chat itu, yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya2 dlu, trs minta pricelist, dan pesen",
+     "mentah": "Dari chat pertama sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat pertama sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "aroma, ketahanan, sama ready stok ga",
+     "mentah": "Siap kak. Sekali closing di tempat kakak, masuknya kira-kira berapa rupiah?\n\n[FACTS alur_setelah_chat=\"chat masuk → tanya aroma, ketahanan, ready stok → minta pricelist → pesen\" pertanyaan_tersering=\"aroma, ketahanan, ready stok\"]",
+     "kirim": "Siap kak. Sekali closing di tempat kakak, masuknya kira-kira berapa rupiah?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "iya kadang ada yg kelewat",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya yang kelewat itu chat baru masuk atau yang udah nanya lama kak?\n\n[FACTS pain_points=\"kadang ada chat yang kelewat\"]",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya yang kelewat itu chat baru masuk atau yang udah nanya lama kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 18,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 18,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Abdul",
+    "nama_bisnis": "humanizer",
+    "industri": "jualan parfum",
+    "masalah_utama": "kdg ribet balesin org ty 1 1",
+    "volume_chat": "100 an chat",
+    "deck_requested": ""
+   },
+   "judul": "S1 Humanizer — ulang uji Steven 23/09 (jawaban pendek-pendek)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, mau tanya soal chatbot",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nMau tanya soal chatbot yang mana kak? Silakan, aku jawab semampuku.\n\nbtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Silakan, aku jawab semampuku. btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 40,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 48,
+      "kalimat": 5,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Nadia kak, bisnis aku katering, chat suka numpuk pas malem",
+     "mentah": "Halo kak, salam kenal. Kalau boleh tau, nama usahanya apa kak?",
+     "kirim": "Halo kak, salam kenal. Kalau boleh tau, nama usahanya apa kak?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dapur Nadia",
+     "mentah": "Noted kak. Kira-kira sehari ada berapa chat masuk kak?",
+     "kirim": "Noted kak. Kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sekitar 20-30 chat sehari",
+     "mentah": "Kalau malam lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "kirim": "Kalau malam lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "biasanya tanya menu dulu, trus harga, baru pesen",
+     "mentah": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "kirim": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "ada yg sampe kelewat sih kak kadang",
+     "mentah": "Pas lagi ramai gitu, yang paling bikin repot bagian mananya kak?",
+     "kirim": "Pas lagi ramai gitu, yang paling bikin repot bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Nadia",
+    "nama_bisnis": "Dapur Nadia",
+    "industri": "katering",
+    "masalah_utama": "chat suka numpuk pas malem",
+    "volume_chat": "sekitar 20-30 chat sehari",
+    "deck_requested": ""
+   },
+   "judul": "S2 Katering — ulang uji 17/09",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo, ini bisa buat apa aja ya?",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nVIRA ini AI Customer Service WhatsApp yang balas chat pelanggan otomatis 24 jam, jadi pas kakak lagi sibuk atau di luar jam kerja, chat tetap kejawab. Dia bisa jawab pertanyaan yang berulang, bantu follow-up, sampai arahin pelanggan ke closing.\n\nbtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. VIRA ini AI Customer Service WhatsApp yang balas chat pelanggan otomatis 24 jam, jadi pas kakak lagi sibuk atau di luar jam kerja, chat tetap kejawab. Dia bisa jawab pertanyaan yang berulang, bantu follow-up, sampai arahin pelanggan ke closing. btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 75,
+      "kalimat": 5,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 75,
+      "kalimat": 5,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Budi, Klinik Sehat Gigi",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama=\"Budi\" nama_bisnis=\"Klinik Sehat Gigi\" industri=\"klinik\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harganya berapa kak?",
+     "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas kalau dibicarakan langsung sama Steven.\n\nSambil menunggu, kira-kira sehari ada berapa chat masuk kak?",
+     "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas kalau dibicarakan langsung sama Steven. Sambil menunggu, kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bisa connect ke IG juga ga?",
+     "mentah": "Bisa kak, chat yang masuk dari Instagram juga bisa ditangani VIRA.\n\n[UNKNOWN]\n\nAku belum tahu detail teknis integrasinya, tapi ini bisa aku teruskan ke Steven ya. Boleh tau kakak sekarang chat masuknya lewat mana aja?",
+     "kirim": "Bisa kak, chat yang masuk dari Instagram juga bisa ditangani VIRA. Aku belum tahu detail teknis integrasinya, tapi ini bisa aku teruskan ke Steven ya. Boleh tau kakak sekarang chat masuknya lewat mana aja?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 34,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 34,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "oke, chat masuk sehari 50an",
+     "mentah": "Dari chat pertama sampai jadi booking, biasanya lewat langkah apa aja kak?\n\n[FACTS volume_chat=\"chat masuk sehari 50an\"]",
+     "kirim": "Dari chat pertama sampai jadi booking, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Budi",
+    "nama_bisnis": "Klinik Sehat Gigi",
+    "industri": "klinik",
+    "masalah_utama": "",
+    "volume_chat": "chat masuk sehari 50an",
+    "deck_requested": ""
+   },
+   "judul": "S3 Klinik — prospek banyak BERTANYA (jawaban tidak boleh terpotong)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Sari dari Bimbel Cerdas Mandiri",
+     "mentah": "Salam kenal kak. Soal chat di bimbelnya, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Salam kenal kak. Soal chat di bimbelnya, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+     "mentah": "Kalau lagi ramai, biasanya ada chat yang sampai kelewat nggak kak?",
+     "kirim": "Kalau lagi ramai, biasanya ada chat yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sehari bisa 40 chat kalo lagi musim daftar",
+     "mentah": "40 chat itu lumayan padat kak. Dari chat pertama sampai akhirnya daftar, biasanya lewat langkah apa aja?",
+     "kirim": "40 chat itu lumayan padat kak. Dari chat pertama sampai akhirnya daftar, biasanya lewat langkah apa aja?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya biaya, jadwal, trus daftar lewat form",
+     "mentah": "Orang tua biasanya paling sering nanya apa aja kak?",
+     "kirim": "Orang tua biasanya paling sering nanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Sari",
+    "nama_bisnis": "Bimbel Cerdas Mandiri",
+    "industri": "bimbel",
+    "masalah_utama": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+    "volume_chat": "sehari bisa 40 chat kalo lagi musim daftar",
+    "deck_requested": ""
+   },
+   "judul": "S4 Bimbel — prospek bercerita panjang",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, aku Rina dari Kopi Senja, lagi cari AI buat bales chat",
+     "mentah": "Halo kak Rina, salam kenal. Aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh tau nama usahanya apa ya kak? Soalnya tadi kakak sebut Kopi Senja, itu nama usahanya atau nama kakaknya?\n\n[FACTS nama=\"Rina\" nama_bisnis=\"Kopi Senja\" industri=\"kopi\"]",
+     "kirim": "Halo kak, salam kenal. Aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama usahanya apa ya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 35,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 48,
+      "kalimat": 5,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "coffee shop kak, chat reservasi numpuk pas weekend",
+     "mentah": "Noted kak. Yang paling bikin repot soal chat reservasi itu bagian mananya kak?\n\n[FACTS industri=\"coffee shop\" masalah_utama=\"chat reservasi numpuk pas weekend\"]",
+     "kirim": "Noted kak. Yang paling bikin repot soal chat reservasi itu bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100an chat pas weekend",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS volume_chat=\"100an chat pas weekend\"]",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "boleh dong dibuatin deck",
+     "mentah": "[DECK_REQUEST]\nnama: Rina\njabatan: belum disebut\nnama_bisnis: Kopi Senja\nindustri: coffee shop\ndeskripsi_bisnis: belum disebut\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 100an chat pas weekend\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: chat reservasi numpuk pas weekend\npain_points: belum disebut\naksi_utama: reservasi\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: \"coffee shop kak, chat reservasi numpuk pas weekend\" | \"100an chat pas weekend\" | \"boleh dong dibuatin deck\"\n[/DECK_REQUEST]\n\nSiap kak, brief-nya sudah aku teruskan ke Steven. Dia sendiri yang bakal nyusun deck-nya dan nanti langsung hubungin kakak. Sambil nunggu, kakak bebas tanya apa aja ke aku.",
+     "kirim": "Siap kak, brief-nya sudah aku teruskan ke Steven. Dia sendiri yang bakal nyusun deck-nya dan nanti langsung hubungin kakak. Sambil nunggu, kakak bebas tanya apa aja ke aku.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 28,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 145,
+      "kalimat": 36,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    },
+    {
+     "pesan": "makasih kak",
+     "mentah": "Sama-sama kak. Btw reservasinya biasanya buat apa aja — meja biasa, private room, atau acara khusus?",
+     "kirim": "Sama-sama kak. Btw reservasinya biasanya buat apa aja, meja biasa, private room, atau acara khusus?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rina",
+    "nama_bisnis": "Kopi Senja",
+    "industri": "coffee shop",
+    "masalah_utama": "chat reservasi numpuk pas weekend",
+    "volume_chat": "100an chat pas weekend",
+    "deck_requested": "Y"
+   },
+   "judul": "S5 Kopi — sampai minta deck",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh cerita dulu, bisnis kakak bergerak di bidang apa, dan kira-kira masalah chat-nya seperti apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 42,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "rehan\nusahaku sewa raket padel",
+     "mentah": "Salam kenal kak. Usahanya sewa raket padel ya, boleh tau nama usahanya apa?",
+     "kirim": "Salam kenal kak. Usahanya sewa raket padel ya, boleh tau nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "persewaan aja sih",
+     "mentah": "Noted kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama_bisnis=\"persewaan\"]",
+     "kirim": "Noted kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "balesin chat 1 1 sih\nsuka tenggelem",
+     "mentah": "Kira-kira sehari ada berapa chat masuk kak?\n\n[FACTS masalah_utama=\"balesin chat satu-satu suka tenggelam\"]",
+     "kirim": "Kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "10-20 an",
+     "mentah": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS volume_chat=\"10-20 an\"]",
+     "kirim": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "gimana prosedurnya dan lain-lain",
+     "mentah": "Maksud kakak prosedur penyewaan raketnya, atau prosedur pemasangan VIRA-nya?",
+     "kirim": "Maksud kakak prosedur penyewaan raketnya, atau prosedur pemasangan VIRA-nya?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harga dulu, trs klo udah aman baru ke payment",
+     "mentah": "Itu alur penyewaannya ya kak. Dari chat pertama sampai jadi sewa, biasanya lewat langkah apa aja kak?",
+     "kirim": "Itu alur penyewaannya ya kak. Dari chat pertama sampai jadi sewa, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "okee",
+     "mentah": "[DECK_REQUEST]\nnama: Rehan\njabatan: belum disebut\nnama_bisnis: persewaan\nindustri: sewa raket padel\ndeskripsi_bisnis: belum disebut\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 10-20 an\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: balesin chat satu-satu suka tenggelam\npain_points: belum disebut\naksi_utama: sewa raket padel\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: \"balesin chat 1 1 sih | suka tenggelem | harga dulu, trs klo udah aman baru ke payment\"\n[/DECK_REQUEST]\n\nMau aku mintakan Steven buatkan deck khusus buat bisnis kakak?",
+     "kirim": "Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 10,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 127,
+      "kalimat": 34,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rehan",
+    "nama_bisnis": "",
+    "industri": "sewa raket padel",
+    "masalah_utama": "balesin chat satu-satu suka tenggelam",
+    "volume_chat": "10-20 an",
+    "deck_requested": "Y"
+   },
+   "judul": "S6 Padel — ulang uji live Steven 23/09 13:22 (Rehan, sewa raket padel)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun pakai VIRA — sistem yang sama yang Steven bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun pakai VIRA, sistem yang sama yang Steven bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 34,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dimas, Laundry Kilat",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama=\"Dimas\" nama_bisnis=\"Laundry Kilat\" industri=\"laundry\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "chat numpuk tiap pagi, sering telat bales",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS masalah_utama=\"chat numpuk tiap pagi, sering telat bales\"]",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "kpn bs ngmng sm steven?",
+     "mentah": "Steven akan menghubungi kakak langsung ya kak.\n\n[TALK_TO_ADMIN]",
+     "kirim": "Steven akan menghubungi kakak langsung ya kak.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": true,
+     "matikan": true,
+     "m_kirim": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Dimas",
+    "nama_bisnis": "Laundry Kilat",
+    "industri": "laundry",
+    "masalah_utama": "chat numpuk tiap pagi, sering telat bales",
+    "volume_chat": "",
+    "deck_requested": ""
+   },
+   "judul": "S7 Laundry — minta ngobrol dengan Steven, bahasa singkat (uji live 14:05)",
+   "ulang": 1
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "abdul\naku owner humanizer\njualan parfum\nkdg ribet balesin org ty 1 1",
+     "mentah": "Salam kenal kak. Soal chat yang bikin repot itu, biasanya bagian mana yang paling makan waktu?",
+     "kirim": "Salam kenal kak. Soal chat yang bikin repot itu, biasanya bagian mana yang paling makan waktu?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100 an chat",
+     "mentah": "Dari chat pertama sampai jadi order, biasanya lewat langkah apa aja kak?\n\n[FACTS nama=\"Abdul\" nama_bisnis=\"humanizer\" industri=\"jualan parfum\" masalah_utama=\"kdg ribet balesin org ty 1 1\" volume_chat=\"100 an chat\"]",
+     "kirim": "Dari chat pertama sampai jadi order, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya2 dlu, trs minta pricelist, dan pesen",
+     "mentah": "Yang paling sering ditanyain biasanya apa aja kak?\n\n[FACTS alur_setelah_chat=\"tanya dulu, minta pricelist, lalu pesan\"]",
+     "kirim": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "aroma, ketahanan, sama ready stok ga",
+     "mentah": "Siap kak. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak?\n\n[DECK_REQUEST]\nnama: Abdul\njabatan: owner\nnama_bisnis: humanizer\nindustri: jualan parfum\ndeskripsi_bisnis: belum disebut\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 100 an chat\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: kadang ribet balasin orang satu-satu\npain_points: belum disebut\naksi_utama: order\nalur_setelah_chat: tanya dulu, minta pricelist, lalu pesan\npertanyaan_tersering: aroma, ketahanan, dan ready stok\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: \"kdg ribet balesin org ty 1 1\" | \"tanya2 dlu, trs minta pricelist, dan pesen\" | \"aroma, ketahanan, sama ready stok ga\"\n[/DECK_REQUEST]",
+     "kirim": "Siap kak. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 137,
+      "kalimat": 35,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    },
+    {
+     "pesan": "iya kadang ada yg kelewat",
+     "mentah": "Kalau lagi numpuk gitu, biasanya yang kelewat itu chat apa aja kak?\n\n[FACTS pain_points=\"kadang ada chat yang kelewat\"]",
+     "kirim": "Kalau lagi numpuk gitu, biasanya yang kelewat itu chat apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Abdul",
+    "nama_bisnis": "humanizer",
+    "industri": "jualan parfum",
+    "masalah_utama": "kdg ribet balesin org ty 1 1",
+    "volume_chat": "100 an chat",
+    "deck_requested": "Y"
+   },
+   "judul": "S1 Humanizer — ulang uji Steven 23/09 (jawaban pendek-pendek)",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, mau tanya soal chatbot",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nMau tanya soal chatbot yang seperti apa kak? Boleh juga sekalian tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh juga sekalian tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 45,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Nadia kak, bisnis aku katering, chat suka numpuk pas malem",
+     "mentah": "Salam kenal kak. Kalau malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "kirim": "Salam kenal kak. Kalau malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dapur Nadia",
+     "mentah": "Noted kak. Kalau malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "kirim": "Noted kak. Oh iya, nama usahanya apa kak?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "tanya-ulang+galian",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sekitar 20-30 chat sehari",
+     "mentah": "Kalau malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "kirim": "Kalau malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "biasanya tanya menu dulu, trus harga, baru pesen",
+     "mentah": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "kirim": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "ada yg sampe kelewat sih kak kadang",
+     "mentah": "Kalau lagi ramai gitu, biasanya yang kelewat paling sering di bagian mana kak?",
+     "kirim": "Kalau lagi ramai gitu, biasanya yang kelewat paling sering di bagian mana kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Nadia",
+    "nama_bisnis": "",
+    "industri": "katering",
+    "masalah_utama": "chat suka numpuk pas malem",
+    "volume_chat": "sekitar 20-30 chat sehari",
+    "deck_requested": ""
+   },
+   "judul": "S2 Katering — ulang uji 17/09",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo, ini bisa buat apa aja ya?",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nVIRA ini AI customer service buat WhatsApp yang balas chat pelanggan 24 jam, paham bahasa natural, bisa follow-up otomatis, sampai jadwalin janji — semuanya dirancang sesuai alur bisnis kakak, bukan template.\n\nbtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. VIRA ini AI customer service buat WhatsApp yang balas chat pelanggan 24 jam, paham bahasa natural, bisa follow-up otomatis, sampai jadwalin janji, semuanya dirancang sesuai alur bisnis kakak, bukan template. btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 66,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 68,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Budi, Klinik Sehat Gigi",
+     "mentah": "Salam kenal kak. Soal chat di klinik, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Salam kenal kak. Soal chat di klinik, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harganya berapa kak?",
+     "mentah": "Paket Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas dibicarakan langsung sama Steven.\n\nKira-kira sehari ada berapa chat masuk ke klinik kak?",
+     "kirim": "Paket Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas dibicarakan langsung sama Steven. Kira-kira sehari ada berapa chat masuk ke klinik kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bisa connect ke IG juga ga?",
+     "mentah": "Bisa kak, VIRA bisa terhubung ke Instagram juga — chat dari IG masuk ke satu sistem yang sama, jadi balasannya tetap konsisten.\n\nChat dari IG-nya juga rame kak?",
+     "kirim": "Bisa kak, VIRA bisa terhubung ke Instagram juga, chat dari IG masuk ke satu sistem yang sama, jadi balasannya tetap konsisten. Chat dari IG-nya juga rame kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 27,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 28,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "oke, chat masuk sehari 50an",
+     "mentah": "Dari chat pertama sampai jadi pasien datang, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat pertama sampai jadi pasien datang, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Budi",
+    "nama_bisnis": "Klinik Sehat Gigi",
+    "industri": "klinik",
+    "masalah_utama": "",
+    "volume_chat": "chat masuk sehari 50an",
+    "deck_requested": ""
+   },
+   "judul": "S3 Klinik — prospek banyak BERTANYA (jawaban tidak boleh terpotong)",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nAda yang bisa aku bantu soal VIRA atau otomasi chat? Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 47,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Sari dari Bimbel Cerdas Mandiri",
+     "mentah": "Salam kenal kak. Soal chat di bimbelnya, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Salam kenal kak. Soal chat di bimbelnya, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+     "mentah": "Siap kak. Kira-kira sehari ada berapa chat masuk?",
+     "kirim": "Siap kak. Kira-kira sehari ada berapa chat masuk?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sehari bisa 40 chat kalo lagi musim daftar",
+     "mentah": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "kirim": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya biaya, jadwal, trus daftar lewat form",
+     "mentah": "Berarti alurnya chat dulu, baru daftar lewat form ya. Dari chat sampai akhirnya daftar, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat sampai akhirnya daftar, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "gema",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 20,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Sari",
+    "nama_bisnis": "Bimbel Cerdas Mandiri",
+    "industri": "bimbel",
+    "masalah_utama": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+    "volume_chat": "sehari bisa 40 chat kalo lagi musim daftar",
+    "deck_requested": ""
+   },
+   "judul": "S4 Bimbel — prospek bercerita panjang",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, aku Rina dari Kopi Senja, lagi cari AI buat bales chat",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nWah pas banget, Kopi Senja lagi cari AI buat bales chat. Boleh cerita dulu, yang bikin kakak kepikiran cari AI itu apa?\n\nBtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Wah pas banget, Kopi Senja lagi cari AI buat bales chat. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 47,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 58,
+      "kalimat": 5,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "coffee shop kak, chat reservasi numpuk pas weekend",
+     "mentah": "Salam kenal kak. Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak?\n\n[FACTS nama=\"Rina\" nama_bisnis=\"Kopi Senja\" industri=\"kopi\" masalah_utama=\"chat reservasi numpuk pas weekend\"]",
+     "kirim": "Salam kenal kak. Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100an chat pas weekend",
+     "mentah": "Dari chat pertama sampai jadi reservasi, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat pertama sampai jadi reservasi, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "boleh dong dibuatin deck",
+     "mentah": "Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak?\n\n[DECK_REQUEST]\nnama: Rina\njabatan: belum disebut\nnama_bisnis: Kopi Senja\nindustri: kopi\ndeskripsi_bisnis: coffee shop\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 100an chat pas weekend\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: chat reservasi numpuk pas weekend\npain_points: belum disebut\naksi_utama: reservasi\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: belum disebut\n[/DECK_REQUEST]",
+     "kirim": "Siap kak, sudah aku teruskan ke Steven. Dia sendiri yang akan menyusun decknya dan menghubungi kakak langsung.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "deck",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 110,
+      "kalimat": 34,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    },
+    {
+     "pesan": "makasih kak",
+     "mentah": "Sama-sama kak. Sambil nunggu Steven, kalau ada yang mau ditanya soal VIRA, aku di sini.",
+     "kirim": "Sama-sama kak. Sambil nunggu Steven, kalau ada yang mau ditanya soal VIRA, aku di sini.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rina",
+    "nama_bisnis": "Kopi Senja",
+    "industri": "kopi",
+    "masalah_utama": "chat reservasi numpuk pas weekend",
+    "volume_chat": "100an chat pas weekend",
+    "deck_requested": "Y"
+   },
+   "judul": "S5 Kopi — sampai minta deck",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin buat kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nMau coba ngobrol soal apa dulu nih kak? Btw, boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin buat kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 45,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "rehan\nusahaku sewa raket padel",
+     "mentah": "Salam kenal kak Rehan. Sewa raket padel ya, boleh tau nama usahanya apa kak?",
+     "kirim": "Salam kenal kak. Sewa raket padel ya, boleh tau nama usahanya apa kak?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "persewaan aja sih",
+     "mentah": "Oke kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Oke kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "balesin chat 1 1 sih\nsuka tenggelem",
+     "mentah": "Kira-kira sehari ada berapa chat masuk kak?",
+     "kirim": "Kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 7,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "10-20 an",
+     "mentah": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "kirim": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "gimana prosedurnya dan lain-lain",
+     "mentah": "Dari chat pertama sampai akhirnya jadi sewa, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat pertama sampai akhirnya jadi sewa, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harga dulu, trs klo udah aman baru ke payment",
+     "mentah": "Noted kak. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak? Kalau boleh tau nama usahanya apa ya kak?\n\n[DECK_REQUEST]\nnama: Rehan\njabatan: belum disebut\nnama_bisnis: belum disebut\nindustri: persewaan raket padel\ndeskripsi_bisnis: usaha persewaan raket padel\ntarget_pelanggan: belum disebut\nchannel: belum disebut\nsumber_leads: belum disebut\nvolume_chat_harian: 10-20 chat per hari\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: balas chat satu-satu suka tenggelam\npain_points: belum disebut\naksi_utama: sewa raket padel\nalur_setelah_chat: harga dulu, kalau sudah aman baru ke payment\npertanyaan_tersering: prosedur sewa dan lain-lain\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: belum disebut\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: balesin chat 1 1 sih | suka tenggelem | gimana prosedurnya dan lain-lain | harga dulu, trs klo udah aman baru ke payment\n[/DECK_REQUEST]",
+     "kirim": "Noted kak. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak? Kalau boleh tau nama usahanya apa ya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 20,
+      "kalimat": 3,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 155,
+      "kalimat": 36,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    },
+    {
+     "pesan": "okee",
+     "mentah": "Siap kak. Briefnya sudah aku teruskan ke Steven, dia yang akan susun decknya dan hubungi kakak langsung. Sambil nunggu, kakak bebas tanya apa aja ke aku.\n\n[FACTS nama_bisnis=\"belum disebut\" minat_deck=\"ya\"]",
+     "kirim": "Siap kak. Briefnya sudah aku teruskan ke Steven, dia yang akan susun decknya dan hubungi kakak langsung. Sambil nunggu, kakak bebas tanya apa aja ke aku.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 26,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 26,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rehan",
+    "nama_bisnis": "",
+    "industri": "sewa raket padel",
+    "masalah_utama": "balesin chat 1 1 sih suka tenggelem",
+    "volume_chat": "10-20 an",
+    "deck_requested": "Y"
+   },
+   "judul": "S6 Padel — ulang uji live Steven 23/09 13:22 (Rehan, sewa raket padel)",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nAda yang bisa aku bantu soal VIRA atau kebutuhan chat bisnis kakak? Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 48,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dimas, Laundry Kilat",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama=\"Dimas\" nama_bisnis=\"Laundry Kilat\" industri=\"laundry\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "chat numpuk tiap pagi, sering telat bales",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS masalah_utama=\"chat numpuk tiap pagi, sering telat bales\"]",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "kpn bs ngmng sm steven?",
+     "mentah": "Siap kak, sudah aku sambungkan ke Steven. Dia bakal langsung menghubungi kakak ya.\n\n[TALK_TO_ADMIN]",
+     "kirim": "Siap kak, sudah aku sambungkan ke Steven. Dia bakal langsung menghubungi kakak ya.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": true,
+     "matikan": true,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Dimas",
+    "nama_bisnis": "Laundry Kilat",
+    "industri": "laundry",
+    "masalah_utama": "chat numpuk tiap pagi, sering telat bales",
+    "volume_chat": "",
+    "deck_requested": ""
+   },
+   "judul": "S7 Laundry — minta ngobrol dengan Steven, bahasa singkat (uji live 14:05)",
+   "ulang": 2
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nWah, boleh banget kak. Memangnya kakak lagi cari solusi buat bagian chat-nya ya? Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Wah, boleh banget kak. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 40,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 49,
+      "kalimat": 5,
+      "tanya": 2,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "abdul\naku owner humanizer\njualan parfum\nkdg ribet balesin org ty 1 1",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang bagian mananya kak?",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100 an chat",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya2 dlu, trs minta pricelist, dan pesen",
+     "mentah": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "kirim": "Yang paling sering ditanyain biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 8,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "aroma, ketahanan, sama ready stok ga",
+     "mentah": "Dari chat sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "iya kadang ada yg kelewat",
+     "mentah": "Noted kak. Kalau lagi ramai gitu, yang paling bikin repot bagian mananya kak?",
+     "kirim": "Noted kak. Kalau lagi ramai gitu, yang paling bikin repot bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Abdul",
+    "nama_bisnis": "humanizer",
+    "industri": "jualan parfum",
+    "masalah_utama": "kdg ribet balesin org ty 1 1",
+    "volume_chat": "100 an chat",
+    "deck_requested": ""
+   },
+   "judul": "S1 Humanizer — ulang uji Steven 23/09 (jawaban pendek-pendek)",
+   "ulang": 3
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, mau tanya soal chatbot",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nMau tanya soal chatbot yang mana nih kak? Boleh aku jelasin dulu, atau kakak punya kebutuhan spesifik?\n\nBtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 54,
+      "kalimat": 5,
+      "tanya": 3,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Nadia kak, bisnis aku katering, chat suka numpuk pas malem",
+     "mentah": "Salam kenal kak. Kalau pas malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "kirim": "Salam kenal kak. Kalau pas malam lagi numpuk gitu, biasanya yang paling bikin repot bagian mananya?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 16,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dapur Nadia",
+     "mentah": "Noted kak. Kalau chat lagi numpuk pas malam, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS nama_bisnis=\"Dapur Nadia\"]",
+     "kirim": "Noted kak. Kalau chat lagi numpuk pas malam, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sekitar 20-30 chat sehari",
+     "mentah": "Siap kak. Kalau lagi ramai gitu, yang paling sering ditanyain biasanya apa aja?",
+     "kirim": "Siap kak. Kalau lagi ramai gitu, yang paling sering ditanyain biasanya apa aja?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "biasanya tanya menu dulu, trus harga, baru pesen",
+     "mentah": "Dari chat sampai akhirnya pesen, biasanya lewat langkah apa aja kak?\n\n[FACTS volume_chat=\"20-30 chat sehari\"]",
+     "kirim": "Dari chat sampai akhirnya pesen, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "ada yg sampe kelewat sih kak kadang",
+     "mentah": "Itu yang paling bikin repot ya kak. Kalau lagi numpuk gitu, chat-nya masuk lewat mana aja biasanya?\n\n[FACTS masalah_utama=\"chat suka numpuk pas malam\", pain_points=\"ada chat yang sampai kelewat\"]",
+     "kirim": "Itu yang paling bikin repot ya kak. Kalau lagi numpuk gitu, chat-nya masuk lewat mana aja biasanya?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Nadia",
+    "nama_bisnis": "Dapur Nadia",
+    "industri": "katering",
+    "masalah_utama": "chat suka numpuk pas malam",
+    "volume_chat": "20-30 chat sehari",
+    "deck_requested": ""
+   },
+   "judul": "S2 Katering — ulang uji 17/09",
+   "ulang": 3
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo, ini bisa buat apa aja ya?",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nVIRA ini AI customer service buat WhatsApp yang balas chat pelanggan 24 jam, paham bahasa natural, bisa follow-up otomatis, sampai jadwalin janji atau closing order — tergantung alur bisnis kakak.\n\nBtw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. VIRA ini AI customer service buat WhatsApp yang balas chat pelanggan 24 jam, paham bahasa natural, bisa follow-up otomatis, sampai jadwalin janji atau closing order, tergantung alur bisnis kakak. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 65,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 67,
+      "kalimat": 4,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Budi, Klinik Sehat Gigi",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama=\"Budi\" nama_bisnis=\"Klinik Sehat Gigi\" industri=\"klinik\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harganya berapa kak?",
+     "mentah": "Kisaran paketnya mulai Rp3.000.000 per bulan untuk Basic, dan Rp5.000.000 per bulan untuk Premium. Setup awalnya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas kalau dibicarakan langsung dengan Steven.",
+     "kirim": "Kisaran paketnya mulai Rp3.000.000 per bulan untuk Basic, dan Rp5.000.000 per bulan untuk Premium. Setup awalnya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas kalau dibicarakan langsung dengan Steven.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 34,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 34,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bisa connect ke IG juga ga?",
+     "mentah": "Bisa kak. Chat yang masuk dari Instagram juga bisa ditangani VIRA, jadi pelanggan yang komen atau DM di sana tetap kebalas otomatis.\n\n[FACTS channel=\"WhatsApp dan Instagram\"]",
+     "kirim": "Bisa kak. Chat yang masuk dari Instagram juga bisa ditangani VIRA, jadi pelanggan yang komen atau DM di sana tetap kebalas otomatis.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 22,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 22,
+      "kalimat": 2,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "oke, chat masuk sehari 50an",
+     "mentah": "Kalau lagi ramai gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS volume_chat=\"50an per hari\"]",
+     "kirim": "Kalau lagi ramai gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Budi",
+    "nama_bisnis": "Klinik Sehat Gigi",
+    "industri": "klinik",
+    "masalah_utama": "",
+    "volume_chat": "50an per hari",
+    "deck_requested": ""
+   },
+   "judul": "S3 Klinik — prospek banyak BERTANYA (jawaban tidak boleh terpotong)",
+   "ulang": 3
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin buat kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin buat kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 35,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Sari dari Bimbel Cerdas Mandiri",
+     "mentah": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?\n\n[FACTS nama=\"Sari\" nama_bisnis=\"Bimbel Cerdas Mandiri\" industri=\"bimbel\"]",
+     "kirim": "Salam kenal kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "bimbel SD SMP, muridnya kebanyakan dari sekitar rumah, orang tua suka nanya jadwal sama biaya lewat WA, aku sendiri yang bales",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS masalah_utama=\"Bimbel SD SMP, murid kebanyakan dari sekitar rumah, orang tua suka nanya jadwal dan biaya lewat WA, owner sendiri yang balas\"]",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "sehari bisa 40 chat kalo lagi musim daftar",
+     "mentah": "Kalau lagi ramai gitu, yang paling bikin repot bagian mananya kak?\n\n[FACTS volume_chat=\"sehari bisa 40 chat kalo lagi musim daftar\"]",
+     "kirim": "Kalau lagi ramai gitu, yang paling bikin repot bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "tanya biaya, jadwal, trus daftar lewat form",
+     "mentah": "Ini jawaban atas pertanyaanku soal alurnya kak. Yang paling sering ditanyain orang tua biasanya apa aja kak?\n\n[FACTS alur_setelah_chat=\"tanya biaya, jadwal, lalu daftar lewat form\"]",
+     "kirim": "Ini jawaban atas pertanyaanku soal alurnya kak. Yang paling sering ditanyain orang tua biasanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 17,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Sari",
+    "nama_bisnis": "Bimbel Cerdas Mandiri",
+    "industri": "bimbel",
+    "masalah_utama": "Bimbel SD SMP, murid kebanyakan dari sekitar rumah, orang tua suka nanya jadwal dan biaya lewat WA, owner sendiri yang balas",
+    "volume_chat": "sehari bisa 40 chat kalo lagi musim daftar",
+    "deck_requested": ""
+   },
+   "judul": "S4 Bimbel — prospek bercerita panjang",
+   "ulang": 3
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo kak, aku Rina dari Kopi Senja, lagi cari AI buat bales chat",
+     "mentah": "Halo kak, salam kenal. Aku Steven versi AI, dibangun Steven pakai VIRA — sistem yang sama yang dia bikin untuk kliennya, jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh cerita sedikit, chat di Kopi Senja biasanya seperti apa kak?",
+     "kirim": "Halo kak, salam kenal. Aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya, jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Boleh cerita sedikit, chat di Kopi Senja biasanya seperti apa kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 39,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 40,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "coffee shop kak, chat reservasi numpuk pas weekend",
+     "mentah": "Wah pas weekend itu biasanya yang paling ramai ya kak. Soal chat reservasi yang numpuk, kira-kira sehari bisa masuk berapa chat kak?",
+     "kirim": "Wah pas weekend itu biasanya yang paling ramai ya kak. Soal chat reservasi yang numpuk, kira-kira sehari bisa masuk berapa chat kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 22,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 22,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "100an chat pas weekend",
+     "mentah": "Pas lagi numpuk 100an chat gitu, yang paling bikin repot bagian mananya kak?",
+     "kirim": "Pas lagi numpuk 100an chat gitu, yang paling bikin repot bagian mananya kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "boleh dong dibuatin deck",
+     "mentah": "[DECK_REQUEST]\nnama: Rina\njabatan: belum disebut\nnama_bisnis: Kopi Senja\nindustri: coffee shop\ndeskripsi_bisnis: coffee shop yang menerima banyak chat reservasi, terutama saat weekend\ntarget_pelanggan: belum disebut\nchannel: WhatsApp\nsumber_leads: belum disebut\nvolume_chat_harian: 100an chat saat weekend\njam_operasional: belum disebut\nsiapa_balas_chat: belum disebut\nbiaya_admin_bulanan: belum disebut\nsistem_sekarang: belum disebut\nmasalah_utama: chat reservasi numpuk saat weekend\npain_points: belum disebut\naksi_utama: reservasi\nalur_setelah_chat: belum disebut\npertanyaan_tersering: belum disebut\nfitur_diminati: belum disebut\nnilai_transaksi: belum disebut\nprospek_per_bulan: belum disebut\nminat_paket: belum disebut\nbudget_range: belum disebut\ndeadline: belum disebut\nurgensi: belum disebut\nbahasa_deck: ID\ncatatan: volume chat tinggi saat weekend\nkota: belum disebut\njumlah_admin: belum disebut\nsudah_pakai_chatbot: belum disebut\nintegrasi_dibutuhkan: belum disebut\ndata_tersedia: belum disebut\nkutipan_asli: \"coffee shop kak, chat reservasi numpuk pas weekend\" | \"100an chat pas weekend\" | \"boleh dong dibuatin deck\"\n[/DECK_REQUEST]\n\nSiap kak, brief-nya sudah aku teruskan ke Steven. Dia sendiri yang akan menyusun deck-nya dan menghubungi kakak langsung. Sambil menunggu, kakak bebas tanya apa pun ke aku.",
+     "kirim": "Siap kak, brief-nya sudah aku teruskan ke Steven. Dia sendiri yang akan menyusun deck-nya dan menghubungi kakak langsung. Sambil menunggu, kakak bebas tanya apa pun ke aku.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": true,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 27,
+      "kalimat": 3,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 154,
+      "kalimat": 36,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": true
+     }
+    },
+    {
+     "pesan": "makasih kak",
+     "mentah": "Sama-sama kak, semoga deck-nya nanti pas buat Kopi Senja.",
+     "kirim": "Sama-sama kak, semoga deck-nya nanti pas buat Kopi Senja.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rina",
+    "nama_bisnis": "Kopi Senja",
+    "industri": "kopi",
+    "masalah_utama": "dong dibuatin deck",
+    "volume_chat": "100an chat pas weekend",
+    "deck_requested": "Y"
+   },
+   "judul": "S5 Kopi — sampai minta deck",
+   "ulang": 3
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "Halo VIRA, aku lihat website-nya dan mau coba ngobrol soal AI customer service buat bisnisku.",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nBoleh cerita dulu, bisnis kakak bergerak di bidang apa? Dan btw, boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Dan btw, boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 37,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 47,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "rehan\nusahaku sewa raket padel",
+     "mentah": "Salam kenal kak. Usahanya sewa raket padel ya — nama usahanya apa kak?\n\n[FACTS nama=\"Rehan\" industri=\"sewa raket padel\"]",
+     "kirim": "Salam kenal kak. Usahanya sewa raket padel ya, nama usahanya apa kak?",
+     "detik": 0.0,
+     "galian": "nama usahanya — tanya ulang SEKALI ini saja, singkat, karena belum tercatat. Kalau ternyata di pesan ini dia sudah menyebut nama usahanya, jangan ditanyakan: catat lewat [FACTS], lalu tanyakan bidang usahanya",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 13,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "persewaan aja sih",
+     "mentah": "Oke kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Oke kak. Soal chat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "balesin chat 1 1 sih\nsuka tenggelem",
+     "mentah": "Siap kak. Kira-kira sehari ada berapa chat masuk kak?\n\n[FACTS masalah_utama=\"balesin chat satu-satu suka tenggelam\"]",
+     "kirim": "Siap kak. Kira-kira sehari ada berapa chat masuk kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 9,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 9,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "10-20 an",
+     "mentah": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?\n\n[FACTS volume_chat=\"10-20 an\"]",
+     "kirim": "Kalau chat lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 12,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "gimana prosedurnya dan lain-lain",
+     "mentah": "Maksudnya prosedur pemasangan VIRA-nya ya kak? Kalau iya, alurnya gini: kakak cerita soal bisnisnya, Steven yang rancang alurnya, terus dipasang di WhatsApp kakak, diuji dulu, baru jalan. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak? Kalau boleh tau nama usahanya apa ya kak?",
+     "kirim": "Maksudnya prosedur pemasangan VIRA-nya ya kak? Kalau iya, alurnya gini: kakak cerita soal bisnisnya, Steven yang rancang alurnya, terus dipasang di WhatsApp kakak, diuji dulu, baru jalan. Mau aku mintakan Steven buatkan deck khusus buat bisnis kakak? Kalau boleh tau nama usahanya apa ya kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 45,
+      "kalimat": 4,
+      "tanya": 3,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 45,
+      "kalimat": 4,
+      "tanya": 3,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "harga dulu, trs klo udah aman baru ke payment",
+     "mentah": "Oke, itu alur penjualannya ya — harga dulu, aman, baru bayar. Dari chat sampai akhirnya sewa, biasanya lewat langkah apa aja kak?",
+     "kirim": "Dari chat sampai akhirnya sewa, biasanya lewat langkah apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": true,
+     "konteks_harga": true,
+     "ringkas": "gema",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 22,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": true,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "okee",
+     "mentah": "Noted kak. Biasanya mereka paling sering nanya apa aja kak?",
+     "kirim": "Noted kak. Biasanya mereka paling sering nanya apa aja kak?",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 10,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 10,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Rehan",
+    "nama_bisnis": "",
+    "industri": "sewa raket padel",
+    "masalah_utama": "balesin chat satu-satu suka tenggelam",
+    "volume_chat": "10-20 an",
+    "deck_requested": ""
+   },
+   "judul": "S6 Padel — ulang uji live Steven 23/09 13:22 (Rehan, sewa raket padel)",
+   "ulang": 3
+  },
+  {
+   "giliran": [
+    {
+     "pesan": "halo",
+     "mentah": "Halo kak, aku Steven versi AI — dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang.\n\nAda yang bisa aku bantu soal VIRA atau otomasi chat? Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia bikin untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw boleh tau nama kakak siapa, dan nama usahanya apa?",
+     "detik": 0.0,
+     "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "perkenalan",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 36,
+      "kalimat": 3,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 47,
+      "kalimat": 4,
+      "tanya": 2,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "Dimas, Laundry Kilat",
+     "mentah": "Salam kenal kak. Soal chat di Laundry Kilat, yang paling bikin repot sekarang apa kak?",
+     "kirim": "Salam kenal kak. Soal chat di Laundry Kilat, yang paling bikin repot sekarang apa kak?",
+     "detik": 0.0,
+     "galian": "masalah terbesarnya soal chat sekarang",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 15,
+      "kalimat": 2,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "chat numpuk tiap pagi, sering telat bales",
+     "mentah": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "kirim": "Kalau lagi numpuk gitu, biasanya ada yang sampai kelewat nggak kak?",
+     "detik": 0.0,
+     "galian": "kira-kira berapa chat masuk per hari",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": false,
+     "matikan": false,
+     "m_kirim": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 11,
+      "kalimat": 1,
+      "tanya": 1,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": false,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    },
+    {
+     "pesan": "kpn bs ngmng sm steven?",
+     "mentah": "[TALK_TO_ADMIN]\n\nSiap kak, aku sambungkan ke Steven ya — dia yang bakal langsung hubungin kakak.",
+     "kirim": "Siap kak, aku sambungkan ke Steven ya, dia yang bakal langsung hubungin kakak.",
+     "detik": 0.0,
+     "galian": "",
+     "askingPrice": false,
+     "konteks_harga": false,
+     "ringkas": "",
+     "deck": false,
+     "talk": true,
+     "matikan": true,
+     "m_kirim": {
+      "kata": 13,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     },
+     "m_mentah": {
+      "kata": 14,
+      "kalimat": 1,
+      "tanya": 0,
+      "gema": false,
+      "promosi": false,
+      "prospek_bertanya": true,
+      "harga_tak_diminta": false,
+      "catatan_bocor": false
+     }
+    }
+   ],
+   "stats_akhir": {
+    "nama_lengkap": "Dimas",
+    "nama_bisnis": "Laundry Kilat",
+    "industri": "laundry",
+    "masalah_utama": "chat numpuk tiap pagi, sering telat bales",
+    "volume_chat": "",
+    "deck_requested": ""
+   },
+   "judul": "S7 Laundry — minta ngobrol dengan Steven, bahasa singkat (uji live 14:05)",
+   "ulang": 3
+  }
+ ]
+}

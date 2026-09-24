@@ -1,0 +1,18 @@
+﻿TOP LEVEL KEYS: name, nodes, pinData, connections, active, settings, versionId, id, tags
+
+name: VIRA TEMPLATE v1 (multi-tenant)
+active: False
+id: 5f06a51ba9b44802
+versionId: 59d40dcf-8378-4988-8b77-cf39810a624c
+meta: 
+
+settings:
+{
+    "executionOrder":  "v1",
+    "availableInMCP":  false,
+    "timeSavedMode":  "fixed",
+    "timezone":  "Asia/Jakarta",
+    "callerPolicy":  "workflowsFromSameOwner"
+}
+
+pinData keys: 

@@ -1,0 +1,250 @@
+{
+  "name": "VIRA-PCR Error Notifier",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        80
+      ],
+      "id": "5a892e24-8d4a-4f69-ab64-98e85f4722c0",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Susun notifikasi error untuk admin\n// 2026-08-09: + deep link ke n8n mobile dashboard supaya bisa retry dari HP\n//             tanpa membuka UI n8n.\nconst DASH = 'https://n8n.chatminagent.workers.dev';\n\nconst e = $input.first().json;\nconst wfName = e.workflow?.name || 'VIRA';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = (e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\n// Link hanya dibuat kalau execution id benar-benar ada. Error Trigger TIDAK\n// mengirim execution.id kalau errornya terjadi di node trigger — tanpa penjagaan\n// ini, link-nya jadi \".../#/e/-\" yang cuma bikin bingung.\nconst dashUrl = /^\\d+$/.test(String(execId)) ? `${DASH}/#/e/${execId}` : '';\n\nconst text = `\\u{1F6A8} [PCR ${wfName}] EKSEKUSI GAGAL\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}`\n  + (dashUrl ? `\\n\\n\\u{1F4F1} Retry dari HP:\\n${dashUrl}` : '')\n  + `\\n\\n\\u{1F5A5}\\uFE0F Buka di n8n:\\n${url}`\n  + `\\n\\n\\u26A0\\uFE0F Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nreturn [{ json: { notif_text: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        80
+      ],
+      "id": "6a4807c8-ef30-4511-a6bb-80136c3e83f9",
+      "name": "Compose Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-LM6WE"
+            },
+            {
+              "name": "phone",
+              "value": "6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        80
+      ],
+      "id": "142a9cd6-1a32-4def-9443-22284d5ec53a",
+      "name": "Notify Admin Error",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Done\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/)"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        688,
+        -384
+      ],
+      "typeVersion": 1,
+      "id": "2041aa20-5856-4702-ac78-bf03531d3173",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Kirimi bisa balas HTTP 200 tapi isinya gagal.\n// Node ini sengaja throw supaya jalur fallback email ikut jalan.\nconst input = $input.first();\nconst r = input.json || {};\n\nconst isSuccess = r.status === true ||\n                  r.success === true ||\n                  (r.data && r.data.id) ||\n                  (r.message && r.message !== 'error');\n\nif (!isSuccess) {\n  throw new Error('Kirimi API gagal: ' + JSON.stringify(r).slice(0, 500));\n}\n\nreturn [input];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "c8aab438-1433-4367-b1f0-61b751508a23",
+      "name": "Check Kirimi Response",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// Rangkai payload untuk GLOBAL - Email Fallback Notifier\n// Dipanggil saat node Kirimi gagal (HTTP error ATAU response gagal)\n// ============================================================\n\n// >>> GANTI sesuai workflow: 'VIRA-PCR' atau 'VIRA-SCHOLARS' <<<\nconst TENANT = 'VIRA-PCR';\n\nconst et = $('Error Trigger').first().json || {};\nconst notif = $('Compose Notif').first().json?.notif_text || '';\nconst f = $input.first().json || {};\n\n// pesan kegagalan Kirimi (bentuknya beda-beda tergantung jalur error)\nconst reason = f.error?.message || f.error || f.message ||\n               'Kirimi API tidak mengembalikan status sukses';\n\nreturn [{\n  json: {\n    source: 'kirimi_fallback',\n    tenant: TENANT,\n\n    // isi alert yang gagal terkirim ke WA\n    notif_text: notif,\n\n    // kenapa WA-nya gagal\n    fail_node: 'Notify Admin Error (Kirimi)',\n    fail_reason: String(reason).slice(0, 600),\n    kirimi_response: JSON.stringify(f).slice(0, 800),\n\n    // identitas notifier ini\n    notifier_wf_name: $workflow.name,\n    notifier_wf_id: $workflow.id,\n    notifier_exec_id: $execution.id,\n\n    // error aslinya (dari Error Trigger)\n    orig_wf_name: et.workflow?.name || '-',\n    orig_wf_id: et.workflow?.id || '',\n    orig_exec_id: et.execution?.id || '-',\n    orig_exec_url: et.execution?.url || '',\n    orig_node: et.execution?.error?.node?.name || et.execution?.lastNodeExecuted || '-',\n    orig_error: String(et.execution?.error?.message || '-').slice(0, 600)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        80
+      ],
+      "id": "01c8c87f-633a-4daf-9d42-05f34cd15193",
+      "name": "Build Fallback Payload"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xGsl3M3tONsHPDgT9lOWF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xGsl3M3tONsHPDgT9lOWF",
+          "cachedResultName": "GLOBAL - Email Fallback Notifier"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        80
+      ],
+      "id": "27c2da37-9dc4-4cfb-b6cb-f819a2d23474",
+      "name": "Call Global Email Fallback",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "content": "## LANGKAH 2 &mdash; pasang di KEDUA notifier\n\n### Kenapa notifier WA ikut diubah?\n\nKirimi bisa balas **HTTP 200 tapi isinya gagal** (device disconnect, nomor salah, kuota habis). n8n menganggap itu sukses &rarr; tidak ada error &rarr; Error Workflow tidak jalan &rarr; **tidak ada email sama sekali**.\n\nNode `Check Kirimi Response` di bawah yang menangkap kasus itu. Tanpa ini, lubang tersebut tidak tertutup dengan cara apa pun.\n\n---\n\n### Cara pasang\n\n**1.** Node **Notify Admin Error** (HTTP Kirimi) &rarr; Settings &rarr; **On Error** = `Continue (using error output)`.\nSekarang node itu punya 2 output.\n\n**2.** Sambungkan:\n- `Notify Admin Error` output **1 (sukses)** &rarr; **Check Kirimi Response**\n- `Notify Admin Error` output **2 (merah)** &rarr; **Build Fallback Payload**\n- `Check Kirimi Response` output **2 (merah)** &rarr; **Build Fallback Payload**\n\nOutput sukses `Check Kirimi Response` dibiarkan kosong.\n\n**3.** Node **Build Fallback Payload** &rarr; set `TENANT`:\n`'VIRA-PCR'` atau `'VIRA-SCHOLARS'`\n\n**4.** Node **Call Global Email Fallback** &rarr; pilih workflow **GLOBAL - Email Fallback Notifier**.\n\n**5.** Workflow Settings &rarr; **Error Workflow** = `GLOBAL - Email Fallback Notifier` (lapis kedua).\n\n**6.** Node **Notify Admin Error** &rarr; Settings &rarr; **Retry On Fail** on, Max Tries 2, Wait 2000ms. Supaya gangguan 1&ndash;2 detik tidak langsung memicu email.\n\n**7.** Save. Ulangi semua untuk notifier klien satunya.",
+        "height": 800,
+        "width": 420,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        -848
+      ],
+      "id": "42e52d52-1dac-41a5-bbb2-da61f5588d05",
+      "name": "Sticky Patch"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Compose Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Kirimi Response": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Build Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Fallback Payload": {
+      "main": [
+        [
+          {
+            "node": "Call Global Email Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin Error": {
+      "main": [
+        [
+          {
+            "node": "Check Kirimi Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "xGsl3M3tONsHPDgT9lOWF"
+  },
+  "versionId": "d5956715-6f4f-4bbe-b0d3-66646eb8a332",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "rBsq-mGgHfqfwbz3YmwxI",
+  "tags": [
+    {
+      "updatedAt": "2026-07-17T06:25:26.795Z",
+      "createdAt": "2026-07-17T06:25:26.795Z",
+      "id": "hfCmrJsnyiN3liz3",
+      "name": "pcr"
+    }
+  ]
+}

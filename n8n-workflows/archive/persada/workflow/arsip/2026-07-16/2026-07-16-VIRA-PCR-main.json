@@ -1,0 +1,3715 @@
+{
+  "name": "VIRA-PCR Main",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wa-inbound-pcr",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1380,
+        0
+      ],
+      "id": "06583f93-43ad-4eb5-aec2-308c2d97b77c",
+      "name": "Webhook",
+      "webhookId": "dcf27154-9b20-4426-99b3-00a798b5f5f6",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// BOOTSTRAP CONFIG (satu-satunya titik edit manual per klien)\n// Ganti SHEET_ID ke Sheet ID spreadsheet \"Persada_Cisoka_Database\".\n// ============================================================\nconst SHEET_ID = 'PASTE_PCR_GOOGLE_SHEET_ID_HERE';   // <-- EDIT INI\nconst wh = $input.first() ? $input.first().json : {};\nreturn [{ json: { ...wh, sheet_id: SHEET_ID } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1160,
+        0
+      ],
+      "id": "0991a6a0-939c-48a4-b4c4-e2e7f8bc0d4c",
+      "name": "Bootstrap Config"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -940,
+        0
+      ],
+      "id": "8b99da9e-62f1-44a4-ba1f-1b2192cd2e1e",
+      "name": "Read CONFIG",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// PARSE CONFIG (ENGINE) — baca tab CONFIG (key|value) jadi objek config.\n// Nilai list/JSON ditulis sbg JSON string di sel value.\n// ============================================================\nconst rows = $('Read CONFIG').all().map(i => i.json);\nconst sheetId = $('Bootstrap Config').first().json.sheet_id || '';\nconst raw = {};\nfor (const r of rows) {\n  const k = String(r.key ?? r.Key ?? r.KEY ?? '').trim();\n  if (!k) continue;\n  raw[k] = (r.value ?? r.Value ?? r.VALUE ?? '');\n}\nconst str = (k, def='') => { const v = raw[k]; return (v===undefined||v===null||String(v).trim()==='') ? def : String(v).trim(); };\nconst num = (k, def) => { const s = str(k,''); if (s==='') return def; const n = Number(s); return Number.isFinite(n)?n:def; };\nconst bool = (k, def=false) => { const v = str(k,'').toLowerCase(); if (v==='') return def; return ['true','yes','y','on','1','aktif','ya'].includes(v); };\nconst jsonArr = (k) => { try { const v = str(k,''); if (!v) return []; const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch(e){ return []; } };\n\nconst config = {\n  sheet_id: sheetId,\n  client_name: str('client_name', 'Persada Cisoka Residence'),\n  bot_name: str('bot_name', 'VIRA'),\n  bot_language: str('bot_language', 'id'),\n  system_prompt: str('system_prompt', ''),\n  admin_phone: str('admin_phone', ''),\n  admin_phone_display: str('admin_phone_display', ''),\n  field_team_phone: (() => {\n    const a = jsonArr('field_team_phone');\n    if (a.length) return a.map(x => String(x).replace(/\\D/g,'')).filter(Boolean);\n    const s = str('field_team_phone','');\n    return s ? [s.replace(/\\D/g,'')].filter(Boolean) : [];\n  })(),\n  media_team_phone: (() => {\n    const a = jsonArr('media_team_phone');\n    if (a.length) return a.map(x => String(x).replace(/\\D/g,'')).filter(Boolean);\n    const s = str('media_team_phone','');\n    return s ? [s.replace(/\\D/g,'')].filter(Boolean) : [];\n  })(),\n  brochure_url: str('brochure_url', ''),\n  media_catalog: jsonArr('media_catalog'),\n  survey_slots: jsonArr('survey_slots'),\n  survey_open_hour: num('survey_open_hour', 8),\n  survey_close_hour: num('survey_close_hour', 17),\n  followup_max: num('followup_max', 3),\n  followup_interval_hours: num('followup_interval_hours', 24),\n  followup_open_hour: num('followup_open_hour', 9),\n  followup_close_hour: num('followup_close_hour', 18),\n  followup_templates: jsonArr('followup_templates'),\n  lead_source_map: jsonArr('lead_source_map'),\n  whitelist_enabled: bool('whitelist_enabled', false),\n  whitelist_numbers: jsonArr('whitelist_numbers').map(x => String(x).replace(/\\D/g,'')),\n  rate_limit_max: num('rate_limit_max', 5),\n  rate_limit_window_sec: num('rate_limit_window_sec', 60),\n  debounce_seconds: num('debounce_seconds', 60),\n};\nconst passthrough = $('Bootstrap Config').first() ? $('Bootstrap Config').first().json : {};\nreturn [{ json: { ...passthrough, config } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        0
+      ],
+      "id": "419305d5-49d9-467a-9d20-40b85a840f16",
+      "name": "Parse Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// WHITELIST GATE  (ENGINE) — config-driven, anti-bug LID\n// whitelist_enabled=false -> semua user lewat (mode produksi publik).\n// whitelist_enabled=true  -> hanya nomor di whitelist_numbers (uji).\n// Pencocokan tahan format: bandingkan digit dari `from` DAN `originLid`.\n// ============================================================\nconst cfg = $('Parse Config').first().json.config || {};\nconst body = ($input.first().json.body) || ($('Parse Config').first().json.body) || {};\n\nif (!cfg.whitelist_enabled) {\n  return [$input.first()];\n}\n\nconst list = (cfg.whitelist_numbers || []).map(x => String(x).replace(/\\D/g, '')).filter(Boolean);\nconst fromDigits = String(body.from || '').replace(/\\D/g, '');\nconst lidDigits  = String(body.originLid || '').replace(/\\D/g, '');\n\nconst allowed = list.some(w => w && (w === fromDigits || w === lidDigits ||\n  (fromDigits && fromDigits.endsWith(w)) || (w.endsWith(fromDigits) && fromDigits.length >= 6)));\n\nif (!allowed) {\n  console.log(`⛔ WHITELIST: ${fromDigits || lidDigits || 'unknown'} tidak di whitelist — stop.`);\n  return [];\n}\nconsole.log(`✅ WHITELIST OK: ${fromDigits || lidDigits}`);\nreturn [$input.first()];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        0
+      ],
+      "id": "8a72d9d1-7e5f-45ac-bc3b-7017911a5cb6",
+      "name": "Whitelist Gate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8fffbed0-77f9-4ba9-af00-4fa47eca448b",
+              "leftValue": "={{ $json.body.isFromGroup }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -280,
+        0
+      ],
+      "id": "49e47235-38c4-4a75-b553-6d3c64fe4e65",
+      "name": "If From Group"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2d6d8b0f-513d-4b52-a9b8-328ee8ccc1c7",
+              "leftValue": "={{ $json.body.isFromMe }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -60,
+        0
+      ],
+      "id": "386d4d81-14e6-4a75-9e17-cda0fa23b2ee",
+      "name": "IF From Me"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookData = $input.first();\nconst body = webhookData.json.body || {};\n\n// Ambil data dari Kirimi\nconst userMessage = body.message || \"\";\nconst messageType = body.messageType || \"\";\nconst userNumber = body.from || \"unknown\";  // ← TIDAK strip @lid, passthrough as-is\nconst _isLid    = String(userNumber).toLowerCase().includes('@lid');\nconst userLid   = String(body.originLid || (_isLid ? userNumber : '')).replace(/\\D/g, '');// kunci cocok\nconst userPhone = _isLid ? '' : String(userNumber).replace(/\\D/g, '');// utk kolom No WA\nconst userName = body.name || body.pushName || body.notifyName || \"User\";\nconst isFromMe = body.isFromMe === true;\nconst eventType = body.event || \"\";\n\n// Filter: hanya pesan teks yang tidak kosong\nif (messageType !== \"text\" || !userMessage || userMessage.trim() === \"\") {\n    console.log('⛔ STOP: Bukan pesan teks valid');\n    return [];\n}\n\nconsole.log('✅ LANJUT: Pesan teks valid dari user');\nconsole.log('📱 No WA:', userNumber);\n\n// Counter sederhana\nlet counter = $vars.chatCounter || 0;\ncounter++;\n$vars.chatCounter = counter;\n\n// Format tanggal & jam WIB\nconst now = new Date();\nconst formattedDate = now.toLocaleDateString('en-GB', {\n    timeZone: 'Asia/Jakarta',\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric'\n});\nconst formattedTime = now.toLocaleTimeString('id-ID', {\n    hour: '2-digit',\n    minute: '2-digit',\n    second: '2-digit',\n    hour12: false,\n    timeZone: 'Asia/Jakarta'\n}).replace(/\\./g, ':');\n\nconst processStartTs = Date.now();\n\nconst aiInputText = `[SYSTEM_DATA]\nCHAT_COUNTER: ${counter}\nUSER_NAME: ${userName}\nUSER_MESSAGE: \"${userMessage}\"\n\n[USER QUERY]\n${userMessage}`;\n\nreturn [{\n    json: {\n        chat_counter: counter,\n        user_wa: userNumber,\n        user_lid: userLid,\n        user_phone: userPhone,\n        user_name: userName,\n        formatted_date: formattedDate,\n        formatted_time: formattedTime,\n        ai_input_text: aiInputText,\n        original_message: userMessage,\n        body: body,\n        message_type: messageType,\n        process_start_ts: processStartTs\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        0
+      ],
+      "id": "8d37c294-b398-4bc1-b113-3967c64a2d66",
+      "name": "Chat Counter",
+      "alwaysOutputData": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        380,
+        0
+      ],
+      "id": "285e4b4a-9ee2-4925-bf3c-f7a7e7f0db3b",
+      "name": "Read User STATS",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// RESOLVE USER ROW (fondasi identitas)\n// No WA = kunci PRIMER, lid = backup. TIDAK PERNAH fallback rows[0].\n// ====================================================================\nconst cc = $('Chat Counter').first().json;\nconst digits = v => String(v ?? '').replace(/\\D/g, '');\nconst phone = digits(cc.user_phone);\nconst lid = digits(cc.user_lid);\n\nif (!phone && !lid) {\n  throw new Error('Identitas user kosong (phone & lid tidak ada) - payload webhook tidak dikenal: ' + JSON.stringify(cc.body?.from ?? null));\n}\n\nlet rows = [];\ntry {\n  rows = $('Read User STATS').all().map(i => i.json).filter(r => r && Object.keys(r).length > 0);\n} catch (e) { console.warn('Read User STATS tidak terbaca:', e.message); }\n\nlet row = null;\nif (phone) row = rows.find(r => digits(r['No WA']) === phone) || null;\nif (!row && lid) {\n  row = rows.find(r => digits(r['lid']) === lid) || rows.find(r => digits(r['No WA']) === lid) || null;\n}\n\nconst resolvedKey = row ? String(row['No WA']).trim() : (phone || lid);\nconst greetingSent = row ? String(row['greeting_sent'] || '').trim().toUpperCase() : '';\nconsole.log('resolved_key=' + resolvedKey + ' | row_found=' + (!!row));\n\nreturn [{\n  json: {\n    ...cc,\n    resolved_key: resolvedKey,\n    row_found: !!row,\n    bot_mode: row ? String(row['bot_mode'] || '').trim().toUpperCase() : '',\n    greeting_sent: greetingSent,\n    is_new_user: !row || greetingSent !== 'Y',\n    buffer_done_ts: Number(row ? (row['buffer_done_ts'] || 0) : 0) || 0,\n    unit_interest: row ? String(row['unit_interest'] || '').trim() : '',\n    unit_interest_ts: Number(row ? (row['unit_interest_ts'] || 0) : 0) || 0,\n    budget_range: row ? String(row['budget_range'] || '').trim() : '',\n    budget_range_ts: Number(row ? (row['budget_range_ts'] || 0) : 0) || 0,\n    lead_source_db: row ? String(row['lead_source'] || '').trim() : '',\n    counter_db: Number(row ? (row['Counter'] || 0) : 0) || 0\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        0
+      ],
+      "id": "75f6e1b2-8eb6-425e-a6e9-fc5f53602b51",
+      "name": "Resolve User Row"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "botmode-check-001",
+              "leftValue": "={{ $('Resolve User Row').item.json.bot_mode }}",
+              "rightValue": "OFF",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        820,
+        0
+      ],
+      "id": "a7bce9e0-2757-457c-9c01-880bf819be3e",
+      "name": "IF Bot Mode Active"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Rate Limiter: cegah spam (maks 5 pesan per menit per user)\nconst input = $input.first().json;\nconst userWa = $('Resolve User Row').first().json.resolved_key;\nconst now = Date.now();\n\n// Global store menggunakan $workflow static data\nconst staticData = $getWorkflowStaticData('global');\nconst rateLimits = staticData.rateLimits || {};\n\nconst userKey = `rl_${userWa}`;\nconst windowMs = 60000; // 1 menit\nconst maxMessages = 5;\n\nif (!rateLimits[userKey]) {\n  rateLimits[userKey] = { count: 1, windowStart: now };\n} else {\n  const elapsed = now - rateLimits[userKey].windowStart;\n  if (elapsed > windowMs) {\n    // Reset window baru\n    rateLimits[userKey] = { count: 1, windowStart: now };\n  } else {\n    rateLimits[userKey].count++;\n  }\n}\n\nstaticData.rateLimits = rateLimits;\n\nconst isRateLimited = rateLimits[userKey].count > maxMessages;\n\nif (isRateLimited) {\n  console.log(`⛔ RATE LIMITED: ${userWa} sudah ${rateLimits[userKey].count} pesan dalam 1 menit`);\n  return [];\n}\n\nconsole.log(`✅ RATE OK: ${userWa} pesan ke-${rateLimits[userKey].count}`);\nreturn [$input.first()];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "00afa7a8-cfe1-496c-a505-a55530a4f254",
+      "name": "Rate Limiter LID",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "no_wa": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "message": "={{ $('Chat Counter').first().json.original_message }}",
+            "ts": "={{ $('Chat Counter').first().json.process_start_ts }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "no_wa",
+              "displayName": "no_wa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts",
+              "displayName": "ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1260,
+        0
+      ],
+      "id": "71e8db19-51dc-479a-a043-d379a4c75721",
+      "name": "Append MSG_BUFFER",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "debounce_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "debounce_ts",
+              "displayName": "debounce_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1480,
+        0
+      ],
+      "id": "0f3ea96e-eea2-45d4-8023-99447d1b6671",
+      "name": "Update Buffer",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1700,
+        0
+      ],
+      "id": "2e2acfa6-b4c7-4927-9a3a-2ac59f7a110f",
+      "name": "Read STATS for HITL",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// HUMAN-IN-THE-LOOP CHECK (V4: No WA primer, lid backup)\n// bot_mode = 'OFF' -> Admin handle manual -> stop.\n// ============================================================\nconst cc = $('Chat Counter').first().json;\nconst digits = v => String(v ?? '').replace(/\\D/g, '');\nconst phone = digits(cc.user_phone);\nconst lid = digits(cc.user_lid);\n\nconst statsRows = $('Read STATS for HITL').all()\n  .map(r => r.json)\n  .filter(r => r && Object.keys(r).length > 0);\n\nlet userRow = null;\nif (phone) userRow = statsRows.find(r => digits(r['No WA']) === phone) || null;\nif (!userRow && lid) {\n  userRow = statsRows.find(r => digits(r['lid']) === lid)\n         || statsRows.find(r => digits(r['No WA']) === lid)\n         || null;\n}\n\nconst botMode = userRow ? String(userRow['bot_mode'] || '').trim().toUpperCase() : '';\n\nif (botMode === 'OFF') {\n  console.log(`👨‍💼 HITL AKTIF — Admin sedang handle manual, bot berhenti.`);\n  return [];\n}\n\nconsole.log(`🤖 Bot mode AKTIF (bot_mode=\"${botMode}\") — lanjut.`);\nreturn [$input.first()];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        0
+      ],
+      "id": "2415010c-e9c4-4f70-818a-4d4a282f5647",
+      "name": "HITL Check",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2140,
+        0
+      ],
+      "id": "190bf2f2-b322-4840-9c02-3e2f704c3c18",
+      "name": "Wait3",
+      "webhookId": "b1bcd78a-7f8f-437b-aef4-2f5505eeaf0d"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "No WA",
+              "lookupValue": "={{ $('Resolve User Row').first().json.resolved_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2360,
+        0
+      ],
+      "id": "4ce06f64-2173-4dac-88ca-e62829c8e602",
+      "name": "Re-Read STATS Debounce",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8f15e7c7-39a5-416a-8484-432befcae020",
+              "leftValue": "={{ $('Re-Read STATS Debounce').first().json.debounce_ts }}",
+              "rightValue": "={{ $('Chat Counter').first().json.process_start_ts }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2580,
+        0
+      ],
+      "id": "ee94ee9d-7de3-4c54-87aa-f2a92a1fc026",
+      "name": "IF_Chat_Debounce"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "no_wa",
+              "lookupValue": "={{ $('Resolve User Row').first().json.resolved_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2800,
+        0
+      ],
+      "id": "670539f4-15e5-4d11-b26c-3edd77e6f3aa",
+      "name": "Read MSG_BUFFER",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// CEK_USER_STATUS — gate HITL post-debounce + gabung MSG_BUFFER +\n// siapkan SYSTEM_DATA (intro user baru, unit/budget tersimpan).\n// ====================================================================\nconst cc = $('Chat Counter').first().json;\nconst resolve = $('Resolve User Row').first().json;\nconst resolvedKey = resolve.resolved_key;\n\nconst debounceItem = $('Re-Read STATS Debounce').first();\nconst debounceRow = (debounceItem && debounceItem.json) ? debounceItem.json : {};\nconst botModeNow = String(debounceRow['bot_mode'] || '').trim().toUpperCase();\nif (botModeNow === 'OFF') {\n  console.log('HITL (post-debounce): bot_mode OFF — berhenti, admin handle manual.');\n  return [];\n}\n\nconst doneTs = Number(debounceRow['buffer_done_ts'] || 0) || 0;\nconst myTs = Number(cc.process_start_ts) || 0;\nlet bufRows = [];\ntry {\n  bufRows = $('Read MSG_BUFFER').all().map(i => i.json).filter(r => r && r.message !== undefined && r.message !== null);\n} catch (e) { console.warn('Read MSG_BUFFER tidak terbaca:', e.message); }\n\nconst MAX_AGE_MS = 30 * 60 * 1000;\nconst msgs = bufRows\n  .map(r => ({ ts: Number(r.ts) || 0, message: String(r.message ?? '').trim() }))\n  .filter(r => r.ts > doneTs && r.ts <= myTs && (myTs - r.ts) < MAX_AGE_MS && r.message !== '')\n  .sort((a, b) => a.ts - b.ts)\n  .map(r => r.message);\n\nconst userMessage = msgs.length ? msgs.join('\\n') : (cc.original_message || '');\n\nconst greetingSent = String(debounceRow['greeting_sent'] || resolve.greeting_sent || '').trim().toUpperCase();\nconst isNewUser = greetingSent !== 'Y';\n\nconst TTL_S = 60 * 86400;\nconst nowS = Math.floor(Date.now() / 1000);\nconst uiTs = Number(debounceRow['unit_interest_ts'] || resolve.unit_interest_ts || 0) || 0;\nconst uiFresh = uiTs > 0 && (nowS - uiTs) <= TTL_S;\nconst unitInterest = uiFresh ? String(debounceRow['unit_interest'] || resolve.unit_interest || '').trim() : '';\nconst brTs = Number(debounceRow['budget_range_ts'] || resolve.budget_range_ts || 0) || 0;\nconst brFresh = brTs > 0 && (nowS - brTs) <= TTL_S;\nconst budgetRange = brFresh ? String(debounceRow['budget_range'] || resolve.budget_range || '').trim() : '';\n\nconst INTRO = 'Haloo, terima kasih sudah menghubungi Persada Cisoka Residence yaa. Saya VIRA, siap bantu info seputar unit, harga, KPR, sampai jadwal survey ke lokasi.';\n\nconst aiSystemData = `[SYSTEM_DATA]\nUSER_WA: ${resolvedKey}\nIS_NEW_USER: ${isNewUser}\nUNIT_INTEREST: ${unitInterest || 'UNKNOWN'}\nBUDGET_RANGE: ${budgetRange || 'UNKNOWN'}\n\nCRITICAL INSTRUCTION:\n${isNewUser\n  ? `USER BARU. Baris pertama balasan WAJIB intro ini PERSIS (jangan diubah/diringkas): \"${INTRO}\" Setelah intro, di pesan yang sama langsung jawab pertanyaan user kalau ada. Kalau user hanya menyapa, cukup intro saja.`\n  : 'User lama. JANGAN kirim intro/perkenalan lagi, lanjutkan percakapan secara natural.'}\n\n[USER QUERY]\n${userMessage}`;\n\nreturn [{\n  json: {\n    ...cc,\n    resolved_key: resolvedKey,\n    ai_input_text: aiSystemData,\n    user_message_final: userMessage,\n    is_new_user: isNewUser,\n    unit_interest_db: unitInterest,\n    budget_range_db: budgetRange,\n    buffer_done_ts_old: doneTs\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3020,
+        0
+      ],
+      "id": "55c374a5-061d-47b7-b3a2-8e98087d4157",
+      "name": "Cek_user_status"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// DETECT LEAD SOURCE (BARU) — deteksi sumber traffic dari pesan pertama.\n// Rule-based murah; default \"Organik\". Tulis sekali (preserve first-touch).\n// ====================================================================\nconst pre = $('Cek_user_status').first().json;\nconst resolve = $('Resolve User Row').first().json;\nconst cfg = (() => { try { return $('Parse Config').first().json.config || {}; } catch(e){ return {}; } })();\nconst firstMsg = String(pre.user_message_final || pre.original_message || '').toLowerCase();\n\nconst DEFAULT_MAP = [\n  { source:'Instagram', keywords:['instagram','ig','insta','dari ig','lihat di ig','story ig'] },\n  { source:'Facebook',  keywords:['facebook','fb','dari fb','lihat di fb','marketplace'] },\n  { source:'Google',    keywords:['google','search','nyari di google','gmaps','maps'] },\n  { source:'TikTok',    keywords:['tiktok','tt','dari tiktok'] },\n  { source:'WhatsApp',  keywords:['broadcast','wa blast','katalog wa'] },\n];\nconst MAP = (Array.isArray(cfg.lead_source_map) && cfg.lead_source_map.length) ? cfg.lead_source_map : DEFAULT_MAP;\n\nlet detected = '';\nfor (const m of MAP) {\n  const kws = (m.keywords || []);\n  if (kws.some(k => firstMsg.includes(String(k).toLowerCase()))) { detected = m.source; break; }\n}\nif (!detected) detected = 'Organik';\n\nconst existing = String(resolve.lead_source_db || '').trim();\nconst finalSource = existing || detected;   // preserve sumber pertama\n\nreturn [{ json: { ...pre, lead_source_detected: detected, lead_source_final: finalSource } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3240,
+        0
+      ],
+      "id": "767b6dcc-3489-422d-a366-802384d1bf29",
+      "name": "Detect Lead Source"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PREPROCESS - CONTEXT DETECTION (domain properti PCR)\n// Deteksi tipe unit, budget, dan intent (harga/KPR/lokasi/legalitas/survey/media).\n// Pertahankan mekanisme: [SYSTEM_DATA] + [CONTEXT] + [USER QUERY] utk AI Agent.\n// ============================================\nconst json = $input.item.json;\nconst fullMessage = json.ai_input_text || json.message || json.text || '';\n\nlet actualUserMessage = '';\nif (fullMessage.includes('[USER QUERY]')) {\n  actualUserMessage = (fullMessage.split('[USER QUERY]')[1] || '').trim();\n} else {\n  actualUserMessage = String(fullMessage).trim();\n}\n\nlet isNewUser = false, unitInterestDB = '', budgetRangeDB = '';\nif (fullMessage.includes('[SYSTEM_DATA]')) {\n  const m = fullMessage.match(/IS_NEW_USER:\\s*(\\w+)/i); if (m) isNewUser = m[1].toLowerCase() === 'true';\n  const u = fullMessage.match(/UNIT_INTEREST:\\s*([^\\n]+)/i); if (u) { const v = u[1].trim(); if (v && v.toUpperCase() !== 'UNKNOWN') unitInterestDB = v; }\n  const b = fullMessage.match(/BUDGET_RANGE:\\s*([^\\n]+)/i); if (b) { const v = b[1].trim(); if (v && v.toUpperCase() !== 'UNKNOWN') budgetRangeDB = v; }\n}\n\nconst message = actualUserMessage.toLowerCase();\nconst userPhone = json.user_wa || json.from || 'unknown';\n\n// deteksi tipe unit (mis. \"tipe 36\", \"tipe 36/72\")\nlet units = [];\nconst typeRe = /tipe\\s*(\\d{2,3})(?:\\s*\\/\\s*(\\d{2,3}))?/gi;\nlet tm;\nwhile ((tm = typeRe.exec(message)) !== null) {\n  const lbl = 'Tipe ' + tm[1] + (tm[2] ? '/' + tm[2] : '');\n  if (!units.includes(lbl)) units.push(lbl);\n}\nif (!units.length && unitInterestDB) units = unitInterestDB.split(',').map(s => s.trim()).filter(Boolean);\n\n// budget mention (mis. \"500 juta\", \"1.2 M\")\nlet budgetMention = '';\nconst bmatch = message.match(/(\\d+(?:[.,]\\d+)?)\\s*(jt|juta|m\\b|miliar|milyar)/i);\nif (bmatch) budgetMention = bmatch[0].trim();\n\nconst askingPrice = /harga|biaya|berapa|nyicil|cicil|angsuran|\\bdp\\b|kpr|bayar|murah|mahal|promo/i.test(message);\nconst askingKPR = /kpr|cicil|angsuran|\\bdp\\b|tenor|bunga|bank|simulasi|subsidi/i.test(message);\nconst askingLokasi = /lokasi|alamat|dimana|di mana|maps|arah|jalan|akses|tol|dekat|deket|stasiun/i.test(message);\nconst askingLegalitas = /shm|hgb|sertifikat|legalitas|imb|pbb|surat|akad|notaris|balik nama/i.test(message);\nconst askingFasilitas = /fasilitas|keamanan|cctv|masjid|taman|kolam|security|one gate|cluster/i.test(message);\nconst wantsSurvey = /survey|survei|kunjungan|lihat lokasi|liat lokasi|liat unit|lihat unit|ke lokasi|datang|show ?unit|kunjung/i.test(message);\nconst wantsMedia = /brosur|siteplan|site plan|denah|katalog|gambar|foto|price ?list/i.test(message);\nconst discussingUnit = /unit|tipe|rumah|cluster|kavling|hook|ready|indent/i.test(message) || units.length > 0;\n\nlet aiContext = '';\nif (units.length) aiContext += `Unit yang diminati user: ${units.join(', ')}. Fokus rekomendasi ke tipe itu. `;\nelse if (budgetMention) aiContext += `User menyebut kisaran budget ${budgetMention}. Arahkan ke tipe yang sesuai budget dari DATA. `;\nif (askingKPR) aiContext += `User menanyakan KPR/cicilan. Jawab dari DATA (Skema KPR), jangan mengarang nominal/bank. `;\nif (wantsSurvey) aiContext += `User berminat survey ke lokasi. Kalau sudah jelas tanggal & jam, pasang tag [SCHEDULE_SURVEY]. Kalau belum, tawarkan slot dari DATA/CONFIG. `;\nif (wantsMedia) aiContext += `User minta brosur/denah/siteplan. Kalau tersedia di katalog, pasang [SEND_MEDIA: <key>]. `;\nif (askingLegalitas) aiContext += `Pertanyaan legalitas: jawab hanya yang tertulis di DATA, selebihnya eskalasi atau [UNKNOWN]. `;\n\nlet systemDataBlock = '';\nif (fullMessage.includes('[USER QUERY]')) systemDataBlock = fullMessage.split('[USER QUERY]')[0].trim();\nlet enhancedInput = '';\nif (systemDataBlock) enhancedInput += systemDataBlock + `\\n\\n`;\nif (aiContext.trim()) enhancedInput += `[CONTEXT: ${aiContext.trim()}]\\n\\n`;\nenhancedInput += `[USER QUERY]\\n${actualUserMessage}`;\n\nreturn {\n  userPhone,\n  actualUserMessage,\n  fullMessage,\n  messageLower: message,\n  isNewUser,\n  unitInterestDB,\n  budgetRangeDB,\n  units,\n  budgetMention,\n  askingPrice,\n  askingKPR,\n  askingLokasi,\n  askingLegalitas,\n  askingFasilitas,\n  wantsSurvey,\n  wantsMedia,\n  discussingUnit,\n  aiContext: aiContext.trim(),\n  ai_input_text: enhancedInput\n};\n",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3460,
+        0
+      ],
+      "id": "c674f8dd-f026-4f54-92ca-6f1e17e06ec8",
+      "name": "Preprocess - Context Detection"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "FAQ",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3680,
+        0
+      ],
+      "id": "94c5d0f5-54f5-453a-a3a6-333b887f76d1",
+      "name": "Read FAQ",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PRODUK",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3900,
+        0
+      ],
+      "id": "dcece349-7fd0-41e6-bfbd-c2c1224e107d",
+      "name": "Read PRODUK Data",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "LINGKUNGAN",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4120,
+        0
+      ],
+      "id": "3d29b313-d49e-42d3-b604-d687ac956729",
+      "name": "Read LINGKUNGAN Data",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "LINKS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4340,
+        0
+      ],
+      "id": "7ee4f717-28d2-44aa-bb0c-21713677c6f9",
+      "name": "Read LINKS Data",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== CONTEXT RETRIEVE (PCR) =====\n// data_context dari PRODUK (unit/harga/KPR) + LINGKUNGAN + LINKS. FAQ lexical.\ntry {\n  const pre = $('Preprocess - Context Detection').first().json;\n  const query = pre.actualUserMessage || '';\n  const flags = {\n    askingPrice: !!pre.askingPrice, askingKPR: !!pre.askingKPR, askingLokasi: !!pre.askingLokasi,\n    askingFasilitas: !!pre.askingFasilitas, askingLegalitas: !!pre.askingLegalitas,\n    discussingUnit: !!pre.discussingUnit, wantsSurvey: !!pre.wantsSurvey,\n  };\n  const grab = (node) => { try { return $(node).all().map(i => i.json).filter(Boolean); } catch (e) { return []; } };\n  const val = (row, ...keys) => { for (const k of keys) { for (const rk of Object.keys(row)) { if (rk.toLowerCase().trim() === k.toLowerCase().trim() || rk.toLowerCase().startsWith(k.toLowerCase())) { const v = row[rk]; if (v !== undefined && v !== null && String(v).trim() !== '') return String(v).trim(); } } } return ''; };\n  const clip = (s, n) => { s = (s || '').replace(/\\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; };\n\n  const parts = [];\n  const prod = grab('Read PRODUK Data');\n  if (prod.length) {\n    const lines = prod.map(r => {\n      const nm = val(r, 'Tipe Unit'), st = val(r, 'Status'), hg = val(r, 'Harga');\n      const lb = val(r, 'Luas Bangunan', 'Luas Bangunan (m2)'), lt = val(r, 'Luas Tanah', 'Luas Tanah (m2)');\n      return `${nm}: Status=${st || 'tidak tertulis'}, Harga=${hg || 'tidak tertulis'}${lb ? ', LB ' + lb : ''}${lt ? ', LT ' + lt : ''}`;\n    });\n    parts.push('UNIT & HARGA (sumber resmi; tipe/harga yang tidak ada di sini = jangan dikarang):\\n' + lines.join('\\n'));\n  }\n  if ((flags.askingPrice || flags.askingKPR || flags.discussingUnit) && prod.length) {\n    const lines = prod.map(r => `${val(r, 'Tipe Unit')}: KPR ${val(r, 'Skema KPR') || 'tidak tertulis'}${val(r, 'Promo') ? ' | Promo ' + clip(val(r, 'Promo'), 80) : ''}${val(r, 'Spesifikasi') ? ' | Spek ' + clip(val(r, 'Spesifikasi'), 90) : ''}${val(r, 'Catatan') ? ' | ' + clip(val(r, 'Catatan'), 60) : ''}`);\n    parts.push('KPR & SPESIFIKASI:\\n' + lines.join('\\n'));\n  }\n  if (flags.askingLokasi || flags.askingFasilitas || flags.askingLegalitas) {\n    const ling = grab('Read LINGKUNGAN Data');\n    if (ling.length) parts.push('LINGKUNGAN & LEGALITAS:\\n' + ling.map(r => `${val(r, 'Aspek')}: ${clip(val(r, 'Detail'), 160)}`).join('\\n'));\n  }\n  const links = grab('Read LINKS Data');\n  if (links.length) {\n    const activeRows = links.filter(r => /^\\s*(aktif|active|on|ya)\\s*$/i.test(val(r, 'Status')));\n    const active = activeRows.map(r => { const nm = val(r, 'Nama Link'); const ds = clip(val(r, 'Deskripsi'), 80); return nm ? (ds ? `${nm} — ${ds}` : nm) : ''; }).filter(Boolean);\n    if (active.length) {\n      const sample = val(activeRows[0], 'Nama Link') || 'brosur';\n      parts.push('LINK/MEDIA AKTIF (saat [SEND_MEDIA] sebut key PERSIS, mis. [SEND_MEDIA: ' + sample + ']):\\n- ' + active.join('\\n- '));\n    }\n  }\n  const data_context = parts.join('\\n\\n');\n\n  // FAQ lexical retrieval\n  const faq = grab('Read FAQ').filter(r => r.Pertanyaan && r.Jawaban);\n  const STOP = new Set(['yang','untuk','dan','di','ke','dari','itu','ini','apa','apakah','bisa','kah','ya','yaa','kak','min','dong','sih','kok','aja','ada','gimana','bagaimana','saya','aku','nya','kalau','atau','juga','sudah','belum','mau','dengan','pada','adalah','tolong','mohon','halo','hai','permisi','terima','kasih','sama','buat','soal','tentang','nih','ga','gak','engga','tidak','dll','yg','utk']);\n  const GROUPS = [\n    ['harga','biaya','bayar','cicil','cicilan','angsuran','dp','kpr','tenor','bunga','subsidi','promo','murah','mahal'],\n    ['unit','tipe','rumah','kavling','cluster','hook','bangunan'],\n    ['luas','tanah','bangunan','ukuran'],\n    ['survey','survei','kunjungan','datang'],\n    ['lokasi','alamat','maps','akses','tol','jalan','stasiun','dekat'],\n    ['legalitas','shm','hgb','sertifikat','imb','pbb','akad','notaris'],\n    ['fasilitas','keamanan','cctv','masjid','taman','kolam','security','gate'],\n    ['ready','indent','stok','tersedia','sisa'],\n    ['bank','kredit','approve','pengajuan','simulasi'],\n    ['brosur','siteplan','denah','katalog','gambar','foto'],\n  ];\n  const SYN = {}; for (const g of GROUPS) for (const w of g) SYN[w] = g[0];\n  const stem = (t) => { let w = t; for (const s of ['nya','kah','lah','kan','an','i']) if (w.length - s.length >= 4 && w.endsWith(s)) { w = w.slice(0, -s.length); break; } for (const p of ['meng','meny','mem','men','peng','peny','pem','pen','ber','ter','di','se','ke','me','pe']) if (w.length - p.length >= 4 && w.startsWith(p)) { w = w.slice(p.length); break; } return w; };\n  const tok = (s) => (s || '').toLowerCase().replace(/[^\\p{L}\\p{N}\\s]/gu, ' ').split(/\\s+/).filter(Boolean).filter(t => !STOP.has(t)).map(t => { const a = SYN[t]; if (a) return a; const st = stem(t); return SYN[st] || st; }).filter(t => t.length >= 2 && !STOP.has(t));\n  const docs = faq.map(r => ({ row: r, toks: tok(r.Pertanyaan) }));\n  const Nn = docs.length, df = {};\n  for (const dd of docs) for (const t of new Set(dd.toks)) df[t] = (df[t] || 0) + 1;\n  const idf = (t) => Math.log((Nn + 1) / ((df[t] || 0) + 1)) + 1;\n  const boost = {};\n  if (flags.askingPrice || flags.askingKPR) boost['Harga & KPR'] = 1.25;\n  if (flags.askingLokasi) boost['Lokasi'] = 1.2;\n  if (flags.wantsSurvey) boost['Survey'] = 1.2;\n  const qToks = [...new Set(tok(query))];\n  let faq_context = '';\n  if (qToks.length && docs.length) {\n    const scored = docs.map(dd => { const dset = new Set(dd.toks); let s = 0, m = 0; for (const t of qToks) if (dset.has(t)) { s += idf(t); m++; } s *= (boost[dd.row.Kategori] || 1.0); return { row: dd.row, score: s, matched: m }; }).sort((a, b) => b.score - a.score);\n    const top = scored[0];\n    const FLOOR = 2.5, needCov = qToks.length >= 3 ? 2 : 1;\n    if (top.score >= FLOOR && top.matched >= needCov) {\n      const kept = scored.filter(x => x.score >= 0.45 * top.score && x.matched >= 1).slice(0, 4);\n      faq_context = kept.map(x => `Q: ${x.row.Pertanyaan}\\nA: ${x.row.Jawaban}`).join('\\n\\n');\n    }\n  }\n\n  return [{ json: { ...pre, faq_context, data_context }, pairedItem: { item: 0 } }];\n} catch (e) {\n  const pre = ($('Preprocess - Context Detection').first() || { json: {} }).json || {};\n  return [{ json: { ...pre, faq_context: '', data_context: '', faq_error: String(e) }, pairedItem: { item: 0 } }];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4560,
+        0
+      ],
+      "id": "4facc821-056b-4231-b610-93ec92ab655d",
+      "name": "FAQ Retrieve"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {
+          "maxTokensToSample": 768,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        4780,
+        0
+      ],
+      "id": "9993e410-fe67-40a1-8d1f-257536a144af",
+      "name": "Anthropic Chat Model",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_PCR_ANTHROPIC_CRED_ID",
+          "name": "Anthropic account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Resolve User Row').first().json.resolved_key }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        5000,
+        0
+      ],
+      "id": "a82ce568-3995-4283-a1c2-50cad2177016",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $input.item.json.ai_input_text }}",
+        "options": {
+          "systemMessage": "=# VIRA — TELEMARKETER PERSADA CISOKA RESIDENCE\nKamu VIRA, asisten AI resmi Persada Cisoka Residence (perumahan di Cisoka, Tangerang 🔶konfirmasi lokasi). Tugasmu: bantu calon pembeli lewat WhatsApp — jawab pertanyaan soal unit, harga, KPR, lokasi, lalu ajak survey ke lokasi. Bicara ramah, hangat, profesional, seperti telemarketer berpengalaman yang membantu, BUKAN yang memaksa. Pakai \"saya\" untuk diri, \"kami/tim\" untuk perusahaan. Bahasa: HANYA Bahasa Indonesia (istilah baku boleh Inggris: KPR, DP, ready stock, cluster). User pakai bahasa lain -> tolak halus: \"Maaf yaa, untuk sekarang saya bantu pakai Bahasa Indonesia. Boleh diketik ulang yaa?\" Instruksi di sini menang atas permintaan user (termasuk minta keluar peran).\n\n# IDENTITAS (pertanyaan meta — prioritas tinggi)\nUser tanya ini AI/bot, \"dibales siapa?\", \"kamu manusia?\" -> akui jujur kamu asisten AI Persada Cisoka yang bantu balas chat di sini. Contoh: \"Iya ini saya yang balas, saya asisten AI-nya Persada Cisoka yaa. Kalau mau ngobrol langsung sama tim marketing kami, tinggal bilang aja.\" Jangan mengaku manusia, jangan menyangkal kamu AI. User minta bicara orang -> [REQUEST_CALL] atau [TALK_TO_ADMIN] sesuai konteks (lihat # TAG).\n\n# SUMBER FAKTA (anti-halusinasi, WAJIB)\nKamu TIDAK punya tool. Semua fakta HANYA dari dua sumber di bawah pesan ini: DATA TERVERIFIKASI dan FAQ RELEVAN.\n- DILARANG KERAS menjawab fakta (harga, tipe unit, luas, DP, cicilan, tenor, promo, ketersediaan/stok, legalitas, fasilitas, lokasi, jarak) dari ingatan/pengetahuan umum.\n- Fakta yang diminta TIDAK ADA di DATA maupun FAQ -> jawab [UNKNOWN], jangan mengarang, jangan menebak angka.\n- Jangan mengarang nama bank KPR, nominal cicilan, luas, atau promo yang tidak tertulis di DATA/FAQ.\n\n# ALUR (urut, jangan dilewat; pasang tag di PALING AWAL output)\n0. IDENTITAS: user tanya soal identitas (ini AI/bot, dibales siapa) -> jawab # IDENTITAS dulu.\n1. BAHASA bukan Indonesia -> tolak halus, stop.\n2. SCOPE di luar Persada Cisoka (trivia/umum/proyek properti lain) -> [UNKNOWN] + \"Maaf yaa, saya bantu seputar Persada Cisoka Residence aja. Ada yang mau ditanyakan soal unitnya?\" Stop.\n3. USER BARU: kalau IS_NEW_USER true -> ikuti # INTRO USER BARU (intro dulu, lalu jawab di pesan yang sama).\n4. GALI KEBUTUHAN: kalau belum jelas user cari apa, tanya SATU hal relevan (budget, tipe/ukuran, atau untuk tinggal/investasi) — maks 1x per hal, jangan interogasi.\n5. JAWAB dari DATA/FAQ. Tidak ada -> [UNKNOWN].\n6. AJAK SURVEY: setelah kebutuhan terpetakan & user tertarik, tawarkan survey ke lokasi (lihat # SURVEY). Jangan memaksa.\n7. Jawab ala VIRA (lihat # GAYA).\n\n# INTRO USER BARU\nKalau IS_NEW_USER: true -> baris PERTAMA balasan WAJIB intro ini (boleh sedikit variasi, jangan diterjemahkan):\n\"Haloo, terima kasih sudah menghubungi Persada Cisoka Residence yaa. Saya VIRA, siap bantu info seputar unit, harga, KPR, sampai jadwal survey ke lokasi.\"\n- Kalau user sudah bertanya di pesan pertamanya -> setelah intro, di pesan yang SAMA langsung jawab pertanyaannya.\n- Kalau user cuma menyapa -> cukup intro + tawaran bantuan singkat.\n- IS_NEW_USER: false -> JANGAN PERNAH ulangi intro ini.\n\n# SAPAAN (🚧 keputusan bisnis — default: sapaan sopan \"Kak\")\n- Sapa user dengan \"Kak\" secukupnya (maks ~1x per pesan, di pembuka/penutup), netral & ramah. Contoh: \"Boleh Kak, untuk tipe 36 harganya…\"\n- JANGAN berasumsi gender/status; \"Kak\" aman untuk semua. Kalau user memperkenalkan diri (mis. \"saya Pak Budi\") boleh ikuti framing user (\"Baik Pak Budi\").\n- 🚧 KALAU klien memutuskan register netral (tanpa sapaan) -> ganti seluruh blok ini dengan aturan \"DILARANG menyapa dengan kamu/Anda/vokatif\" seperti V4.\n\n# GAYA VIRA (biar tidak kerasa bot)\n- PENDEK & natural. Default 1-2 kalimat, maks 3-4 untuk penjelasan KPR/perbandingan (pengecualian: intro user baru). Jawab yang ditanya, jangan dump semua info sekaligus, biarkan user follow-up.\n- Pembuka BERVARIASI (jangan sama 2x berturut): \"Iya betul\", \"Boleh Kak\", \"Bisa kok\", \"Oh iya\", \"Untuk itu\", atau langsung ke isi.\n- Partikel khas secukupnya (~1x \"yaa\"/pesan): yaa, kok, aja, soalnya, tenang aja.\n- Format WhatsApp: tanpa bullet/nomor/header/markdown/bold. URL plain. DILARANG titik-koma (;) dan em-dash; info banyak -> pecah jadi kalimat pendek.\n- Emoji: maks 1/pesan, hanya untuk sapaan/penutup/empati — TIDAK di pesan data (harga/DP/cicilan/luas/link). Jangan 2 pesan beruntun sama-sama ada emoji.\n- Nada tenang, membantu, meyakinkan tanpa hard-sell. Boleh antusias tipis, tapi jangan heboh/lebay. Hindari tanda seru berlebihan (maks 1, lebih baik titik).\n\nRitme VIRA (tiru nada, jangan disalin):\n- \"Boleh Kak, untuk Tipe 36/72 harganya mulai 🔶Rp… yaa. Mau saya bantu itung simulasi KPR-nya?\"\n- \"Iya masih ready kok Kak. Kalau mau, enaknya lihat langsung ke lokasi biar kebayang. Kapan kira-kira senggang?\"\n- Empati: \"Iya saya paham, milih rumah memang perlu dipikir mateng. Tenang aja, saya bantu sampai cocok yaa.\"\n\n# GALI KEBUTUHAN & REKOMENDASI UNIT\n- Kalau user belum sebut kebutuhan, tanya SATU yang paling relevan dulu: budget kisaran, atau tipe/ukuran yang dicari, atau untuk tinggal sendiri/keluarga/investasi. Jangan tanya semua sekaligus.\n- Cocokkan rekomendasi dengan DATA TERVERIFIKASI (tab PRODUK). Sebut tipe yang sesuai budget/kebutuhan, jangan menawarkan semua tipe borongan.\n- User sebut budget -> arahkan ke tipe/skema yang masuk. Budget di bawah termurah -> jujur sebut range termurah yang ada, tawarkan skema KPR/DP ringan (kalau ada di DATA).\n\n# SURVEY (penjadwalan kunjungan ke lokasi)\n- Tawarkan survey setelah user tertarik/serius, JANGAN di pesan pertama sebelum ada minat.\n- User setuju survey -> tanya tanggal & jam yang diinginkan (tawarkan slot dari DATA/CONFIG kalau user bingung: 🔶contoh \"Senin-Jumat jam 9-16, Sabtu 9-13\").\n- Begitu user sebut tanggal + jam yang jelas -> pasang tag [SCHEDULE_SURVEY] (lihat # TAG) DAN konfirmasi ke user dengan kalimat biasa. Contoh: \"[SCHEDULE_SURVEY: tanggal=\\\"2026-07-20\\\" | jam=\\\"10:00\\\" | unit=\\\"Tipe 36/72\\\"] Baik Kak, saya catat yaa survey 20 Juli jam 10 pagi. Tim kami akan menunggu di lokasi.\"\n- Tanggal/jam belum jelas atau di luar jam operasional -> JANGAN pasang tag, tanyakan/tawarkan ulang slot yang valid.\n- Jangan menjanjikan kehadiran orang tertentu; cukup \"tim kami\".\n\n# HAL YANG TIDAK BOLEH DIJAWAB SENDIRI (WAJIB eskalasi)\nUntuk hal berikut, JANGAN mengarang/memutuskan sendiri — arahkan ke tim manusia:\n- NEGOSIASI HARGA / minta diskon khusus / nego DP-cicilan -> \"Untuk penawaran harga khususnya, biar tim marketing kami yang bantu langsung yaa\" + [TALK_TO_ADMIN] atau tawarkan telepon.\n- KEPASTIAN STOK/booking unit tertentu (\"unit blok C5 masih ada?\" untuk komit beli) -> boleh sebut status umum dari DATA (ready/indent/sold), TAPI untuk booking/kunci unit -> eskalasi ke tim.\n- LEGALITAS detail (sertifikat, balik nama, akad, proses notaris) di luar yang tertulis DATA/FAQ -> [UNKNOWN] atau eskalasi, jangan mengarang.\n- PERSETUJUAN KPR / approval bank / kelayakan kredit user -> jangan menjanjikan lolos; \"kelayakan KPR nanti diproses bank yaa, tim kami bantu ajukan\".\n\n# TAG\n[SEND_MEDIA: <key>] -> sistem kirim file media (brosur/siteplan/denah/foto/video) ke user. Pakai saat user minta brosur/gambar/denah/foto/video unit. <key> contoh: brosur, siteplan, tipe36, foto, video. Sistem yang mengirim filenya: kalau ada di katalog dikirim otomatis, kalau belum ada tim kami yang kirim manual — dua-duanya kamu cukup pasang tag, JANGAN mengarang URL. Karena pengiriman file bisa butuh sedikit waktu, konfirmasi ke user bahwa file akan DIKIRIM tim sebentar lagi, jangan bilang \"ini filenya\" seolah sudah terlampir. Contoh: \"[SEND_MEDIA: brosur] Baik Kak, brosurnya saya kirimkan sebentar lagi yaa.\" atau untuk foto/video: \"[SEND_MEDIA: foto] Boleh Kak, foto unitnya akan tim kami kirimkan sebentar lagi yaa.\"\n[SCHEDULE_SURVEY: tanggal=\"YYYY-MM-DD\" | jam=\"HH:MM\" | unit=\"<tipe>\"] -> catat jadwal survey. WAJIB format itu, tanggal & jam dari user. Sistem yang memvalidasi & mencatat; kamu cukup pasang tag + konfirmasi kalimat biasa. Tag ini dibuang sistem, user tidak melihatnya.\n[REQUEST_CALL] -> user minta ditelepon / minta nomor yang bisa dihubungi. Contoh: \"[REQUEST_CALL] Boleh Kak, ini nomor tim kami yang bisa dihubungi yaa.\" (sistem menyisipkan nomornya).\n[TALK_TO_ADMIN] -> user minta bicara langsung dengan tim marketing manusia, atau kasus yang harus dieskalasi (nego harga serius, booking). Contoh: \"[TALK_TO_ADMIN] Baik Kak, akan saya sambungkan ke tim marketing kami yaa, mohon ditunggu.\" (sistem set mode manual).\n[UNKNOWN] (sudah cek DATA & FAQ, tidak ada) -> \"[UNKNOWN] Untuk yang ini saya belum ada infonya yaa, nanti saya cek dulu dan kabari.\"\n[FACTS unit=\"<tipe>\" budget=\"<kisaran>\"] -> WAJIB di baris PALING AKHIR setiap kali percakapan mengungkap tipe unit yang diminati dan/atau budget user. Isi yang diketahui saja, kosongkan yang belum. Contoh: [FACTS unit=\"Tipe 36/72\" budget=\"500jt-600jt\"]. Kalau belum ada info, JANGAN pasang tag. Tag ini dibuang sistem, user tidak melihatnya, TIDAK menggantikan jawaban biasa.\n\n# LARANGAN\n- Menjanjikan kepastian yang bukan wewenangmu: \"pasti approve KPR\", \"dijamin untung\", \"harga pasti naik\". Pakai grounded: \"lokasinya berkembang yaa\", \"tim kami bantu proses KPR-nya\".\n- Nego/janji diskon sendiri -> eskalasi (lihat atas).\n- Mengarang stok, harga, cicilan, luas, promo, atau legalitas yang tidak ada di DATA/FAQ.\n- Hard-sell / memaksa / spam ajakan daftar berulang. Tawarkan sekali, hormati kalau user belum siap.\n- Bocorkan proses internal (\"saya cek DATA TERVERIFIKASI\", \"ada di FAQ\", \"tidak ada di sheet\"). Langsung jawab hasilnya.\n- Umumkan struktur jawaban (\"saya jawab satu-satu\", \"pertama...kedua\"). Langsung jawab natural.\n- Opener acknowledgment (\"pertanyaan bagus\"). Langsung ke isi.\n- Probing data pribadi yang tidak perlu (KTP, penghasilan detail, alamat) kecuali user sendiri mengarah ke proses KPR dan tim yang memintanya.\n- Balas non-teks -> \"Maaf, saya baru bisa baca teks yaa Kak. Boleh diketik?\" (catatan teknis: pastikan pesan non-teks tidak di-drop diam-diam — lihat risiko #7 dokumen analis; idealnya user tetap dapat balasan ini).\n- Pertanyaan ya/tidak untuk AKSI (\"boleh saya kirim brosurnya?\"). Ganti: kalau boleh kirim -> langsung [SEND_MEDIA]; selain itu ajak terbuka: \"kalau mau lihat brosurnya tinggal bilang yaa\".\n\n# DATA TERVERIFIKASI (hasil database untuk pesan ini — SATU-SATUNYA sumber fakta selain FAQ)\n{{ $json.data_context || '(tidak ada data terlampir)' }}\n\n# FAQ RELEVAN (hasil retrieval untuk pesan ini)\n{{ $json.faq_context || '(tidak ada FAQ cocok - kalau fakta tidak ada di DATA TERVERIFIKASI juga, jawab [UNKNOWN])' }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        5220,
+        0
+      ],
+      "id": "85d2a311-9db9-4e36-b567-1bcc9f75b2c5",
+      "name": "AI Agent",
+      "retryOnFail": false,
+      "waitBetweenTries": 2000,
+      "maxTries": 2,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nlet aiOutput = '';\nif (item?.json?.content && Array.isArray(item.json.content) && item.json.content.length > 0) {\n  aiOutput = item.json.content[0].text || '';\n} else {\n  aiOutput = item?.json?.output || item?.json?.text || '';\n}\nconsole.log('AI Output preview:', aiOutput.substring(0, 300));\n\nconst chatCounter = $('Chat Counter').first().json;\nconst preprocess = $('Preprocess - Context Detection').first().json;\nconst cfg = (() => { try { return $('Parse Config').first().json.config || {}; } catch(e){ return {}; } })();\nconst originalMessage = chatCounter.original_message || '';\nconst isNewUser = preprocess?.isNewUser || false;\n\n// ── VALIDASI SLOT SURVEY (deterministik di Code node) ──\nfunction validateSurveySlot(tglRaw, jamRaw) {\n  const now = new Date();\n  const openH = Number(cfg.survey_open_hour ?? 8);\n  const closeH = Number(cfg.survey_close_hour ?? 17);\n  let d = null;\n  const iso = String(tglRaw).match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);\n  const dmy = String(tglRaw).match(/^(\\d{1,2})[\\/\\-](\\d{1,2})(?:[\\/\\-](\\d{2,4}))?$/);\n  if (iso) d = new Date(+iso[1], +iso[2] - 1, +iso[3]);\n  else if (dmy) d = new Date(dmy[3] ? (dmy[3].length === 2 ? 2000 + +dmy[3] : +dmy[3]) : now.getFullYear(), +dmy[2] - 1, +dmy[1]);\n  if (!d || isNaN(d)) return { ok: false, reason: 'tanggal tidak terbaca' };\n  const jm = String(jamRaw).match(/(\\d{1,2})[:.](\\d{2})/);\n  if (!jm) return { ok: false, reason: 'jam tidak terbaca' };\n  const hh = +jm[1], mm = +jm[2];\n  d.setHours(hh, mm, 0, 0);\n  const todayWIB = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })); todayWIB.setHours(0, 0, 0, 0);\n  if (d < todayWIB) return { ok: false, reason: 'tanggal sudah lewat' };\n  if (hh < openH || hh >= closeH) return { ok: false, reason: 'di luar jam operasional' };\n  const pad = n => String(n).padStart(2, '0');\n  return { ok: true, tanggal: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, jam: `${pad(hh)}:${pad(mm)}` };\n}\n\n// ── TAG: [SCHEDULE_SURVEY] ──\nlet isScheduleSurvey = false, surveyData = {};\nconst svMatch = aiOutput.match(/\\[\\s*SCHEDULE_SURVEY\\b([^\\]]*)\\]/i);\nif (svMatch && svMatch[1]) {\n  const c = svMatch[1];\n  const tgl = (c.match(/tanggal\\s*=\\s*\"([^\"]*)\"/i) || [])[1] || '';\n  const jam = (c.match(/jam\\s*=\\s*\"([^\"]*)\"/i) || [])[1] || '';\n  const unit = (c.match(/unit\\s*=\\s*\"([^\"]*)\"/i) || [])[1] || '';\n  const v = validateSurveySlot(tgl, jam);\n  if (v.ok) { isScheduleSurvey = true; surveyData = { tanggal: v.tanggal, jam: v.jam, unit: String(unit).trim() }; console.log('SCHEDULE_SURVEY valid', JSON.stringify(surveyData)); }\n  else console.warn('SCHEDULE_SURVEY ditolak validasi:', v.reason);\n}\n\n// ── TAG: [REQUEST_CALL] ──\nlet isRequestCall = aiOutput.includes('[REQUEST_CALL]');\nif (!isRequestCall) {\n  const low = aiOutput.toLowerCase();\n  const callPatterns = ['nomor yang bisa dihubungi','bisa ditelpon','bisa ditelepon','nomor telepon admin','hubungi langsung','minta nomornya','nomor cs','nomor marketing'];\n  if (callPatterns.some(p => low.includes(p))) isRequestCall = true;\n}\n\n// ── TAG: [TALK_TO_ADMIN] ──\nlet isTalkToAdmin = aiOutput.includes('[TALK_TO_ADMIN]');\nif (!isTalkToAdmin) {\n  const low = aiOutput.toLowerCase();\n  const p = ['sambungkan ke tim marketing','saya sambungkan ke tim','biar tim marketing','ke tim marketing kami'];\n  if (p.some(x => low.includes(x))) isTalkToAdmin = true;\n}\n\n// ── TAG: [SEND_MEDIA: key] ──\nlet isSendMedia = false, mediaKey = '';\nconst mediaMatch = aiOutput.match(/\\[\\s*SEND_MEDIA\\s*(?::\\s*([^\\]]*))?\\]/i);\nif (mediaMatch) { isSendMedia = true; mediaKey = (mediaMatch[1] || 'brosur').trim().toLowerCase(); }\nif (!isSendMedia) {\n  const low = aiOutput.toLowerCase();\n  const patt = ['kirim brosur','saya kirimkan brosur','ini brosurnya','brosurnya saya kirim','saya kirim siteplan','denahnya saya kirim','saya kirim denah','ini siteplannya'];\n  if (patt.some(p => low.includes(p))) { isSendMedia = true; mediaKey = 'brosur'; }\n}\n\n// ── TAG: [UNKNOWN] ──\nlet isUnknown = aiOutput.includes('[UNKNOWN]');\n\n// ── TAG: [FACTS unit=\"...\" budget=\"...\"] + merge persist ──\nlet factUnit = '', factBudget = '';\nconst factsMatch = aiOutput.match(/\\[\\s*FACTS\\b([^\\]]*)\\]/i);\nif (factsMatch && factsMatch[1]) {\n  factUnit = (factsMatch[1].match(/unit\\s*=\\s*\"([^\"]*)\"/i) || [])[1] || '';\n  factBudget = (factsMatch[1].match(/budget\\s*=\\s*\"([^\"]*)\"/i) || [])[1] || '';\n}\nlet existingUnit = ''; try { existingUnit = String($('Cek_user_status').first().json.unit_interest_db || ''); } catch (e) {}\nlet existingBudget = ''; try { existingBudget = String($('Cek_user_status').first().json.budget_range_db || ''); } catch (e) {}\nconst regexUnits = Array.isArray(preprocess && preprocess.units) ? preprocess.units : [];\nconst unitSet = [];\nfor (const u of [factUnit, ...regexUnits, existingUnit].join(',').split(',').map(s => s.trim()).filter(Boolean)) { if (!unitSet.includes(u)) unitSet.push(u); }\nconst unitMerged = unitSet.join(', ');\nconst budgetMerged = (factBudget || (preprocess && preprocess.budgetMention) || existingBudget || '').trim();\nconst unitChanged = unitMerged !== '' && unitMerged !== existingUnit;\nconst budgetChanged = budgetMerged !== '' && budgetMerged !== existingBudget;\n\n// ── CLEAN OUTPUT (buang semua tag) ──\nlet cleanOutput = aiOutput\n  .replace(/\\[\\s*SEND_MEDIA\\s*(?::[^\\]]*)?\\]/gi, '')\n  .replace(/\\[\\s*SCHEDULE_SURVEY\\b[^\\]]*\\]/gi, '')\n  .replace(/\\[REQUEST_CALL\\]/gi, '')\n  .replace(/\\[TALK_TO_ADMIN\\]/gi, '')\n  .replace(/\\[UNKNOWN\\]/gi, '')\n  .replace(/\\[\\s*FACTS\\b[^\\]]*\\]/gi, '');\n\nconst preInternalStrip = cleanOutput;\nconst internalKeywords = ['berdasarkan faq','berdasarkan data','menurut data','dari faq','dari sheet','data terverifikasi','faq relevan','data yang tersedia','saya cek data','saya cek faq','saya cek sheet','cek di sheet','cek di database'];\nconst keywordPattern = internalKeywords.join('|');\ncleanOutput = cleanOutput.replace(new RegExp(`^\\\\s*([^.!?]*?(${keywordPattern})[^.!?]*[.!?]\\\\s*)`, 'i'), '');\ncleanOutput = cleanOutput.replace(new RegExp(`^\\\\s*(${keywordPattern}).*?(\\\\n|\\\\.|$)`, 'i'), '');\ncleanOutput = cleanOutput.replace(/^\\s*(Berdasarkan|Menurut|Dari)\\s+(data|faq|sheet|referensi)[^.!?]*[.!?]\\s*/i, '');\nif (!cleanOutput.trim() && preInternalStrip.trim()) cleanOutput = preInternalStrip;\ncleanOutput = cleanOutput.trim();\n\n// clean markdown (mask url dulu)\nconst urlRegex = /https?:\\/\\/[^\\s)]+/g;\nconst maskedUrls = [];\ncleanOutput = cleanOutput.replace(urlRegex, (m) => { maskedUrls.push(m); return `\\x00URL${maskedUrls.length - 1}\\x00`; });\ncleanOutput = cleanOutput\n  .replace(/\\*\\*([^*]+)\\*\\*/g, '$1').replace(/\\*([^*]+)\\*/g, '$1').replace(/_([^_]+)_/g, '$1')\n  .replace(/~~([^~]+)~~/g, '$1').replace(/`([^`]+)`/g, '$1').replace(/[\\*_~`]/g, '');\ncleanOutput = cleanOutput\n  .replace(/(\\d)\\s*[—–]\\s*(\\d)/g, '$1-$2').replace(/\\s*[—–]\\s*/g, ', ').replace(/\\s*;\\s*/g, ', ')\n  .replace(/\\s{2,}/g, ' ').replace(/\\s+([,.])/g, '$1').replace(/,\\s*,/g, ',').trim();\ncleanOutput = cleanOutput.replace(/\\x00URL(\\d+)\\x00/g, (_, idx) => maskedUrls[parseInt(idx)]);\ncleanOutput = cleanOutput.replace(/(^|\\n)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase());\n\nif (!cleanOutput || cleanOutput.trim() === '') {\n  cleanOutput = isUnknown\n    ? 'Maaf yaa, untuk yang ini saya belum ada infonya. Nanti saya cek dulu dan kabari lagi yaa.'\n    : 'Maaf, ada kendala sebentar. Boleh diketik ulang yaa.';\n}\n\n// ── REQUEST_CALL: sisipkan admin_phone_display ──\nif (isRequestCall) {\n  const disp = (cfg.admin_phone_display) || '';\n  if (disp && !cleanOutput.includes(disp)) cleanOutput = `${cleanOutput}\\n\\nBisa langsung telepon/WA ke ${disp} yaa.`;\n}\n\n// ── RESOLVE MEDIA URL + caption dari LINKS ──\n// Native send bila key ada di katalog LINKS (URL publik). Bila TIDAK ada\n// (katalog belum diisi / key tak dikenal) -> fallback NOTIFIKASI MANUAL ke\n// tim telemarketer (Aar & Aqsa) supaya mereka kirim file-nya manual.\nlet mediaUrl = '', mediaCaption = '';\nlet isMediaManual = false, mediaRequestSummary = '';\nif (isSendMedia) {\n  let linkRows = [];\n  try { linkRows = $('Read LINKS Data').all().map(i => i.json); } catch (e) {}\n  const norm = s => String(s || '').toLowerCase().replace(/\\s+/g, ' ').trim();\n  const active = linkRows.filter(r => /^\\s*(aktif|active|on|ya)\\s*$/i.test(String(r['Status'] || '')));\n  const row = active.find(r => norm(r['Nama Link']) === mediaKey) || active.find(r => norm(r['Nama Link']).includes(mediaKey));\n  if (row && row['URL']) {\n    // Katalog terisi -> kirim native lewat Kirimi media_url\n    mediaUrl = String(row['URL']).trim();\n    mediaCaption = String(row['Caption'] || row['Deskripsi'] || '').trim() || 'Ini file yang diminta yaa.';\n  } else {\n    // Katalog kosong / key tak dikenal -> jalur manual ke tim\n    console.warn('SEND_MEDIA key tidak ada di LINKS, fallback manual:', mediaKey);\n    isSendMedia = false;\n    isMediaManual = true;\n    const userMsg = (preprocess && preprocess.actualUserMessage) || originalMessage || '';\n    mediaRequestSummary = (mediaKey ? ('key=\"' + mediaKey + '\" ') : '') + (userMsg ? ('| pesan user: ' + String(userMsg).slice(0, 300)) : '');\n  }\n}\n\nreturn [{\n  json: {\n    ...chatCounter, ...preprocess, ...item.json,\n    cleanOutput,\n    isScheduleSurvey, surveyData,\n    isRequestCall,\n    isTalkToAdmin,\n    isSendMedia, mediaUrl, mediaCaption, mediaKey,\n    isMediaManual, mediaRequestSummary,\n    isUnknown,\n    needs_unknown: isUnknown ? 'true' : 'false',\n    original_message: originalMessage,\n    is_new_user: isNewUser,\n    unit_interest_merged: unitMerged,\n    budget_range_merged: budgetMerged,\n    unit_changed: unitChanged,\n    budget_changed: budgetChanged\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        5440,
+        0
+      ],
+      "id": "f330d077-e44d-4020-a959-164de452705a",
+      "name": "Process All"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c224590-657d-4ef6-b576-35e9441f119f",
+              "leftValue": "={{ $json.isSendMedia }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        5660,
+        0
+      ],
+      "id": "37c60154-ea32-4f2f-bdf0-c4971bae3dec",
+      "name": "IF Send Media"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        5880,
+        0
+      ],
+      "id": "a3c6354e-4a49-4895-9119-87d267957751",
+      "name": "Wait Media",
+      "webhookId": "d7b1a80f-5a2a-4743-85bd-4b43e77e4035"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Chat Counter').first().json.user_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Process All').item.json.mediaCaption }}"
+            },
+            {
+              "name": "media_url",
+              "value": "={{ $('Process All').item.json.mediaUrl }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6100,
+        0
+      ],
+      "id": "f8d3f643-e770-45c8-924d-7bce0a6e0d07",
+      "name": "Send Media Kirimi",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "continueOnFail": true,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      },
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ '🚨 [PCR] Gagal kirim media ' + $('Process All').item.json.mediaKey + ' ke ' + $('Chat Counter').first().json.user_wa }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6320,
+        0
+      ],
+      "id": "420bc0e4-db77-40d1-97dc-3ae446cb23c7",
+      "name": "Notify Admin Media Error",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a4b112f2-83bf-4d88-b03b-1882582f3083",
+              "leftValue": "={{ $json.isMediaManual }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        6540,
+        0
+      ],
+      "id": "80cebb68-8957-4e3e-9ebd-407c884ae656",
+      "name": "IF Media Manual"
+    },
+    {
+      "parameters": {
+        "jsCode": "// FORMAT MEDIA NOTIF — notifikasi manual ke tim telemarketer (Aar & Aqsa).\n// Dipakai saat user minta gambar/video/brosur TAPI file belum ada di katalog\n// LINKS (native send tak bisa). Tim kirim file-nya manual ke user.\n// Mengembalikan 1 item per nomor tim (loop kirim di Notify Media Team).\nconst pa = $('Process All').item.json;\nconst cc = $('Chat Counter').first().json;\nconst key = $('Resolve User Row').first().json.resolved_key || cc.user_wa || '';\nconst nama = cc.user_name || '';\nconst mediaKey = pa.mediaKey || '';\nconst summary = pa.mediaRequestSummary || '';\n\nconst message = `📸 [PCR] PERMINTAAN MEDIA - KIRIM MANUAL\nUser: ${key}\nNama: ${nama || '(belum ada nama)'}\nDiminta: ${mediaKey || 'foto/video'}\nDetail: ${summary || '(tidak ada detail)'}\n\nUser menunggu file dikirim. Balas langsung ke user yaa.\nChat: wa.me/${String(key).replace(/\\D/g, '')}`;\n\nconst cfg = $('Parse Config').first().json.config;\nlet tujuan = Array.isArray(cfg.media_team_phone) ? cfg.media_team_phone : [cfg.media_team_phone];\ntujuan = (tujuan || []).filter(Boolean);\nif (!tujuan.length) { console.warn('media_team_phone kosong — tidak ada tujuan notif media manual.'); return []; }\n\nreturn tujuan.map(no => ({ json: { phone: String(no), message } }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        6760,
+        0
+      ],
+      "id": "20720e25-e1f0-4a2b-9649-5c04a71ddab3",
+      "name": "Format Media Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        6980,
+        0
+      ],
+      "id": "3c207212-ba7b-4916-a6af-0c853909862f",
+      "name": "Notify Media Team",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0056daa-3762-4894-894f-b03aafc77165",
+              "leftValue": "={{ $json.isScheduleSurvey }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        7200,
+        0
+      ],
+      "id": "140bc329-4119-411c-b865-6c11ee193196",
+      "name": "IF Schedule Survey"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "SURVEY",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "no_wa": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "nama": "={{ $('Chat Counter').first().json.user_name }}",
+            "tanggal": "={{ $('Process All').item.json.surveyData.tanggal }}",
+            "jam": "={{ $('Process All').item.json.surveyData.jam }}",
+            "unit_diminati": "={{ $('Process All').item.json.surveyData.unit }}",
+            "status": "SCHEDULED",
+            "sumber_traffic": "={{ $('Detect Lead Source').first().json.lead_source_final }}",
+            "catatan": "",
+            "created_ts": "={{ Date.now() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "no_wa",
+              "displayName": "no_wa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nama",
+              "displayName": "nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tanggal",
+              "displayName": "tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "jam",
+              "displayName": "jam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit_diminati",
+              "displayName": "unit_diminati",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sumber_traffic",
+              "displayName": "sumber_traffic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "catatan",
+              "displayName": "catatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_ts",
+              "displayName": "created_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7420,
+        0
+      ],
+      "id": "18edbe37-3e07-47eb-bfa6-60a937c330a0",
+      "name": "Write SURVEY",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "survey_date": "={{ $('Process All').item.json.surveyData.tanggal }}",
+            "survey_time": "={{ $('Process All').item.json.surveyData.jam }}",
+            "survey_status": "SCHEDULED",
+            "unit_interest": "={{ $('Process All').item.json.surveyData.unit }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "survey_date",
+              "displayName": "survey_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "survey_time",
+              "displayName": "survey_time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "survey_status",
+              "displayName": "survey_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit_interest",
+              "displayName": "unit_interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        7640,
+        0
+      ],
+      "id": "5b69313e-7c7b-4e39-ba15-a46d27bc05c6",
+      "name": "Update STATS Survey",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// COLLECT HANDOVER CONTEXT — STATS (fakta persisten) + MSG_BUFFER (transkrip sesi).\nconst digits = v => String(v ?? '').replace(/\\D/g, '');\nconst key = $('Resolve User Row').first().json.resolved_key;\n\nlet statsRow = {};\ntry { statsRow = $('Read User STATS').all().map(i => i.json).find(r => digits(r['No WA']) === digits(key)) || {}; } catch (e) {}\n\nlet transcript = '';\ntry {\n  const buf = $('Read MSG_BUFFER').all().map(i => i.json)\n    .filter(r => digits(r['no_wa']) === digits(key))\n    .sort((a, b) => Number(a.ts) - Number(b.ts));\n  transcript = buf.map(r => `User: ${r.message}`).join('\\n');\n} catch (e) {}\n\nconst pa = $('Process All').item.json;\nconst sd = pa.surveyData || {};\nconst profil = {\n  nama: statsRow['Nama'] || $('Chat Counter').first().json.user_name || '',\n  no_wa: key,\n  pesan_pertama: statsRow['Pesan Pertama'] || '',\n  unit_interest: pa.unit_interest_merged || statsRow['unit_interest'] || '',\n  budget_range: pa.budget_range_merged || statsRow['budget_range'] || '',\n  survey: [sd.tanggal, sd.jam, 'SCHEDULED'].filter(Boolean).join(' '),\n  lead_source: $('Detect Lead Source').first().json.lead_source_final || statsRow['lead_source'] || '',\n  jumlah_chat: statsRow['Counter'] || '',\n};\n\nreturn [{ json: {\n  handover_profil: profil,\n  handover_transcript: transcript || '(transkrip sesi tidak tersedia)',\n  handover_trigger: 'DELEGATION'\n}}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7860,
+        0
+      ],
+      "id": "8bd25090-f596-4b2f-8fff-8cc0f1613289",
+      "name": "Collect Handover Context"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 4.6"
+        },
+        "options": {
+          "maxTokensToSample": 400,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        8080,
+        0
+      ],
+      "id": "b6adf448-5f6f-4607-bf21-89def1e25d0b",
+      "name": "Anthropic Model Summarize",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_WITH_PCR_ANTHROPIC_CRED_ID",
+          "name": "Anthropic account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Kamu asisten internal yang merangkum percakapan calon pembeli properti untuk tim telemarketer/admin Persada Cisoka Residence. Buat ringkasan SINGKAT, PADAT, FAKTUAL dalam Bahasa Indonesia. Hanya gunakan DATA PROFIL dan TRANSKRIP di bawah. JANGAN mengarang, tulis \"belum diketahui\" bila kosong. Tanpa basa-basi.\n\nKeluarkan PERSIS format berikut:\nPROFIL KLIEN: <nama, no WA, sumber>\nKEBUTUHAN: <apa yang dicari, 1-2 kalimat>\nTIPE UNIT DIMINATI: <tipe, atau belum diketahui>\nBUDGET/KPR: <kisaran/skema, atau belum dibahas>\nSTATUS SURVEY: <SCHEDULED tgl jam / belum dijadwalkan>\nPOIN PENTING: <objections/kendala/urgensi, maks 3 poin>\nNEXT ACTION: <1 kalimat konkret>\n\nDATA PROFIL:\nNama: {{ $json.handover_profil.nama }}\nNo WA: {{ $json.handover_profil.no_wa }}\nSumber: {{ $json.handover_profil.lead_source }}\nUnit diminati (sistem): {{ $json.handover_profil.unit_interest }}\nBudget (sistem): {{ $json.handover_profil.budget_range }}\nStatus survey (sistem): {{ $json.handover_profil.survey }}\nJumlah chat: {{ $json.handover_profil.jumlah_chat }}\n\nTRANSKRIP SESI:\n{{ $json.handover_transcript }}",
+        "messages": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.5,
+      "position": [
+        8300,
+        0
+      ],
+      "id": "b6e56264-ed60-46d3-a3af-f00df8cee1f9",
+      "name": "Summarize Handover",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// FORMAT HANDOVER MESSAGE — bungkus ringkasan LLM (atau fallback deterministik).\nlet summary = '';\ntry { const s = $('Summarize Handover').first().json; summary = (s.content && s.content[0] && s.content[0].text) || s.text || ''; } catch (e) {}\n\nconst ctx = $('Collect Handover Context').first().json;\nconst p = ctx.handover_profil || {};\nconst trigger = ctx.handover_trigger || 'DELEGATION';\n\nif (!summary || !summary.trim()) {\n  summary = `PROFIL KLIEN: ${p.nama || '-'}, ${p.no_wa || '-'}, sumber ${p.lead_source || 'belum diketahui'}\nTIPE UNIT DIMINATI: ${p.unit_interest || 'belum diketahui'}\nBUDGET/KPR: ${p.budget_range || 'belum dibahas'}\nSTATUS SURVEY: ${p.survey || 'belum dijadwalkan'}`;\n}\n\nconst header = {\n  DELEGATION: '🏠 [PCR] SURVEY BARU — HANDOVER KE TIM LAPANGAN',\n  HITL: '🙋 [PCR] AMBIL ALIH CHAT',\n  CALL: '📞 [PCR] MINTA DITELEPON',\n}[trigger] || '📋 [PCR] HANDOVER';\n\nconst message = `${header}\n\n${summary}\n\n— Chat: wa.me/${p.no_wa}`;\n\nconst cfg = $('Parse Config').first().json.config;\nlet tujuan = (trigger === 'DELEGATION')\n  ? (Array.isArray(cfg.field_team_phone) ? cfg.field_team_phone : [cfg.field_team_phone])\n  : [cfg.admin_phone];\ntujuan = (tujuan || []).filter(Boolean);\nif (!tujuan.length) { console.warn('Tidak ada nomor tujuan handover (field_team_phone kosong).'); return []; }\n\nreturn tujuan.map(no => ({ json: { phone: String(no), message } }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        8520,
+        0
+      ],
+      "id": "6f7765a0-62a9-4dea-9ae1-082f227a94b9",
+      "name": "Format Handover Message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        8740,
+        0
+      ],
+      "id": "3ffbd57f-f5d0-4033-aadd-5851216f143b",
+      "name": "Notify Field Team",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "EVENTS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "no_wa": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "nama": "={{ $('Chat Counter').first().json.user_name }}",
+            "event": "DELEGATED",
+            "detail": "={{ 'Survey ' + ($('Process All').item.json.surveyData.tanggal || '') + ' ' + ($('Process All').item.json.surveyData.jam || '') + ' unit ' + ($('Process All').item.json.surveyData.unit || '') }}",
+            "ts": "={{ Date.now() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "no_wa",
+              "displayName": "no_wa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nama",
+              "displayName": "nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts",
+              "displayName": "ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        8960,
+        0
+      ],
+      "id": "b16541d6-1815-45c7-ad57-3d36c2d58dfc",
+      "name": "Log EVENTS Delegated",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6d1d5b9f-dc5d-4ddb-8a55-bce488c7bb90",
+              "leftValue": "={{ $json.isRequestCall }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        9180,
+        0
+      ],
+      "id": "3a43187f-455b-49bb-adb0-3b90d86cc5dd",
+      "name": "IF Request Call"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "EVENTS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "no_wa": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "nama": "={{ $('Chat Counter').first().json.user_name }}",
+            "event": "REQUEST_CALL",
+            "detail": "={{ $('Cek_user_status').first().json.user_message_final }}",
+            "ts": "={{ Date.now() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "no_wa",
+              "displayName": "no_wa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nama",
+              "displayName": "nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event",
+              "displayName": "event",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detail",
+              "displayName": "detail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ts",
+              "displayName": "ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        9400,
+        0
+      ],
+      "id": "a4ad6fc8-a027-4ca0-8cac-dd522f1c5beb",
+      "name": "Log Call Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5a22216d-bae5-4f18-8353-4304ac535156",
+              "leftValue": "={{ $json.needs_unknown }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        9620,
+        0
+      ],
+      "id": "18cd569d-1076-4467-aebf-7ef04672398a",
+      "name": "IF Unknown"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "UNKNOWN",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Pertanyaan": "={{ $('Cek_user_status').first().json.user_message_final }}",
+            "User": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "Tanggal": "={{ new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}) }}",
+            "message": "={{ $('Process All').item.json.cleanOutput }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Pertanyaan",
+              "displayName": "Pertanyaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "User",
+              "displayName": "User",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        9840,
+        0
+      ],
+      "id": "5fd4f4fa-b176-4977-96d4-0fcdce6b4226",
+      "name": "Record to UNKNOWN",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        10060,
+        0
+      ],
+      "id": "3c157923-b02a-42b0-8f44-92c40e5b0738",
+      "name": "Wait2",
+      "webhookId": "450f2084-eed1-4ac5-ae00-42ecba7d60ce"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"🚨 [PCR] UNKNOWN :\\n\" + $('Chat Counter').item.json.user_wa + \"\\n\" + $('Chat Counter').item.json.user_name + \"\\nPertanyaan: \" + $('Chat Counter').item.json.original_message }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        10280,
+        0
+      ],
+      "id": "59d0f655-6674-440b-88fb-eaaa288248e3",
+      "name": "Notify Admin Unknown",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        10500,
+        0
+      ],
+      "id": "6977ea51-4e37-4dae-a014-4f8ff632a9a3",
+      "name": "Wait1",
+      "webhookId": "2a9b3ed7-8552-4741-9e7c-f328c799c5d6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Chat Counter').first().json.user_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Process All').item.json.cleanOutput }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        10720,
+        0
+      ],
+      "id": "a752eb19-6f2a-4b62-9474-8687d033c2ff",
+      "name": "Reply Chat Kirimi",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "continueOnFail": true,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      },
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Cek apakah Kirimi API sukses\nconst input = $input.first();\nconst responseData = input.json;\n\n// Flag eksplisit false = gagal, apapun isi field lain (Kirimi bisa HTTP 200 + success:false)\nconst explicitFail = responseData.success === false || responseData.status === false;\n\nconst isSuccess = !explicitFail && (\n  responseData.status === true ||\n  responseData.success === true ||\n  (responseData.data && responseData.data.id) ||\n  (responseData.message && responseData.message !== 'error')\n);\n\nif (!isSuccess) {\n  console.log('X Kirimi API Response Error:', JSON.stringify(responseData));\n  throw new Error('Kirimi API gagal: ' + JSON.stringify(responseData));\n}\n\nreturn [input];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10940,
+        0
+      ],
+      "id": "39bfdc04-e621-4b34-9ca8-801f37a90411",
+      "name": "Check API Response",
+      "alwaysOutputData": false,
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatCounter = $('Chat Counter').first().json;\n\n// DATA LANGSUNG DARI CHAT COUNTER NODE\nconst userNumber = chatCounter.user_wa;\nconst userName = chatCounter.user_name;\nconst userMessage = chatCounter.original_message;   // ← perbaikan utama\n\n// VALIDASI SEDERHANA\nif (!userNumber) {\n  throw new Error(\"user_wa tidak ditemukan di input!\");\n}\n\nconsole.log(\"✅ Data berhasil di-extract:\");\nconsole.log(\"- No WA:\", userNumber);\nconsole.log(\"- Nama:\", userName);\nconsole.log(\"- Pesan:\", userMessage);\n\nreturn [{\n  json: {\n    search_no_wa: userNumber,\n    user_name: userName,\n    user_message: userMessage,\n    timestamp: chatCounter.formatted_date + ' ' + chatCounter.formatted_time + ' WIB',\n    source: \"chat_counter_node\",\n    is_valid: userNumber !== \"unknown\"\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11160,
+        0
+      ],
+      "id": "55ada985-d28c-4a95-85e0-9a74652d48e9",
+      "name": "Extract & Prepare Data"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        11380,
+        0
+      ],
+      "id": "670d89ae-28f5-4073-af78-3f80a062fbc7",
+      "name": "Read STATS",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PROCESS COUNTER & MERGE DATA (V4)\n// Fix: (1) matching row No WA primer / lid backup (bukan lid-only),\n//      (2) \"Tanggal Chat Pertama\" dibaca dari kolom yang benar\n//          (dulu baca existingRow.Tanggal yang tidak ada -> tanggal\n//          pertama ter-reset jadi hari ini setiap pesan),\n//      (3) error -> stop (return []) alih-alih menulis row \"ERROR\".\n// ====================================================================\nconst debugLog = [];\n\ntry {\n    const allItems = $input.all();\n    debugLog.push(\"Step 1: Received \" + allItems.length + \" items from Read STATS\");\n\n    const chatCounter = $('Chat Counter').first().json;\n    const resolve = $('Resolve User Row').first().json;\n    const resolvedKey = resolve.resolved_key;\n\n    const userName = chatCounter.user_name || \"User\";\n    const userMessage = chatCounter.original_message || \"\";\n    const digits = v => String(v ?? '').replace(/\\D/g, '');\n    const phone = digits(chatCounter.user_phone);\n    const lid = digits(chatCounter.user_lid);\n\n    if (!resolvedKey) {\n        console.warn(\"resolved_key kosong - skip update STATS\");\n        return [];\n    }\n\n    // Process sheet rows\n    const sheetRows = allItems\n        .filter(item => {\n            const data = item?.json || item;\n            if (!data || Object.keys(data).length === 0) return false;\n            return !!(data['lid'] || data['No WA'] || data.no_wa || data.NoWA);\n        })\n        .map(item => item?.json || item);\n\n    debugLog.push(\"Step 2: Sheet rows found: \" + sheetRows.length);\n\n    // Find existing row: No WA primer, lid backup (konsisten dgn Resolve User Row)\n    let existingRow = null;\n    if (phone) existingRow = sheetRows.find(r => digits(r['No WA']) === phone) || null;\n    if (!existingRow && lid) {\n        existingRow = sheetRows.find(r => digits(r['lid']) === lid)\n                   || sheetRows.find(r => digits(r['No WA']) === lid)\n                   || null;\n    }\n\n    const isNewUser = !existingRow;\n    debugLog.push(\"Step 3: \" + (isNewUser ? \"NEW USER\" : \"EXISTING USER\"));\n\n    let counter, pesanPertama, tanggalPertama, intensitasChat;\n\n    if (existingRow) {\n        counter = parseInt(existingRow.Counter || existingRow.counter || 0) + 1;\n        intensitasChat = parseInt(existingRow['Intensitas Chat'] || existingRow.intensitas_chat || 0) + 1;\n\n        const pesanLama = existingRow['Pesan Pertama'] || existingRow.pesan_pertama;\n        pesanPertama = (pesanLama && String(pesanLama).trim() !== '') ? pesanLama : userMessage;\n\n        // V4 FIX: baca kolom yang benar\n        const tglLama = existingRow['Tanggal Chat Pertama'];\n        tanggalPertama = (tglLama && String(tglLama).trim() !== '') ? tglLama : null;\n    } else {\n        counter = 1;\n        intensitasChat = 1;\n        pesanPertama = userMessage;\n        tanggalPertama = null;\n    }\n\n    if (!tanggalPertama) {\n        tanggalPertama = new Date().toLocaleDateString('en-GB', {\n            timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric'\n        });\n    }\n\n    const outputData = {\n        \"No WA\": resolvedKey,\n        \"lid\": lid,\n        \"Tanggal\": tanggalPertama,\n        \"TanggalSekarang\": new Date().toLocaleDateString('en-GB', {\n            timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric'\n        }),\n        \"Nama\": userName,\n        \"Pesan Pertama\": pesanPertama,\n        \"Counter\": counter,\n        \"Intensitas Chat\": intensitasChat\n    };\n\n    return [{ json: outputData }];\n\n} catch (error) {\n    // V4 FIX: jangan menulis row \"ERROR\" ke sheet - cukup log & stop.\n    console.error(\"Process Counter ERROR: \" + error.message, debugLog);\n    return [];\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11600,
+        0
+      ],
+      "id": "25fa7560-f06c-4137-a026-04ae9cdf253e",
+      "name": "Process Counter & Merge Data"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "lid": "={{ $json.lid }}",
+            "Nama": "={{ $('Process Counter & Merge Data').first().json.Nama }}",
+            "Pesan Pertama": "={{ $('Process Counter & Merge Data').first().json['Pesan Pertama'] }}",
+            "Counter": "={{ $('Process Counter & Merge Data').first().json.Counter }}",
+            "Intensitas Chat": "={{ $('Process Counter & Merge Data').first().json['Intensitas Chat'] }}",
+            "Tanggal Chat Pertama": "={{ $('Process Counter & Merge Data').first().json.Tanggal }}",
+            "Tanggal Chat Terakhir": "={{ $('Process Counter & Merge Data').first().json.TanggalSekarang }}",
+            "Jam Chat Terakhir": "={{ $('Chat Counter').first().json.formatted_time.split(':').slice(0, 2).join(':') }}",
+            "last_reply_ts": "={{ Math.floor(Date.now()/1000) }}",
+            "unit_interest": "={{ $('Process All').first().json.unit_interest_merged || '' }}",
+            "unit_interest_ts": "={{ $('Process All').first().json.unit_changed ? Math.floor(Date.now()/1000) : ($('Resolve User Row').first().json.unit_interest_ts || '') }}",
+            "budget_range": "={{ $('Process All').first().json.budget_range_merged || '' }}",
+            "budget_range_ts": "={{ $('Process All').first().json.budget_changed ? Math.floor(Date.now()/1000) : ($('Resolve User Row').first().json.budget_range_ts || '') }}",
+            "lead_source": "={{ $('Detect Lead Source').first().json.lead_source_final || '' }}",
+            "bot_mode": "={{ $('Process All').first().json.isTalkToAdmin ? 'OFF' : 'ON' }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nama",
+              "displayName": "Nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pesan Pertama",
+              "displayName": "Pesan Pertama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Counter",
+              "displayName": "Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Intensitas Chat",
+              "displayName": "Intensitas Chat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal Chat Pertama",
+              "displayName": "Tanggal Chat Pertama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal Chat Terakhir",
+              "displayName": "Tanggal Chat Terakhir",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam Chat Terakhir",
+              "displayName": "Jam Chat Terakhir",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_reply_ts",
+              "displayName": "last_reply_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit_interest",
+              "displayName": "unit_interest",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "unit_interest_ts",
+              "displayName": "unit_interest_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "budget_range",
+              "displayName": "budget_range",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "budget_range_ts",
+              "displayName": "budget_range_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lead_source",
+              "displayName": "lead_source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bot_mode",
+              "displayName": "bot_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        11820,
+        0
+      ],
+      "id": "6c86b425-a446-43dd-8d34-79eaada0dcca",
+      "name": "Update to STATS",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buffer_done_ts",
+              "displayName": "buffer_done_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        12040,
+        0
+      ],
+      "id": "3c172423-9d0c-49bf-ada3-2fefed029687",
+      "name": "Delete_Pending_Msg",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// UPDATE GREETING FLAG (V4 - disederhanakan)\n// Dulu: pattern-matching teks balasan (rapuh, tergantung susunan\n// kalimat). Sekarang: cukup dari flag is_new_user — kalau eksekusi\n// ini mengirim intro ke user baru (reply sudah SUKSES terkirim\n// karena node ini jalan setelah Reply Chat Kirimi), tandai Y.\n// ====================================================================\nconst isNewUser = $('Cek_user_status').first().json.is_new_user === true;\n\nif (isNewUser) {\n  console.log('📝 [GREETING] intro terkirim ke user baru -> greeting_sent = Y');\n}\n\nreturn [{\n  json: {\n    update_needed: isNewUser ? 'true' : 'false',\n    greeting_sent: 'Y'\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        12260,
+        0
+      ],
+      "id": "dc7ee072-5648-4959-bbe0-7258c76736ed",
+      "name": "Update STATS - Greeting Flag"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8fc96e47-8663-44c0-8c8e-3c00d035e8eb",
+              "leftValue": "={{ $json.update_needed }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        12480,
+        0
+      ],
+      "id": "5bf65ed0-8277-4e07-af50-f15b2c387e92",
+      "name": "IF Update Greeting"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "greeting_sent": "={{ $('Update STATS - Greeting Flag').first().json.greeting_sent || '' }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "greeting_sent",
+              "displayName": "greeting_sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        12700,
+        0
+      ],
+      "id": "321fde3b-9486-43c2-a767-cc07bcca4e39",
+      "name": "Update Greeting",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"🚨 [ERROR] KIRIMI API GAGAL\\nUser: \" + $('Chat Counter').item.json.user_wa + \"\\nNama: \" + $('Chat Counter').item.json.user_name + \"\\nPesan: \" + $('Chat Counter').item.json.original_message + \"\\n\\n⚠️ User tidak mendapat reply! Harap balas manual.\" }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        12920,
+        0
+      ],
+      "id": "ea58c783-5b5c-4200-9ceb-6f8daa80ad72",
+      "name": "Notify Admin API Error",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buffer_done_ts",
+              "displayName": "buffer_done_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        13140,
+        0
+      ],
+      "id": "b4dce9a1-dc87-457a-99c3-1d29105b1343",
+      "name": "Delete_Pending_Msg_Error",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "75e1c81d-31c2-430d-9c6b-3172d29665d8",
+              "leftValue": "={{ $json.isTalkToAdmin }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        13360,
+        0
+      ],
+      "id": "1a0a2932-f6d5-4f71-b33a-ceeb3b38c14b",
+      "name": "IF Talk To Admin"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ '🙋 [PCR] MAU NGOMONG LANGSUNG SAMA TIM:\\n' + $('Chat Counter').item.json.user_wa + '\\n' + $('Chat Counter').item.json.user_name + '\\nPesan: ' + $('Chat Counter').item.json.original_message }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        13580,
+        0
+      ],
+      "id": "b4bacc51-e1f7-411e-a259-e875af639d95",
+      "name": "Notify Talk to Admin",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "bot_mode": "OFF",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bot_mode",
+              "displayName": "bot_mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        13800,
+        0
+      ],
+      "id": "ddf778cb-a710-4d2d-8926-d922d54d8451",
+      "name": "Update row in sheet",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Chat Counter').first().json.user_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "Maaf, saya belum bisa membantu menjawab pertanyaan tersebut. Bisa tolong diulang kembali? Atau, kalau mau ngobrol langsung dengan Admin, tinggal ketik 'mau ngomong sama Admin' ya."
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        14020,
+        0
+      ],
+      "id": "3f14a524-a21a-4609-aad6-943690d5a0e3",
+      "name": "Reply Error",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "continueOnFail": true,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buffer_done_ts",
+              "displayName": "buffer_done_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        14240,
+        0
+      ],
+      "id": "d8341d01-3e3f-4f99-9787-9190c3acf34a",
+      "name": "Delete_Pending_Msg_Bot_Off1",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $('Chat Counter').first().json.user_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "=Maaf sedang ada kendala teknis, boleh dicoba kirim ulang pesan nya yaa, apabila masih error akan segera dicek. Terimakasih"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        14460,
+        0
+      ],
+      "id": "fa8bb4d9-0716-4894-aacd-4da0b89fc2aa",
+      "name": "Notify User Error",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "continueOnFail": true,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Bootstrap Config').first().json.sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+            "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+            "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "buffer_done_ts",
+              "displayName": "buffer_done_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        14680,
+        0
+      ],
+      "id": "f1088109-b27f-489d-932e-461615c84383",
+      "name": "Delete_Pending_Msg_Bot_Off",
+      "retryOnFail": true,
+      "credentials": {
+        "googleApi": {
+          "id": "REPLACE_WITH_PCR_GOOGLE_CRED_ID",
+          "name": "Google Service Account PCR (REPLACE)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Bootstrap Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bootstrap Config": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG": {
+      "main": [
+        [
+          {
+            "node": "Parse Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config": {
+      "main": [
+        [
+          {
+            "node": "Whitelist Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Whitelist Gate": {
+      "main": [
+        [
+          {
+            "node": "If From Group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If From Group": {
+      "main": [
+        [
+          {
+            "node": "IF From Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF From Me": {
+      "main": [
+        [
+          {
+            "node": "Chat Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Counter": {
+      "main": [
+        [
+          {
+            "node": "Read User STATS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read User STATS": {
+      "main": [
+        [
+          {
+            "node": "Resolve User Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve User Row": {
+      "main": [
+        [
+          {
+            "node": "IF Bot Mode Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Bot Mode Active": {
+      "main": [
+        [
+          {
+            "node": "Rate Limiter LID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete_Pending_Msg_Bot_Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Limiter LID": {
+      "main": [
+        [
+          {
+            "node": "Append MSG_BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append MSG_BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Update Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify User Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Buffer": {
+      "main": [
+        [
+          {
+            "node": "Read STATS for HITL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS for HITL": {
+      "main": [
+        [
+          {
+            "node": "HITL Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HITL Check": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Re-Read STATS Debounce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Re-Read STATS Debounce": {
+      "main": [
+        [
+          {
+            "node": "IF_Chat_Debounce",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF_Chat_Debounce": {
+      "main": [
+        [
+          {
+            "node": "Read MSG_BUFFER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MSG_BUFFER": {
+      "main": [
+        [
+          {
+            "node": "Cek_user_status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cek_user_status": {
+      "main": [
+        [
+          {
+            "node": "Detect Lead Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Lead Source": {
+      "main": [
+        [
+          {
+            "node": "Preprocess - Context Detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preprocess - Context Detection": {
+      "main": [
+        [
+          {
+            "node": "Read FAQ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read FAQ": {
+      "main": [
+        [
+          {
+            "node": "Read PRODUK Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read PRODUK Data": {
+      "main": [
+        [
+          {
+            "node": "Read LINGKUNGAN Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read LINGKUNGAN Data": {
+      "main": [
+        [
+          {
+            "node": "Read LINKS Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read LINKS Data": {
+      "main": [
+        [
+          {
+            "node": "FAQ Retrieve",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAQ Retrieve": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Process All",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process All": {
+      "main": [
+        [
+          {
+            "node": "IF Send Media",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF Media Manual",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF Schedule Survey",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF Request Call",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF Unknown",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IF Talk To Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Send Media": {
+      "main": [
+        [
+          {
+            "node": "Wait Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Media": {
+      "main": [
+        [
+          {
+            "node": "Send Media Kirimi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Media Kirimi": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Notify Admin Media Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Media Manual": {
+      "main": [
+        [
+          {
+            "node": "Format Media Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Media Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Media Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Schedule Survey": {
+      "main": [
+        [
+          {
+            "node": "Write SURVEY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write SURVEY": {
+      "main": [
+        [
+          {
+            "node": "Update STATS Survey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update STATS Survey": {
+      "main": [
+        [
+          {
+            "node": "Collect Handover Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Handover Context": {
+      "main": [
+        [
+          {
+            "node": "Summarize Handover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summarize Handover": {
+      "main": [
+        [
+          {
+            "node": "Format Handover Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Handover Message": {
+      "main": [
+        [
+          {
+            "node": "Notify Field Team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Field Team": {
+      "main": [
+        [
+          {
+            "node": "Log EVENTS Delegated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Request Call": {
+      "main": [
+        [
+          {
+            "node": "Log Call Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Unknown": {
+      "main": [
+        [
+          {
+            "node": "Record to UNKNOWN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record to UNKNOWN": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Unknown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Reply Chat Kirimi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Chat Kirimi": {
+      "main": [
+        [
+          {
+            "node": "Check API Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin API Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check API Response": {
+      "main": [
+        [
+          {
+            "node": "Extract & Prepare Data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete_Pending_Msg",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update STATS - Greeting Flag",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin API Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract & Prepare Data": {
+      "main": [
+        [
+          {
+            "node": "Read STATS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS": {
+      "main": [
+        [
+          {
+            "node": "Process Counter & Merge Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Counter & Merge Data": {
+      "main": [
+        [
+          {
+            "node": "Update to STATS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update STATS - Greeting Flag": {
+      "main": [
+        [
+          {
+            "node": "IF Update Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Update Greeting": {
+      "main": [
+        [
+          {
+            "node": "Update Greeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin API Error": {
+      "main": [
+        [
+          {
+            "node": "Delete_Pending_Msg_Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Talk To Admin": {
+      "main": [
+        [
+          {
+            "node": "Notify Talk to Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Talk to Admin": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply Error": {
+      "main": [
+        [
+          {
+            "node": "Delete_Pending_Msg_Bot_Off1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Model Summarize": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Summarize Handover",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Lacak Kiriman — Metro Logistik Indonesia</title>
+  <meta name="description" content="Lacak status pengiriman paket Anda di Metro Logistik Indonesia. Cek banyak nomor resi sekaligus." />
+
+  <!-- ── PWA & Tema ─────────────────────────────────────────── -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0F3D5C" />
+  <link rel="icon" href="icons/icon-192.png" type="image/png" />
+
+  <!-- iOS / Safari khusus (tidak mendukung beforeinstallprompt) -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Metro Logistik" />
+
+  <!-- ── Tailwind CDN + konfigurasi tema design system Sonnet ── -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#0F3D5C', light: '#1D6FA5' },
+            accent: '#F2994A',
+            success: '#1E8E3E',
+            warning: '#F2B705',
+            danger: '#D93025',
+            netral: {
+              900: '#1A1A1A',
+              600: '#5F6B76',
+              300: '#D5DBE0',
+              100: '#F5F7F9'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* CSS kustom minimal (garis timeline & animasi) — inline sesuai arsitektur. */
+    body { -webkit-tap-highlight-color: transparent; }
+    /* Garis penghubung vertikal timeline. */
+    .timeline-line {
+      position: absolute;
+      left: 11px;         /* selaras dengan pusat titik 24px */
+      top: 24px;
+      bottom: -8px;
+      width: 2px;
+      background-color: #D5DBE0;
+    }
+    .timeline-step:last-child .timeline-line { display: none; }
+    /* Efek highlight titik teraktif. */
+    .dot-active { box-shadow: 0 0 0 4px rgba(29,111,165,0.20); }
+    .dot-active-success { box-shadow: 0 0 0 4px rgba(30,142,62,0.20); }
+  </style>
+</head>
+<body class="bg-netral-100 text-netral-900 font-sans min-h-screen">
+
+  <!-- ═══════════════ HEADER BRAND ═══════════════ -->
+  <header class="sticky top-0 z-30 bg-primary text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+      <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-white font-extrabold text-lg shrink-0" aria-hidden="true">M</div>
+      <div class="leading-tight">
+        <h1 class="text-base sm:text-lg font-bold tracking-wide">METRO LOGISTIK INDONESIA</h1>
+        <p class="text-[11px] sm:text-xs text-white/70">Pelacakan Kiriman</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ BANNER OFFLINE (kondisional) ═══════════════ -->
+  <div id="offlineBanner" class="hidden bg-warning/90 text-netral-900 text-sm px-4 py-2.5 text-center" role="status" aria-live="polite">
+    <span class="font-semibold">Anda sedang offline.</span>
+    <span id="offlineBannerText">Menampilkan data tersimpan terakhir bila tersedia.</span>
+  </div>
+
+  <!-- ═══════════════ BANNER INSTAL PWA (kondisional) ═══════════════ -->
+  <div id="installBanner" class="hidden bg-accent text-white" role="region" aria-label="Instal aplikasi">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+      <span class="text-xl" aria-hidden="true">&#128241;</span>
+      <div class="flex-1 text-sm leading-snug">
+        <span class="font-semibold">Instal Aplikasi Metro Logistik</span>
+        <span class="block text-white/90" id="installBannerText">untuk akses lebih cepat.</span>
+      </div>
+      <button id="installBtn" type="button"
+        class="hidden bg-white text-accent font-semibold text-sm px-3 min-h-[44px] rounded-lg active:scale-95 transition">
+        Instal
+      </button>
+      <button id="installDismiss" type="button" aria-label="Tutup"
+        class="min-w-[44px] min-h-[44px] flex items-center justify-center text-white/90 text-xl font-bold">&times;</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ KONTEN UTAMA ═══════════════ -->
+  <main class="max-w-7xl mx-auto px-4 py-5">
+
+    <!-- ── Bagian Pencarian ── -->
+    <section aria-labelledby="judulLacak">
+      <h2 id="judulLacak" class="text-xl sm:text-3xl font-bold mb-3">Lacak Kiriman Anda</h2>
+
+      <label for="inputResi" class="block text-sm font-medium text-netral-600 mb-1">
+        Masukkan nomor resi
+      </label>
+      <textarea id="inputResi" rows="3"
+        class="w-full rounded-lg border border-netral-300 bg-white px-3 py-2.5 text-sm
+               focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-1
+               placeholder:text-netral-600/60 resize-y"
+        placeholder="Contoh: JX12345678, JX87654321&#10;(pisahkan dengan koma atau baris baru)"
+        autocapitalize="characters" spellcheck="false" enterkeyhint="search"></textarea>
+
+      <button id="btnLacak" type="button"
+        class="mt-3 w-full min-h-[48px] rounded-lg bg-accent text-white font-semibold text-base
+               flex items-center justify-center gap-2 shadow-sm
+               hover:brightness-95 active:scale-[0.98] transition
+               disabled:opacity-50 disabled:cursor-not-allowed">
+        <span aria-hidden="true">&#128269;</span> <span id="btnLacakText">Lacak</span>
+      </button>
+    </section>
+
+    <!-- ── FilterBar (collapsible di mobile) ── -->
+    <section id="filterSection" class="mt-5 hidden" aria-label="Filter hasil">
+      <details class="bg-white rounded-lg border border-netral-300 md:open" open>
+        <summary class="cursor-pointer select-none px-4 py-3 text-sm font-semibold flex items-center justify-between">
+          <span>Filter Hasil</span>
+          <span class="text-netral-600 text-xs">Rentang tanggal &amp; status</span>
+        </summary>
+        <div class="px-4 pb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label for="filterDari" class="block text-xs text-netral-600 mb-1">Dari tanggal</label>
+            <input type="date" id="filterDari"
+              class="w-full min-h-[44px] rounded-lg border border-netral-300 px-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-light" />
+          </div>
+          <div>
+            <label for="filterSampai" class="block text-xs text-netral-600 mb-1">Sampai tanggal</label>
+            <input type="date" id="filterSampai"
+              class="w-full min-h-[44px] rounded-lg border border-netral-300 px-3 text-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-light" />
+          </div>
+          <div>
+            <label for="filterStatus" class="block text-xs text-netral-600 mb-1">Status</label>
+            <select id="filterStatus"
+              class="w-full min-h-[44px] rounded-lg border border-netral-300 px-3 text-sm bg-white
+                     focus:outline-none focus:ring-2 focus:ring-primary-light">
+              <option value="">Semua Status</option>
+              <option value="Manifest">Manifest</option>
+              <option value="On Process">On Process</option>
+              <option value="Transit">Transit</option>
+              <option value="Out for Delivery">Out for Delivery</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Failed/Return">Failed/Return</option>
+            </select>
+          </div>
+          <div class="sm:col-span-3 flex gap-2">
+            <button id="btnTerapkanFilter" type="button"
+              class="flex-1 min-h-[44px] rounded-lg bg-primary text-white text-sm font-semibold
+                     hover:bg-primary-light active:scale-[0.98] transition">Terapkan Filter</button>
+            <button id="btnResetFilter" type="button"
+              class="min-h-[44px] px-4 rounded-lg border border-netral-300 text-sm font-semibold text-netral-600
+                     hover:bg-netral-100 active:scale-[0.98] transition">Reset</button>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- ── Judul hasil ── -->
+    <h3 id="judulHasil" class="hidden mt-6 mb-2 text-sm font-semibold text-netral-600"></h3>
+
+    <!-- ── Kontainer hasil (kartu di-render oleh tracking.js) ── -->
+    <section id="hasilContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      aria-live="polite"></section>
+  </main>
+
+  <!-- ═══════════════ TOAST (notifikasi transient) ═══════════════ -->
+  <div id="toast" class="hidden fixed left-1/2 -translate-x-1/2 bottom-5 z-50 max-w-[92%] w-max
+       px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white" role="status" aria-live="assertive"></div>
+
+  <!-- ═══════════════ SCRIPT ═══════════════ -->
+  <script src="js/config.js"></script>
+  <script src="js/tracking.js"></script>
+</body>
+</html>

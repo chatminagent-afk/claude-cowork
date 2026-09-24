@@ -1,0 +1,18 @@
+name = "n8n"
+main = "src/worker.js"
+compatibility_date = "2026-08-01"
+
+# Dashboard di-serve dari sini. Karena filenya bernama index.html,
+# root "/" ikut jalan (ini yang bikin 404 sebelumnya).
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[vars]
+# Root instance n8n — TANPA /api/v1 dan tanpa path editor.
+N8N_BASE = "https://n8n.srv1270416.hstgr.cloud"
+
+# DASH_TOKEN dan N8N_API_KEY sengaja TIDAK ditulis di sini.
+# Keduanya diset sebagai secret:
+#   npx wrangler secret put N8N_API_KEY
+#   npx wrangler secret put DASH_TOKEN

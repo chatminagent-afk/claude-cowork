@@ -1,0 +1,47 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "user_code",
+                                                                     "value":  "KM40LI0426"
+                                                                 },
+                                                                 {
+                                                                     "name":  "secret",
+                                                                     "value":  "REDACTED"
+                                                                 },
+                                                                 {
+                                                                     "name":  "device_id",
+                                                                     "value":  "D-4ZV1F"
+                                                                 },
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $(\u0027Chat Counter\u0027).first().json.user_wa }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ $(\u0027Process All\u0027).item.json.cleanOutput }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+                                       "timeout":  60000
+                                   }
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     752,
+                     2624
+                 ],
+    "id":  "5e3fbb4d-a07a-4fb0-91d5-197bb1d83ae4",
+    "name":  "Reply Chat Kirimi",
+    "alwaysOutputData":  true,
+    "retryOnFail":  false,
+    "waitBetweenTries":  2000,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput"
+}

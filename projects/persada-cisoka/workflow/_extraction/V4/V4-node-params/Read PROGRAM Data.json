@@ -1,0 +1,39 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+                                          "mode":  "list",
+                                          "cachedResultName":  "The_Scholars_Database",
+                                          "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  1775378091,
+                                         "mode":  "list",
+                                         "cachedResultName":  "PROGRAM",
+                                         "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=1775378091"
+                                     },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -944,
+                     2720
+                 ],
+    "id":  "76c52c78-b97c-4619-8ce5-2ac9e76eab32",
+    "name":  "Read PROGRAM Data",
+    "executeOnce":  true,
+    "retryOnFail":  true,
+    "waitBetweenTries":  3000,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

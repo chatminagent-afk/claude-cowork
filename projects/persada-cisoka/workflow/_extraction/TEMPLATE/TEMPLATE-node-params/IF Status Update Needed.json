@@ -1,0 +1,37 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  2
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "status-update-check",
+                                                                 "leftValue":  "={{ $json.needs_status_update }}",
+                                                                 "rightValue":  "true",
+                                                                 "operator":  {
+                                                                                  "type":  "boolean",
+                                                                                  "operation":  "true",
+                                                                                  "name":  "filter.operator.true"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.2,
+    "position":  [
+                     -13808,
+                     2240
+                 ],
+    "id":  "8601c15b-b006-4190-ad36-e81a281b1e83",
+    "name":  "IF Status Update Needed"
+}

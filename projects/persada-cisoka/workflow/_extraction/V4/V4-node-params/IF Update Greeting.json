@@ -1,0 +1,37 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  3
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "8fc96e47-8663-44c0-8c8e-3c00d035e8eb",
+                                                                 "leftValue":  "={{ $json.update_needed }}",
+                                                                 "rightValue":  "true",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.3,
+    "position":  [
+                     1424,
+                     2912
+                 ],
+    "id":  "a6b8dbf5-13e6-4807-ba2a-7b8af2ea3f81",
+    "name":  "IF Update Greeting"
+}

@@ -1,0 +1,227 @@
+{
+  "name": "GLOBAL - VIRA Error Notifier (Fonnte)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -48
+      ],
+      "id": "c63e1088-7e9b-4488-a377-4a78a79277eb",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// COMPOSE NOTIF  -- GLOBAL (menggantikan 2 notifier per-klien)\n// --------------------------------------------------------------------\n// Menambah klien ke-3 = tambah 1 entri di TENANTS + 1 baris di WF_MAP.\n// Node lain tidak perlu disentuh.\n// ====================================================================\nconst DASH = 'https://n8n.chatminagent.workers.dev';\n\n// Sesudah migrasi ke Fonnte, perangkat pengirim TIDAK lagi dipilih per tenant.\n// Autentikasi memakai n8n Credential (Header Auth), jadi satu device Fonnte\n// mengirim semua notifikasi error. Identitas klien tetap terbaca dari `label`\n// yang ikut tercetak di badan pesan, jadi tidak ada informasi yang hilang.\nconst TENANTS = {\n  'VIRA-TS':     { label: 'The Scholars' },\n  'VIRA-PCR':    { label: 'Persada Cisoka Residence' },\n  'VIRA-GLOBAL': { label: 'Global / lintas klien' },\n};\n\n// Pemetaan utama: workflow id -> tenant. Dipakai lebih dulu karena beberapa\n// nama workflow tidak mengandung kata kunci tenant sama sekali\n// (mis. \"Topic Harvester (WF-A)\" milik TS, \"Follow-up AI Powered\" milik PCR).\nconst WF_MAP = {\n  '27Nw6efKWq3Pq-J1T2Z2w': 'VIRA-TS',  // VIRA TS (main)\n  '53SnbaFfbxETx7KvUw6_U': 'VIRA-TS',  // Topic Harvester (WF-A)\n  '49Idh3Um3-OiK2eKlBcCi': 'VIRA-TS',  // Monthly Rollup (WF-B)\n  'flkj_TqYPs350gF3gp74K': 'VIRA-TS',  // STATS Cleanup v3\n  'LkpnapMdpbwuwS09mSuEw': 'VIRA-TS',  // MSG_BUFFER Cleanup TS (pensiun setelah migrasi)\n  'oCQ315OHAjQEuG2vh14RR': 'VIRA-PCR', // VIRA PCR AI Powered (main)\n  'qaux8b14IgvxEXfoUtxa2': 'VIRA-PCR', // Follow-up AI Powered\n  'Uqt1M4Soj8gPbSdPBShBX': 'VIRA-PCR', // VIRA-PCR - STATS Purge\n  'TIt9Ns4H4B4_6nuzqDRyR': 'VIRA-PCR', // MSG_BUFFER Cleanup PCR (pensiun setelah migrasi)\n};\n\n// Cadangan kalau id belum terdaftar (mis. workflow baru yang belum dimasukkan\n// ke WF_MAP): tebak dari nama. Kalau tetap tidak ketemu -> VIRA-GLOBAL.\nfunction tebakDariNama(nama) {\n  const h = String(nama || '').toLowerCase();\n  if (h.indexOf('pcr') !== -1 || h.indexOf('persada') !== -1) return 'VIRA-PCR';\n  if (h.indexOf('scholar') !== -1 || h.indexOf('vira ts') !== -1) return 'VIRA-TS';\n  return 'VIRA-GLOBAL';\n}\n\nconst e      = $input.first().json;\nconst wfId   = e.workflow?.id || '';\nconst wfName = e.workflow?.name || 'VIRA';\nconst execId = e.execution?.id || '-';\nconst node   = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg    = (e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url    = e.execution?.url || '-';\n\nconst tenantId = WF_MAP[wfId] || tebakDariNama(wfName);\nconst tenant   = TENANTS[tenantId] || TENANTS['VIRA-GLOBAL'];\n\nif (!WF_MAP[wfId]) {\n  console.warn('Workflow id ' + wfId + ' (' + wfName + ') belum ada di WF_MAP - tenant ditebak: ' + tenantId);\n}\n\n// Link hanya dibuat kalau execution id benar-benar ada. Error Trigger TIDAK\n// mengirim execution.id kalau errornya terjadi di node trigger - tanpa penjagaan\n// ini, link-nya jadi \".../#/e/-\" yang cuma bikin bingung.\nconst dashUrl = /^\\d+$/.test(String(execId)) ? `${DASH}/#/e/${execId}` : '';\n\nconst text = `\\u{1F6A8} [${tenant.label}] EKSEKUSI GAGAL\\nWorkflow: ${wfName}\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}`\n  + (dashUrl ? `\\n\\n\\u{1F4F1} Retry dari HP:\\n${dashUrl}` : '')\n  + `\\n\\n\\u{1F5A5}\\uFE0F Buka di n8n:\\n${url}`\n  + `\\n\\n\\u26A0\\uFE0F Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nreturn [{ json: {\n  notif_text:   text,\n  tenant_id:    tenantId,\n  tenant_label: tenant.label,\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -48
+      ],
+      "id": "645af008-e524-4d52-8bfa-3ff91862ce7b",
+      "name": "Compose Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fonnte.com/send",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "target",
+              "value": "=6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {},
+        "contentType": "form-urlencoded",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        -48
+      ],
+      "id": "69d59707-0d2e-4bb2-b287-7f8762494946",
+      "name": "Notify Admin Error",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "fonnteGLOBALNT01",
+          "name": "Fonnte - GLOBAL Notif"
+        }
+      },
+      "notes": "PERIKSA SEBELUM AKTIF: target notifikasi = 6285155202354. Nomor itu juga terdaftar sebagai device Fonnte 'Work' milik Steven. Kalau credential workflow ini menunjuk device tersebut, notifikasi jadi kirim-ke-diri-sendiri. Pakai device lain, atau ganti target ke 6285171701168.",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fonnte membalas HTTP 200 walau gagal, dan bentuk responsnya bisa objek\n// ATAU array. n8n menganggap HTTP 200 sebagai sukses -> tanpa node ini tidak\n// ada error -> Error Workflow tidak jalan -> tidak ada notifikasi sama sekali.\n// Node ini sengaja throw supaya jalur fallback email ikut jalan.\n//\n// PENGETATAN 2026-09-01: versi lama menerima `r.message && r.message !== 'error'`\n// sebagai tanda sukses. Respons GAGAL Fonnte bisa membawa field `message`, jadi\n// aturan longgar itu berpotensi meloloskan kegagalan sebagai sukses -- persis\n// pola \"pesan hilang diam-diam\". Sekarang hanya `status === true` yang diterima.\nconst input = $input.first();\nlet r = input.json;\n\nif (typeof r === 'string') {\n  try { r = JSON.parse(r); } catch (e) { r = null; }\n}\nconst rd = Array.isArray(r)\n  ? (r[0] && typeof r[0] === 'object' ? r[0] : {})\n  : (r && typeof r === 'object' ? r : {});\n\nconst isSuccess = rd.status === true || rd.status === 'true';\n\nif (!isSuccess) {\n  const reason = rd.reason || rd.detail || rd.message || '(tanpa keterangan)';\n  throw new Error('Fonnte API gagal: ' + reason + ' | ' + JSON.stringify(rd).slice(0, 400));\n}\n\nreturn [input];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -112
+      ],
+      "id": "cf55b9e8-d2dc-43fd-bb23-d222b3b84c52",
+      "name": "Check Fonnte Response",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// Rangkai payload untuk GLOBAL - Email Fallback Notifier\n// Dipanggil saat node Fonnte gagal (HTTP error ATAU response 200-tapi-gagal)\n//\n// Beda dari 2 notifier lama: TENANT tidak lagi hardcoded per file,\n// tapi diambil dari hasil deteksi di node \"Compose Notif\".\n// ============================================================\nconst et    = $('Error Trigger').first().json || {};\nconst comp  = $('Compose Notif').first().json || {};\nconst notif = comp.notif_text || '';\nconst f     = $input.first().json || {};\n\n// pesan kegagalan Fonnte (bentuknya beda-beda tergantung jalur error)\nconst reason = f.error?.message || f.error || f.message ||\n               'Fonnte API tidak mengembalikan status sukses';\n\nreturn [{\n  json: {\n    // Nilai di bawah SENGAJA tetap 'kirimi_fallback': itu konstanta protokol\n    // antar-workflow yang dibaca GLOBAL - Email Fallback Notifier, bukan\n    // referensi ke API Kirimi. Versi Fonnte email fallback menerima keduanya.\n    source: 'kirimi_fallback',\n    tenant: comp.tenant_id || 'VIRA-GLOBAL',\n\n    // isi alert yang gagal terkirim ke WA\n    notif_text: notif,\n\n    // kenapa WA-nya gagal\n    fail_node: 'Notify Admin Error (Fonnte)',\n    fail_reason: String(reason).slice(0, 600),\n    // Nama baru + nama lama dikirim berbarengan supaya \"GLOBAL - Email Fallback\n    // Notifier\" versi lama maupun versi Fonnte sama-sama bisa membacanya.\n    fonnte_response: JSON.stringify(f).slice(0, 800),\n    kirimi_response: JSON.stringify(f).slice(0, 800),\n\n    // identitas notifier ini\n    notifier_wf_name: $workflow.name,\n    notifier_wf_id: $workflow.id,\n    notifier_exec_id: $execution.id,\n\n    // error aslinya (dari Error Trigger)\n    orig_wf_name: et.workflow?.name || '-',\n    orig_wf_id: et.workflow?.id || '',\n    orig_exec_id: et.execution?.id || '-',\n    orig_exec_url: et.execution?.url || '',\n    orig_node: et.execution?.error?.node?.name || et.execution?.lastNodeExecuted || '-',\n    orig_error: String(et.execution?.error?.message || '-').slice(0, 600)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -48
+      ],
+      "id": "fb931372-8f83-4491-8364-24a73754a468",
+      "name": "Build Fallback Payload"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xGsl3M3tONsHPDgT9lOWF",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/xGsl3M3tONsHPDgT9lOWF",
+          "cachedResultName": "GLOBAL - Email Fallback Notifier"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        -48
+      ],
+      "id": "11550089-cea6-4b31-80b7-5dd5eeb66da0",
+      "name": "Call Global Email Fallback",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "content": "## Kenapa ada `Check Fonnte Response`\n\nFonnte membalas **HTTP 200 walau pengiriman gagal** (device disconnect, nomor salah, kuota habis, token salah). n8n menganggap itu sukses &rarr; tidak ada error &rarr; Error Workflow tidak jalan &rarr; **tidak ada notifikasi sama sekali**.\n\nNode `Check Fonnte Response` menangkap kasus itu dan sengaja melempar error supaya jalur email fallback ikut jalan.\n\n---\n\n### Sudah terpasang di file ini\n\n- `Notify Admin Error` &rarr; On Error = `Continue (using error output)`, Retry On Fail aktif.\n- Output **1 (sukses)** &rarr; `Check Fonnte Response`\n- Output **2 (merah)** &rarr; `Build Fallback Payload`\n- `Check Fonnte Response` output **2 (merah)** &rarr; `Build Fallback Payload`\n- Output sukses `Check Fonnte Response` sengaja dibiarkan kosong.\n\n### Yang perlu kamu lakukan setelah import\n\n1. Pilih credential **Header Auth** Fonnte di node `Notify Admin Error`.\n2. Node `Call Global Email Fallback` &rarr; pastikan menunjuk **GLOBAL - Email Fallback Notifier**.\n3. Workflow Settings &rarr; **Error Workflow** = `GLOBAL - Email Fallback Notifier` (lapis kedua).\n\n### Catatan\n\nToken Fonnte **tidak lagi tersimpan di dalam node**. Autentikasi memakai n8n Credential, jadi tidak ada rahasia di file JSON ini.",
+        "height": 660,
+        "width": 440,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -800
+      ],
+      "id": "dadbc9ef-7c08-49c4-8fc8-d2d3d1f7436d",
+      "name": "Sticky Info"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Compose Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin Error": {
+      "main": [
+        [
+          {
+            "node": "Check Fonnte Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Fallback Payload": {
+      "main": [
+        [
+          {
+            "node": "Call Global Email Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Fonnte Response": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Build Fallback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "xGsl3M3tONsHPDgT9lOWF"
+  },
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "tags": []
+}

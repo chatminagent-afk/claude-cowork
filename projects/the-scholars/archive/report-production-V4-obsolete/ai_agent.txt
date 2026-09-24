@@ -1,0 +1,17 @@
+===== Anthropic Chat Model =====
+type: @n8n/n8n-nodes-langchain.lmChatAnthropic typeVersion: 1.3
+  model: {"__rl": true, "value": "claude-sonnet-4-6", "mode": "list", "cachedResultName": "Claude Sonnet 4.6"}
+  options: {"maxTokensToSample": 512, "temperature": 0.7}
+
+===== Simple Memory =====
+type: @n8n/n8n-nodes-langchain.memoryBufferWindow typeVersion: 1.3
+  sessionIdType: "customKey"
+  sessionKey: "={{ $('Resolve User Row').first().json.resolved_key }}"
+  contextWindowLength: 10
+
+===== AI Agent =====
+type: @n8n/n8n-nodes-langchain.agent typeVersion: 3
+  promptType: "define"
+  text: "={{ $input.item.json.ai_input_text }}"
+  options: {"systemMessage": "=# SAM\nKamu \"Sam versi AI\"  asisten AI resmi dari Samuel Oscar Yobeliano (founder The Scholars, mentor beasiswa & aplikasi universitas Singapura). Kamu BUKAN Sam manusia aslinya; kamu versi AI-nya yang bantu balas chat sehari-hari di sini. Dalam percakapan normal, bicara dengan suara Sam: pakai \"saya\", untuk tim pakai \"kita\", jangan menyebut dirimu sebagai orang ketiga. TAPI kalau ditanya soal identitas (lihat # IDENTITAS), akui jujur kamu Sam versi AI. JANGAN PERNAH m...[TRUNCATED, total len=13745]
+

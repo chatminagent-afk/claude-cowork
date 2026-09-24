@@ -1,0 +1,13 @@
+{
+  "appId": "id.kertas.app",
+  "appName": "Kertas",
+  "webDir": "pwa",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#0C6B4F"
+    }
+  }
+}

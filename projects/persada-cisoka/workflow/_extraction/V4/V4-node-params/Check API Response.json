@@ -1,0 +1,16 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "\n// Cek apakah Kirimi API sukses\nconst input = $input.first();\nconst responseData = input.json;\n\n// Kirimi API return success jika ada field \u0027status\u0027 = true atau \u0027data\u0027\nconst isSuccess = responseData.status === true || \n                  responseData.success === true ||\n                  (responseData.data \u0026\u0026 responseData.data.id) ||\n                  (responseData.message \u0026\u0026 responseData.message !== \u0027error\u0027);\n\nif (!isSuccess) {\n  console.log(\u0027❌ Kirimi API Response Error:\u0027, JSON.stringify(responseData));\n  throw new Error(\u0027Kirimi API gagal: \u0027 + JSON.stringify(responseData));\n}\n\nconsole.log(\u0027✅ Kirimi API sukses:\u0027, JSON.stringify(responseData));\nreturn [input];\n"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     944,
+                     2480
+                 ],
+    "id":  "b64be645-b01e-4436-8877-64efc2177030",
+    "name":  "Check API Response",
+    "alwaysOutputData":  false,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput"
+}

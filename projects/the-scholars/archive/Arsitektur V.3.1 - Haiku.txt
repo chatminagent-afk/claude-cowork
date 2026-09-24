@@ -1,0 +1,28 @@
+Arsitektur V.3.1 - Haiku
+
+1. salah refer, orangtua tapi pake aku kamu 
+>> gk ketemu log nya, suspect ada message edited  ✅
+[19/6/26, 18:56:54] ~Shanty Halimin: Dgn orang tua murid di jakarta. ‎<This message was edited>
+
+2. kaku, dan salah kasih info, gaada yg namanya partial scholarship
+>> done retest XL UAT 11.54 ✅
+
+3. ngomongnya muter2, mau kirim link daftar 2x
+
+4. salah jawabannya
+[19/6/26, 14:56:23] ~Lyvinia Sari: Anak saya tahun ini baru masuk kls 10.
+[19/6/26, 14:56:42] ~Lyvinia Sari: Mau tanya utk program dan beasiswa kan hrs ada portofolio
+[19/6/26, 14:57:17] ~Lyvinia Sari: Apakah bisa dibantu untuk program dan portofolio nya ?
+[19/6/26, 14:58:36] The Scholars: Kalau mau persiapan dari sekarang, bisa ikut mock interview untuk latihan interview beasiswa dulu, atau pantau terus IG kita untuk update program berikutnya.
+>> bisa ditambah di FAQ ✅
+
+5. Ngomongin intermediate tapi kecampur dengan Seniors (bahas kuliah)
+>> done retest XL UAT 14:57 ✅
+
+6. Chat reset lagi dari awal, jadi harus perkenalan ortu apa anak lagi
+>> fixing bug done ✅
+>> note: apakah CTA to WA TS memang belum diubah dan masih di Batch 4?
+
+7. Gak bisa nangkep, jadi ga dilanjut chat nya sama customernya ✅
+>> done retest XL UAT 13:48, expected diarahkan ke website univ SG karena memang di database gk ada arahan kalau S1 gimana
+>> boleh ditambahkan jg ke FAQ kalau lagi kuliah s1 indo terus tertarik kuliah di SG apakah masih bisa ikt program seniors/lainnya?

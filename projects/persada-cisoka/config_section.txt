@@ -1,0 +1,44 @@
+USI WINATA HALIM SSI- INDEPENDEN | REQUEST\_CALL | Bisa sya TLPð | 1787893973018 |
+| 6282297484120 | Sedang Tidur | DELEGATED | Survey 2026-09-15 10:00 unit Tipe 30/60 | 1788066138 |
+| 6285888255459 | User | DELEGATED | Survey 2026-09-13 15:00 unit 30/60 | 1788961625 |
+| 6285893015330 | lutfikharisma | REQUEST\_CALL | Punya no nyah ga | 1789054344927 |
+| 6285155202354 | Steven Leroy | DELEGATED | Survey 2026-09-13 13:00 unit Komersial | 1789119704 |
+| 6285155202354 | Steven Leroy | DELEGATED | Survey 2026-09-13 13:00 unit Tipe 30/60 | 1789120163 |
+| 6285155202354 | Steven Leroy | DELEGATED | Survey 2026-09-15 13:00 unit Tipe 30/60 | 1789120347 |
+
+|  |  |  |  |  |  |
+| :-: | :-: | :-: | :-: | :-: | :-: |
+| ts | actor | role | no\_wa | from | to |
+
+|  |  |  |
+| :-: | :-: | :-: |
+| key | value | keterangan |
+| client\_name | Persada Cisoka Residence | Nama klien, dipakai di greeting & notifikasi |
+| bot\_name | Vira | Nama persona bot |
+| bot\_language | id | Bahasa utama bot |
+| system\_prompt | di sistem | System prompt AI Agent; boleh dikelola di sini atau langsung di node |
+| admin\_phone | 6282281811212 | Nomor WA Om Sulianto - tujuan notifikasi internal (unknown/error/HITL). KONFIRMASI: error teknis mungkin lebih tepat ke Steven. |
+| admin\_phone\_display | 6282281811212 | Hotline resmi Persada Cisoka (dari brosur) - ditampilkan ke user saat minta telepon. KONFIRMASI masih aktif. |
+| field\_team\_phone | 6287888542255 | Tujuan notifikasi survey terjadwal = Om Sulianto 6287888542255 (permintaan 2026-07-16). Workflow pakai key ini utk cabang Notify Field Team. Kandidat tambahan: Pak Dadang 6287777980999 - konfirmasi dulu. |
+| brochure\_url | https://drive.google.com/uc?export=download\&id=1-MutSTsQun8NhkjIzvHGguF82S84OfIK | URL publik brosur PDF utama (direct-download) |
+| media\_catalog | (tidak dipakai - katalog media = tab LINKS) | Workflow 2026-07-16 meresolve media dari tab LINKS (kolom Nama Link/Status/URL/Caption), bukan dari key ini. Dibiarkan untuk kompatibilitas. |
+| survey\_slots | \["Senin-Jumat 08.00-17.00","Sabtu-Minggu 08.00-17.00"\] | Dari chat: survey biasa ditawarkan Sabtu/Minggu, konfirmasi ulang H-1. KONFIRMASI slot resmi & jam tutup. |
+| survey\_open\_hour | 8 | Jam buka validasi jadwal survey (WIB) |
+| survey\_close\_hour | 17 | Jam tutup validasi jadwal survey (WIB) |
+| followup\_max | 0 | 0 = TANPA BATAS (keputusan tim 2026-07-17: kejar terus sampai survey/diblokir) |
+| followup\_interval\_hours | 48 | interval follow-up 2 hari |
+| followup\_open\_hour | 8 | jam mulai boleh kirim follow-up, WIB (keputusan tim 2026-07-17) |
+| followup\_close\_hour | 21 | jam batas kirim follow-up, WIB; lewat jam ini geser ke hari berikutnya (keputusan tim 2026-07-17) |
+| followup\_templates | \["Halo kak ð Kemarin sempat tanya-tanya soal rumah di Persada Cisoka. Ada yang masih mengganjal, atau mau saya bantu hitungin simulasi cicilannya? Tanya-tanya dulu gratis kok, nggak harus langsung beli ðð»", "Kak, biar ada gambaran tanpa harus datang dulu — mau saya kirimkan foto & video unitnya? Tinggal sebut tipe yang kakak minati ya ð", "Halo kak\! Banyak yang kaget waktu tahu unit subsidi 30/60 di sini Rp185jt, cicilan FLAT Rp1,1jt/bln (tenor 20 thn) — nggak naik sampai lunas. Kakak lagi cari yang subsidi atau komersil?", "Kak, kalau yang bikin mikir soal DP: unit komersil kami TANPA DP — cukup booking fee Rp2.500.000, sudah all-in sampai terima kunci. Mau saya jelaskan alurnya? ð", "Halo kak ð Lokasi kami ±10 menit dari Stasiun Tigaraksa & dekat Tol Balaraja — banyak penghuni yang kerjanya di Jakarta/Tangerang. Kakak sehari-hari kerja di area mana? Biar saya bantu cek cocok nggaknya rutenya", "Kak, kalau ragu KPR-nya disetujui atau nggak — tim kami bisa bantu cek data dulu GRATIS, cukup KTP aja, belum ada komitmen apa pun. Mau dibantu cek? ð", "Halo kak, unit komersil lagi ada cashback Rp20.000.000 setelah akad + bebas biaya KPR/BPHTB/PPN — lumayan banget buat isi perabot rumah baru ð Mau saya hitungkan totalnya untuk tipe yang kakak minati?", "Kak, cara paling cepat tahu cocok atau nggaknya memang lihat langsung ð Survey cuma 15-30 menit, hari biasa mulai jam 08.00, weekend juga bisa. Enaknya kakak kapan?", "Halo kak ð Masih nimbang-nimbang itu wajar kok — beli rumah kan keputusan besar. Biasanya justru mantapnya setelah lihat lokasinya sendiri. Mau saya jadwalkan lihat-lihat santai aja dulu, tanpa harus booking?", "Kak, saya nggak mau ganggu kalau memang belum waktunya ðð» Boleh jujur aja — masih berminat dengan Persada Cisoka, atau mau saya stop dulu info-infonya? Kalau masih, saya siapin jadwal survey yang paling santai buat kakak ð", "Halo kak, izin follow up rumah yang kemarin sempat ditanyakan ð Kalau masih cari-cari, saya siap bantu rekomendasikan yang paling sesuai budget dan kebutuhan kakak.", "Halo Kak, Izin saya infoin promo terbaru perumahan kami ya ðð»ð", "Saat ini ada program tanpa DP, cukup booking fee 2,5 juta saja sudah bisa diproses sampai serah terima kunci.", "Dan ada cashback sampai 20 juta untuk unit tertentu.", "Kalau Kakak mau, saya bisa bantu hitungkan simulasi cicilan + cek unit yang masih tersedia hari ini ð"\] | 10 template dipakai berurutan sesuai follow\_up\_count, setelah ke-10 ulang dari 1 (keputusan tim 2026-07-17) |
+| lead\_source\_map | \[{"source": "Instagram", "keywords": \["instagram", "ig", "insta"\]}, {"source": "Facebook", "keywords": \["facebook", "fb", "marketplace"\]}, {"source": "Google", "keywords": \["google", "maps", "gmaps", "website"\]}, {"source": "TikTok", "keywords": \["tiktok"\]}\] | Keyword deteksi sumber traffic dari pesan pertama — kalibrasi ulang dengan template iklan asli klien |
+| whitelist\_enabled | FALSE | TRUE saat UAT (bot hanya balas nomor whitelist) |
+| whitelist\_numbers | \["6285155202354","6287888542255"\] | JSON array nomor whitelist untuk UAT |
+| rate\_limit\_max | 10 | Maks pesan per window per user |
+| rate\_limit\_window\_sec | 60 | Window rate limit (detik) |
+| debounce\_seconds | 60 | Durasi tunggu debounce sebelum AI memproses |
+| media\_team\_phone | 6282281811212 | JSON array nomor WA tim telemarketer (Aar & Aqsa) - tujuan notifikasi saat user minta gambar/video yang belum ada di katalog; mereka kirim manual sementara. |
+| kirimi\_user\_code | KM40LI0426 | JANGAN DIEDIT |
+| kirimi\_secret | REDACTED | JANGAN DIEDIT |
+| kirimi\_device\_id | D-LM6WE | JANGAN DIEDIT |
+| google service email | persada@vira-persada.iam.gserviceaccount.com | JANGAN DIEDIT |
+| google service private key | \-----BEGIN PRIVATE KEY-----\\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDSD1LbeKcgvsgv\\nArlMkEAjYa8dofiJezRHpBVew1/8FV94TNT9koZQzAUI4k9pa4Ad0SY7AxNZB41U\\nVrpvIpM6A5ZSJm311IkI0PosxgSMjz8vJsJgR8BXVerCO+pqxpLqZM8Ggap4QJT0\\nibH9KO21UcHv6jnbPQLgEKswCGnefLLH3kgY3bu9Qc7fmdZyRhM8ALBK93Z4nSoU\\nbIthsLeyBprhbYeJ8e9lKxgD+iL9ebnnvD37M0dITA9usUqzwhGEe5j9u9ttQOiP\\n86LTzXla475ld6otRBkz9VRbZgOremQq34cdY74NTO8kYv0WM6bwMVIKxpDBcq43\\n6EzHzC1zAgMBAAECggEARS842gIuAXH0ms8p2pa0GTMmKvta0WUbvfDD/RcaOPuN\\nGyErEW0+AcSAcAGhqBX491kYX11O9QawvLNn6gyYMwZVby8rDkl27MlvbGm3u9e+\\nNrhsUquvJNSuYlS7i3llj/+t0/XHAJ48sSHc1oWxbQPFfVBGx/ebR9MVntdWjyko\\nM5TymUxnkqRyM9HFAnmLRJ8bZUUqy13y9vmegm5OFu0omvU3z2GG2g7F8QEdeGgt\\nlYls70KHYTVbSshhIk0vYSTuMAUgudWcVNJDCtOrRQ9D2Ui3mjpE6NREFHmvP/Ef\\nIz4F45rbPxQiquN6HfLTYrjJMiFm7tjosUjSdG7ZiQKBgQDoyyFGNx/d9MwDWipp\\ncb8a06Z8Ieto0k9tS4i069sJthOLgjvo9ICf6QMuvQCCT9hfG16k+LTV3VPjn/2h\\nyht7CGGVlwx+t3lU0nVKywCstcmmE3cKbBbrsVwk2a6L+yOjtnuLod+WbOpt6hUJ\\nQYqXGXCsCLMt6fH77fePOz51XQKBgQDnAAic/znOSAbquNNKLY2soa34qmkGFqIz\\neDLqQRJEQrc1LjCmUkBQTuoDcXgZFmgPBw+iwCeqw7WwfA2AP4ywbkTiMYY8ABpP\\npXU8qQV3O1bU46M6KWeKJevsMSFSc9whHzWhrqv7lDMvoUu5AvBriNp7EFAGpn+r\\nicPpkhaxDwKBgEJ2lEZuwJtnI8QlPwyh3BT1roesS4C+4sxqj1pQKFZKdKQVB7PH\\n8t008qKqdXW/BCCLOOdS1pZkvWm0qP5DLLtgtjO2T2vySCLOf4xeDxBASpUu44LH\\nP3gFSDCBMdNnXVKFbBp+mc5hxECjX2QoIUBolAGZ7kZCj8MEuvRazsdFAoGAei5i\\nX+f/Q0SFpBEucMW3cd/yjNxVwIqoMGEbTRwt9Tz0eoR75v0KV2/mBvw1cc+QKqKp\\neoP4dzIdH8P9wB/c4lTwylM3lPTY9demMveTlIUmYGQnKdRMl52HM96oqVvuyvYe\\n/+3Lub2hdUfz

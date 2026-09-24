@@ -1,0 +1,145 @@
+{
+  "name": "WF1 - Get Data Tracking",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "tracking-get",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-get",
+      "name": "Webhook GET tracking-get",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "webhookId": "tracking-get"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "sheets-read",
+      "name": "Baca Sheet Tracking",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF1 - Node Code: susun response pencarian resi.\n// - Ambil query param `resi` (bisa banyak, dipisah koma).\n// - Normalisasi tiap resi: trim + uppercase.\n// - Cari di rows sheet Tracking.\n// - Parse Riwayat_Posisi_JSON dengan try/catch (aman dari JSON korup).\n// - Resi tak ditemukan => { no_resi, found:false }.\n// ============================================================\n\n// Rows sheet dari node sebelumnya (Baca Sheet Tracking).\nconst rows = $items('Baca Sheet Tracking').map(i => i.json);\n\n// Ambil query dari webhook. n8n menaruh query di .query.\nconst webhookData = $items('Webhook GET tracking-get')[0].json;\nconst query = webhookData.query || {};\nconst resiParamRaw = query.resi || '';\n\n// Split daftar resi berdasarkan koma, normalisasi, buang yang kosong.\nconst daftarResi = String(resiParamRaw)\n  .split(',')\n  .map(r => r.trim().toUpperCase())\n  .filter(r => r.length > 0);\n\n// Bangun index rows berdasarkan No_Resi (uppercase) untuk lookup cepat.\nconst indexResi = {};\nfor (const row of rows) {\n  const key = String(row.No_Resi || '').trim().toUpperCase();\n  if (key) indexResi[key] = row;\n}\n\n// Susun hasil untuk tiap resi yang diminta.\nconst hasil = [];\nfor (const resi of daftarResi) {\n  const row = indexResi[resi];\n\n  if (!row) {\n    // Resi tidak ditemukan di sheet.\n    hasil.push({ no_resi: resi, found: false });\n    continue;\n  }\n\n  // Parse riwayat JSON dengan aman.\n  let riwayat = [];\n  let riwayatError = false;\n  const raw = row.Riwayat_Posisi_JSON;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    try {\n      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;\n      riwayat = Array.isArray(parsed) ? parsed : [];\n    } catch (e) {\n      // JSON korup: kembalikan riwayat kosong + flag error.\n      riwayat = [];\n      riwayatError = true;\n    }\n  }\n\n  const entri = {\n    no_resi: String(row.No_Resi || resi),\n    found: true,\n    pengirim: row.Pengirim || '',\n    penerima: row.Penerima || '',\n    status_terakhir: row.Status_Terakhir || '',\n    timestamp_update: row.Timestamp_Update || '',\n    riwayat: riwayat\n  };\n  if (riwayatError) entri.riwayat_error = true;\n\n  hasil.push(entri);\n}\n\n// Kembalikan satu item berisi array hasil (dipakai node Respond).\nreturn [{ json: { data: hasil, total: hasil.length } }];\n"
+      },
+      "id": "code-build-response",
+      "name": "Code Susun Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook GET tracking-get": {
+      "main": [
+        [
+          {
+            "node": "Baca Sheet Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Sheet Tracking": {
+      "main": [
+        [
+          {
+            "node": "Code Susun Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Susun Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "metro-logistik-fase-a"
+  }
+}

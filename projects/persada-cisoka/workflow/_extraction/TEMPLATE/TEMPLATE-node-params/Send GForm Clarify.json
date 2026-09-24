@@ -1,0 +1,41 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $json.phone }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ $json.message }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   },
+                       "authentication":  "genericCredentialType",
+                       "genericAuthType":  "httpCustomAuth"
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     -12912,
+                     2160
+                 ],
+    "id":  "ab3fb762-4b09-4dce-a54a-b5e7fda05c12",
+    "name":  "Send GForm Clarify",
+    "disabled":  true,
+    "continueOnFail":  true,
+    "onError":  "continueErrorOutput",
+    "credentials":  {
+                        "httpCustomAuth":  {
+                                               "id":  "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+                                               "name":  "Kirimi Custom Auth (REPLACE per client)"
+                                           }
+                    }
+}

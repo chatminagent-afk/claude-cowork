@@ -1,0 +1,37 @@
+﻿{
+    "parameters":  {
+                       "conditions":  {
+                                          "options":  {
+                                                          "caseSensitive":  true,
+                                                          "leftValue":  "",
+                                                          "typeValidation":  "loose",
+                                                          "version":  3
+                                                      },
+                                          "conditions":  [
+                                                             {
+                                                                 "id":  "8f15e7c7-39a5-416a-8484-432befcae020",
+                                                                 "leftValue":  "={{ $(\u0027Re-Read STATS Debounce\u0027).first().json.timestamp }}",
+                                                                 "rightValue":  "={{ $(\u0027Chat Counter\u0027).first().json.process_start_ts }}",
+                                                                 "operator":  {
+                                                                                  "type":  "string",
+                                                                                  "operation":  "equals",
+                                                                                  "name":  "filter.operator.equals"
+                                                                              }
+                                                             }
+                                                         ],
+                                          "combinator":  "and"
+                                      },
+                       "looseTypeValidation":  true,
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.if",
+    "typeVersion":  2.3,
+    "position":  [
+                     -2064,
+                     2720
+                 ],
+    "id":  "c9da0c9f-f262-4d95-aba0-6d348a0013b7",
+    "name":  "IF_Chat_Debounce"
+}

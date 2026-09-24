@@ -1,0 +1,898 @@
+{
+  "name": "VIRA_Follow_Up",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        3072
+      ],
+      "id": "6d81ab21-a48f-4b8e-a502-7281f636b518",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1200,
+        3072
+      ],
+      "id": "21650fe5-5bcb-4db8-a604-3dbcdcee8817",
+      "name": "Read STATS",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2npOqqmq53AVQbjc",
+          "name": "Google Sheets_thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/16g6FVOqkiHEtrhnXqpAoC-Ter3lsrayjet2Th0NAwD4/edit?gid=1513983421#gid=1513983421",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 9002,
+          "mode": "list",
+          "cachedResultName": "MOCK_INTERVIEW_BOOKING",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16g6FVOqkiHEtrhnXqpAoC-Ter3lsrayjet2Th0NAwD4/edit#gid=207189721"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        976,
+        3072
+      ],
+      "id": "315f5bc0-8026-470a-886a-cb0ff47eed99",
+      "name": "Read MOCK_INTERVIEW_BOOKING",
+      "executeOnce": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8TSFDcV58PfhioCB",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst now = Math.floor(Date.now() / 1000);\n\n// Input dari Read STATS\nconst statsRows = $input.all();\n\nconst toFollow = [];\n\nfor (const item of statsRows) {\n  const row = item.json;\n  const wa            = row['No WA'];\n  const lastTs        = row['timestamp'];\n  const lastFollowStr = row['last follow up'];\n  const followCount   = parseInt(row['follow_up_count'] || '0', 10);\n  const botMode       = String(row['bot_mode'] || '').trim().toUpperCase();\n  const gformSentTs   = parseInt(row['gform_sent_ts'] || '0', 10);\n  const gformFilled   = String(row['gform_filled'] || '').trim().toUpperCase();\n\n  if (!wa) continue;\n  if (followCount >= 3) continue;              // max 3x follow up\n  if (botMode === 'OFF' || botMode === 'N') continue;             // Sam sedang handle manual\n\n  // PRIORITAS 1: Follow up GForm (24 jam setelah link dikirim, belum diisi)\n  if (gformSentTs > 0 && gformFilled !== 'Y') {\n    const hoursSinceGForm = (now - gformSentTs) / 3600;\n    if (hoursSinceGForm >= 24 && hoursSinceGForm < 168) { // 24h - 7 hari\n      // Cek jeda dari follow up terakhir\n      if (lastFollowStr && lastFollowStr.toString().trim() !== '') {\n        const lastFollowTs = Number(lastFollowStr);\n        if (now - lastFollowTs <= 86400) continue; // tunggu 24 jam antar FU\n      }\n      toFollow.push({\n        json: {\n          noWA: wa,\n          nama: row['Nama'] || 'Kak',\n          followType: 'GFORM_REMINDER',\n          followCount: followCount,\n          followUpCount: followCount + 1,\n          gformSentTs,\n        }\n      });\n      continue;\n    }\n  }\n\n  // PRIORITAS 2: General follow up (belum pernah dapat GForm, tidak aktif > 24 jam)\n  if (!lastTs) continue;\n  if (now - lastTs <= 86400) continue;\n  if (gformSentTs > 0) continue; // sudah dapat GForm, ditangani di atas\n\n  if (lastFollowStr && lastFollowStr.toString().trim() !== '') {\n    const lastFollowTs = Number(lastFollowStr);\n    if (now - lastFollowTs <= 172800) continue; // 48 jam antar general FU\n  }\n\n  toFollow.push({\n    json: {\n      noWA: wa,\n      nama: row['Nama'] || 'Kak',\n      followType: 'GENERAL',\n      followCount: followCount,\n      followUpCount: followCount + 1,\n    }\n  });\n}\n\nconsole.log(`Follow up queue: ${toFollow.length} users`);\nreturn toFollow;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        3072
+      ],
+      "id": "35e8edc3-a99e-490b-80c0-2a0148138971",
+      "name": "Filter",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Filter').item.json.noWA }}",
+            "last follow up": "={{ Math.floor(Date.now() / 1000) }}",
+            "row_number": 0,
+            "follow_up_count": "={{ $('Filter').item.json.followUpCount }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "Tanggal Chat Pertama",
+              "displayName": "Tanggal Chat Pertama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam Chat Terakhir",
+              "displayName": "Jam Chat Terakhir",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nama",
+              "displayName": "Nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pesan Pertama",
+              "displayName": "Pesan Pertama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Counter",
+              "displayName": "Counter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal Chat Terakhir",
+              "displayName": "Tanggal Chat Terakhir",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Intensitas Chat",
+              "displayName": "Intensitas Chat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last follow up",
+              "displayName": "last follow up",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "follow_up_count",
+              "displayName": "follow_up_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2768,
+        3088
+      ],
+      "id": "72fa9316-270e-4695-bfe4-c977db33fc48",
+      "name": "Update STATS",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "2npOqqmq53AVQbjc",
+          "name": "Google Sheets_thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1648,
+        3072
+      ],
+      "id": "40a977b7-f05b-4398-b3b6-5a4f6b7d9c74",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "output": "={{ (Number($json.followUpCount) || 1) - 1 }}",
+        "looseTypeValidation": true
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2096,
+        3088
+      ],
+      "id": "0f5e177a-eeb5-4921-a17a-98ead28124ff",
+      "name": "Switch Follow Up Count"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GDNA8"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.noWA }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"Haii Kak \" + $json.nama + \"! 😊\\n\\nSebelumnya sempat tanya-tanya soal The Scholars ya. Kalau masih ada yang mau didiskusiin soal program atau persiapan ASEAN Scholarship, jangan sungkan tanya ke sini yaa — saya siap bantu!\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2320,
+        2784
+      ],
+      "id": "e4b0192e-3798-4435-ad03-5db5483872a0",
+      "name": "Send Follow Up 1",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GDNA8"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.noWA }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"Haii Kak \" + $json.nama + \"! 👋\\n\\nMampir lagi nih. Batch berikutnya The Scholars sudah mulai ada yang daftar lho — kalau mau ngobrol dulu soal programnya, langsung chat aja yaa 😊\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2320,
+        3120
+      ],
+      "id": "01454d4b-9c35-4b56-86b8-89d86e11f583",
+      "name": "Send Follow Up 2",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GDNA8"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.noWA }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"Haii Kak \" + $json.nama + \"! 😊\\n\\nSaya mau mampir lagi. Kalau suatu saat mau nanya-nanya soal persiapan ASEAN Scholarship atau Mock Interview, The Scholars selalu ada yaa. Semangat terus! 💪\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2320,
+        3456
+      ],
+      "id": "de60a585-8341-4d6f-b07f-4fe3ba394c75",
+      "name": "Send Follow Up 3",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "if-b8c9d0e1",
+              "leftValue": "={{ $json.status === true || $json.success === true || ($json.data && $json.data.id) ? 'ok' : 'fail' }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2544,
+        2784
+      ],
+      "id": "1dfd43ea-db33-4c9a-8993-b37cf604f498",
+      "name": "Check Success 1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "if-c9d0e1f2",
+              "leftValue": "={{ $json.status === true || $json.success === true || ($json.data && $json.data.id) ? 'ok' : 'fail' }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2544,
+        3120
+      ],
+      "id": "460d6262-cf24-4ccb-a0de-f971820528ae",
+      "name": "Check Success 2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "if-d0e1f2a3",
+              "leftValue": "={{ $json.status === true || $json.success === true || ($json.data && $json.data.id) ? 'ok' : 'fail' }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2544,
+        3568
+      ],
+      "id": "5319c77d-a778-4a70-ac8a-4d369a8cf162",
+      "name": "Check Success 3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GDNA8"
+            },
+            {
+              "name": "phone",
+              "value": "=6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"🚨 [ERROR] Follow Up GAGAL\\nUser: \" + $json.noWA + \"\\nNama: \" + $json.nama + \"\\nFollow Up ke-\" + $json.followUpCount + \"\\n\\nHarap kirim manual!\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2768,
+        3296
+      ],
+      "id": "1430e61f-3e69-4857-9454-5bb96b93da34",
+      "name": "Notify Admin FU Error",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GDNA8"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.noWA }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ \"Haii Kak \" + $json.nama + \"! 😊\\n\\nSebelumnya saya sudah kirim link pendaftarannya. Kalau belum sempat isi dan ada yang mau ditanyain dulu sebelum isi, langsung chat aja yaa 🙏\" }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2544,
+        2592
+      ],
+      "id": "57298dcd-3769-4c26-a3fc-518f8bd15faa",
+      "name": "Send GForm Reminder",
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3e80bd6f-4eda-4ee9-ab9b-4782cc260ac3",
+              "leftValue": "={{ $json.followType }}",
+              "rightValue": "GFORM_REMINDER",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        2864
+      ],
+      "id": "e9cf2337-67a2-485d-906f-7b21ca379c05",
+      "name": "IF GForm Reminder"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read MOCK_INTERVIEW_BOOKING",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "IF GForm Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update STATS": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Follow Up Count": {
+      "main": [
+        [
+          {
+            "node": "Send Follow Up 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Follow Up 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Follow Up 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Follow Up 1": {
+      "main": [
+        [
+          {
+            "node": "Check Success 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Follow Up 2": {
+      "main": [
+        [
+          {
+            "node": "Check Success 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Follow Up 3": {
+      "main": [
+        [
+          {
+            "node": "Check Success 3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success 1": {
+      "main": [
+        [
+          {
+            "node": "Update STATS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success 2": {
+      "main": [
+        [
+          {
+            "node": "Update STATS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success 3": {
+      "main": [
+        [
+          {
+            "node": "Update STATS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MOCK_INTERVIEW_BOOKING": {
+      "main": [
+        [
+          {
+            "node": "Read STATS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF GForm Reminder": {
+      "main": [
+        [
+          {
+            "node": "Send GForm Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch Follow Up Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send GForm Reminder": {
+      "main": [
+        [
+          {
+            "node": "Update STATS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Bangkok",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "5dc90d27-ae0a-44a9-8e79-a3d55f282ffa",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "rk3qFyuLBACd4AbwxL-zv",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+# Kredensial & key — jangan pernah di-commit
+*.pem
+*.key
+vira-*.json.key
+**/KREDENSIAL*
+**/service-account*.json
+**/vira-[0-9]*-*.json
+.env
+.env.*
+# Data pelanggan
+*.csv
+*.tsv
+*.xlsx
+# Sampah lokal
+__pycache__/
+*.pyc
+*.bak*
+*.zip

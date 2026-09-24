@@ -1,0 +1,3890 @@
+{
+  "name": "TIM Interior v4 — Full (HEMAT READ)",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "v4/get-projects",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c3ab7fea-411e-4f64-8944-474fa1afd251",
+      "name": "Webhook - Get Projects",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "a56dd9de-02b8-470d-bfd1-ed563dcbbaf5"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 880798824,
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=880798824"
+        },
+        "options": {}
+      },
+      "id": "5c62a049-c6e3-420d-ac54-50f214688a7a",
+      "name": "GS - Read Project",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows=$input.all().map(i=>i.json);\nconst names=rows.map(r=>(r.Project||r.project||Object.values(r)[0]||'').toString().trim()).filter(Boolean);\nreturn [{json:{success:true,count:names.length,data:names}}];\n"
+      },
+      "id": "1a277b02-f8b2-45f9-90a7-96d6bcb97d44",
+      "name": "Code - Format Projects",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "9d4ce1e5-d5d3-4d93-9adf-cd36266eec16",
+      "name": "Respond - Get Projects",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v4/add-project",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "44ea05bb-95ea-4670-8add-f0282c1b16e8",
+      "name": "Webhook - Add Project",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        320
+      ],
+      "webhookId": "faad71d9-d540-4889-8969-35441c49a413"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst b=$input.first().json.body||$input.first().json;\nconst project=(b.project||'').toString().trim();\nif(!project) return [{json:{valid:'no',error:'Nama project tidak boleh kosong'}}];\nreturn [{json:{valid:'yes',Project:project,Keterangan:(b.keterangan||'').toString().trim(),Lokasi:(b.lokasi||'').toString().trim()}}];\n"
+      },
+      "id": "5d8a0ce2-9065-4ed8-9129-9bbd25010d8e",
+      "name": "Code - Validate Add Project",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "306dce25-a1a7-4636-a844-c1baa10f19e1",
+      "name": "IF - Add Project Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 880798824,
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=880798824"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Project": "={{ $json.Project }}",
+            "Keterangan": "={{ $json.Keterangan }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Project",
+              "displayName": "Project",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Keterangan",
+              "displayName": "Keterangan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e85c87b1-af2b-4f57-bee3-d1a9931ddca2",
+      "name": "GS - Append Project",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        224
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:true,message:'Project ditambahkan'}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "505714d7-05b2-42ef-ba09-5d5386288b6b",
+      "name": "Respond - Add Project OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:false,error:$json.error}) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "143d4528-b934-4642-8c44-9f56712f0667",
+      "name": "Respond - Add Project Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "path": "v4/get-workers",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1edc95aa-93d9-4113-a628-df5a6f64a842",
+      "name": "Webhook - Get Workers",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        640
+      ],
+      "webhookId": "97555a54-0728-4ea5-b405-21e77648208a"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1784441615,
+          "mode": "list",
+          "cachedResultName": "Pekerja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=1784441615"
+        },
+        "options": {}
+      },
+      "id": "b95d193d-9516-4fd9-9121-cb6ba4660664",
+      "name": "GS - Read Pekerja",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        640
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows=$input.all().map(i=>i.json).filter(r=>r&&(r.Nama||r.nama));\nreturn [{json:{success:true,count:rows.length,data:rows.map(r=>({nama:String(r.Nama||r.nama||'').trim(),no_hp:String(r.No_HP||r.no_hp||'').trim()})).filter(r=>r.nama)}}];\n"
+      },
+      "id": "e7768b0b-14cd-4c1e-bb59-6c680a769ba8",
+      "name": "Code - Format Pekerja",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "67cb240c-46b5-42c2-8217-0a84b0afdd5c",
+      "name": "Respond - Get Workers",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v4/add-worker",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ec62849c-10b6-48fa-959b-1e105e204bfc",
+      "name": "Webhook - Add Worker",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        960
+      ],
+      "webhookId": "fd18c3fc-0acd-4edf-a899-1ff51fb148b2"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst b=$input.first().json.body||$input.first().json;\nconst nama=(b.nama||'').toString().trim();\nif(!nama) return [{json:{valid:'no',error:'Nama pekerja tidak boleh kosong'}}];\nreturn [{json:{valid:'yes',Nama:nama,No_HP:(b.no_hp||'').toString().trim(),Keterangan:(b.keterangan||'').toString().trim()}}];\n"
+      },
+      "id": "c261cb5a-3f68-4c49-957c-ad2da9d550a9",
+      "name": "Code - Validate Add Worker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4b7a5e61-6ffe-4eec-9da9-67d1a6d65413",
+      "name": "IF - Add Worker Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1784441615,
+          "mode": "list",
+          "cachedResultName": "Pekerja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=1784441615"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nama": "={{ $json.Nama }}",
+            "No_HP": "={{ $json.No_HP }}",
+            "Keterangan": "={{ $json.Keterangan }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nama",
+              "displayName": "Nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No_HP",
+              "displayName": "No_HP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Keterangan",
+              "displayName": "Keterangan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c3e8ee71-854f-41df-93eb-b855c5f46cfc",
+      "name": "GS - Append Pekerja",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        864
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:true,message:'Pekerja ditambahkan'}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "8cc78027-bd13-4dae-bfb5-a5bc4b2fd7f0",
+      "name": "Respond - Add Worker OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:false,error:$json.error}) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "8cbb38d9-a5a5-4daa-960f-6261316a0262",
+      "name": "Respond - Add Worker Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1056
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v4/submit-pekerjaan",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4886e229-94a8-461d-80e2-6696c25dd087",
+      "name": "Webhook - Submit Pekerjaan",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1472
+      ],
+      "webhookId": "13faa810-eebc-4770-a295-4e9cad9f7ab5"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst raw=$input.first().json;const b=raw.body||raw;\nconst {project,pekerja,tanggal,catatan,items,total,kategori}=b;\nif(!project||!project.toString().trim()) return [{json:{valid:'no',error:'Proyek tidak boleh kosong'}}];\nif(!pekerja||!pekerja.toString().trim()) return [{json:{valid:'no',error:'Nama pekerja tidak boleh kosong'}}];\nif(!tanggal) return [{json:{valid:'no',error:'Tanggal tidak boleh kosong'}}];\nif(!items||!Array.isArray(items)||items.length===0) return [{json:{valid:'no',error:'Minimal 1 item pekerjaan'}}];\nfor(let i=0;i<items.length;i++){const it=items[i];\n  if(!it.pekerjaan||!it.pekerjaan.toString().trim()) return [{json:{valid:'no',error:`Item ${i+1}: nama pekerjaan kosong`}}];\n  if(it.vol===undefined||it.vol===null||it.vol===''||isNaN(Number(it.vol))||Number(it.vol)<=0) return [{json:{valid:'no',error:`Item ${i+1}: volume harus > 0`}}];\n  if(!it.sat||!it.sat.toString().trim()) return [{json:{valid:'no',error:`Item ${i+1}: satuan kosong`}}];\n}\nconst ts=new Date();const pad=(n)=>String(n).padStart(2,'0');\nconst batchId='PKJ-'+ts.getFullYear()+pad(ts.getMonth()+1)+pad(ts.getDate())+pad(ts.getHours())+pad(ts.getMinutes())+pad(ts.getSeconds());\nconst tsStr=ts.toISOString().slice(0,19).replace('T',' ');\nconst grand=(total!==undefined&&total!==null&&total!=='')?Number(total):items.reduce((s,it)=>s+(Number(it.total)||0),0);\nreturn items.map((it,idx)=>({json:{valid:'yes',Batch_ID:batchId,Tanggal:tanggal,Proyek:String(project).trim(),Pekerja:String(pekerja).trim(),\n  Catatan:catatan||'',No_Item:it.no||(idx+1),Pekerjaan:String(it.pekerjaan).trim(),Vol:Number(it.vol),Sat:String(it.sat).trim(),\n  Harga_Satuan:(it.harga_satuan!==undefined&&it.harga_satuan!==null&&it.harga_satuan!=='')?Number(it.harga_satuan):'',\n  Total_Item:(it.total!==undefined&&it.total!==null&&it.total!=='')?Number(it.total):'',\n  Total_Keseluruhan:(idx===0)?grand:'',Kategori_RAB:String(it.kategori||kategori||'Umum').trim(),Timestamp_Submit:tsStr,\n  _grand:grand,_ts:tsStr}}));\n"
+      },
+      "id": "8b66381d-03fe-42d6-bb91-d3359ce11f64",
+      "name": "Code - Validate Pekerjaan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "44916cde-a5ea-4b42-a16d-444c57e21a71",
+      "name": "IF - Pekerjaan Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        1472
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 165449072,
+          "mode": "list",
+          "cachedResultName": "RAB_Items",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=165449072"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Batch_ID": "={{ $json.Batch_ID }}",
+            "Tanggal": "={{ $json.Tanggal }}",
+            "Proyek": "={{ $json.Proyek }}",
+            "Pekerja": "={{ $json.Pekerja }}",
+            "Catatan": "={{ $json.Catatan }}",
+            "No_Item": "={{ $json.No_Item }}",
+            "Pekerjaan": "={{ $json.Pekerjaan }}",
+            "Vol": "={{ $json.Vol }}",
+            "Sat": "={{ $json.Sat }}",
+            "Harga_Satuan": "={{ $json.Harga_Satuan }}",
+            "Total_Item": "={{ $json.Total_Item }}",
+            "Total_Keseluruhan": "={{ $json.Total_Keseluruhan }}",
+            "Kategori_RAB": "={{ $json.Kategori_RAB }}",
+            "Timestamp_Submit": "={{ $json.Timestamp_Submit }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Batch_ID",
+              "displayName": "Batch_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Proyek",
+              "displayName": "Proyek",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pekerja",
+              "displayName": "Pekerja",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan",
+              "displayName": "Catatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No_Item",
+              "displayName": "No_Item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pekerjaan",
+              "displayName": "Pekerjaan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Vol",
+              "displayName": "Vol",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Sat",
+              "displayName": "Sat",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Harga_Satuan",
+              "displayName": "Harga_Satuan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total_Item",
+              "displayName": "Total_Item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total_Keseluruhan",
+              "displayName": "Total_Keseluruhan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori_RAB",
+              "displayName": "Kategori_RAB",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp_Submit",
+              "displayName": "Timestamp_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b214a137-11ac-4331-b10c-359cb1175286",
+      "name": "GS - Append RAB_Items",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        1376
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst items=$('Code - Validate Pekerjaan').all().map(i=>i.json).filter(r=>r.valid==='yes');\nif(!items.length) return [];\nconst f=items[0];\nreturn [{json:{ID:f.Batch_ID,Tipe:'Pekerjaan',Tanggal:f.Tanggal,Proyek:f.Proyek,Pelapor:f.Pekerja,\n  Deskripsi:f.Catatan||('Pekerjaan '+items.length+' item'),Lokasi:'',Kategori:'Pekerjaan',Prioritas:'',Status:'Open',\n  Total:f._grand,Status_Workflow:'pending',Notify_Count:0,Updated_At:f._ts,Timestamp_Submit:f._ts}}];\n"
+      },
+      "id": "2be49893-872b-49ca-931f-143032817bed",
+      "name": "Code - Build Tiket Pekerjaan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        1376
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Tipe": "={{ $json.Tipe }}",
+            "Tanggal": "={{ $json.Tanggal }}",
+            "Proyek": "={{ $json.Proyek }}",
+            "Pelapor": "={{ $json.Pelapor }}",
+            "Deskripsi": "={{ $json.Deskripsi }}",
+            "Lokasi": "={{ $json.Lokasi }}",
+            "Kategori": "={{ $json.Kategori }}",
+            "Prioritas": "={{ $json.Prioritas }}",
+            "Status": "={{ $json.Status }}",
+            "Total": "={{ $json.Total }}",
+            "Status_Workflow": "={{ $json.Status_Workflow }}",
+            "Notify_Count": "={{ $json.Notify_Count }}",
+            "Updated_At": "={{ $json.Updated_At }}",
+            "Timestamp_Submit": "={{ $json.Timestamp_Submit }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Proyek",
+              "displayName": "Proyek",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pelapor",
+              "displayName": "Pelapor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp_Submit",
+              "displayName": "Timestamp_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "27095a63-d115-486b-b003-2d34d7ee7c36",
+      "name": "GS - Append Tiket Pekerjaan",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        1376
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:true,message:'Pekerjaan tersimpan',batch_id:$json.ID}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "72d2f04b-de8c-4024-a4d4-bfc09fbf4369",
+      "name": "Respond - Submit Pekerjaan OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        1280
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:false,error:$json.error}) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "9df62f0a-eac3-46ad-9e2a-3d2bf68fb179",
+      "name": "Respond - Submit Pekerjaan Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "path": "v4/get-pekerjaan",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a6f8b3d7-6184-437a-ba22-0000ef6cdfe9",
+      "name": "Webhook - Get Pekerjaan",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        1888
+      ],
+      "webhookId": "3ac2e177-0efe-469b-b880-1833aabd47a6"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst raw=$input.first().json;const qs=raw.query||raw;\nconst pekerja=(qs.pekerja||'').toString().trim();const project=(qs.project||'').toString().trim();\nif(!pekerja&&!project) return [{json:{valid:'no',error:'Isi minimal satu filter'}}];\nreturn [{json:{valid:'yes',pekerja,project}}];\n"
+      },
+      "id": "5ee27ee7-863e-4801-a7a3-8fa21864a3cd",
+      "name": "Code - Validate Get Pekerjaan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "39c7e4ed-acf0-4efc-98fe-e165b3037731",
+      "name": "IF - Get Pekerjaan Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction R(vr){if(!vr||!vr.values||vr.values.length<2)return [];const h=vr.values[0];return vr.values.slice(1).map(row=>{const o={};h.forEach((k,i)=>o[k]=(row[i]!==undefined?row[i]:''));return o;});}\nconst vr=($input.first().json.valueRanges)||[];\nconst ri=R(vr[0]).filter(r=>r.Pekerjaan&&r.Pekerjaan.toString().trim());\nconst sl=R(vr[1]);\nconst v=$('Code - Validate Get Pekerjaan').first().json;\nconst fP=(v.pekerja||'').trim(),fPr=(v.project||'').trim();\nconst latest={};\nsl.filter(r=>r&&r.ID&&(r.No_Item!==''&&r.No_Item!==undefined&&r.No_Item!==null)&&r.Status)\n  .forEach(r=>{const raw={Open:'pending',Proses:'inprogress',Selesai:'done',Reject:'done'};const v=String(r.Status).trim();latest[String(r.ID).trim()+'|'+String(r.No_Item).trim()]=raw[v]||v.toLowerCase();});\nconst filt=ri.filter(r=>{const rp=(r.Pekerja||'').toString().trim(),rpr=(r.Proyek||'').toString().trim();\n  if(fP&&rp!==fP)return false;if(fPr&&rpr!==fPr)return false;return true;});\nconst g={};\nfilt.forEach(r=>{const bid=String(r.Batch_ID||'').trim();if(!bid)return;\n  if(!g[bid])g[bid]={id:bid,project:String(r.Proyek||'').trim(),pekerja:String(r.Pekerja||'').trim(),tanggal:String(r.Tanggal||'').trim(),catatan:String(r.Catatan||'').trim(),items:[],total:0};\n  const no=parseInt(r.No_Item)||g[bid].items.length+1;\n  g[bid].items.push({no,pekerjaan:String(r.Pekerjaan||'').trim(),vol:parseFloat(r.Vol)||0,sat:String(r.Sat||'').trim(),\n    harga_satuan:parseFloat(r.Harga_Satuan)||0,total:parseFloat(r.Total_Item)||0,status:latest[bid+'|'+no]||'pending'});\n  if(r.Total_Keseluruhan&&!g[bid].total)g[bid].total=parseFloat(r.Total_Keseluruhan)||0;});\nObject.values(g).forEach(x=>{if(!x.total)x.total=x.items.reduce((s,it)=>s+(it.total||0),0);});\nconst data=Object.values(g).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));\nreturn [{json:{success:true,count:data.length,data}}];\n"
+      },
+      "id": "49d65551-357d-4c44-8cbd-694c244c46c7",
+      "name": "Code - Group Pekerjaan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1792
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "d36e0f52-1aaf-4bea-8c9b-242f8fea6a00",
+      "name": "Respond - Get Pekerjaan",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        1792
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:true,count:0,data:[]}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "3edf3bfd-79c0-4972-acf6-1dc8cb3f0a1d",
+      "name": "Respond - Get Pekerjaan Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1984
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v4/update-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "6f93c4f1-652d-4982-8a74-a07d1a59ecdc",
+      "name": "Webhook - Update Status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        2304
+      ],
+      "webhookId": "4a8d7514-dd7b-49cb-b4ce-21f5993443e1"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst b=$input.first().json.body||$input.first().json;const updates=b.updates;\nif(!updates||!Array.isArray(updates)||updates.length===0) return [{json:{valid:'no',error:'updates kosong'}}];\nconst valid=['pending','inprogress','done'];\nfor(const u of updates){if(!u.batch_id||!u.batch_id.toString().trim())return [{json:{valid:'no',error:'batch_id wajib'}}];\n  if(u.no_item===undefined||u.no_item===null||isNaN(parseInt(u.no_item)))return [{json:{valid:'no',error:'no_item wajib'}}];\n  if(!valid.includes(u.status))return [{json:{valid:'no',error:'status tidak valid'}}];}\nconst ts=new Date().toISOString().slice(0,19).replace('T',' ');\nconst by=(b.by||b.updated_by||'').toString().trim();\nconst lbl={pending:'Open',inprogress:'Proses',done:'Selesai'};\nreturn updates.map(u=>({json:{valid:'yes',ID:u.batch_id.toString().trim(),Tipe:'Pekerjaan',No_Item:parseInt(u.no_item),\n  Status:(lbl[u.status]||u.status),StatusRaw:u.status,Catatan:(u.catatan||'').toString().trim(),Updated_By:by,Updated_At:ts}}));\n"
+      },
+      "id": "2e4ad4fb-6220-4a38-a587-5126ff4ed68a",
+      "name": "Code - Validate Update Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        2304
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "91a84d71-fa2c-443a-89f7-f8551b139e98",
+      "name": "IF - Update Status Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        2304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 999046718,
+          "mode": "list",
+          "cachedResultName": "StatusLog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=999046718"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Tipe": "={{ $json.Tipe }}",
+            "No_Item": "={{ $json.No_Item }}",
+            "Status": "={{ $json.Status }}",
+            "Catatan": "={{ $json.Catatan }}",
+            "Updated_By": "={{ $json.Updated_By }}",
+            "Updated_At": "={{ $json.Updated_At }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No_Item",
+              "displayName": "No_Item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan",
+              "displayName": "Catatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_By",
+              "displayName": "Updated_By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c0839fc3-563d-4066-aba7-e1b0a3eba193",
+      "name": "GS - Append StatusLog Pkj",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        2208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// Tiket.Status = status of the update just made (last per batch in this request)\nconst upd=$('Code - Validate Update Status').all().map(i=>i.json).filter(r=>r.valid==='yes');\nconst lastByBatch={};\nupd.forEach(u=>{lastByBatch[u.ID]=u;});  // later items overwrite -> last wins\nreturn Object.values(lastByBatch).map(u=>{\n  const label=u.Status; // already human label (Open/Proses/Selesai)\n  const wf=(label==='Selesai'||label==='Reject')?'done':'pending';\n  return {json:{ID:u.ID,Status:label,Status_Workflow:wf,Updated_At:u.Updated_At}};\n});\n"
+      },
+      "id": "7d27a73d-e5f4-4fe4-8850-59336aa54bd2",
+      "name": "Code - Build Tiket Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        2208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Status": "={{ $json.Status }}",
+            "Status_Workflow": "={{ $json.Status_Workflow }}",
+            "Updated_At": "={{ $json.Updated_At }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Proyek",
+              "displayName": "Proyek",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pelapor",
+              "displayName": "Pelapor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp_Submit",
+              "displayName": "Timestamp_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "18bddab5-020f-4afe-9ef3-c202ed3d7ea5",
+      "name": "GS - Update Tiket Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        2208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{json:{success:true,message:'Status diperbarui'}}];"
+      },
+      "id": "cf05fbb0-1173-4dd0-a0df-95c872b33f33",
+      "name": "Code - Status Resp",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        2208
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "abdbf407-d8f3-4c33-8057-d7e81e41abaa",
+      "name": "Respond - Update Status OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        2208
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:false,error:$json.error}) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "aae1cd36-1b16-4d32-9648-df1b47f2041b",
+      "name": "Respond - Update Status Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v4/submit-komplain",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4f5b17ab-11c7-4e5d-8b41-8dbfb6f2c585",
+      "name": "Webhook - Submit Komplain",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        2816
+      ],
+      "webhookId": "89b05afd-ece3-4626-a65b-b82a55e67bc8"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst b=$input.first().json.body||$input.first().json;\nconst project=(b.project||'').toString().trim();\nconst komplain=(b.komplain||'').toString().trim();\nif(!project) return [{json:{valid:'no',error:'Proyek wajib diisi'}}];\nif(!komplain) return [{json:{valid:'no',error:'Deskripsi komplain wajib diisi'}}];\nconst ts=new Date();const pad=(n)=>String(n).padStart(2,'0');\nconst id='TIM-'+ts.getFullYear()+pad(ts.getMonth()+1)+pad(ts.getDate())+pad(ts.getHours())+pad(ts.getMinutes())+pad(ts.getSeconds());\nconst tsStr=ts.toISOString().slice(0,19).replace('T',' ');\nconst dateStr=(b.tanggal||ts.toISOString().slice(0,10));\nconst pelapor=(b.pekerja||b.pengaju||'').toString().trim();\nreturn [{json:{valid:'yes',ID:id,Tipe:'Komplain',Tanggal:dateStr,Proyek:project,Pelapor:pelapor,Deskripsi:komplain,\n  Lokasi:(b.lokasi||'').toString().trim(),Kategori:(b.kategori||'Komplain').toString().trim(),\n  Prioritas:(b.prioritas||'Normal').toString().trim(),Status:'Open',Total:'',Status_Workflow:'pending',Notify_Count:0,\n  Updated_At:tsStr,Timestamp_Submit:tsStr}}];\n"
+      },
+      "id": "31b42828-3ad8-424b-a600-51dc314f6d06",
+      "name": "Code - Validate Komplain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "96c36acf-7499-444c-b2c4-adc9a809e79e",
+      "name": "IF - Komplain Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Tipe": "={{ $json.Tipe }}",
+            "Tanggal": "={{ $json.Tanggal }}",
+            "Proyek": "={{ $json.Proyek }}",
+            "Pelapor": "={{ $json.Pelapor }}",
+            "Deskripsi": "={{ $json.Deskripsi }}",
+            "Lokasi": "={{ $json.Lokasi }}",
+            "Kategori": "={{ $json.Kategori }}",
+            "Prioritas": "={{ $json.Prioritas }}",
+            "Status": "={{ $json.Status }}",
+            "Total": "={{ $json.Total }}",
+            "Status_Workflow": "={{ $json.Status_Workflow }}",
+            "Notify_Count": "={{ $json.Notify_Count }}",
+            "Updated_At": "={{ $json.Updated_At }}",
+            "Timestamp_Submit": "={{ $json.Timestamp_Submit }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Proyek",
+              "displayName": "Proyek",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pelapor",
+              "displayName": "Pelapor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp_Submit",
+              "displayName": "Timestamp_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f0bfc7bc-a892-4ccc-af42-35cc7b487970",
+      "name": "GS - Append Tiket Komplain",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        2720
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:true,id:$json.ID}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "52c43699-8b35-4bba-b1d3-de0437e7aa48",
+      "name": "Respond - Submit Komplain OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        2624
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:false,error:$json.error}) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "f3b6451d-c789-42f4-8025-e246f013dbd5",
+      "name": "Respond - Submit Komplain Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        2912
+      ]
+    },
+    {
+      "parameters": {
+        "path": "v4/get-komplain",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "223d8d7c-ec0d-48a9-9cff-8f5b5532bb9f",
+      "name": "Webhook - Get Komplain",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        3136
+      ],
+      "webhookId": "6cf1fc30-8bf3-448d-9e16-46818133e8fb"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "options": {}
+      },
+      "id": "ecfccd0e-dcc5-45e9-81fe-80aeacb9eda5",
+      "name": "GS - Read Tiket Komplain",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        3136
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows=$input.all().map(i=>i.json).filter(r=>String(r.Tipe||'').trim().toLowerCase()==='komplain'||(!r.Tipe&&(r.Komplain||r.Deskripsi)));\nconst qs=($('Webhook - Get Komplain').first().json.query||{});\nconst fP=(qs.project||'').toString().trim();\nconst filt=rows.filter(r=>{if(!fP)return true;return String(r.Proyek||'').trim()===fP;});\nconst out={Open:'open',Proses:'inprogress',Selesai:'closed',Reject:'closed'};\nconst data=filt.map(r=>{const st=String(r.Status||'Open').trim();\n  return {id:String(r.ID||'').trim(),_type:'komplain',project:String(r.Proyek||'').trim(),pengaju:String(r.Pelapor||'').trim(),\n    tanggal:String(r.Tanggal||r.Timestamp_Submit||'').trim(),komplain:String(r.Deskripsi||'').trim(),\n    status:(out[st]||st.toLowerCase()),prioritas:String(r.Prioritas||'').trim(),lokasi:String(r.Lokasi||'').trim()};\n}).filter(r=>r.id).sort((a,b)=>new Date(b.tanggal)-new Date(a.tanggal));\nreturn [{json:{success:true,count:data.length,data}}];\n"
+      },
+      "id": "6a12d175-3523-4a44-929c-ae74b0ddc2a2",
+      "name": "Code - Filter Komplain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        3136
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "23e5b489-6dfc-482c-bf99-ea5825fc4a72",
+      "name": "Respond - Get Komplain",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        3136
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "v4/update-komplain-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "135e991e-f359-4a6d-a73f-5e001a591c32",
+      "name": "Webhook - Update Komplain Status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        3552
+      ],
+      "webhookId": "851268a9-cea4-4479-87fc-48de21ac968e"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst b=$input.first().json.body||$input.first().json;\nconst id=String(b.id||'').trim();\nconst raw=String(b.status||'').trim().toLowerCase();\nconst lblMap={pending:'Open',open:'Open',inprogress:'Proses',proses:'Proses',done:'Selesai',closed:'Selesai',selesai:'Selesai',reject:'Reject'};\nconst label=lblMap[raw]||'Open';\nif(!id) return [{json:{valid:'no',error:'ID komplain wajib diisi'}}];\nconst ts=new Date().toISOString().slice(0,19).replace('T',' ');\nconst wf=(label==='Selesai'||label==='Reject')?'done':'pending';\nreturn [{json:{valid:'yes',ID:id,Tipe:'Komplain',No_Item:'',Status:label,Catatan:(b.catatan||'').toString().trim(),\n  Updated_By:(b.by||b.updated_by||'').toString().trim(),Updated_At:ts,Status_Workflow:wf}}];\n"
+      },
+      "id": "b566397f-8882-4438-8b79-965ed523de29",
+      "name": "Code - Validate Komplain Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        3552
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "68ad831b-7037-441d-9a31-6a646caabd36",
+      "name": "IF - Komplain Status Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        3552
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 999046718,
+          "mode": "list",
+          "cachedResultName": "StatusLog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=999046718"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Tipe": "={{ $json.Tipe }}",
+            "No_Item": "={{ $json.No_Item }}",
+            "Status": "={{ $json.Status }}",
+            "Catatan": "={{ $json.Catatan }}",
+            "Updated_By": "={{ $json.Updated_By }}",
+            "Updated_At": "={{ $json.Updated_At }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "No_Item",
+              "displayName": "No_Item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan",
+              "displayName": "Catatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_By",
+              "displayName": "Updated_By",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9002d60c-b49c-49f3-8ba6-a6af82330af5",
+      "name": "GS - Append StatusLog Kmp",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        3360
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Status": "={{ $json.Status }}",
+            "Status_Workflow": "={{ $json.Status_Workflow }}",
+            "Updated_At": "={{ $json.Updated_At }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Proyek",
+              "displayName": "Proyek",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pelapor",
+              "displayName": "Pelapor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp_Submit",
+              "displayName": "Timestamp_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2a0619b2-2781-4fee-a587-ae4edc4153dd",
+      "name": "GS - Update Tiket Komplain",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        3552
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:true,message:'Status komplain diperbarui'}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "b548eb83-c9cc-4a58-b2fd-c729475cb4db",
+      "name": "Respond - Update Komplain OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        3360
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({success:false,error:$json.error}) }}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "2c77074d-b188-45d7-95d6-f6a7ad228409",
+      "name": "Respond - Update Komplain Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        3744
+      ]
+    },
+    {
+      "parameters": {
+        "path": "v4/get-dashboard",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ffdd1f6f-d4db-4bc5-abde-49be2cc7c53b",
+      "name": "Webhook - Get Dashboard",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        3968
+      ],
+      "webhookId": "c2f447a0-b369-460c-be91-b3a8c03bd686"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction R(vr){if(!vr||!vr.values||vr.values.length<2)return [];const h=vr.values[0];return vr.values.slice(1).map(row=>{const o={};h.forEach((k,i)=>o[k]=(row[i]!==undefined?row[i]:''));return o;});}\nconst vr=($input.first().json.valueRanges)||[];\nconst tiket=R(vr[0]).filter(r=>r.ID&&r.Proyek);\nconst items=R(vr[1]).filter(r=>r.Proyek);\nconst budg=R(vr[2]).filter(r=>r.Proyek&&r.Kategori);\nconst num=v=>{const n=parseFloat(String(v).replace(/[^0-9.-]/g,''));return isNaN(n)?0:n;};\nconst projNames=[...new Set([...tiket.map(r=>String(r.Proyek).trim()),...budg.map(r=>String(r.Proyek).trim())])].filter(Boolean);\nconst today=new Date().toISOString().slice(0,10);\nconst statusBucket=s=>{s=String(s||'').toLowerCase();\n  if(s==='selesai'||s==='closed'||s==='done')return 'Selesai';\n  if(s==='proses'||s==='inprogress'||s==='in progress')return 'Proses';\n  return 'Pending';};\nconst projects=projNames.map(name=>{\n  const tk=tiket.filter(r=>String(r.Proyek).trim()===name);\n  const it=items.filter(r=>String(r.Proyek).trim()===name);\n  const bd=budg.filter(r=>String(r.Proyek).trim()===name);\n  const sc={Pending:0,Proses:0,Selesai:0};\n  tk.forEach(r=>{sc[statusBucket(r.Status)]++;});\n  const kritisAktif=tk.filter(r=>String(r.Prioritas||'').toLowerCase()==='kritis'&&statusBucket(r.Status)!=='Selesai').length;\n  const komplainTk=tk.filter(r=>String(r.Tipe||'').toLowerCase()==='komplain');\n  const komplainOpen=komplainTk.filter(r=>statusBucket(r.Status)!=='Selesai').length;\n  const komplainClosed=komplainTk.length-komplainOpen;\n  const budgetTotal=bd.reduce((s,r)=>s+num(r.Budget_Rencana),0);\n  const realisasi=it.reduce((s,r)=>s+num(r.Total_Item),0);\n  const catMap={};\n  bd.forEach(r=>{const c=String(r.Kategori).trim();catMap[c]={name:c,budget:num(r.Budget_Rencana),realisasi:0};});\n  it.forEach(r=>{const c=String(r.Kategori_RAB||'Umum').trim();if(!catMap[c])catMap[c]={name:c,budget:0,realisasi:0};catMap[c].realisasi+=num(r.Total_Item);});\n  const active=tk.filter(r=>statusBucket(r.Status)!=='Selesai');\n  const onTime=active.filter(r=>String(r.Updated_At||'').slice(0,10)===today).length;\n  const updateCompliance=active.length?Math.round(onTime/active.length*100):100;\n  const recentTickets=tk.slice().sort((a,b)=>String(b.Updated_At||b.Timestamp_Submit||'').localeCompare(String(a.Updated_At||a.Timestamp_Submit||''))).slice(0,6)\n    .map(r=>({id:String(r.ID).trim(),kategori:String(r.Kategori||r.Tipe||'').trim(),deskripsi:String(r.Deskripsi||'').trim(),\n      pic:String(r.Pelapor||'').trim(),status:statusBucket(r.Status),prioritas:String(r.Prioritas||'Normal').trim(),\n      tanggal:String(r.Tanggal||'').trim()}));\n  const picMap={};\n  tk.forEach(r=>{const p=String(r.Pelapor||'-').trim()||'-';if(!picMap[p])picMap[p]={nama:p,aktif:0,selesai:0};\n    if(statusBucket(r.Status)==='Selesai')picMap[p].selesai++;else picMap[p].aktif++;});\n  return {key:name,name,lokasi:'',statusCounts:sc,kritisAktif,komplainOpen,komplainClosed,\n    budget:budgetTotal,realisasi,updateCompliance,\n    rabCategories:Object.values(catMap),recentTickets,picWorkload:Object.values(picMap).filter(p=>p.aktif+p.selesai>0)};\n});\nreturn [{json:{success:true,generatedAt:new Date().toISOString(),projects}}];\n"
+      },
+      "id": "d59bfd82-7ed4-4b38-b52f-280ce06fb401",
+      "name": "Code - Build Dashboard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        3968
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "e5e8b4b3-094f-479c-8374-fc1eacadd80f",
+      "name": "Respond - Get Dashboard",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        3968
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            },
+            {
+              "triggerAtHour": 13
+            },
+            {
+              "triggerAtHour": 19
+            }
+          ]
+        }
+      },
+      "id": "a33ab982-ad08-40db-afd8-25ad6cc0aff9",
+      "name": "Schedule - 3x Harian",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        4384
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 165449072,
+          "mode": "list",
+          "cachedResultName": "RAB_Items",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=165449072"
+        },
+        "options": {}
+      },
+      "id": "6c9bcc57-2a78-469b-a11f-19923054540c",
+      "name": "GS - Rem RAB_Items",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        4192
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 999046718,
+          "mode": "list",
+          "cachedResultName": "StatusLog",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=999046718"
+        },
+        "options": {}
+      },
+      "id": "aa760106-5711-46b7-b99a-aad50a562c30",
+      "name": "GS - Rem StatusLog",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        4192
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1784441615,
+          "mode": "list",
+          "cachedResultName": "Pekerja",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=1784441615"
+        },
+        "options": {}
+      },
+      "id": "533b1e81-aa12-45a5-994d-df0ecd839ff2",
+      "name": "GS - Rem Pekerja",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        4192
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst ri=$('GS - Rem RAB_Items').all().map(i=>i.json).filter(r=>r.Pekerjaan&&r.Pekerja);\nconst sl=$('GS - Rem StatusLog').all().map(i=>i.json);\nconst pk=$input.all().map(i=>i.json).filter(r=>r.Nama||r.nama);\nconst latest={};\nsl.filter(r=>r&&r.ID&&r.No_Item!==''&&r.No_Item!==undefined&&r.No_Item!==null&&r.Status)\n  .forEach(r=>{latest[String(r.ID).trim()+'|'+String(r.No_Item).trim()]=String(r.Status).trim().toLowerCase();});\nconst byWorker={};\nri.forEach(r=>{const no=parseInt(r.No_Item)||1;const st=latest[String(r.Batch_ID).trim()+'|'+no]||'open';\n  if(st==='selesai'||st==='reject'||st==='done')return;\n  const w=String(r.Pekerja).trim();if(!byWorker[w])byWorker[w]=[];\n  byWorker[w].push({proyek:String(r.Proyek||'').trim(),pekerjaan:String(r.Pekerjaan||'').trim(),vol:r.Vol,sat:String(r.Sat||'').trim(),st});});\nconst out=[];\nObject.keys(byWorker).forEach(w=>{\n  const wd=pk.find(x=>String(x.Nama||x.nama||'').trim()===w);\n  const phone=String(wd?(wd.No_HP||wd.no_hp||''):'').replace(/\\D/g,'').replace(/^0+/,'62');\n  if(phone.length<9)return;\n  let msg='*Pengingat Pekerjaan*\\n\\nHalo *'+w+'*! Pekerjaan yang masih perlu diselesaikan:\\n\\n';\n  byWorker[w].slice(0,15).forEach((it,i)=>{const m=(it.st==='proses'||it.st==='inprogress')?' (proses)':'';msg+=(i+1)+'. '+it.pekerjaan+' — '+it.vol+' '+it.sat+' ['+it.proyek+']'+m+'\\n';});\n  msg+='\\nMohon update statusnya di aplikasi ya. _TIM Interior_';\n  out.push({json:{phone,waMessage:msg,worker:w}});\n});\nreturn out;\n"
+      },
+      "id": "96ef199b-ed88-46b6-86ea-588983191901",
+      "name": "Code - Build Reminders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        4192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "afb8178e-26d3-48bb-8368-89bde016e694",
+      "name": "HTTP - WA Reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        4192
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "options": {}
+      },
+      "id": "1f1362fa-9127-470d-935e-2911986a5d74",
+      "name": "GS - Rekap Tiket",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        4480
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rows=$input.all().map(i=>i.json).filter(r=>r&&r.ID);\nconst active=rows.filter(r=>{const wf=String(r.Status_Workflow||'').toLowerCase();return wf==='pending'||wf==='reported';});\nif(active.length===0)return [{json:{hasItems:false,waMessage:'',rowsToUpdate:[]}}];\nconst projects={};\nactive.forEach(r=>{const p=String(r.Proyek||'Tidak Diketahui').trim();if(!projects[p])projects[p]=[];projects[p].push(r);});\nconst now=new Date();const d=now.toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'2-digit'});\nlet msg='📋 *To Do List TIM Interior ('+d+')*\\n\\n';\nObject.keys(projects).forEach((p,idx)=>{msg+=(idx+1)+'. *'+p+'*\\n';\n  projects[p].forEach(it=>{const newMark=String(it.Status_Workflow).toLowerCase()==='pending'?' 🆕':'';\n    const s=String(it.Status||'').toLowerCase();let sm='';if(s==='selesai')sm=' ✅';if(s==='reject')sm=' 🗑️';\n    const pr=String(it.Prioritas||'').toLowerCase();const hi=(pr==='kritis'||pr==='tinggi')?' 🔴':'';\n    const tipe=String(it.Tipe||'').toLowerCase()==='pekerjaan'?'🔧 ':'';\n    msg+='• '+tipe+(it.Deskripsi||'')+newMark+sm+hi+'\\n';});\n  msg+='\\n';});\nmsg+='━━━━━━━━━━━━━━━\\n';\nconst total=active.length;\nconst reported=active.filter(r=>String(r.Status_Workflow).toLowerCase()==='reported').length;\nconst pending=active.filter(r=>String(r.Status_Workflow).toLowerCase()==='pending').length;\nmsg+='📊 *Ringkasan:* Total '+total+' | ⏳ Baru: '+pending+' | 📌 Berjalan: '+reported+'\\n\\n_Dikirim otomatis oleh TIM Interior_';\nconst rowsToUpdate=active.map(r=>{const s=String(r.Status||'').toLowerCase();\n  const wf=(s==='selesai'||s==='reject')?'done':'reported';\n  return {ID:String(r.ID).trim(),Status_Workflow:wf,Notify_Count:(parseInt(r.Notify_Count)||0)+1};});\nreturn [{json:{hasItems:true,waMessage:msg,rowsToUpdate}}];\n"
+      },
+      "id": "bf00bb43-9ec3-48b0-af72-b838e6b436c7",
+      "name": "Code - Format Rekap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        4480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst r=$('Code - Format Rekap').first().json;\nif(!r.hasItems||!r.rowsToUpdate||!r.rowsToUpdate.length)return [];\nreturn r.rowsToUpdate.map(u=>({json:u}));\n"
+      },
+      "id": "9d8856b0-7d12-4042-8d7b-3ecc0fe694b9",
+      "name": "Code - Expand Rekap Updates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        4384
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 311110336,
+          "mode": "list",
+          "cachedResultName": "Tiket",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=311110336"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "Status_Workflow": "={{ $json.Status_Workflow }}",
+            "Notify_Count": "={{ $json.Notify_Count }}",
+            "row_number": 0
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipe",
+              "displayName": "Tipe",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Proyek",
+              "displayName": "Proyek",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Pelapor",
+              "displayName": "Pelapor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Deskripsi",
+              "displayName": "Deskripsi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Lokasi",
+              "displayName": "Lokasi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Kategori",
+              "displayName": "Kategori",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Prioritas",
+              "displayName": "Prioritas",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status_Workflow",
+              "displayName": "Status_Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Notify_Count",
+              "displayName": "Notify_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Updated_At",
+              "displayName": "Updated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Timestamp_Submit",
+              "displayName": "Timestamp_Submit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9e146d5b-cbdf-4c93-924c-2571d5fd3ddd",
+      "name": "GS - Update Tiket Rekap",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        4384
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ",
+          "mode": "list",
+          "cachedResultName": "TIM V4",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1985417566,
+          "mode": "list",
+          "cachedResultName": "Recipients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/edit#gid=1985417566"
+        },
+        "options": {}
+      },
+      "id": "c1152ee8-cf62-4814-a709-d560d067dd8a",
+      "name": "GS - Read Recipients",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        4576
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst r=$('Code - Format Rekap').first().json;\nif(!r.hasItems||!r.waMessage)return [];\nconst recips=$input.all().map(i=>i.json).filter(x=>String(x.Aktif||'').trim().toLowerCase()==='ya'||String(x.Aktif||'').trim()==='1'||String(x.Aktif||'').trim().toLowerCase()==='true');\nreturn recips.map(x=>{const phone=String(x.No_WA||x.no_wa||'').replace(/\\D/g,'').replace(/^0+/,'62');\n  return {json:{phone,waMessage:r.waMessage,nama:String(x.Nama||x.nama||'').trim()}};}).filter(x=>x.json.phone.length>8);\n"
+      },
+      "id": "bd541d07-5089-48be-97a7-941c0e3a67a0",
+      "name": "Code - Build Recipient Msgs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        4576
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "82bfed1e-b75c-4a94-88b2-876b7f3c2a85",
+      "name": "HTTP - WA Rekap",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        4576
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/values:batchGet?ranges=Tiket&ranges=RAB_Items&ranges=RAB_Budget&majorDimension=ROWS",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "id": "http---dash-batchget",
+      "name": "HTTP - Dash BatchGet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        260,
+        2300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://sheets.googleapis.com/v4/spreadsheets/1eBWNF5MD8Mb1OThmI9qjXdXFJMBGdNlOIfF-pgb2cUQ/values:batchGet?ranges=RAB_Items&ranges=StatusLog&majorDimension=ROWS",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "id": "http---pkj-batchget",
+      "name": "HTTP - Pkj BatchGet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        1000
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw=$('Webhook - Submit Pekerjaan').first().json;const body=raw.body||raw;\nconst meta=$('Code - Build Tiket Pekerjaan').first().json;\nconst phone=String(body.no_hp||body.phone||'').replace(/\\D/g,'').replace(/^0+/,'62');\nconst items=body.items||[];\nlet msg='*Pekerjaan Baru*\\n\\nHalo *'+(meta.Pelapor||'')+'*!\\n';\nmsg+='*Proyek:* '+meta.Proyek+'\\n*Tanggal:* '+meta.Tanggal+'\\n';\nif(meta.Deskripsi)msg+='*Catatan:* '+meta.Deskripsi+'\\n';\nmsg+='\\n*Daftar Pekerjaan:*\\n';\nitems.forEach((it,i)=>{msg+=(it.no||i+1)+'. '+it.pekerjaan+' — '+it.vol+' '+it.sat+'\\n';});\nmsg+='\\nRef: '+meta.ID+'\\n_TIM Interior_';\nreturn [{json:{phone,waMessage:msg,hasPhone:phone.length>8?'yes':'no'}}];"
+      },
+      "id": "code---wa-pekerjaan",
+      "name": "Code - WA Pekerjaan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1460,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasPhone }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if---pkj-has-phone",
+      "name": "IF - Pkj Has Phone",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1700,
+        820
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http---wa-pekerjaan",
+      "name": "HTTP - WA Pekerjaan",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1940,
+        820
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw=$('Webhook - Submit Komplain').first().json;const body=raw.body||raw;\nconst v=$('Code - Validate Komplain').first().json;\nconst phone=String(body.no_hp||body.phone||'').replace(/\\D/g,'').replace(/^0+/,'62');\nlet msg='*Komplain Baru*\\n\\nHalo *'+(v.Pelapor||'Tim')+'*!\\nKomplain sudah dicatat.\\n\\n';\nmsg+='*Proyek:* '+v.Proyek+'\\n*Tanggal:* '+v.Tanggal+'\\n*Komplain:* '+v.Deskripsi+'\\n';\nif(v.Lokasi)msg+='*Lokasi:* '+v.Lokasi+'\\n';\nif(v.Prioritas)msg+='*Prioritas:* '+v.Prioritas+'\\n';\nmsg+='Ref: '+v.ID+'\\n_TIM Interior_';\nreturn [{json:{phone,waMessage:msg,hasPhone:phone.length>8?'yes':'no'}}];"
+      },
+      "id": "code---wa-komplain",
+      "name": "Code - WA Komplain",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.hasPhone }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if---kmp-has-phone",
+      "name": "IF - Kmp Has Phone",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1460,
+        1760
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http---wa-komplain",
+      "name": "HTTP - WA Komplain",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1700,
+        1760
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook - Get Projects": {
+      "main": [
+        [
+          {
+            "node": "GS - Read Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Project": {
+      "main": [
+        [
+          {
+            "node": "Code - Format Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Format Projects": {
+      "main": [
+        [
+          {
+            "node": "Respond - Get Projects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Add Project": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Add Project",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Add Project": {
+      "main": [
+        [
+          {
+            "node": "IF - Add Project Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Add Project Valid": {
+      "main": [
+        [
+          {
+            "node": "GS - Append Project",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Add Project Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append Project": {
+      "main": [
+        [
+          {
+            "node": "Respond - Add Project OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get Workers": {
+      "main": [
+        [
+          {
+            "node": "GS - Read Pekerja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Pekerja": {
+      "main": [
+        [
+          {
+            "node": "Code - Format Pekerja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Format Pekerja": {
+      "main": [
+        [
+          {
+            "node": "Respond - Get Workers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Add Worker": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Add Worker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Add Worker": {
+      "main": [
+        [
+          {
+            "node": "IF - Add Worker Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Add Worker Valid": {
+      "main": [
+        [
+          {
+            "node": "GS - Append Pekerja",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Add Worker Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append Pekerja": {
+      "main": [
+        [
+          {
+            "node": "Respond - Add Worker OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Submit Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "IF - Pekerjaan Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Pekerjaan Valid": {
+      "main": [
+        [
+          {
+            "node": "GS - Append RAB_Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Submit Pekerjaan Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append RAB_Items": {
+      "main": [
+        [
+          {
+            "node": "Code - Build Tiket Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Build Tiket Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "GS - Append Tiket Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append Tiket Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "Respond - Submit Pekerjaan OK",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code - WA Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Get Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Get Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "IF - Get Pekerjaan Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Get Pekerjaan Valid": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Pkj BatchGet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Get Pekerjaan Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Group Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "Respond - Get Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Update Status": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Update Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Update Status": {
+      "main": [
+        [
+          {
+            "node": "IF - Update Status Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Update Status Valid": {
+      "main": [
+        [
+          {
+            "node": "GS - Append StatusLog Pkj",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Update Status Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append StatusLog Pkj": {
+      "main": [
+        [
+          {
+            "node": "Code - Build Tiket Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Build Tiket Status": {
+      "main": [
+        [
+          {
+            "node": "GS - Update Tiket Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Update Tiket Status": {
+      "main": [
+        [
+          {
+            "node": "Code - Status Resp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Status Resp": {
+      "main": [
+        [
+          {
+            "node": "Respond - Update Status OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Submit Komplain": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Komplain": {
+      "main": [
+        [
+          {
+            "node": "IF - Komplain Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Komplain Valid": {
+      "main": [
+        [
+          {
+            "node": "GS - Append Tiket Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Submit Komplain Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append Tiket Komplain": {
+      "main": [
+        [
+          {
+            "node": "Respond - Submit Komplain OK",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code - WA Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get Komplain": {
+      "main": [
+        [
+          {
+            "node": "GS - Read Tiket Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Tiket Komplain": {
+      "main": [
+        [
+          {
+            "node": "Code - Filter Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Filter Komplain": {
+      "main": [
+        [
+          {
+            "node": "Respond - Get Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Update Komplain Status": {
+      "main": [
+        [
+          {
+            "node": "Code - Validate Komplain Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Validate Komplain Status": {
+      "main": [
+        [
+          {
+            "node": "IF - Komplain Status Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Komplain Status Valid": {
+      "main": [
+        [
+          {
+            "node": "GS - Append StatusLog Kmp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GS - Update Tiket Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond - Update Komplain Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Append StatusLog Kmp": {
+      "main": [
+        [
+          {
+            "node": "Respond - Update Komplain OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Get Dashboard": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Dash BatchGet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Build Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Respond - Get Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule - 3x Harian": {
+      "main": [
+        [
+          {
+            "node": "GS - Rem RAB_Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GS - Rekap Tiket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Rem RAB_Items": {
+      "main": [
+        [
+          {
+            "node": "GS - Rem StatusLog",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Rem StatusLog": {
+      "main": [
+        [
+          {
+            "node": "GS - Rem Pekerja",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Rem Pekerja": {
+      "main": [
+        [
+          {
+            "node": "Code - Build Reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Build Reminders": {
+      "main": [
+        [
+          {
+            "node": "HTTP - WA Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Rekap Tiket": {
+      "main": [
+        [
+          {
+            "node": "Code - Format Rekap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Format Rekap": {
+      "main": [
+        [
+          {
+            "node": "Code - Expand Rekap Updates",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GS - Read Recipients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Expand Rekap Updates": {
+      "main": [
+        [
+          {
+            "node": "GS - Update Tiket Rekap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Recipients": {
+      "main": [
+        [
+          {
+            "node": "Code - Build Recipient Msgs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Build Recipient Msgs": {
+      "main": [
+        [
+          {
+            "node": "HTTP - WA Rekap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Dash BatchGet": {
+      "main": [
+        [
+          {
+            "node": "Code - Build Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Pkj BatchGet": {
+      "main": [
+        [
+          {
+            "node": "Code - Group Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - WA Pekerjaan": {
+      "main": [
+        [
+          {
+            "node": "IF - Pkj Has Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Pkj Has Phone": {
+      "main": [
+        [
+          {
+            "node": "HTTP - WA Pekerjaan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - WA Komplain": {
+      "main": [
+        [
+          {
+            "node": "IF - Kmp Has Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - Kmp Has Phone": {
+      "main": [
+        [
+          {
+            "node": "HTTP - WA Komplain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "44a84c73-871d-4401-8aab-2335c2493cd0",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "ZlKjTWGtdVXJa1zfvxyBH",
+  "tags": [
+    {
+      "updatedAt": "2026-04-17T03:59:31.467Z",
+      "createdAt": "2026-04-17T03:59:31.467Z",
+      "id": "ffzAjus91osOPTcs",
+      "name": "TIM Interior"
+    }
+  ]
+}

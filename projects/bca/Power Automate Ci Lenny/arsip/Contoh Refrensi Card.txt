@@ -1,0 +1,236 @@
+Good morning everyone,
+Please find below the Non-MBI projects status update.
+
+
+Non-MBI Projects Status Update
+Report Period: 04 June 2026 – 10 June 2026
+Source File: click here
+
+--------------------------------------------------------------
+📊 IN PROGRESS UAT (10 Projects)
+Sakuku - [Revamp UI App Sakuku] Fase 04 - Transactional Part 03
+Progress: 77%
+Assigned TA: Vania Natasha Saragih, Dieastien Salsa Bela
+Loyalty - [Gebyar Hadiah Individu BCA 2026 Periode 05] Gamifikasi 2026 Periode 01 (The New Gacha Berhadiah)
+Progress: 65%
+Assigned TA: Devina Sariska, Safina Khairani, Yulia Stefani
+Sakuku - [Redesign VA - Migrasi Channel] Perubahan End Point ke URL VA yang Baru (Repointing)
+Progress: 86%
+Assigned TA: Giovanni Carnelia Halim, Vania Natasha Saragih
+OneKlik - [Support UAT KLA Halo App] Enhancement Service OneKlik untuk API Customer 360
+Assigned TA: Devina Sariska
+OneKlik - Enhancement Bypass OTP OneKlik untuk Transaksi QRIS (Shopee)
+Progress: 81%
+Assigned TA: Irene Christovita, Devina Sariska
+KBI - Migrasi CIS NG - Service Registrasi KBI
+Progress: 0%
+Assigned TA: Adinda Gadis Arifia
+KBI - Buka Blokir Fasilitas BCAmob & KBI via HaloApps
+Progress: 56%
+Assigned TA: Adinda Gadis Arifia
+KBI - Migrasi Service ST GW ke Service DB Token Auth
+Progress: 0%
+Assigned TA: Jeffri Wiranda
+BCA.co.id - [Support UAT API Internal] Migrasi API Internal dari 3Scale ke TYK
+Assigned TA: Evander Gunawan
+mBCA BAU - Support UAT Digit Expansion IDS di BCAmobile
+Progress: 0%
+Assigned TA: Irene Christovita
+📊 IN PROGRESS REGRESSION (6 Projects)
+mBCA BAU - [Paketan Juni] Migrasi PLN
+Progress: 0%
+Assigned TA: Rheza Mario
+SoftToken - [Paketan Juni] Overlay
+Progress: 64%
+Assigned TA: Finnegan Belano
+mBCA BAU - [Paketan Juni] VINDI Fase 2 C : Pengiriman push notifikasi di MB
+Progress: 0%
+Assigned TA: Rheza Mario
+SoftToken - [Paketan Juni] Migrasi ke xCode 26 (Ios)
+Progress: 64%
+Assigned TA: Finnegan Belano
+mBCA BAU - [Paketan Juni] VINDI Fase 2 C : Button Hapus Semua + penurunan ke dwh
+Progress: 63%
+Assigned TA: Adinda Gadis Arifia
+mBCA BAU - [Paketan Juni] VINDI Fase 2 C : Toggle notif transaksi untuk VINDI (ON/OFF)
+Progress: 63%
+Assigned TA: Rheza Mario
+📊 IN PROGRESS CERTIFICATION (8 Projects)
+mBCA BAU - Enhancement Ganti Kartu
+Assigned TA: Rheza Mario
+mBCA Lifestyle - Enhancement Mekanisme Retry
+Assigned TA: Finnegan Belano
+SoftToken - [Paketan April] Migrasi AVRO
+Assigned TA: Finnegan Belano
+SoftToken - [Paketan April] Validasi respon appli KeyBCA ke DB Token Authentication
+Assigned TA: Finnegan Belano
+SoftToken - [Paketan April] Penambahan icon Penukaran Reward
+Assigned TA: Finnegan Belano
+SoftToken - [Paketan Mei] Parsial Maintenance
+Assigned TA: Finnegan Belano
+KBI - Migrasi PLN
+Assigned TA: Devina Sariska
+SoftToken - [Paketan Mei] Migrasi Service MDM ke CNG
+Assigned TA: Finnegan Belano
+📊 IN PROGRESS VERIF IMPLE PILOT (1 Projects)
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] UAT Internal BCA.co.id Part 01A
+Assigned TA: Ekis Naomi Lasma, Evander Gunawan, Safina Khairani
+📊 IN PROGRESS VERIF IMPLE PROD (3 Projects)
+Loyalty - Perbaikan PIR Cashback QRIS 2026 - Pajak
+Assigned TA: Devina Sariska
+IoT - Implementasi Massive KKI (Kartu Kredit Indonesia) - Changes Hardcode ke Passthrough BE (OMNI)
+Assigned TA: Rheza Mario, Safina Khairani
+Sakuku - Retest UAT Temuan Verifikasi Implementasi Laporan Compare Saldo CELL dan Penampungan Sakuku
+Assigned TA: Giovanni Carnelia Halim, Mery Wijaya
+📊 IN PROGRESS PIR (3 Projects)
+mBCA BAU - [Paketan 7 Mei] Reaktivasi Rekening
+Assigned TA: Irene Christovita
+mBCA BAU - [Paketan 7 Mei] Enhancement QR China
+Assigned TA: Adinda Gadis Arifia
+KBI - Migrasi OSB Transfer BCA,Mutasi Bulanan, Blokir Kartu ATM
+Assigned TA: Jeffri Wiranda
+📊 PENDING/HOLD UAT (2 Projects)
+BCA.co.id - Enhancement Webform Leave Contact BCA Life dan BCA Insurance
+Assigned TA: Evander Gunawan
+OneKlik - Takeout Notifikasi Trx Berhasil OneKlik dari m-BCA & Migrasi Notifikasi OneKlik dari EAI menjadi Direct ke KAFKA MB
+Assigned TA: Irene Christovita
+📊 PENDING/HOLD VERIF IMPLE PROD (1 Projects)
+Loyalty - [Gebyar Hadiah Individu BCA 2026 Part 01] Enhancement Consume Data Transaksi Untuk Gebyar Hadiah BCA
+Assigned TA: Safina Khairani
+📊 WAITING FOR UAT (19 Projects)
+Loyalty - [GBU] Aplikasi Pengundian
+Assigned TA: Safina Khairani
+Loyalty - Penggabungan Cobrand Blibli dan Tiket
+Assigned TA: Devina Sariska, Yulia Stefani
+Loyalty - Konversi Reward Partner (API)
+Assigned TA: Devina Sariska, Yulia Stefani, Safina Khairani
+IoT - [Support UAT] Implementasi Massive KKI (Kartu Kredit Indonesia) - UAT Bersama KKI
+Assigned TA: Rheza Mario, Safina Khairani
+IoT - [Support UAT] Redesign EAI (Include Offloading B24)
+Assigned TA: Safina Khairani, Rheza Mario
+OneKlik - [Support UAT KLA KBB] Enhancement Business Dashboard karena Impact Redesign VA
+Assigned TA: Devina Sariska
+mBCA Lifestyle - Penutupan partner worldlinks di Lifestyle BCA mobile
+Assigned TA: Finnegan Belano
+IoT - [Support UAT KLA ATM] Penambahan Bahasa Inggris untuk Transaksi Cardless
+Assigned TA: Rheza Mario
+Sakuku - [Support UAT KLA ATM] Penambahan Bahasa Inggris untuk Transaksi Cardless
+Assigned TA: Dieastien Salsa Bela
+OneKlik - [Redesign VA] Migrasi Service EAI VA ke EAI VA Redesign (Service Pre-Authorization dan B2B2C)
+Assigned TA: Devina Sariska, Irene Christovita
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] Enhancement Lainnya
+Assigned TA: Safina Khairani
+mBCA BAU - Verifikasi Tambahan Migrasi Core QRIS Transfer
+Assigned TA: Rheza Mario
+mBCA BAU - [Paketan Juli] Migrasi Servis all svc 3scale to TYK: Fase 2
+Assigned TA: Irene Christovita
+mBCA BAU - Support UAT VINDI Migrasi flow Registrasi
+Assigned TA: Irene Christovita
+BCA.co.id - Enhancement Webform Pengajuan KUR (Kredit Usaha Rakyat)
+Assigned TA: Mery Wijaya, Yulia Stefani
+BCA.co.id - Enhancement Marketplace Investasi di bca.co.id (Fitur Bilingual dan Revamp) - Asuransi
+Assigned TA: Mery Wijaya, Yulia Stefani
+BCA.co.id - Enhancement Webform Leave Contact BCA Life dan BCA Insurance
+Assigned TA: Mery Wijaya, Yulia Stefani
+- Penurunan Data DWH dengan format AVRO pada Webview Customer Consent dan Webform Pengajuan KSM
+Assigned TA: Mery Wijaya
+OneKlik - Takeout Notifikasi Trx Berhasil OneKlik dari m-BCA & Migrasi Notifikasi OneKlik dari EAI menjadi Direct ke KAFKA MB
+Assigned TA: Irene Christovita
+📊 WAITING FOR REGRESSION (4 Projects)
+Sakuku - [Revamp UI App Sakuku] Fase 01 - Non Transactional
+Assigned TA: Mery Wijaya
+Sakuku - [Revamp UI App Sakuku] Fase 02 - Transactional Part 01
+Assigned TA: Mery Wijaya, Giovanni Carnelia Halim
+Sakuku - [Revamp UI App Sakuku] Fase 03 - Transactional Part 02
+Assigned TA: Mery Wijaya, Vania Natasha Saragih
+mBCA BAU - [Paketan Juli] Migrasi Core QRIS Transfer
+Assigned TA: Rheza Mario
+📊 WAITING FOR VERIF IMPLE PILOT (17 Projects)
+Loyalty - [Gebyar Hadiah Individu BCA 2026 Periode 05] Enhancement Penurunan Data CIS
+Assigned TA: Safina Khairani, Yulia Stefani
+IoT - [Revamp Slicing 01] Default Account (QRIS Tap dan NFC Pay)
+Assigned TA: Safina Khairani, Rheza Mario
+IoT - [Revamp Slicing 02] Push Notification from Backend to Frontend myBCA Smartwatch
+Assigned TA: Safina Khairani, Rheza Mario
+OneKlik - [Fitur Baru - Slicing 01] Enhancement API Existing, Penyesuaian Account Unbinding, dan Penambahan Flag B2B2C
+Assigned TA: Irene Christovita, Devina Sariska
+OneKlik - [Fitur Baru - Slicing 02] Pre-Authorization Fase 03 (Payment (Blokir Saldo))
+Assigned TA: Irene Christovita, Devina Sariska
+OneKlik - [Fitur Baru - Slicing 02] Skenario Pending Pre-Authorization Fase 03 (Payment (Blokir Saldo))
+Assigned TA: Irene Christovita, Devina Sariska
+OneKlik - [Fitur Baru - Slicing 03] Pre-Authorization Fase 03 (Job Handling dan Enhancement API Direct Debit SNAP)
+Assigned TA: Irene Christovita, Devina Sariska
+OneKlik - [Support UAT API Internal] Migrasi API Internal dari 3Scale ke TYK
+Assigned TA: Devina Sariska
+OneKlik - Penambahan Status Khusus D (No Debet Indicator) & Flag Rekening Dormant/Tidak Aktif untuk API Auth Payment
+Assigned TA: Irene Christovita
+Sakuku - [Support Verif Imple OMNI dan CELL] Migrasi DB Oracle GAC
+Assigned TA: Vania Natasha Saragih
+KBI - Redesign VA
+Assigned TA: Adinda Gadis Arifia
+Loyalty - [Gebyar Hadiah Individu BCA 2026 Periode 05] Perbaikan DWH untuk Penurunan Data Kupon
+Assigned TA: Devina Sariska
+BCA.co.id - Enhancement Marketplace Investasi di bca.co.id (Fitur Bilingual dan Revamp) - Obligasi dan Reksa Dana
+Assigned TA: Mery Wijaya, Yulia Stefani, Safina Khairani
+OneKlik - [Fitur Baru - Slicing 04] Lanjutan Verifikasi Penurunan Data DWH Project Pre-Authorization
+Assigned TA: Devina Sariska
+mBCA BAU - Enhancement Job Refund BagiBagi di Core
+Assigned TA: Irene Christovita
+mBCA BAU - [Paketan Juni] Migrasi Servis all svc 3scale to TYK: Fase 1
+Assigned TA: Irene Christovita
+KBI - Support UAT EAI Terkait Redesign DB IDS - Switch On/Off service TransferDomV3
+Assigned TA: Adinda Gadis Arifia
+📊 WAITING FOR VERIF IMPLE PROD (8 Projects)
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] UAT Internal BCA.co.id Part 01B
+Assigned TA: Ekis Naomi Lasma, Evander Gunawan, Safina Khairani
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] UAT Internal BCA.co.id Part 02
+Assigned TA: Evander Gunawan, Safina Khairani
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] Enhancement UI Webform Giro Badan
+Assigned TA: Evander Gunawan, Safina Khairani
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] Enhancement List Data Bidang Usaha
+Assigned TA: Evander Gunawan, Safina Khairani
+BCA.co.id - [Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] Enhancement Format Upload Dokumen
+Assigned TA: Evander Gunawan, Safina Khairani
+BCA.co.id - [Support UAT Pemol Rekening Giro Badan Usaha via Webform BCA.co.id] Enhancement reCAPTCHA
+Assigned TA: Evander Gunawan
+OneKlik - [Support UAT dan Verif Imple Co-part OVO] Penambahan Field transferDetail Pada API Payment
+Assigned TA: Irene Christovita
+OneKlik - [Redesign VA] Migrasi Service EAI VA ke EAI VA Redesign (Service Direct Debit (Existing))+ Perubahan Penambahan Validasi API Inquiry Status VA
+Assigned TA: Devina Sariska, Irene Christovita
+📊 WAITING FOR PIR (16 Projects)
+Sakuku - [Redesign VA - Migrasi EAI OSB] Perubahan EAI CELL GW ke CELL Adapter Part 01
+Assigned TA: Giovanni Carnelia Halim
+Sakuku - [Redesign VA - Migrasi EAI OSB] Perubahan EAI CELL GW ke CELL Adapter Part 02
+Assigned TA: Giovanni Carnelia Halim
+Sakuku - [Redesign VA - Migrasi EAI OSB] Penurunan Data Rekonsiliasi Transaksi Transfer Sakuku ke Rek. BCA dan Payment Co-brand
+Assigned TA: Giovanni Carnelia Halim
+Loyalty - Cashback QRIS Slicing 01-03
+Assigned TA: Devina Sariska, Mery Wijaya, Safina Khairani
+Loyalty - [GBI] Penurunan Data Gebyar Individu Periode 01 dan 02 ke DWH
+Assigned TA: Mery Wijaya
+Loyalty - [UAT Tambahan] Penurunan Data Gebyar Individu Periode 01 dan 02 ke DWH
+Assigned TA: Mery Wijaya
+Loyalty - [Gebyar Hadiah BCA Part 02] Enhancement Flagging Eligible Pengundian untuk Kewarganegaraan Iran dan Korea Utara
+Assigned TA: Mery Wijaya
+mBCA BAU - [Paketan 7 Mei] QRIS TAP
+Assigned TA: Adinda Gadis Arifia, Irene Christovita
+mBCA BAU - [Paketan April] Enhancement Modified Date Table Alert MB ke DWH
+Assigned TA: Irene Christovita
+mBCA BAU - [Paketan April] Penurunan data notifikasi ke DWH
+Assigned TA: Irene Christovita
+mBCA BAU - [Paketan April] Auto registrasi VINDI pada flow Aktivasi BCAmobile
+Assigned TA: Irene Christovita
+mBCA BAU - [Paketan 7 Mei] Pemol Beneficial Owner
+Assigned TA: Rheza Mario, Yulia Stefani
+mBCA BAU - [Paketan 21 Mei] VINDI Fase 2 B : Penurunan Data Rekening ke DWH (Sisi BCAmobile)
+Assigned TA: Irene Christovita
+Sakuku - Redesign IDS DPYTDPR0 Expand Digit OFF DLR
+Assigned TA: Giovanni Carnelia Halim
+mBCA BAU - [Paketan Mei] VINDI Fase 2 B : Penurunan Data Rekening ke DWH (Sisi DWH)
+Assigned TA: Irene Christovita
+mBCA BAU - [Paketan 21 Mei] Update SDK FR versi verihubs (Lanjutan)
+Assigned TA: Rheza Mario
+--------------------------------------------------------------
+Cc: Edwar, Tiur Nova Aditya, dan mba Ulpi Sugih Harti
+Thank you in advance.
+Last Update: 11 Jun 2026 10:00

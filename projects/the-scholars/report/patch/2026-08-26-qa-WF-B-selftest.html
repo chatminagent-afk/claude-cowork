@@ -1,0 +1,169 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>QA WF-B — VIRA Monthly Rollup</title>
+<style>
+ body{font:14px/1.6 ui-monospace,Consolas,monospace;background:#0f1115;color:#d7dae0;padding:24px;margin:0}
+ h1{font-size:16px;margin:0 0 4px} .sub{color:#7d8590;font-size:12px;margin-bottom:18px}
+ .r{padding:3px 0;border-bottom:1px solid #1c2027}
+ .ok{color:#3fb950} .no{color:#f85149;font-weight:700}
+ .d{color:#7d8590;font-size:12px;padding-left:26px}
+ #sum{margin-top:18px;padding:12px 14px;border-radius:6px;font-weight:700}
+ .green{background:#12261a;color:#3fb950;border:1px solid #2ea04326}
+ .red{background:#2a1215;color:#f85149;border:1px solid #f8514926}
+</style>
+<h1>QA WF-B — VIRA Monthly Rollup</h1>
+<div class="sub">Kode diambil apa adanya dari <code>2026-08-26-VIRA-WF-B-monthly-rollup.json</code></div>
+<div id="out"></div><div id="sum"></div>
+<script>var SRC = {"Rollup Bulan Lalu": "// Rekap TOPIC_LOG bulan lalu -> satu baris MONTHLY_SUMMARY.\n// Peringkat dihitung per USER UNIK, bukan per pesan: satu orang yang bertanya\n// enam kali tidak boleh menggelembungkan persentase.\n\nconst TOP_N = 10;\nconst NOISE = 'lainnya';  // sapaan/ucapan terima kasih/fragmen — dihitung, tapi tidak diperingkat\n\nfunction bulanWIB(d) {\n  const p = new Intl.DateTimeFormat('en-GB', {\n    timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit'\n  }).formatToParts(d);\n  return p.find(x => x.type === 'year').value + '-' + p.find(x => x.type === 'month').value;\n}\n\n// Bulan sasaran = bulan sebelum bulan berjalan (WIB).\n// Dihitung dengan mundur ke tanggal 15 bulan lalu supaya aman dari beda panjang bulan & DST.\nconst now = new Date();\nconst nowWIB = bulanWIB(now);\nconst [y, m] = nowWIB.split('-').map(Number);\nconst prev = new Date(Date.UTC(m === 1 ? y - 1 : y, m === 1 ? 11 : m - 2, 15, 5, 0, 0));\nconst target = bulanWIB(prev);\n\n// --- kumpulkan baris bulan sasaran ---\nconst users = new Set();\nconst perTopicUsers = {};   // topic -> Set(user)\nconst perTopicMsgs = {};    // topic -> jumlah pesan\nlet totalPesan = 0, pesanNoise = 0;\nconst topikBaru = {};       // label NEW: -> jumlah user\n\nfor (const item of $('Read TOPIC_LOG').all()) {\n  const r = item.json || {};\n  if (String(r.bulan || '').trim() !== target) continue;\n\n  const user = String(r.user_key || '').trim();\n  const topic = String(r.topic || '').trim();\n  const n = Number(r.jumlah_pesan) || 0;\n  if (!user || !topic) continue;\n\n  users.add(user);\n  totalPesan += n;\n\n  if (topic === NOISE) { pesanNoise += n; continue; }\n\n  if (!perTopicUsers[topic]) { perTopicUsers[topic] = new Set(); perTopicMsgs[topic] = 0; }\n  perTopicUsers[topic].add(user);\n  perTopicMsgs[topic] += n;\n\n  if (topic.indexOf('NEW:') === 0) {\n    topikBaru[topic] = (topikBaru[topic] || 0) + 1;\n  }\n}\n\nconst totalUser = users.size;\n\nconst ranked = Object.keys(perTopicUsers).map(t => ({\n  topic: t,\n  users: perTopicUsers[t].size,\n  messages: perTopicMsgs[t],\n  pct: totalUser ? Math.round((perTopicUsers[t].size / totalUser) * 1000) / 10 : 0\n})).sort((a, b) => (b.users - a.users) || (b.messages - a.messages) || a.topic.localeCompare(b.topic));\n\nconst top = ranked.slice(0, TOP_N);\n\n// Persentase sengaja BOLEH berjumlah >100%: satu user bisa membawa beberapa topik.\nconst note = totalUser === 0\n  ? 'Belum ada data untuk bulan ini.'\n  : 'Berdasarkan percakapan yang ditangani VIRA. Chat yang sudah diambil alih Sam tidak ikut terhitung. '\n    + 'Satu user bisa menanyakan lebih dari satu topik, jadi jumlah persentase bisa melebihi 100%.';\n\nreturn [{ json: {\n  bulan: target,\n  total_user_unik: totalUser,\n  total_pesan: totalPesan,\n  top_json: JSON.stringify(top),\n  topik_baru_json: JSON.stringify(Object.keys(topikBaru).sort()),\n  pesan_lainnya: pesanNoise,\n  topik_terpakai: ranked.length,\n  coverage_note: note,\n  generated_at: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })\n} }];\n"};</script>
+<script>
+var pass, fail, log;
+(function () {
+/* Tes dijalankan di dalam function scope, BUKAN global. Di global scope, nama
+   seperti `top` / `name` / `status` / `length` adalah properti bawaan window
+   yang TIDAK bisa ditimpa `var` -- assignment gagal diam-diam dan tes jadi bohong. */
+try {
+
+var pass = 0, fail = 0, log = [];
+function check(label, cond, detail) {
+  if (cond) { pass++; log.push(['ok', label, '']); }
+  else { fail++; log.push(['no', label, detail || '']); }
+}
+
+/* Stub Date: `new Date()` tanpa argumen mengembalikan waktu yang kita tentukan.
+   Sisanya (Date.UTC, new Date(x)) tetap asli, supaya Intl tetap bekerja. */
+function fakeDate(iso) {
+  var Real = Date;
+  function F(a, b, c, d, e, f, g) {
+    if (arguments.length === 0) return new Real(iso);
+    if (arguments.length === 1) return new Real(a);
+    return new Real(a, b, c, d, e, f, g);
+  }
+  F.UTC = Real.UTC; F.parse = Real.parse; F.now = function () { return new Real(iso).getTime(); };
+  F.prototype = Real.prototype;
+  return F;
+}
+
+function run(src, rows, nowIso) {
+  var $ = function (name) {
+    return { all: function () { return (name === 'Read TOPIC_LOG' ? rows : []).map(function (j) { return { json: j }; }); } };
+  };
+  return new Function('$', '$input', 'Date', src)($, { all: function () { return []; } }, fakeDate(nowIso));
+}
+
+/* ---------- 1. Perhitungan bulan sasaran ---------- */
+function bulanTarget(nowIso) { return run(SRC['Rollup Bulan Lalu'], [], nowIso)[0].json.bulan; }
+
+check('Okt 2026 -> sasaran 2026-09',            bulanTarget('2026-10-01T00:30:00+07:00') === '2026-09', bulanTarget('2026-10-01T00:30:00+07:00'));
+check('Jan 2027 -> sasaran 2026-12 (ganti tahun)', bulanTarget('2027-01-01T00:30:00+07:00') === '2026-12', bulanTarget('2027-01-01T00:30:00+07:00'));
+check('Mar 2026 -> sasaran 2026-02 (bulan pendek)', bulanTarget('2026-03-01T00:30:00+07:00') === '2026-02', bulanTarget('2026-03-01T00:30:00+07:00'));
+check('Mar 2028 -> sasaran 2028-02 (kabisat)',   bulanTarget('2028-03-01T00:30:00+07:00') === '2028-02', bulanTarget('2028-03-01T00:30:00+07:00'));
+
+/* Jam 00:30 WIB = 17:30 UTC HARI SEBELUMNYA. Kalau zona waktu salah,
+   ini akan meleset satu bulan — persis jebakan yang bikin laporan salah bulan. */
+check('00:30 WIB 1 Okt (=17:30 UTC 30 Sep) tetap sasaran 2026-09',
+      bulanTarget('2026-09-30T17:30:00Z') === '2026-09', bulanTarget('2026-09-30T17:30:00Z'));
+check('00:30 WIB 1 Jan (=17:30 UTC 31 Des) tetap sasaran 2026-12',
+      bulanTarget('2026-12-31T17:30:00Z') === '2026-12', bulanTarget('2026-12-31T17:30:00Z'));
+
+/* ---------- 2. Peringkat per USER UNIK ---------- */
+var rows = [
+  { bulan: '2026-09', user_key: 'A', topic: 'biaya_program',           jumlah_pesan: '3' },
+  { bulan: '2026-09', user_key: 'A', topic: 'jadwal_kelas_waktu',      jumlah_pesan: '1' },
+  { bulan: '2026-09', user_key: 'B', topic: 'biaya_program',           jumlah_pesan: '1' },
+  { bulan: '2026-09', user_key: 'C', topic: 'biaya_program',           jumlah_pesan: '1' },
+  { bulan: '2026-09', user_key: 'C', topic: 'lainnya',                 jumlah_pesan: '5' },
+  { bulan: '2026-08', user_key: 'Z', topic: 'biaya_program',           jumlah_pesan: '99' }
+];
+var r = run(SRC['Rollup Bulan Lalu'], rows, '2026-10-01T00:30:00+07:00')[0].json;
+var topRank = JSON.parse(r.top_json);
+
+var t0 = topRank[0] || {}, t1 = topRank[1] || {};
+check('bulan lain TIDAK ikut terhitung',   r.total_pesan === 11, 'total_pesan=' + r.total_pesan);
+check('total user unik = 3',               r.total_user_unik === 3, String(r.total_user_unik));
+check('menghasilkan 2 topik terperingkat', topRank.length === 2, 'top_json=' + r.top_json);
+check('peringkat 1 = biaya_program',       t0.topic === 'biaya_program', JSON.stringify(t0));
+check('biaya_program: 3 user unik',        t0.users === 3, String(t0.users));
+check('biaya_program: 5 pesan',            t0.messages === 5, String(t0.messages));
+check('persentase = user/total = 100%',    t0.pct === 100, String(t0.pct));
+check('peringkat 2 = jadwal, 1 user, 33.3%', t1.topic === 'jadwal_kelas_waktu' && t1.users === 1 && t1.pct === 33.3,
+      JSON.stringify(t1));
+check('"lainnya" TIDAK masuk peringkat',   topRank.every(function (t) { return t.topic !== 'lainnya'; }));
+check('"lainnya" tetap dihitung terpisah', r.pesan_lainnya === 5, String(r.pesan_lainnya));
+check('"lainnya" tetap masuk total_pesan', r.total_pesan === 11);
+check('catatan cakupan menyebut blind spot Sam', r.coverage_note.indexOf('diambil alih Sam') !== -1);
+check('catatan menjelaskan persen bisa >100%',   r.coverage_note.indexOf('100%') !== -1);
+
+/* satu user yang bertanya 6x tidak boleh mengalahkan 2 user yang bertanya 1x */
+var spam = [
+  { bulan: '2026-09', user_key: 'A', topic: 'biaya_program',      jumlah_pesan: '6' },
+  { bulan: '2026-09', user_key: 'B', topic: 'jadwal_kelas_waktu', jumlah_pesan: '1' },
+  { bulan: '2026-09', user_key: 'C', topic: 'jadwal_kelas_waktu', jumlah_pesan: '1' }
+];
+var st = JSON.parse(run(SRC['Rollup Bulan Lalu'], spam, '2026-10-01T00:30:00+07:00')[0].json.top_json);
+var s0 = st[0] || {};
+check('1 user x6 KALAH dari 2 user x1 (inti keputusan #2)',
+      s0.topic === 'jadwal_kelas_waktu' && s0.users === 2, JSON.stringify(st));
+
+/* ---------- 3. Top-N dan topik baru ---------- */
+var many = [];
+for (var i = 0; i < 14; i++) {
+  for (var u = 0; u <= i; u++) many.push({ bulan: '2026-09', user_key: 'u' + u, topic: 't' + i, jumlah_pesan: '1' });
+}
+var mr = run(SRC['Rollup Bulan Lalu'], many, '2026-10-01T00:30:00+07:00')[0].json;
+var mt = JSON.parse(mr.top_json);
+check('top dibatasi 10 topik',            mt.length === 10, 'len=' + mt.length);
+check('topik_terpakai catat total 14',    mr.topik_terpakai === 14, String(mr.topik_terpakai));
+check('urut menurun berdasar user unik',  mt.every(function (t, i) { return i === 0 || mt[i - 1].users >= t.users; }));
+
+var nw = [
+  { bulan: '2026-09', user_key: 'A', topic: 'NEW:minta_brosur', jumlah_pesan: '1' },
+  { bulan: '2026-09', user_key: 'B', topic: 'NEW:minta_brosur', jumlah_pesan: '1' },
+  { bulan: '2026-09', user_key: 'C', topic: 'biaya_program',    jumlah_pesan: '1' }
+];
+var nr = run(SRC['Rollup Bulan Lalu'], nw, '2026-10-01T00:30:00+07:00')[0].json;
+check('topik NEW: dimunculkan untuk direview', JSON.parse(nr.topik_baru_json)[0] === 'NEW:minta_brosur',
+      nr.topik_baru_json);
+check('topik NEW: juga ikut diperingkat',      (JSON.parse(nr.top_json)[0] || {}).topic === 'NEW:minta_brosur', nr.top_json);
+
+/* ---------- 4. Bulan kosong ---------- */
+var er = run(SRC['Rollup Bulan Lalu'], [], '2026-10-01T00:30:00+07:00')[0].json;
+check('bulan kosong -> tetap menulis baris',  er.bulan === '2026-09');
+check('bulan kosong -> angka nol, bukan error', er.total_user_unik === 0 && er.total_pesan === 0);
+check('bulan kosong -> top_json array kosong', er.top_json === '[]');
+check('bulan kosong -> catatan menjelaskan',   er.coverage_note.indexOf('Belum ada data') !== -1);
+
+/* alwaysOutputData: TOPIC_LOG kosong mengirim SATU item {} , bukan nol item. */
+var blank = run(SRC['Rollup Bulan Lalu'], [{}], '2026-10-01T00:30:00+07:00')[0].json;
+check('TOPIC_LOG kosong ({}) -> tetap menulis baris nol, tanpa crash',
+      blank.bulan === '2026-09' && blank.total_user_unik === 0 && blank.top_json === '[]',
+      JSON.stringify(blank));
+
+/* ---------- 5. Baris rusak ---------- */
+var junk = [
+  { bulan: '2026-09', user_key: '',  topic: 'biaya_program', jumlah_pesan: '3' },
+  { bulan: '2026-09', user_key: 'A', topic: '',              jumlah_pesan: '3' },
+  { bulan: '2026-09', user_key: 'A', topic: 'biaya_program', jumlah_pesan: 'abc' },
+  { bulan: '2026-09', user_key: 'B', topic: 'biaya_program', jumlah_pesan: '2' }
+];
+var jr = run(SRC['Rollup Bulan Lalu'], junk, '2026-10-01T00:30:00+07:00')[0].json;
+check('baris tanpa user/topik dilewati',   jr.total_user_unik === 2, String(jr.total_user_unik));
+check('jumlah_pesan non-angka dianggap 0', jr.total_pesan === 2, String(jr.total_pesan));
+
+} catch (e) {
+  if (!log) log = [];
+  log.push(['no', 'HARNESS ERROR', String(e && e.stack || e)]); fail = (fail || 0) + 1;
+}
+window.__P = pass; window.__F = fail; window.__L = log;
+})();
+pass = window.__P; fail = window.__F; log = window.__L;
+
+document.getElementById('out').innerHTML = log.map(function (r) {
+  return '<div class="r"><span class="' + r[0] + '">' + (r[0]==='ok'?'&#10003;':'&#10007;') +
+         '</span> ' + r[1] + '</div>' + (r[2] ? '<div class="d">' + r[2] + '</div>' : '');
+}).join('');
+var s = document.getElementById('sum');
+s.className = fail ? 'red' : 'green';
+s.textContent = fail ? ('GAGAL — ' + pass + ' lulus, ' + fail + ' gagal')
+                     : ('SEMUA LULUS — ' + pass + ' pemeriksaan');
+document.title = (fail ? 'GAGAL ' + fail : 'LULUS ' + pass) + ' — QA WF-B';
+</script>

@@ -1,0 +1,260 @@
+{
+  "name": "GLOBAL - Email Fallback Notifier",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        3040,
+        1472
+      ],
+      "id": "ba306699-7dff-4b58-8e98-e679d13a0e28",
+      "name": "Dipanggil dari Error Notifier"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        3040,
+        1712
+      ],
+      "id": "eecb9ac2-87e0-47de-b4b3-058fa8f150ba",
+      "name": "Error Trigger (lapis 2)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// GLOBAL EMAIL FALLBACK - normalisasi payload + compose email\n// Menerima 2 bentuk input:\n//   A) direct  : dipanggil Execute Workflow dari Error Notifier\n//                saat Kirimi gagal  -> d.source === 'kirimi_fallback'\n//   B) error   : dipicu sebagai Error Workflow n8n (lapis 2)\n// ============================================================\n\n// >>> WAJIB DIGANTI: base URL instance n8n, TANPA trailing slash <<<\nconst N8N_BASE = 'https://n8n.srv1270416.hstgr.cloud';\nconst DASH_BASE = 'https://n8n.chatminagent.workers.dev';   // n8n mobile dashboard\n\nconst d = $input.first().json || {};\nconst direct = d.source === 'kirimi_fallback';\n\n// ---- tenant / penanda klien ----\nconst hay = String(direct ? (d.tenant || d.notifier_wf_name || '') : (d.workflow?.name || '')).toLowerCase();\nlet tenant = 'VIRA-?';\nif (hay.includes('pcr') || hay.includes('persada')) tenant = 'VIRA-PCR';\nelse if (hay.includes('scholar') || hay.includes('v4')) tenant = 'VIRA-SCHOLARS';\n// 2026-08-28: tenant ke-3 -- VIRA Personal (bot pribadi Steven).\nelse if (hay.includes('personal') || hay.includes('steven')) tenant = 'VIRA-PERSONAL';\n\n// ---- notifier yang gagal ----\nconst notifierWf   = direct ? (d.notifier_wf_name || '-') : (d.workflow?.name || '-');\nconst notifierWfId = direct ? (d.notifier_wf_id || '')    : (d.workflow?.id || '');\nconst notifierExec = direct ? (d.notifier_exec_id || '')  : (d.execution?.id || '');\nconst failNode     = direct ? (d.fail_node || 'Notify Admin Error (Kirimi)') : (d.execution?.error?.node?.name || d.execution?.lastNodeExecuted || '-');\nconst failReason   = String(direct ? (d.fail_reason || 'unknown error') : (d.execution?.error?.message || 'unknown error')).slice(0, 600);\nconst kirimiResp   = String(d.kirimi_response || '').slice(0, 800);\n\n// ---- error aslinya (hanya tersedia di jalur direct) ----\nconst origWf   = direct ? (d.orig_wf_name || '-') : '-';\nconst origWfId = direct ? (d.orig_wf_id || '')    : '';\nconst origExec = direct ? (d.orig_exec_id || '-') : '-';\nconst origNode = direct ? (d.orig_node || '-')    : '-';\nconst origErr  = String(direct ? (d.orig_error || '-') : '-').slice(0, 600);\n\nconst mkUrl = (wfId, execId) => (wfId && execId && execId !== '-') ? `${N8N_BASE}/workflow/${wfId}/executions/${execId}` : '';\nconst origUrl     = (direct && d.orig_exec_url) ? d.orig_exec_url : mkUrl(origWfId, origExec);\nconst notifierUrl = mkUrl(notifierWfId, notifierExec);\n\n// Deep link dashboard: yang perlu di-retry adalah execution ASLI yang gagal,\n// bukan execution notifier-nya.\nconst dashUrl = /^\\d+$/.test(String(origExec)) ? `${DASH_BASE}/#/e/${origExec}` : '';\n\nconst waText = String(d.notif_text || '').trim();\nconst ts = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', dateStyle: 'full', timeStyle: 'medium' });\n\nconst headline = origWf !== '-' ? origWf : notifierWf;\nconst headExec = origExec !== '-' ? origExec : (notifierExec || '-');\nconst subject = `\\u{1F6A8} [${tenant}] WA ALERT GAGAL TERKIRIM - ${headline} #${headExec}`;\n\n// ---------------- plain text ----------------\nconst textBody = [\n  `[${tenant}] WA ALERT GAGAL TERKIRIM`,\n  `Waktu: ${ts} WIB`,\n  '',\n  '--- 1. ISI ALERT YANG GAGAL DIKIRIM KE WA ---',\n  waText || '(tidak tersedia - buka execution notifier di bawah, lihat input node Error Trigger)',\n  '',\n  '--- 2. KENAPA WA-NYA GAGAL ---',\n  `Notifier : ${notifierWf}`,\n  `Node     : ${failNode}`,\n  `Sebab    : ${failReason}`,\n  kirimiResp ? `Response : ${kirimiResp}` : '',\n  notifierUrl ? `Execution notifier: ${notifierUrl}` : '',\n  '',\n  '--- 3. ERROR ASLINYA ---',\n  `Workflow : ${origWf}`,\n  `Node     : ${origNode}`,\n  `Error    : ${origErr}`,\n  origUrl ? `Execution: ${origUrl}` : '',\n  dashUrl ? `Retry dari HP: ${dashUrl}` : '',\n  '',\n  'Ada kemungkinan pesan user TIDAK terbalas. Cek & balas manual.'\n].filter(Boolean).join('\\n');\n\n// ---------------- html ----------------\nconst esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst row = (k, v) => `<tr><td style=\"padding:5px 12px 5px 0;color:#5f6368;white-space:nowrap;vertical-align:top\">${k}</td><td style=\"padding:5px 0;word-break:break-word\"><code style=\"font:13px ui-monospace,Consolas,monospace\">${esc(v)}</code></td></tr>`;\nconst btn = (url, label, bg) => url ? `<a href=\"${url}\" style=\"display:inline-block;padding:10px 18px;margin:6px 8px 0 0;background:${bg};color:#fff;text-decoration:none;border-radius:6px;font:600 13px system-ui\">${label}</a>` : '';\nconst h3 = (t) => `<h3 style=\"margin:22px 0 8px;font:700 14px system-ui;color:#202124\">${t}</h3>`;\n\nconst html = `<div style=\"font:14px/1.6 system-ui,'Segoe UI',Arial,sans-serif;color:#202124;max-width:680px\">\n  <div style=\"background:#d93025;color:#fff;padding:16px 20px;border-radius:8px 8px 0 0\">\n    <div style=\"font-size:18px;font-weight:700\">\\u{1F6A8} ${tenant} &mdash; WA ALERT GAGAL TERKIRIM</div>\n    <div style=\"font-size:12px;opacity:.9;margin-top:2px\">${ts} WIB</div>\n  </div>\n  <div style=\"border:1px solid #dadce0;border-top:0;padding:18px 20px 24px;border-radius:0 0 8px 8px\">\n    <p style=\"margin:0\">Email ini terkirim karena <b>notifikasi WhatsApp lewat Kirimi tidak berhasil dikirim</b>. Isi alert aslinya ada di bawah.</p>\n\n    ${h3('1. Isi alert yang gagal dikirim ke WA')}\n    <pre style=\"background:#f1f3f4;border:1px solid #dadce0;border-radius:6px;padding:12px;white-space:pre-wrap;word-break:break-word;font:13px/1.55 ui-monospace,Consolas,monospace;margin:0\">${esc(waText || '(tidak tersedia \\u2014 buka execution notifier di bawah, lihat input node Error Trigger)')}</pre>\n\n    ${h3('2. Kenapa WA-nya gagal')}\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      ${row('Notifier', notifierWf)}\n      ${row('Node', failNode)}\n      ${row('Sebab', failReason)}\n      ${kirimiResp ? row('Response', kirimiResp) : ''}\n    </table>\n\n    ${h3('3. Error aslinya')}\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      ${row('Workflow', origWf)}\n      ${row('Node', origNode)}\n      ${row('Error', origErr)}\n      ${row('Execution', origExec)}\n    </table>\n\n    <div style=\"margin-top:18px\">\n      ${btn(dashUrl, '\\u{1F4F1} Retry dari HP', '#1a73e8')}\n      ${btn(origUrl, '\\u2192 Buka execution yang error', '#d93025')}\n      ${btn(notifierUrl, '\\u2192 Buka execution notifier', '#5f6368')}\n    </div>\n\n    <p style=\"margin:22px 0 0;padding:12px 14px;background:#fef7e0;border-left:4px solid #f9ab00;border-radius:4px\">\n      \\u26A0\\uFE0F Ada kemungkinan pesan user <b>TIDAK terbalas</b>. Cek &amp; balas manual.\n    </p>\n  </div>\n</div>`;\n\nreturn [{ json: { tenant, subject, html, text: textBody } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3312,
+        1600
+      ],
+      "id": "744f3e12-52c8-48c9-bc30-363578e01ef1",
+      "name": "Normalize & Compose Email"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer GANTI_RESEND_API_KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: 'VIRA Alert <onboarding@resend.dev>', to: ['stevenleroy0@gmail.com'], subject: $json.subject, html: $json.html, text: $json.text }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3600,
+        2000
+      ],
+      "id": "24a6b3fc-4386-422b-8962-f1bc02e44ad5",
+      "name": "CADANGAN - Resend",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "chatminagent@gmail.com",
+        "toEmail": "stevenleroy0@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "emailFormat": "both",
+        "text": "={{ $json.text }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3600,
+        1808
+      ],
+      "id": "18fad554-416e-4152-83f1-202249254d5e",
+      "name": "CADANGAN - SMTP",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "webhookId": "f678f131-6c19-4dec-b4c2-a519aab685ef",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sendTo": "stevenleroy0@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "VIRA Alert"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3600,
+        1600
+      ],
+      "id": "66398eda-aab8-4451-9e65-b0cf79045e0b",
+      "name": "Kirim Email (Gmail)",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "webhookId": "9bb34c95-614c-40f2-8c5c-a52c078ac91d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hC4iEn4w0FA6Tmxd",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.brevo.com/v3/smtp/email",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api-key",
+              "value": "GANTI_BREVO_API_KEY"
+            },
+            {
+              "name": "accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ sender: { name: 'VIRA Alert', email: 'chatminagent@gmail.com' }, to: [{ email: 'stevenleroy0@gmail.com' }], subject: $json.subject, htmlContent: $json.html, textContent: $json.text }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3600,
+        2176
+      ],
+      "id": "08bd50ba-dd70-403b-a84c-d8bd3af894b2",
+      "name": "CADANGAN - Brevo",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## BAGIAN A\n\n**A1-A2.** Bikin kredensial **Gmail OAuth2** di Google Cloud, pasang di node **Kirim Email (Gmail)**.\n⚠️ Setelah jalan, **WAJIB klik PUBLISH APP** di OAuth consent screen. Kalau statusnya dibiarkan *Testing*, token Google mati tiap **7 hari** dan alert ini berhenti tanpa pemberitahuan. Langkah lengkap di README.\n\n**A3.** Node **Normalize & Compose Email** &rarr; baris 11 &rarr; ganti `N8N_BASE` dengan URL n8n kamu, tanpa `/` di akhir.\n\n**A4.** Save. Catat workflow ID dari URL browser. Tidak perlu di-Activate.\n\n**A5.** Tes: klik **Execute workflow**. Email harus masuk (isinya banyak tanda `-`, itu normal).\n\n&rarr; lanjut **BAGIAN B**\n\n---\n\nLangkah lengkap + troubleshooting ada di **README.md**",
+        "height": 400,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        1456
+      ],
+      "id": "a273946d-619e-4833-a11e-8f36b4266690",
+      "name": "Sticky Setup"
+    },
+    {
+      "parameters": {
+        "content": "### Ganti pengirim (opsional)\n\n3 node di bawah nonaktif. Semua pakai output yang sama, jadi tinggal sambungkan **Normalize & Compose Email** &rarr; node pilihan, enable node itu, matikan Gmail.\n\n**SMTP** &mdash; paling cepat kalau OAuth ribet. Butuh App Password Gmail (2FA harus aktif). `smtp.gmail.com` port `465` SSL on. Timeout? coba `587` SSL off. Akun sama, tanpa Google Cloud.\n\n**Resend** &mdash; tanpa OAuth, tanpa app password, API key tidak pernah expired. Daftar pakai `stevenleroy0@gmail.com`.\n\n**Brevo** &mdash; kalau mau sender tetap `chatminagent@gmail.com`. Verifikasi sender lewat klik link. Gratis 300/hari, bebas penerima.",
+        "height": 460,
+        "width": 380,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        3920,
+        1776
+      ],
+      "id": "c4af20ca-3fb0-4a43-adf0-1c51e4b3e11e",
+      "name": "Sticky Pengirim"
+    },
+    {
+      "parameters": {
+        "content": "### 2 pintu masuk\n\n**Atas (Execute Workflow)** = jalur utama, dipanggil eksplisit dari error notifier saat Kirimi gagal. Payload lengkap.\n\n**Bawah (Error Trigger)** = lapis kedua, jalan kalau notifier-nya sendiri crash. Data lebih tipis.",
+        "height": 240,
+        "width": 340,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2992,
+        1168
+      ],
+      "id": "f70e55ab-d6db-46d6-b20f-c3d3cd976460",
+      "name": "Sticky Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dipanggil dari Error Notifier": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Compose Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger (lapis 2)": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Compose Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Compose Email": {
+      "main": [
+        [
+          {
+            "node": "Kirim Email (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "44ddf46b-2d13-4cb6-ae9a-e1cf538f04f6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "xGsl3M3tONsHPDgT9lOWF",
+  "tags": []
+}

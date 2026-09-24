@@ -1,0 +1,389 @@
+{
+  "name": "TIM - Schedule Reminder Harian (FIXED v3)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1,6,12 * * *"
+            }
+          ]
+        }
+      },
+      "id": "sch-rem-001",
+      "name": "Schedule - Reminder 3x Harian2",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Pekerjaan",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "gs-pek-rem-001",
+      "name": "GS - Read Pekerjaan Reminder2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        420,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "settings": {
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 30000
+      }
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "wait-pek-001",
+      "name": "Wait - After Pekerjaan1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        300
+      ],
+      "webhookId": "b1c9f799-c96b-4d19-8477-ab552db71618"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "PekerjaanStatus",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "gs-sta-rem-001",
+      "name": "GS - Read Status Reminder2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        860,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "settings": {
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 30000
+      }
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "wait-sta-001",
+      "name": "Wait - After Status1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        300
+      ],
+      "webhookId": "534ed783-80a4-4730-b5af-6bf57d05d30a"
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1KdQWOzKbMg8OaxvfmOmS3HT8SzDeabG1jtDAP2hS4dk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Pekerja",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "gs-ker-rem-001",
+      "name": "GS - Read Pekerja Reminder2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1300,
+        300
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "w6kTFpqhfRee3RUg",
+          "name": "Google Sheets account 2"
+        }
+      },
+      "settings": {
+        "retryOnFail": true,
+        "maxTries": 5,
+        "waitBetweenTries": 30000
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// $input = Pekerja sheet rows (from GS - Read Pekerja Reminder)\nconst pekerjaRows   = $input.all().map(i => i.json).filter(r => r.Nama || r.nama);\nconst pekerjaanRows = $('GS - Read Pekerjaan Reminder2').all().map(i => i.json)\n  .filter(r => r.Batch_ID && r.Pekerjaan);\nconst statusRows    = $('GS - Read Status Reminder2').all().map(i => i.json)\n  .filter(r => r.Batch_ID && r.No_Item && r.Status);\n\n// Latest status per \"Batch_ID|No_Item\"\nconst latestStatus = {};\nstatusRows.forEach(r => {\n  latestStatus[r.Batch_ID + '|' + r.No_Item] = r.Status;\n});\n\n// WIB time period\nconst wibHour = (new Date().getUTCHours() + 7) % 24;\nconst period  = wibHour < 12 ? 'Pagi' : wibHour < 17 ? 'Siang' : 'Malam';\n\n// Build per-batch, per-item — skip done items\nconst batches = {};\npekerjaanRows.forEach(r => {\n  const bid    = r.Batch_ID;\n  const noItem = r.No_Item || 1;\n  const status = latestStatus[bid + '|' + noItem] || 'pending';\n  if (status === 'done') return;\n\n  if (!batches[bid]) {\n    batches[bid] = {\n      batch_id: bid,\n      project:  (String(r.Proyek  || '')).trim(),\n      pekerja:  (String(r.Pekerja || '')).trim(),\n      catatan:  (String(r.Catatan || '')).trim(),\n      items:    []\n    };\n  }\n  batches[bid].items.push({\n    pekerjaan: r.Pekerjaan,\n    vol:       r.Vol,\n    sat:       r.Sat,\n    status\n  });\n});\n\n// Group non-empty batches by pekerja\nconst byPekerja = {};\nObject.values(batches).forEach(b => {\n  if (!b.pekerja || b.items.length === 0) return;\n  if (!byPekerja[b.pekerja]) byPekerja[b.pekerja] = [];\n  byPekerja[b.pekerja].push(b);\n});\n\nif (Object.keys(byPekerja).length === 0) return [];\n\n// Build WA per pekerja\nconst result = [];\nObject.entries(byPekerja).forEach(([nama, jobs]) => {\n  const worker   = pekerjaRows.find(w => (String(w.Nama || w.nama || '')).trim() === nama);\n  const rawPhone = worker ? (worker.No_HP || worker.no_hp || '').toString().trim() : '';\n  const phone    = rawPhone.replace(/\\D/g,'').replace(/^0+/,'62');\n  if (!phone) return;\n\n  let msg = `\\u23F0 *Pengingat ${period} \\u2014 TIM Interior*\\n\\n`;\n  msg += `Halo *${nama}*! Item pekerjaan yang masih perlu diselesaikan:\\n\\n`;\n\n  jobs.forEach(job => {\n    msg += `\\ud83d\\udccb *${job.project}*`;\n    if (job.catatan) msg += ` \\u2014 ${job.catatan}`;\n    msg += `\\n`;\n    job.items.slice(0, 6).forEach((it, i) => {\n      const stIcon = it.status === 'inprogress' ? '\\ud83d\\udd28' : '\\u23f3';\n      msg += `  ${stIcon} ${it.pekerjaan} (${it.vol} ${it.sat})\\n`;\n    });\n    if (job.items.length > 6) msg += `  ... +${job.items.length - 6} item lainnya\\n`;\n    msg += `\\n`;\n  });\n  msg += `_Update via aplikasi TIM Interior_`;\n\n  result.push({ json: { phone, waMessage: msg, pekerja: nama, totalItems: jobs.reduce((s,j)=>s+j.items.length,0) } });\n});\n\nreturn result;"
+      },
+      "id": "code-build-rem-001",
+      "name": "Code - Build WA Reminders2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-rem-001",
+      "name": "Split In Batches1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1740,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "wait-wa-001",
+      "name": "Wait - Throttle WA1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1740,
+        520
+      ],
+      "webhookId": "4ecdfe94-5817-40df-a49f-436b14794a2e"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-GJTBU"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http-wa-rem-001",
+      "name": "HTTP - Kirim WA Reminder2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1520,
+        520
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "noop-rem-001",
+      "name": "Selesai - Semua Terkirim1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1960,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule - Reminder 3x Harian2": {
+      "main": [
+        [
+          {
+            "node": "GS - Read Pekerjaan Reminder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Pekerjaan Reminder2": {
+      "main": [
+        [
+          {
+            "node": "Wait - After Pekerjaan1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - After Pekerjaan1": {
+      "main": [
+        [
+          {
+            "node": "GS - Read Status Reminder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Status Reminder2": {
+      "main": [
+        [
+          {
+            "node": "Wait - After Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - After Status1": {
+      "main": [
+        [
+          {
+            "node": "GS - Read Pekerja Reminder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GS - Read Pekerja Reminder2": {
+      "main": [
+        [
+          {
+            "node": "Code - Build WA Reminders2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Build WA Reminders2": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split In Batches1": {
+      "main": [
+        [
+          {
+            "node": "Wait - Throttle WA1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Selesai - Semua Terkirim1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - Throttle WA1": {
+      "main": [
+        [
+          {
+            "node": "HTTP - Kirim WA Reminder2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP - Kirim WA Reminder2": {
+      "main": [
+        [
+          {
+            "node": "Split In Batches1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

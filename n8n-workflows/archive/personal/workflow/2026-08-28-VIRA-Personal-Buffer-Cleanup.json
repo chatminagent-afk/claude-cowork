@@ -1,0 +1,242 @@
+{
+  "name": "VIRA Personal — MSG_BUFFER Cleanup (JANGAN DEPLOY - dipakai GLOBAL Sheet Cleanup)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 3 * * *"
+            }
+          ]
+        }
+      },
+      "id": "48d5f001-5bbd-4526-bbc7-d0509b1ab74b",
+      "name": "Every day 03:00 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "CONFIG",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "f0b17465-0d47-4c75-8a4c-ee6199f36c8c",
+      "name": "Read CONFIG",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Baca CONFIG (key/value) -> retensi housekeeping MSG_BUFFER.\n//\n// INVARIANT WAJIB (lihat sticky note di workflow ini): msg_buffer_retention_hours\n// (jam, dipakai DI SINI) HARUS lebih besar dari msg_buffer_ttl_minutes (menit,\n// dipakai workflow UTAMA untuk menggabungkan pesan beruntun / merge debounce).\n// Kalau tidak, baris yang masih dibutuhkan untuk merge bisa keburu terhapus.\nconst rows = $input.all().map(i => i.json);\nconst cfg = {};\nfor (const r of rows) {\n  const k = String(r.key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value : '';\n}\nconst num = (k, d) => {\n  const raw = cfg[k];\n  if (raw === undefined || raw === '') return d;\n  const n = Number(raw);\n  return isNaN(n) ? d : n;\n};\n\nconst retentionHours = num('msg_buffer_retention_hours', 2);\nconst ttlMinutes = num('msg_buffer_ttl_minutes', 30); // hanya dibaca untuk validasi invariant\n\nif (retentionHours * 60 <= ttlMinutes) {\n  console.warn(`⚠️ INVARIANT DILANGGAR: msg_buffer_retention_hours (${retentionHours} jam = ${retentionHours * 60} menit) harus LEBIH BESAR dari msg_buffer_ttl_minutes (${ttlMinutes} menit). Baris yang masih dipakai workflow utama untuk merge debounce berisiko terhapus duluan. Perbaiki nilai di tab CONFIG. Penghapusan tetap jalan dengan nilai retensi yang di-set admin.`);\n}\n\nreturn [{ json: {\n  retention_hours: retentionHours,\n  retention_ms: retentionHours * 60 * 60 * 1000,\n  ttl_minutes: ttlMinutes\n} }];"
+      },
+      "id": "a354e601-8f05-4996-a1ae-f61ce92d5458",
+      "name": "Parse Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "75e679e5-0ac3-4f31-8a47-2d9be573fa05",
+      "name": "Read MSG_BUFFER (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PICK EXPIRED BLOCK — MSG_BUFFER housekeeping\n// MSG_BUFFER bersifat append-only => ts naik seiring nomor baris =>\n// baris kedaluwarsa (paling lama) SELALU blok kontigu di bagian atas\n// (mulai baris 2). Jadi cukup 1x delete range (hemat kuota API), bukan\n// hapus per baris satu-satu.\n//\n// Retensi dibaca dari CONFIG via node \"Parse Config\" (msg_buffer_retention_hours,\n// default 2 jam) — HARUS > msg_buffer_ttl_minutes di workflow utama (lihat\n// sticky note + warning di \"Parse Config\").\n// ====================================================================\nconst RETENTION_MS = $('Parse Config').first().json.retention_ms;\nconst cutoff = Date.now() - RETENTION_MS;\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.row_number !== undefined && Number(r.row_number) >= 2)\n  .sort((a, b) => Number(a.row_number) - Number(b.row_number)); // menaik (atas -> bawah)\n\nif (!rows.length) {\n  console.log('🧹 MSG_BUFFER kosong / hanya header — tidak ada yang dihapus.');\n  return [];\n}\n\n// Hitung run kontigu baris kedaluwarsa mulai dari baris teratas. Berhenti di\n// baris pertama yang MASIH segar atau yang ts-nya tidak valid — defensif:\n// jangan pernah hapus baris yang tidak bisa dipastikan kedaluwarsanya.\nlet count = 0;\nfor (const r of rows) {\n  const ts = Number(r.ts);\n  const valid = Number.isFinite(ts) && ts > 0;\n  if (valid && ts < cutoff) {\n    count++;\n  } else {\n    if (!valid) {\n      console.warn(`⚠️ Baris ${r.row_number} ts tidak valid (\"${r.ts}\") — stop, tidak hapus lebih jauh.`);\n    }\n    break;\n  }\n}\n\nif (count === 0) {\n  console.log('🧹 Tidak ada baris kedaluwarsa — buffer sudah ramping.');\n  return [];\n}\n\nconst startRow = Number(rows[0].row_number); // normalnya 2\nconsole.log(`🧹 Hapus ${count} baris kedaluwarsa: baris ${startRow}..${startRow + count - 1}.`);\nreturn [{ json: { startRow, count } }];\n"
+      },
+      "id": "daa6c7dd-027b-49bb-baa6-1561966ff568",
+      "name": "Pick expired block",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1C5gF1TTJFAHCrfVESiaIhAts6iByRH9BRjLqBCO_Yxk",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "MSG_BUFFER",
+          "mode": "name"
+        },
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "92129a4c-0f86-4919-8759-ce3b86aec3ea",
+      "name": "Delete expired rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Invariant WAJIB\n`msg_buffer_retention_hours` (CONFIG, dipakai workflow ini) **HARUS lebih besar** dari `msg_buffer_ttl_minutes` (CONFIG, dipakai workflow utama VIRA Steven untuk menggabungkan pesan beruntun / merge debounce).\n\n**Kenapa:** MSG_BUFFER dipakai untuk menggabungkan pesan-pesan yang datang beruntun dalam jendela `ttl_minutes`. Kalau retensi cleanup ini lebih pendek atau sama dengan jendela merge itu, baris yang MASIH akan dipakai bisa terhapus duluan oleh cleanup harian — pesan user hilang dari histori tanpa jejak.\n\n**Default aman:** `msg_buffer_retention_hours = 2` (120 menit) vs `msg_buffer_ttl_minutes = 30`. Kalau salah satu diubah manual di CONFIG dan invariant ini dilanggar, node **Parse Config** menulis WARNING ke log eksekusi — tapi TIDAK menghentikan penghapusan (nilai retensi yang di-set admin tetap dihormati). Cek log eksekusi kalau ragu.\n\n**Satu delete per run:** MSG_BUFFER append-only ⇒ baris kedaluwarsa selalu blok kontigu di atas ⇒ 1x panggilan delete range, bukan per baris.",
+        "height": 360,
+        "width": 640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        -400
+      ],
+      "typeVersion": 1,
+      "id": "0aa33309-7b5b-4d36-b1b0-266702a65c1d",
+      "name": "Sticky Note - Invariant"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every day 03:00 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG": {
+      "main": [
+        [
+          {
+            "node": "Parse Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config": {
+      "main": [
+        [
+          {
+            "node": "Read MSG_BUFFER (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read MSG_BUFFER (all)": {
+      "main": [
+        [
+          {
+            "node": "Pick expired block",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick expired block": {
+      "main": [
+        [
+          {
+            "node": "Delete expired rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1
+  },
+  "versionId": "",
+  "id": "",
+  "tags": [
+    {
+      "updatedAt": "2026-08-15T00:00:00.000Z",
+      "createdAt": "2026-08-15T00:00:00.000Z",
+      "id": "uFkh64Z3DrxyMFaWVlgbm",
+      "name": "vira-steven"
+    }
+  ]
+}

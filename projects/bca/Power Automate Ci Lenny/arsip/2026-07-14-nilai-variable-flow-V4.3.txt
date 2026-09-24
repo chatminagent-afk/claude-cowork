@@ -1,0 +1,145 @@
+ACTION: Init_varBulan
+Variable Name: varBulan
+Type: string
+VALUE:
+@convertTimeZone(utcNow(),'UTC','SE Asia Standard Time','MMM yyyy')
+------------------------------------------------------------
+ACTION: Init_varTanggal
+Variable Name: varTanggal
+Type: string
+VALUE:
+@convertTimeZone(utcNow(),'UTC','SE Asia Standard Time','dd MMM yyyy')
+------------------------------------------------------------
+ACTION: Init_varToday
+Variable Name: varToday
+Type: string
+VALUE:
+@convertTimeZone(utcNow(),'UTC','SE Asia Standard Time','MM/dd/yyyy')
+------------------------------------------------------------
+ACTION: Init_varPrepUAT
+Variable Name: varPrepUAT
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varCompleted
+Variable Name: varCompleted
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varUAT
+Variable Name: varUAT
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varAttention
+Variable Name: varAttention
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varOnHold
+Variable Name: varOnHold
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varNextProject
+Variable Name: varNextProject
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varRegresi
+Variable Name: varRegresi
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varTimeline
+Variable Name: varTimeline
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varRegresiDate
+Variable Name: varRegresiDate
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varRolloutRaw
+Variable Name: varRolloutRaw
+Type: string
+VALUE:
+(kosong / empty string — pakai ekspresi:  string('')  )
+------------------------------------------------------------
+ACTION: Init_varN
+Variable Name: varN
+Type: integer
+VALUE:
+1
+------------------------------------------------------------
+ACTION: Init_varD
+Variable Name: varD
+Type: integer
+VALUE:
+1
+------------------------------------------------------------
+ACTION: Set_varTimeline
+Variable Name: varTimeline
+VALUE:
+@concat('• Pilot Implementation : ',if(if(greater(length(trim(string(coalesce(item()?['Imple Pilot'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Imple Pilot'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Imple Pilot'],''))),'/'),trim(string(coalesce(item()?['Imple Pilot'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Imple Pilot'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'),'%0A• Production Implementation : ',if(if(greater(length(trim(string(coalesce(item()?['Imple Prod'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Imple Prod'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Imple Prod'],''))),'/'),trim(string(coalesce(item()?['Imple Prod'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Imple Prod'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'),'%0A• Rollout : ',if(if(greater(length(trim(string(coalesce(item()?['Rollout'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Rollout'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Rollout'],''))),'/'),trim(string(coalesce(item()?['Rollout'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Rollout'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'))
+------------------------------------------------------------
+ACTION: Set_varRegresiDate
+Variable Name: varRegresiDate
+VALUE:
+@concat(if(if(greater(length(trim(string(coalesce(item()?['Start Regresi'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Start Regresi'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Start Regresi'],''))),'/'),trim(string(coalesce(item()?['Start Regresi'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start Regresi'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'),' - ',if(if(greater(length(trim(string(coalesce(item()?['End Regresi'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['End Regresi'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['End Regresi'],''))),'/'),trim(string(coalesce(item()?['End Regresi'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['End Regresi'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'))
+------------------------------------------------------------
+ACTION: Set_varRolloutRaw
+Variable Name: varRolloutRaw
+VALUE:
+@trim(string(coalesce(item()?['Rollout'],'')))
+------------------------------------------------------------
+ACTION: Set_varBulan_NextMonth
+Variable Name: varBulan
+VALUE:
+@formatDateTime(addToTime(convertTimeZone(utcNow(),'UTC','SE Asia Standard Time'),1,'Month'),'MMM yyyy')
+------------------------------------------------------------
+ACTION: Clear_varTimeline
+Variable Name: varTimeline
+VALUE:
+@string('')
+------------------------------------------------------------
+ACTION: Clear_varRegresiDate
+Variable Name: varRegresiDate
+VALUE:
+@string('')
+------------------------------------------------------------
+ACTION: Clear_varRolloutRaw
+Variable Name: varRolloutRaw
+VALUE:
+@string('')
+------------------------------------------------------------
+ACTION: Set_varTimeline_Next
+Variable Name: varTimeline
+VALUE:
+@concat('• Pilot Implementation : ',if(if(greater(length(trim(string(coalesce(item()?['Imple Pilot'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Imple Pilot'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Imple Pilot'],''))),'/'),trim(string(coalesce(item()?['Imple Pilot'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Imple Pilot'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'),'%0A• Production Implementation : ',if(if(greater(length(trim(string(coalesce(item()?['Imple Prod'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Imple Prod'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Imple Prod'],''))),'/'),trim(string(coalesce(item()?['Imple Prod'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Imple Prod'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'),'%0A• Rollout : ',if(if(greater(length(trim(string(coalesce(item()?['Rollout'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Rollout'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Rollout'],''))),'/'),trim(string(coalesce(item()?['Rollout'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Rollout'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'))
+------------------------------------------------------------
+ACTION: Set_varRegresiDate_Next
+Variable Name: varRegresiDate
+VALUE:
+@concat(if(if(greater(length(trim(string(coalesce(item()?['Start Regresi'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Start Regresi'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['Start Regresi'],''))),'/'),trim(string(coalesce(item()?['Start Regresi'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start Regresi'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'),' - ',if(if(greater(length(trim(string(coalesce(item()?['End Regresi'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['End Regresi'],''))),0,1)),false),formatDateTime(if(contains(trim(string(coalesce(item()?['End Regresi'],''))),'/'),trim(string(coalesce(item()?['End Regresi'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['End Regresi'],''))),'.'))),'MM/dd/yyyy')),'dd MMM yyyy'),'-'))
+------------------------------------------------------------
+ACTION: Set_varN_Item
+Variable Name: varN
+VALUE:
+@if(and(if(greater(length(trim(string(coalesce(item()?['Start UAT Plan'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Start UAT Plan'],''))),0,1)),false),if(greater(length(trim(string(coalesce(item()?['End UAT Plan'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['End UAT Plan'],''))),0,1)),false)),max(1,sub(sub(add(div(sub(ticks(if(contains(trim(string(coalesce(item()?['End UAT Plan'],''))),'/'),trim(string(coalesce(item()?['End UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['End UAT Plan'],''))),'.'))),'MM/dd/yyyy'))),ticks(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),864000000000),1),div(add(sub(add(div(sub(ticks(if(contains(trim(string(coalesce(item()?['End UAT Plan'],''))),'/'),trim(string(coalesce(item()?['End UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['End UAT Plan'],''))),'.'))),'MM/dd/yyyy'))),ticks(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),864000000000),1),mod(sub(13,dayOfWeek(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),7)),6),7)),div(add(sub(add(div(sub(ticks(if(contains(trim(string(coalesce(item()?['End UAT Plan'],''))),'/'),trim(string(coalesce(item()?['End UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['End UAT Plan'],''))),'.'))),'MM/dd/yyyy'))),ticks(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),864000000000),1),mod(sub(7,dayOfWeek(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),7)),6),7))),1)
+------------------------------------------------------------
+ACTION: Set_varD_Item
+Variable Name: varD
+VALUE:
+@if(if(greater(length(trim(string(coalesce(item()?['Start UAT Plan'],'')))),0),contains('0123456789',substring(trim(string(coalesce(item()?['Start UAT Plan'],''))),0,1)),false),max(1,sub(sub(add(div(sub(ticks(variables('varToday')),ticks(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),864000000000),1),div(add(sub(add(div(sub(ticks(variables('varToday')),ticks(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),864000000000),1),mod(sub(13,dayOfWeek(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),7)),6),7)),div(add(sub(add(div(sub(ticks(variables('varToday')),ticks(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),864000000000),1),mod(sub(7,dayOfWeek(if(contains(trim(string(coalesce(item()?['Start UAT Plan'],''))),'/'),trim(string(coalesce(item()?['Start UAT Plan'],''))),addDays('1899-12-30',int(first(split(trim(string(coalesce(item()?['Start UAT Plan'],''))),'.'))),'MM/dd/yyyy')))),7)),6),7))),1)
+------------------------------------------------------------

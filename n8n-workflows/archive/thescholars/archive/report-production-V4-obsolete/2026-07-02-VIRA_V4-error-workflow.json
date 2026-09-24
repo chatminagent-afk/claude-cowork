@@ -1,0 +1,99 @@
+{
+  "name": "VIRA Error Notifier",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "187dea2a-67d3-4b3e-b6df-bb623aea3843",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Susun notifikasi error untuk admin\nconst e = $input.first().json;\nconst wfName = e.workflow?.name || 'VIRA';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = (e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\nconst text = `🚨 [${wfName}] EKSEKUSI GAGAL\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}\\n${url}\\n\\n⚠️ Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nreturn [{ json: { notif_text: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "e58e22d2-997b-497c-8db3-fe291d3a196b",
+      "name": "Compose Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "=6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        440,
+        0
+      ],
+      "id": "094acc2f-bf6b-4916-874b-111cfe2e8752",
+      "name": "Notify Admin Error"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Compose Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  },
+  "pinData": {}
+}

@@ -1,0 +1,352 @@
+{
+  "Append Audit": [
+    {
+      "id": "ts",
+      "displayName": "ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "actor",
+      "displayName": "actor",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "role",
+      "displayName": "role",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "no_wa",
+      "displayName": "no_wa",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "from",
+      "displayName": "from",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "to",
+      "displayName": "to",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    }
+  ],
+  "Append Lead": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "off_reason",
+      "displayName": "off_reason",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tanggal Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Intensitas Chat",
+      "displayName": "Intensitas Chat",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "timestamp",
+      "displayName": "timestamp",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "last follow up",
+      "displayName": "last follow up",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "follow_up_count",
+      "displayName": "follow_up_count",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "gform_sent_ts",
+      "displayName": "gform_sent_ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "gform_filled",
+      "displayName": "gform_filled",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "user_status",
+      "displayName": "user_status",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "greeting_sent",
+      "displayName": "greeting_sent",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "pending_msg",
+      "displayName": "pending_msg",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "lid",
+      "displayName": "lid",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "kelas_anak",
+      "displayName": "kelas_anak",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "kelas_anak_ts",
+      "displayName": "kelas_anak_ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "program_interest",
+      "displayName": "program_interest",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "buffer_done_ts",
+      "displayName": "buffer_done_ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "last_reply_ts",
+      "displayName": "last_reply_ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    }
+  ],
+  "Append Audit (Add)": [
+    {
+      "id": "ts",
+      "displayName": "ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "actor",
+      "displayName": "actor",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "role",
+      "displayName": "role",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "no_wa",
+      "displayName": "no_wa",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "from",
+      "displayName": "from",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "to",
+      "displayName": "to",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    }
+  ]
+}

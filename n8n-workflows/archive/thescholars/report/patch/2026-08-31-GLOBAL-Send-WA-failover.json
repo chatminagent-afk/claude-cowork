@@ -1,0 +1,79 @@
+{
+  "name": "GLOBAL - Send WA (failover)",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "workflowInputs",
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "phone"
+            },
+            {
+              "name": "message"
+            },
+            {
+              "name": "context"
+            }
+          ]
+        }
+      },
+      "id": "b2000000-0000-4000-8000-000000000001",
+      "name": "Dipanggil Workflow Lain",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// GLOBAL - Send WA (failover)\n// Satu-satunya pintu keluar WhatsApp untuk seluruh workflow VIRA.\n//\n// LATAR BELAKANG (2026-08-31):\n// Kirimi memblokir IP server n8n (76.13.18.214) dengan respons\n//   {\"success\":false,\"data\":null,\"message\":\"Access denied. Your IP has been blocked...\"}\n// Enam node menembak Kirimi langsung, hardcoded, tanpa cadangan -> seluruh bot mati,\n// termasuk notifikasi errornya sendiri. Node lama juga membuang body respons,\n// sehingga penyebabnya baru ketahuan setelah berjam-jam menebak.\n//\n// YANG DIPERBAIKI DI SINI:\n//  1. Rantai provider. Gagal di satu provider -> lanjut ke berikutnya, otomatis.\n//  2. Circuit breaker. Provider yang membalas 401/403 diistirahatkan 10 menit,\n//     supaya kita tidak menghantam layanan yang sedang memblokir kita -- itu\n//     persis yang memicu blokir kemarin.\n//  3. Retry hanya untuk kegagalan transient (5xx/408/429/jaringan). 4xx TIDAK\n//     di-retry karena permanen; mengulanginya cuma menambah jejak abuse.\n//  4. Body respons SELALU ikut dilaporkan. Ini yang kemarin hilang.\n//  5. Kredensial semua provider terkumpul di satu tempat (blok PROVIDERS di bawah).\n//\n// KONTRAK:\n//   input  : { phone, message, context }\n//   sukses : [{ json: { ok:true, provider, response, attempts, context } }]\n//   gagal  : throw berisi ringkasan SEMUA percobaan -> execution merah ->\n//            Error Notifier jalan -> bisa di-retry dari dashboard mobile.\n//\n// CATATAN RETRY n8n: node pemanggil (Execute Workflow) harus dibiarkan\n// On Error = Stop Workflow. Karena kirim + verifikasi ada di dalam satu\n// sub-workflow, satu klik Retry benar-benar mengirim ulang -- bukan sekadar\n// memvalidasi ulang respons lama.\n// ============================================================\n\nconst input   = $input.first().json || {};\nconst phone   = String(input.phone == null ? '' : input.phone).trim();\nconst message = String(input.message == null ? '' : input.message);\nconst context = String(input.context || 'tanpa-konteks');\n\nif (!phone)          { throw new Error('Send WA: nomor tujuan kosong (context: ' + context + ')'); }\nif (!message.trim()) { throw new Error('Send WA: pesan kosong (context: ' + context + ')'); }\n\n// ============================================================\n// KONFIGURASI PROVIDER -- urut prioritas, atas duluan.\n// Untuk mengganti provider utama, cukup pindahkan urutannya di array ini.\n// Ini SATU-SATUNYA tempat kredensial WhatsApp disimpan sekarang.\n// ============================================================\nconst enc = (o) => Object.keys(o)\n  .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(o[k]))\n  .join('&');\n\nconst PROVIDERS = [\n  {\n    name: 'kirimi',\n    enabled: true,\n    maxChars: 60000,\n    build: () => ({\n      method: 'POST',\n      url: 'https://api.kirimi.id/v1/send-message',\n      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },\n      body: JSON.stringify({\n        user_code: 'KM40LI0426',\n        secret: 'REDACTED',\n        device_id: 'D-4ZV1F',\n        receiver: phone, // nama field sesuai docs Kirimi per Agustus 2026\n        phone: phone,    // dipertahankan kalau-kalau Kirimi rollback\n        message: message,\n      }),\n    }),\n    ok: (r) => {\n      if (!r || typeof r !== 'object') { return false; }\n      if (r.success === false || r.status === false) { return false; }\n      return r.status === true || r.success === true ||\n             !!(r.data && r.data.id) || !!(r.message && r.message !== 'error');\n    },\n  },\n  {\n    // ISI TOKEN LALU UBAH enabled MENJADI true.\n    // Token: dashboard Fonnte -> Device -> Token.\n    name: 'fonnte',\n    enabled: false,\n    maxChars: 60000,\n    build: () => ({\n      method: 'POST',\n      url: 'https://api.fonnte.com/send',\n      headers: {\n        'Authorization': 'ISI_TOKEN_FONNTE_DI_SINI',\n        'Content-Type': 'application/x-www-form-urlencoded',\n        'Accept': 'application/json',\n      },\n      body: enc({ target: phone, message: message, countryCode: '62' }),\n    }),\n    ok: (r) => !!(r && r.status === true),\n  },\n];\n\n// ============================================================\n// Circuit breaker -- state bertahan antar eksekusi lewat static data.\n// Kalau static data tidak tersedia, sistem tetap jalan tanpa breaker\n// (degradasi lunak, bukan error).\n// ============================================================\nconst COOLDOWN_MS = 10 * 60 * 1000;\nconst now = Date.now();\n\nlet store = null;\ntry { store = $getWorkflowStaticData('global'); } catch (e) { store = null; }\nif (store && !store.cb) { store.cb = {}; }\n\nconst cooldownUntil = (name) => (store && store.cb && store.cb[name]) ? store.cb[name].until : 0;\nconst inCooldown    = (name) => cooldownUntil(name) > now;\nconst tripBreaker   = (name, why) => {\n  if (store && store.cb) { store.cb[name] = { until: now + COOLDOWN_MS, why: String(why).slice(0, 120) }; }\n};\nconst resetBreaker  = (name) => { if (store && store.cb) { delete store.cb[name]; } };\n\n// ============================================================\n// Helper HTTP\n// ============================================================\nconst MAX_TRIES = 2;   // hanya untuk kegagalan transient\nconst WAIT_MS   = 4000;\nconst TIMEOUT   = 60000;\n\nconst sleep = (ms) => new Promise((r) => {\n  if (typeof setTimeout === 'function') { setTimeout(r, ms); } else { r(); }\n});\n\n// Bentuk objek error httpRequest berbeda-beda antar versi n8n/axios.\n// Semua jalur yang mungkin dicoba supaya body aslinya tidak pernah hilang lagi.\nconst digErr = (e) => {\n  const st = (e && (e.httpCode\n    || (e.response && (e.response.status || e.response.statusCode))\n    || (e.cause && e.cause.response && e.cause.response.status))) || null;\n  const raw = (e && (\n    (e.response && (e.response.body || e.response.data))\n    || (e.cause && e.cause.response && e.cause.response.data)\n    || e.errorResponse)) || null;\n  let body = '';\n  try { body = (typeof raw === 'string') ? raw : JSON.stringify(raw); }\n  catch (_) { body = String(raw); }\n  return { status: st === null ? null : Number(st), body: String(body || '').slice(0, 400) };\n};\n\nconst parseBody = (raw) => {\n  if (raw && typeof raw === 'object') { return raw; }\n  if (typeof raw === 'string') {\n    try { return JSON.parse(raw); } catch (_) { return { raw: raw.slice(0, 400) }; }\n  }\n  return {};\n};\n\n// 5xx / 408 / 429 / gangguan jaringan = layak diulang.\n// 401 / 403 / 404 / 400 = permanen, jangan diulang.\nconst isTransient = (s) => s === null || s >= 500 || s === 408 || s === 429;\nconst isHardBlock = (s) => s === 401 || s === 403;\n\nconst trySend = async (p) => {\n  let info = { status: null, body: '' };\n  let lastMsg = '';\n\n  for (let i = 1; i <= MAX_TRIES; i++) {\n    try {\n      const opts = p.build();\n      opts.json = false;          // parsing respons ditangani manual\n      opts.timeout = TIMEOUT;\n      const raw  = await this.helpers.httpRequest(opts);\n      const resp = parseBody(raw);\n\n      if (p.ok(resp)) {\n        return { provider: p.name, ok: true, status: 200, response: resp, tries: i };\n      }\n      // HTTP 200 tapi isi respons menolak -> jangan diulang otomatis,\n      // risiko pesan dobel. Lanjut ke provider berikutnya saja.\n      return {\n        provider: p.name, ok: false, status: 200, hardBlock: false,\n        body: JSON.stringify(resp).slice(0, 300),\n        error: 'HTTP 200 tapi respons menolak', tries: i,\n      };\n    } catch (e) {\n      info = digErr(e);\n      lastMsg = (e && e.message) ? e.message : String(e);\n      console.log('[' + p.name + '] percobaan ' + i + '/' + MAX_TRIES +\n        ' gagal | HTTP ' + (info.status === null ? '?' : info.status) + ' | ' + lastMsg);\n      console.log('[' + p.name + '] respons mentah: ' + (info.body || '(kosong)'));\n\n      if (!isTransient(info.status)) { break; }\n      if (i < MAX_TRIES) { await sleep(WAIT_MS); }\n    }\n  }\n\n  return {\n    provider: p.name, ok: false, status: info.status,\n    hardBlock: isHardBlock(info.status),\n    body: info.body, error: lastMsg, tries: MAX_TRIES,\n  };\n};\n\n// ============================================================\n// Rantai failover\n// ============================================================\nconst attempts = [];\nlet sent = null;\n\nfor (const p of PROVIDERS) {\n  if (!p.enabled) {\n    attempts.push({ provider: p.name, skipped: 'dinonaktifkan di konfigurasi' });\n    continue;\n  }\n  if (inCooldown(p.name)) {\n    const sisa = Math.ceil((cooldownUntil(p.name) - now) / 1000);\n    attempts.push({ provider: p.name, skipped: 'circuit breaker aktif, sisa ' + sisa + ' detik' });\n    continue;\n  }\n  if (message.length > p.maxChars) {\n    attempts.push({ provider: p.name, skipped: 'pesan ' + message.length + ' char melebihi batas ' + p.maxChars });\n    continue;\n  }\n\n  const res = await trySend(p);\n  attempts.push(res);\n\n  if (res.ok) { sent = res; resetBreaker(p.name); break; }\n  if (res.hardBlock) {\n    tripBreaker(p.name, 'HTTP ' + res.status + ': ' + (res.body || res.error));\n    console.log('[' + p.name + '] diistirahatkan 10 menit (HTTP ' + res.status + ')');\n  }\n}\n\nif (!sent) {\n  const rincian = attempts.map((a) => {\n    if (a.skipped) { return '  - ' + a.provider + ': DILEWATI (' + a.skipped + ')'; }\n    return '  - ' + a.provider + ': HTTP ' + (a.status === null ? '?' : a.status) +\n           ' | ' + (a.body || a.error || '(tanpa detail)');\n  }).join('\\n');\n\n  throw new Error(\n    'Send WA GAGAL di SEMUA provider\\n' +\n    'context : ' + context + '\\n' +\n    'tujuan  : ' + phone + '\\n' +\n    'panjang : ' + message.length + ' karakter\\n' +\n    'percobaan:\\n' + rincian\n  );\n}\n\nconsole.log('Send WA sukses via ' + sent.provider + ' (context: ' + context + ')');\n\nreturn [{\n  json: {\n    ok: true,\n    provider: sent.provider,\n    response: sent.response,\n    attempts: attempts,\n    context: context,\n  },\n}];\n"
+      },
+      "id": "b2000000-0000-4000-8000-000000000002",
+      "name": "Kirim WA (failover)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## GLOBAL - Send WA (failover)\n\nPintu keluar WhatsApp untuk **seluruh** workflow VIRA. Jangan panggil API provider langsung dari node mana pun lagi.\n\n### Cara memanggil\nNode **Execute Workflow** di workflow pemanggil:\n- Workflow: *GLOBAL - Send WA (failover)*\n- `waitForSubWorkflow` = **true**\n- Isi 3 input: `phone`, `message`, `context`\n\n### Menyalakan Fonnte\nBuka node **Kirim WA (failover)**, cari blok `PROVIDERS`:\n1. Isi `ISI_TOKEN_FONNTE_DI_SINI` dengan token dari dashboard Fonnte\n2. Ubah `enabled: false` menjadi `true`\n\n### Mengganti provider utama\nPindahkan urutan objek di dalam array `PROVIDERS`. Yang paling atas dicoba duluan.\n\n### Kredensial\nSemua kredensial WhatsApp sekarang **hanya ada di node ini**. Rotasi secret cukup di satu tempat.",
+        "height": 620,
+        "width": 460,
+        "color": 4
+      },
+      "id": "b2000000-0000-4000-8000-000000000003",
+      "name": "Petunjuk",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -680
+      ]
+    }
+  ],
+  "connections": {
+    "Dipanggil Workflow Lain": {
+      "main": [
+        [
+          {
+            "node": "Kirim WA (failover)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {}
+}

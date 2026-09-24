@@ -1,0 +1,14 @@
+followup_ai_enabled	Y
+followup_ai_dry_run	Y
+followup_test_numbers	6285171701168
+followup_max_a	3
+followup_max_c	3
+followup_interval_hours_a	72
+followup_interval_hours_c	6
+followup_min_delay_sec	20
+followup_max_delay_sec	45
+followup_max_per_run	20
+followup_backlog_hour	9
+followup_backlog_days	3
+followup_templates_a	["Halo kak, kemarin sempat kita bahas soal chat yang masuk ke usaha kakak. Masih ada yang mau ditanyain soal gimana AI bantu di bagian itu?","Hai kak, aku masih di sini kalau mau lanjut ngobrol soal chat yang numpuk itu. Mau aku ceritain contoh sistemnya jalan di bisnis lain?","Halo kak, kalau mau, aku bisa mintakan Steven buatkan deck khusus buat bisnis kakak. Tinggal bilang di sini aja ya."]
+followup_templates_c	["Halo kak, decknya sempat kebaca belum? Kalau ada bagian yang mau dibahas, aku bisa jelasin di sini.","Hai kak, antara Basic sama Premium, kira-kira yang mana yang lebih mendekati kebutuhan usaha kakak?","Halo kak, kalau lebih enak dibahas langsung sama Steven, bilang aja di sini ya. Nanti aku sambungkan."]

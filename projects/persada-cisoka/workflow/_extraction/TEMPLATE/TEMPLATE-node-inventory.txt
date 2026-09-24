@@ -1,0 +1,60 @@
+﻿name|type|typeVersion|position|notesFlags
+Webhook|n8n-nodes-base.webhook|2.1|-18960,2640|
+IF Unknown|n8n-nodes-base.if|2.2|-13808,3248|
+Chat Counter|n8n-nodes-base.code|2|-18192,2640|
+Process Counter & Merge Data|n8n-nodes-base.code|2|-12688,2352|
+Extract & Prepare Data|n8n-nodes-base.code|2|-13136,2352|
+Record to UNKNOWN|n8n-nodes-base.googleSheets|4.7|-13584,3248|creds:googleApi
+Read STATS|n8n-nodes-base.googleSheets|4.7|-12912,2352|creds:googleApi
+Update to STATS|n8n-nodes-base.googleSheets|4.7|-12464,2352|creds:googleApi
+Wait1|n8n-nodes-base.wait|1.1|-13808,2768|
+Wait2|n8n-nodes-base.wait|1.1|-13360,3248|
+Reply Chat Kirimi|n8n-nodes-base.httpRequest|4.3|-13584,2768|creds:httpCustomAuth
+Notify Admin Unknown|n8n-nodes-base.httpRequest|4.3|-13136,3248|creds:httpCustomAuth
+Notify Admin API Error|n8n-nodes-base.httpRequest|4.3|-13136,2832|creds:httpCustomAuth
+Check API Response|n8n-nodes-base.code|2|-13360,2624|
+HITL Check|n8n-nodes-base.code|2|-16848,2544|
+Read STATS for HITL|n8n-nodes-base.googleSheets|4.7|-17072,2544|creds:googleApi
+IF Send GForm|n8n-nodes-base.if|2.2|-13808,2048|disabled
+Send GForm Link|n8n-nodes-base.httpRequest|4.3|-12912,1968|disabled;creds:httpCustomAuth
+IF Bot Mode Active|n8n-nodes-base.if|2.2|-17744,2640|
+Read User STATS|n8n-nodes-base.googleSheets|4.7|-17968,2640|creds:googleApi
+Update User Status|n8n-nodes-base.googleSheets|4.7|-13584,2240|creds:googleApi
+IF Status Update Needed|n8n-nodes-base.if|2.2|-13808,2240|
+Query LINKS for GForm|n8n-nodes-base.googleSheets|4.7|-13584,2048|disabled;creds:googleApi
+Update GForm Sent TS1|n8n-nodes-base.googleSheets|4.7|-12688,1968|creds:googleApi
+Cek_user_status|n8n-nodes-base.code|2|-15952,2544|
+Update STATS - Greeting Flag|n8n-nodes-base.code|2|-13360,3056|
+IF Update Greeting|n8n-nodes-base.if|2.3|-13136,3056|
+IF From Me|n8n-nodes-base.if|2.3|-18640,2640|
+Wait3|n8n-nodes-base.wait|1.1|-16624,2544|
+Update Buffer|n8n-nodes-base.googleSheets|4.7|-17520,2544|creds:googleApi
+Re-Read STATS Debounce|n8n-nodes-base.googleSheets|4.7|-16400,2544|creds:googleApi
+Delete_Pending_Msg|n8n-nodes-base.googleSheets|4.7|-13136,2640|creds:googleApi
+IF_Chat_Debounce|n8n-nodes-base.if|2.3|-16176,2544|
+Update Greeting|n8n-nodes-base.googleSheets|4.7|-12912,3056|creds:googleApi
+Preprocess - Context Detection|n8n-nodes-base.code|2|-15728,2544|
+IF Talk To Sam|n8n-nodes-base.if|2.3|-13808,2432|
+Notify Talk to Sam|n8n-nodes-base.httpRequest|4.3|-13584,2432|creds:httpCustomAuth
+Update row in sheet|n8n-nodes-base.googleSheets|4.7|-13360,2432|creds:googleApi
+Delete_Pending_Msg_Bot_Off|n8n-nodes-base.googleSheets|4.7|-17520,2736|creds:googleApi
+Read FAQ|n8n-nodes-base.googleSheets|4.7|-15504,2544|creds:googleApi
+FAQ Retrieve|n8n-nodes-base.code|2|-14608,2544|
+Reply Error|n8n-nodes-base.httpRequest|4.3|-14032,2640|creds:httpCustomAuth
+Delete_Pending_Msg_Error|n8n-nodes-base.googleSheets|4.7|-12912,2832|creds:googleApi
+Process All|n8n-nodes-base.code|2|-14032,2448|
+Anthropic Chat Model|@n8n/n8n-nodes-langchain.lmChatAnthropic|1.3|-14384,2768|creds:anthropicApi
+Simple Memory|@n8n/n8n-nodes-langchain.memoryBufferWindow|1.3|-14256,2768|
+AI Agent|@n8n/n8n-nodes-langchain.agent|3|-14384,2544|
+Read PROGRAM Data|n8n-nodes-base.googleSheets|4.7|-15280,2544|creds:googleApi
+Read ABOUT Data|n8n-nodes-base.googleSheets|4.7|-15056,2544|creds:googleApi
+Read LINKS Data|n8n-nodes-base.googleSheets|4.7|-14832,2544|creds:googleApi
+Pick GForm Link|n8n-nodes-base.code|2|-13360,2048|disabled
+IF GForm Resolved|n8n-nodes-base.if|2.2|-13136,2048|disabled
+Send GForm Clarify|n8n-nodes-base.httpRequest|4.3|-12912,2160|disabled;creds:httpCustomAuth
+Rate Limiter LID|n8n-nodes-base.code|2|-17296,2544|
+Delete_Pending_Msg_Bot_Off1|n8n-nodes-base.googleSheets|4.7|-13776,2640|creds:googleApi
+Bootstrap Config|n8n-nodes-base.code|2|-18560,2480|
+Read CONFIG|n8n-nodes-base.googleSheets|4.7|-18432,2480|creds:googleApi
+Parse Config|n8n-nodes-base.code|2|-18304,2480|
+Whitelist Gate|n8n-nodes-base.code|2|-18176,2480|

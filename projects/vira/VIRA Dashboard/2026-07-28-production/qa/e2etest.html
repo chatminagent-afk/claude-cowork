@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VIRA Dashboard — E2E Tambah Lead</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; padding:24px; background:#0b0d11; color:#e8eaed;
+         font:14px/1.55 ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { color:#8b93a1; margin-bottom:20px; max-width:70ch; }
+  #summary { position:sticky; top:0; background:#0b0d11; padding:12px 0 16px;
+             border-bottom:1px solid #232833; margin-bottom:16px;
+             font-size:26px; font-weight:700; z-index:2; }
+  .ok { color:#30d158; } .bad { color:#ff453a; }
+  .grp { margin:20px 0 6px; color:#8b93a1; text-transform:uppercase;
+         letter-spacing:.08em; font-size:11px; border-top:1px solid #232833; padding-top:14px; }
+  .row { display:flex; gap:10px; padding:3px 0; }
+  .tag { flex:0 0 52px; font-weight:700; font-size:11px; }
+  .why { color:#ff8a80; font-size:12px; padding-left:62px; white-space:pre-wrap; }
+  #frame { position:fixed; right:0; bottom:0; width:900px; height:700px;
+           border:1px solid #232833; opacity:.25; pointer-events:none; z-index:0; }
+</style>
+</head>
+<body>
+
+<h1>VIRA Dashboard — E2E Tambah Lead</h1>
+<div class="sub">
+  Menjalankan <code>app revamp/index.html</code> yang SEBENARNYA di dalam iframe, dengan
+  lapisan transport diganti <code>window.__VD_MOCK__</code>. Login, muat stats, lalu isi
+  dan kirim form tambah nomor lewat event asli — bukan pemanggilan fungsi langsung.
+  Yang diuji di sini justru yang tidak bisa disentuh uji fungsi murni: binding tombol,
+  keadaan form, notifikasi, dan apakah baris benar-benar mendarat di tabel.
+</div>
+
+<div id="summary">menjalankan…</div>
+<div id="out"></div>
+<iframe id="frame" src="about:blank"></iframe>
+
+<script>
+'use strict';
+
+var OUT = document.getElementById('out');
+var PASS = 0, FAIL = 0, GROUP = '', FAILURES = [];
+
+function group(n){ GROUP=n; var d=document.createElement('div'); d.className='grp'; d.textContent=n; OUT.appendChild(d); }
+function rec(good,msg,why){
+  var r=document.createElement('div'); r.className='row';
+  r.innerHTML='<span class="tag '+(good?'ok':'bad')+'">'+(good?'PASS':'GAGAL')+'</span>';
+  var m=document.createElement('span'); m.textContent=msg; r.appendChild(m); OUT.appendChild(r);
+  if(good){PASS++;} else {FAIL++; FAILURES.push(GROUP+' :: '+msg+(why?' -> '+why:''));
+    if(why){var w=document.createElement('div'); w.className='why'; w.textContent=why; OUT.appendChild(w);}}
+}
+function ok(c,m,w){ rec(!!c,m,c?'':(w||'')); }
+function eq(a,b,m){ var x=JSON.stringify(a),y=JSON.stringify(b); rec(x===y,m,x===y?'':'dapat '+x+', harusnya '+y); }
+
+var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+
+/** Menunggu sebuah kondisi jadi benar. Gagal keras kalau tidak pernah terjadi. */
+async function until(fn, label, timeout) {
+  var t = timeout || 4000;
+  var start = Date.now();
+  while (Date.now() - start < t) {
+    try { if (fn()) return true; } catch (e) {}
+    await sleep(40);
+  }
+  throw new Error('timeout menunggu: ' + label);
+}
+
+/* Event asli, bukan .click() — supaya listener yang salah pasang ketahuan. */
+function fire(el, type) {
+  el.dispatchEvent(new (type === 'click' ? MouseEvent : Event)(
+    type, { bubbles: true, cancelable: true }));
+}
+function typeInto(el, value) { el.value = value; fire(el, 'input'); }
+
+/* ----------------------------------------------------------- data uji -- */
+
+var TOKEN = 'e2e-token';
+var SESSION = {
+  user: 'qa', role: 'owner', tenant: 'thescholars',
+  tenants: [{ id: 'thescholars', name: 'QA Tenant' }]
+};
+
+/** Catatan setiap permintaan yang keluar dari app — kontraknya ikut diuji. */
+var SENT = [];
+var addLeadReply = null;   // diganti tiap skenario
+
+function makeMock(statsPayload) {
+  return function (payload) {
+    SENT.push(JSON.parse(JSON.stringify(payload)));
+    if (payload.action === 'login') {
+      return { ok: true, action: 'login', token: TOKEN, session: SESSION };
+    }
+    if (payload.action === 'me') {
+      return { ok: true, action: 'me', session: SESSION };
+    }
+    if (payload.action === 'stats') {
+      return statsPayload;
+    }
+    if (payload.action === 'add_lead') {
+      return typeof addLeadReply === 'function' ? addLeadReply(payload) : addLeadReply;
+    }
+    return { ok: false, action: payload.action, error: 'BAD_REQUEST', message: 'tak dikenal' };
+  };
+}
+
+/* --------------------------------------------------------------- run -- */
+
+async function run() {
+  var statsPayload = await fetch('fixtures/payload-thescholars.json', { cache: 'no-store' })
+    .then(function (r) { return r.json(); });
+  statsPayload.ok = true;
+  statsPayload.action = 'stats';
+
+  // Blok rekomendasi dipasang seperti yang dikirim server sesungguhnya.
+  statsPayload.insights = [{
+    id: 'ai_insight',
+    title: 'Rekomendasi dari Topik — Agustus 2026',
+    hint: 'Disusun otomatis oleh AI. Ini SARAN, bukan fakta.',
+    generated_at: 1756000000000,
+    model: 'claude-sonnet-5',
+    items: [
+      { judul: 'Buka kelas IELTS batch baru',
+        alasan: 'IELTS jadi topik terbesar bulan ini.',
+        aksi: 'Umumkan kelas IELTS ke lead yang menanyakannya.',
+        dampak: 'tinggi', dasar: ['IELTS: 34 user', '22% dari total'] },
+      { judul: 'Geser sesi konsultasi ke Rabu',
+        alasan: 'Rabu hari paling ramai.',
+        aksi: 'Pindahkan sesi konsultasi mingguan ke Rabu sore.',
+        dampak: 'sedang', dasar: ['Rabu: 21 lead'] }
+    ]
+  }];
+
+  // Sesi bersih: tanpa ini token dari pengujian sebelumnya membuat app
+  // langsung memanggil `me` sebelum mock sempat dipasang.
+  try { localStorage.clear(); } catch (e) {}
+
+  var frame = document.getElementById('frame');
+  await new Promise(function (resolve) {
+    frame.onload = resolve;
+    frame.src = '../app%20revamp/index.html';
+  });
+
+  var w = frame.contentWindow;
+  var d = w.document;
+  var $ = function (id) { return d.getElementById(id); };
+
+  w.__VD_MOCK__ = makeMock(statsPayload);
+
+  /* ------------------------------------------------------------- 1 -- */
+  group('1. Boot & login');
+
+  await until(function () { return $('screenLogin') && !$('screenLogin').hidden; }, 'layar login');
+  ok(true, 'aplikasi boot ke layar login tanpa token');
+
+  typeInto($('loginUser'), 'qa');
+  typeInto($('loginPass'), 'rahasia');
+  fire($('loginForm'), 'submit');
+
+  await until(function () {
+    return w.VDApp && w.VDApp.state && w.VDApp.state.stats;
+  }, 'stats termuat');
+  ok(true, 'login berhasil dan stats termuat lewat mock');
+
+  var rowsAwal = w.VDApp.state.stats.leads.rows.length;
+  ok(rowsAwal > 0, 'direktori lead terisi (' + rowsAwal + ' baris)');
+  ok(!$('leadsCard').hidden, 'kartu direktori lead tampil');
+
+  /* ------------------------------------------------------------- 2 -- */
+  group('2. Tombol & keadaan awal form');
+
+  var btn = $('addLeadBtn');
+  ok(!!btn, 'tombol Tambah ada di toolbar');
+  ok(btn.offsetParent !== null, 'tombol Tambah terlihat (bukan tersembunyi)');
+
+  fire(btn, 'click');
+  await until(function () { return $('addOverlay').classList.contains('open'); }, 'drawer terbuka');
+  ok(true, 'klik tombol membuka drawer');
+
+  eq($('addWa').value, '', 'kolom nomor mulai kosong');
+  eq($('addNama').value, '', 'kolom nama mulai kosong');
+  ok(!$('addBot').classList.contains('on'), 'bot_mode default OFF');
+  eq($('addBot').getAttribute('aria-checked'), 'false', 'aria-checked ikut OFF');
+  ok($('addWarn').hidden, 'peringatan tersembunyi saat bot OFF');
+  ok($('addSubmit').disabled, 'tombol Tambahkan mati saat nomor kosong');
+
+  /* ------------------------------------------------------------- 3 -- */
+  group('3. Validasi saat mengetik');
+
+  typeInto($('addWa'), '0812');
+  ok($('addSubmit').disabled, 'nomor 4 digit: tombol tetap mati');
+
+  typeInto($('addWa'), '081234567890');
+  ok(!$('addSubmit').disabled, 'nomor lengkap: tombol hidup');
+
+  typeInto($('addWa'), 'abc');
+  ok($('addSubmit').disabled, 'huruf: tombol mati lagi');
+
+  typeInto($('addWa'), '+62 812-3456-7890');
+  ok(!$('addSubmit').disabled, 'format dengan +, spasi, strip diterima');
+
+  /* ------------------------------------------------------------- 4 -- */
+  group('4. Peringatan bot aktif');
+
+  fire($('addBot'), 'click');
+  ok($('addBot').classList.contains('on'), 'switch menyala saat diklik');
+  eq($('addBot').getAttribute('aria-checked'), 'true', 'aria-checked ikut menyala');
+  ok(!$('addWarn').hidden, 'peringatan muncul saat bot ON');
+  ok($('addWarn').textContent.length > 40, 'peringatan berisi kalimat, bukan kosong');
+
+  fire($('addBot'), 'click');
+  ok(!$('addBot').classList.contains('on'), 'switch mati saat diklik lagi');
+  ok($('addWarn').hidden, 'peringatan hilang lagi');
+
+  /* ------------------------------------------------------------- 5 -- */
+  group('5. Kirim berhasil — baris mendarat di tabel');
+
+  // Kondisi awal yang menyulitkan: saringan di "Bot aktif" dan pencarian
+  // terisi. Nomor baru ber-bot OFF, jadi tanpa reset pandangan ia tidak akan
+  // terlihat sama sekali meski notifikasi bilang berhasil.
+  typeInto($('leadSearch'), 'zzz-tidak-ada');
+  var segOn = $('botFilter').querySelector('[data-mode="on"]');
+  fire(segOn, 'click');
+  await sleep(220);
+
+  fire($('addLeadBtn'), 'click');
+  await until(function () { return $('addOverlay').classList.contains('open'); }, 'drawer terbuka lagi');
+  ok(!$('addBot').classList.contains('on'), 'drawer dibuka ulang: bot_mode kembali OFF');
+
+  typeInto($('addWa'), '0899 8877 6655');
+  typeInto($('addNama'), 'Lead QA');
+
+  var BARU = {
+    key: '6289988776655', wa: '6289988776655', lid: '', is_lid: false,
+    nama: 'Lead QA', segment: '', stage: '', counter: 0,
+    first_chat: '', last_chat: '', bot_mode: 'OFF', detail: []
+  };
+  addLeadReply = { ok: true, action: 'add_lead', key: '6289988776655',
+                   bot_mode: 'OFF', row: BARU,
+                   message: 'Nomor 6289988776655 ditambahkan dengan bot OFF.' };
+
+  SENT.length = 0;
+  fire($('addForm'), 'submit');
+
+  await until(function () { return !$('addOverlay').classList.contains('open'); }, 'drawer tertutup');
+  ok(true, 'drawer tertutup setelah berhasil');
+
+  var req = SENT.filter(function (s) { return s.action === 'add_lead'; })[0];
+  ok(!!req, 'permintaan add_lead terkirim');
+  eq(req.key, '6289988776655', 'nomor dinormalkan sebelum dikirim (0899… -> 62899…)');
+  eq(req.nama, 'Lead QA', 'nama ikut terkirim');
+  eq(req.mode, 'OFF', 'mode OFF terkirim');
+  eq(req.token, TOKEN, 'token ikut di body, bukan header');
+  ok(SENT.every(function (s) { return s.action !== 'stats' || s === SENT[0]; }),
+     'tidak ada muat ulang stats setelah tambah (hemat kuota Sheets)');
+
+  eq(w.VDApp.state.stats.leads.rows.length, rowsAwal + 1, 'satu baris bertambah di state');
+  eq(w.VDApp.state.stats.leads.rows[0].key, '6289988776655', 'baris baru di urutan pertama');
+
+  eq(w.VDApp.state.q, '', 'pencarian dikosongkan supaya baris baru terlihat');
+  eq($('leadSearch').value, '', 'kotak pencarian ikut kosong di layar');
+  eq(w.VDApp.state.botMode, 'all', 'saringan kembali ke Semua');
+  ok($('botFilter').querySelector('[data-mode="all"]').classList.contains('active'),
+     'tombol Semua yang aktif di layar');
+  eq(w.VDApp.state.page, 1, 'kembali ke halaman 1');
+
+  var toast = d.querySelector('#toasts .toast');
+  ok(!!toast, 'notifikasi muncul');
+  ok(toast && toast.className.indexOf('ok') !== -1, 'notifikasi bertipe berhasil');
+  ok(toast && toast.textContent.indexOf('6289988776655') !== -1,
+     'notifikasi menyebut nomornya');
+  ok(toast && toast.textContent.indexOf('OFF') !== -1,
+     'notifikasi menyebut status botnya');
+
+  var hi = d.querySelectorAll('#leadTableWrap .is-new');
+  eq(hi.length, 1, 'tepat satu baris disorot');
+  ok(hi[0] && hi[0].textContent.indexOf('Lead QA') !== -1, 'yang disorot adalah baris baru');
+
+  var firstCell = d.querySelector('#leadTableWrap tbody tr');
+  ok(firstCell && firstCell.classList.contains('is-new'),
+     'baris baru berada di baris pertama tabel');
+
+  /* ------------------------------------------------------------- 6 -- */
+  group('6. Nomor duplikat — form tetap terbuka, isian utuh');
+
+  fire($('addLeadBtn'), 'click');
+  await until(function () { return $('addOverlay').classList.contains('open'); }, 'drawer terbuka');
+  typeInto($('addWa'), '081111111111');
+  typeInto($('addNama'), 'Kembar');
+
+  addLeadReply = { ok: false, action: 'add_lead', error: 'DUPLICATE',
+                   message: 'Nomor 6281111111111 sudah ada di data atas nama Ani.' };
+  var rowsSebelum = w.VDApp.state.stats.leads.rows.length;
+  fire($('addForm'), 'submit');
+
+  await until(function () {
+    var t = d.querySelectorAll('#toasts .toast');
+    return t.length && t[t.length - 1].className.indexOf('err') !== -1;
+  }, 'notifikasi galat');
+
+  ok($('addOverlay').classList.contains('open'), 'drawer TETAP terbuka saat gagal');
+  eq($('addWa').value, '081111111111', 'nomor yang diketik tidak dihapus');
+  eq($('addNama').value, 'Kembar', 'nama yang diketik tidak dihapus');
+  eq(w.VDApp.state.stats.leads.rows.length, rowsSebelum, 'tidak ada baris yang ditambahkan');
+
+  var errToast = d.querySelectorAll('#toasts .toast');
+  errToast = errToast[errToast.length - 1];
+  ok(errToast.textContent.indexOf('Ani') !== -1,
+     'pesan server ditampilkan apa adanya (menyebut pemilik nomor)');
+  ok(!$('addSubmit').disabled, 'tombol Tambahkan hidup lagi untuk mencoba ulang');
+  eq($('addSubmit').textContent, w.VDConfig.TEXT.addSubmit, 'teks tombol kembali normal');
+
+  /* ------------------------------------------------------------- 7 -- */
+  group('7. Gagal tulis ke sheet');
+
+  addLeadReply = { ok: false, action: 'add_lead', error: 'WRITE_FAILED',
+                   message: 'Gagal menulis ke Google Sheets, jadi nomor 6281111111111 BELUM tersimpan.' };
+  var nToast = d.querySelectorAll('#toasts .toast').length;
+  fire($('addForm'), 'submit');
+  await until(function () {
+    return d.querySelectorAll('#toasts .toast').length > nToast;
+  }, 'notifikasi gagal tulis');
+
+  var wf = d.querySelectorAll('#toasts .toast');
+  wf = wf[wf.length - 1];
+  ok(wf.className.indexOf('err') !== -1, 'gagal tulis tampil sebagai galat');
+  ok(wf.textContent.indexOf('BELUM tersimpan') !== -1,
+     'pesan menyatakan dengan jelas bahwa nomor tidak tersimpan');
+  eq(w.VDApp.state.stats.leads.rows.length, rowsSebelum, 'tetap tidak ada baris baru');
+
+  /* ------------------------------------------------------------- 8 -- */
+  group('8. Kartu rekomendasi AI');
+
+  var ins = d.querySelector('#insightsWrap .glass-card');
+  ok(!!ins, 'kartu rekomendasi tampil');
+  ok(ins.textContent.indexOf('Rekomendasi dari Topik') !== -1, 'judul dari server dipakai');
+
+  var badge = d.querySelector('#insightsWrap .insight-badge');
+  ok(!!badge, 'penanda "dibuat AI" ada');
+  ok(badge.textContent.toLowerCase().indexOf('ai') !== -1,
+     'penanda menyebut AI sebelum saran terbaca');
+  ok(badge.textContent.indexOf('claude') !== -1, 'model ikut disebut di penanda');
+
+  var items = d.querySelectorAll('#insightsWrap .insight-item');
+  eq(items.length, 2, 'dua rekomendasi dirender');
+  ok(items[0].textContent.indexOf('Buka kelas IELTS batch baru') !== -1, 'judul butir dirender');
+  ok(items[0].textContent.indexOf('Umumkan kelas IELTS') !== -1, 'aksi butir dirender');
+
+  var chips = items[0].querySelectorAll('.insight-chip');
+  eq(chips.length, 2, 'angka pendukung dirender sebagai chip');
+  ok(chips[0].textContent.indexOf('34 user') !== -1, 'angka pendukung apa adanya');
+
+  var impacts = d.querySelectorAll('#insightsWrap .insight-impact');
+  eq(impacts.length, 2, 'label dampak ada di tiap butir');
+  ok(impacts[0].textContent.toLowerCase().indexOf('tinggi') !== -1, 'dampak tinggi terbaca');
+
+  // Kartu harus bisa dilipat seperti seksi lain.
+  var secToggle = ins.querySelector('.section-toggle');
+  ok(!!secToggle, 'kartu punya kepala yang bisa dilipat');
+  fire(secToggle, 'click');
+  await sleep(120);
+  eq(secToggle.getAttribute('aria-expanded'), 'false', 'kartu bisa ditutup');
+  fire(secToggle, 'click');
+  await sleep(120);
+  eq(secToggle.getAttribute('aria-expanded'), 'true', 'kartu bisa dibuka lagi');
+
+  // Server tidak mengirim insights (AI gagal / belum ada ringkasan bulanan):
+  // bagian ini harus hilang total, bukan menyisakan kotak kosong.
+  delete w.VDApp.state.stats.insights;
+  w.VDApp.paint();
+  await sleep(120);
+  eq(d.getElementById('insightsWrap').children.length, 0,
+     'tanpa blok insights, tidak ada kartu maupun kotak kosong yang tersisa');
+  ok(!!d.getElementById('leadsCard') && !d.getElementById('leadsCard').hidden,
+     'sisa dashboard tetap normal tanpa rekomendasi');
+
+  /* ------------------------------------------------------------- 9 -- */
+  group('9. Sesi kedaluwarsa saat menambah');
+
+  addLeadReply = { ok: false, action: 'add_lead', error: 'TOKEN_EXPIRED',
+                   message: 'Sesi sudah berakhir. Silakan login ulang.' };
+  fire($('addForm'), 'submit');
+  await until(function () {
+    return $('screenLogin') && !$('screenLogin').hidden;
+  }, 'kembali ke layar login');
+  ok(true, 'galat auth memulangkan pengguna ke layar login');
+  ok(!w.VDApi.getToken(), 'token dihapus');
+
+  /* ------------------------------------------------------------ ringkas */
+  var s = document.getElementById('summary');
+  s.className = FAIL ? 'bad' : 'ok';
+  s.textContent = FAIL ? FAIL + ' GAGAL dari ' + (PASS + FAIL) + ' pemeriksaan'
+                       : 'SEMUA LOLOS — ' + PASS + ' pemeriksaan';
+  window.__QA__ = { pass: PASS, fail: FAIL, total: PASS + FAIL, failures: FAILURES };
+  document.title = (FAIL ? 'GAGAL ' + FAIL : 'LOLOS ' + PASS) + ' — E2E Tambah Lead';
+}
+
+run().catch(function (e) {
+  var s = document.getElementById('summary');
+  s.className = 'bad';
+  s.textContent = 'ERROR: ' + e.message;
+  window.__QA__ = { pass: PASS, fail: FAIL + 1, total: PASS + FAIL + 1,
+                    failures: FAILURES.concat(['runner: ' + e.message + '\n' + (e.stack || '')]) };
+  document.title = 'ERROR — E2E Tambah Lead';
+});
+</script>
+</body>
+</html>

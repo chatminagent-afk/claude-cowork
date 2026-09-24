@@ -1,0 +1,44 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "user_code",
+                                                                     "value":  "KM40LI0426"
+                                                                 },
+                                                                 {
+                                                                     "name":  "secret",
+                                                                     "value":  "REDACTED"
+                                                                 },
+                                                                 {
+                                                                     "name":  "device_id",
+                                                                     "value":  "D-4ZV1F"
+                                                                 },
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "=6285155202354"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ \"🚨 [ERROR] WA API GAGAL\\nUser: \" + $(\u0027Chat Counter\u0027).first().json.user_wa + \"\\nNama: \" + $(\u0027Chat Counter\u0027).first().json.user_name + \"\\nPesan: \" + $(\u0027Chat Counter\u0027).first().json.original_message + \"\\n\\n⚠️ User tidak mendapat reply! Harap balas manual.\" }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     1200,
+                     2720
+                 ],
+    "id":  "d106b014-22a0-408e-8077-de0e227cd98a",
+    "name":  "Notify Admin API Error",
+    "retryOnFail":  true,
+    "waitBetweenTries":  2000
+}

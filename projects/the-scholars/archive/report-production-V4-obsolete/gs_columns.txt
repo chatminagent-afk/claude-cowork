@@ -1,0 +1,869 @@
+=== Record to UNKNOWN (op=append) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "Pertanyaan": "={{ $('Cek_user_status').first().json.user_message_final }}",
+    "User": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "Tanggal": "={{ new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'}) }}",
+    "message": "={{ $('Process All').item.json.cleanOutput }}"
+  },
+  "matchingColumns": [],
+  "schema": [
+    {
+      "id": "Pertanyaan",
+      "displayName": "Pertanyaan",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "User",
+      "displayName": "User",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "Tanggal",
+      "displayName": "Tanggal",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "message",
+      "displayName": "message",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    }
+  ],
+  "attemptToConvertTypes": false,
+  "convertFieldsToString": false
+}
+
+=== Read STATS (op=read) ===
+
+=== Update to STATS (op=appendOrUpdate) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "Nama": "={{ $('Process Counter & Merge Data').first().json.Nama }}",
+    "Pesan Pertama": "={{ $('Process Counter & Merge Data').first().json[\"Pesan Pertama\"] }}",
+    "Counter": "={{ $('Process Counter & Merge Data').first().json.Counter }}",
+    "Tanggal Chat Pertama": "={{ $('Process Counter & Merge Data').first().json.Tanggal }}",
+    "Tanggal Chat Terakhir": "={{ $('Process Counter & Merge Data').first().json.TanggalSekarang }}",
+    "Jam Chat Terakhir": "={{ $('Chat Counter').first().json.formatted_time.split(':').slice(0, 2).join(':') }}",
+    "follow_up_count": "={{ \"\" }}",
+    "lid": "={{ $json.lid }}",
+    "last_reply_ts": "={{ Math.floor(Date.now()/1000) }}",
+    "kelas_anak": "={{ $('Process All').first().json.kelas_anak_merged || '' }}",
+    "kelas_anak_ts": "={{ $('Process All').first().json.kelas_changed ? Math.floor(Date.now()/1000) : ($('Resolve User Row').first().json.kelas_anak_ts || '') }}",
+    "program_interest": "={{ $('Process All').first().json.program_interest_merged || '' }}",
+    "bot_mode": "={{ $('Process All').first().json.isTalkToSam ? 'OFF' : 'ON' }}"
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam 
+
+=== Read STATS for HITL (op=read) ===
+
+=== Read User STATS (op=read) ===
+
+=== Query LINKS for GForm (op=read) ===
+
+=== Update GForm Sent TS1 (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "gform_sent_ts": "={{ Math.floor(Date.now() / 1000) }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tanggal Chat Terakhir"
+
+=== Update Buffer (op=appendOrUpdate) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "timestamp": "={{ $('Chat Counter').first().json.process_start_ts }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}"
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": true
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": true
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": true
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": true
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": true
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": true
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tanggal Cha
+
+=== Re-Read STATS Debounce (op=read) ===
+
+=== Delete_Pending_Msg (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tan
+
+=== Update Greeting (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "greeting_sent": "={{ $('Update STATS - Greeting Flag').first().json.greeting_sent || '' }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "
+
+=== Update row in sheet (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "bot_mode": "OFF",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tanggal Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      
+
+=== Delete_Pending_Msg_Bot_Off (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tan
+
+=== Read FAQ (op=read) ===
+
+=== Delete_Pending_Msg_Error (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tan
+
+=== Read PROGRAM Data (op=read) ===
+
+=== Read ABOUT Data (op=read) ===
+
+=== Read LINKS Data (op=read) ===
+
+=== Delete_Pending_Msg_Bot_Off1 (op=update) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "No WA": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "buffer_done_ts": "={{ $('Chat Counter').first().json.process_start_ts }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "row_number": 0
+  },
+  "matchingColumns": [
+    "No WA"
+  ],
+  "schema": [
+    {
+      "id": "No WA",
+      "displayName": "No WA",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "bot_mode",
+      "displayName": "bot_mode",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Pertama",
+      "displayName": "Tanggal Chat Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Jam Chat Terakhir",
+      "displayName": "Jam Chat Terakhir",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Nama",
+      "displayName": "Nama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Pesan Pertama",
+      "displayName": "Pesan Pertama",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Counter",
+      "displayName": "Counter",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true,
+      "removed": false
+    },
+    {
+      "id": "Tanggal Chat Terakhir",
+      "displayName": "Tan
+
+=== Append MSG_BUFFER (op=append) ===
+{
+  "mappingMode": "defineBelow",
+  "value": {
+    "no_wa": "={{ $('Resolve User Row').first().json.resolved_key }}",
+    "lid": "={{ $('Chat Counter').first().json.user_lid }}",
+    "message": "={{ $('Chat Counter').first().json.original_message }}",
+    "ts": "={{ $('Chat Counter').first().json.process_start_ts }}"
+  },
+  "matchingColumns": [],
+  "schema": [
+    {
+      "id": "no_wa",
+      "displayName": "no_wa",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "lid",
+      "displayName": "lid",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "message",
+      "displayName": "message",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    },
+    {
+      "id": "ts",
+      "displayName": "ts",
+      "required": false,
+      "defaultMatch": false,
+      "display": true,
+      "type": "string",
+      "canBeUsedToMatch": true
+    }
+  ],
+  "attemptToConvertTypes": false,
+  "convertFieldsToString": false
+}
+
+=== Read MSG_BUFFER (op=read) ===
+

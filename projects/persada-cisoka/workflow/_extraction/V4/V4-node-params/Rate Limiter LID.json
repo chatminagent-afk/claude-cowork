@@ -1,0 +1,14 @@
+﻿{
+    "parameters":  {
+                       "jsCode":  "\n// Rate Limiter: cegah spam (maks 5 pesan per menit per user)\nconst input = $input.first().json;\nconst userWa = $(\u0027Resolve User Row\u0027).first().json.resolved_key;\nconst now = Date.now();\n\n// Global store menggunakan $workflow static data\nconst staticData = $getWorkflowStaticData(\u0027global\u0027);\nconst rateLimits = staticData.rateLimits || {};\n\nconst userKey = `rl_${userWa}`;\nconst windowMs = 60000; // 1 menit\nconst maxMessages = 5;\n\nif (!rateLimits[userKey]) {\n  rateLimits[userKey] = { count: 1, windowStart: now };\n} else {\n  const elapsed = now - rateLimits[userKey].windowStart;\n  if (elapsed \u003e windowMs) {\n    // Reset window baru\n    rateLimits[userKey] = { count: 1, windowStart: now };\n  } else {\n    rateLimits[userKey].count++;\n  }\n}\n\nstaticData.rateLimits = rateLimits;\n\nconst isRateLimited = rateLimits[userKey].count \u003e maxMessages;\n\nif (isRateLimited) {\n  console.log(`⛔ RATE LIMITED: ${userWa} sudah ${rateLimits[userKey].count} pesan dalam 1 menit`);\n  return [];\n}\n\nconsole.log(`✅ RATE OK: ${userWa} pesan ke-${rateLimits[userKey].count}`);\nreturn [$input.first()];"
+                   },
+    "type":  "n8n-nodes-base.code",
+    "typeVersion":  2,
+    "position":  [
+                     -3632,
+                     2720
+                 ],
+    "id":  "c79f9957-4ae3-4cbf-8834-d97cb744e116",
+    "name":  "Rate Limiter LID",
+    "alwaysOutputData":  false
+}

@@ -1,0 +1,77 @@
+=== CREDENTIALS REFERENCED ===
+googleApi: Google Service Account thescholars  (used in 21 node(s))
+anthropicApi: Anthropic account  (used in 1 node(s))
+
+=== HTTP REQUEST NODES ===
+--- Reply Chat Kirimi ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = ={{ $('Chat Counter').first().json.user_wa }}
+    body.message = ={{ $('Process All').item.json.cleanOutput }}
+
+--- Notify Admin Unknown ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = =6596110395
+    body.message = ={{ "🚨 [VIRA] UNKNOWN :\n" + $('Chat Counter').first().json.user_wa + "\n" + $('Chat Counter').first().json.user_name + "\nPertanyaan: " + $('Cek_user_status').first().json.user_message_final }}
+
+--- Notify Admin API Error ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = =6285155202354
+    body.message = ={{ "🚨 [ERROR] WA API GAGAL\nUser: " + $('Chat Counter').first().json.user_wa + "\nNama: " + $('Chat Counter').first().json.user_name + "\nPesan: " + $('Chat Counter').first().json.original_message + "\n\n⚠️ User tidak mendapat reply! Harap balas manual." }}
+
+--- Send GForm Link ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = ={{ $json.phone }}
+    body.message = ={{ $json.message }}
+
+--- Notify Talk to Sam ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = =6596110395
+    body.message = ={{ "🙋 [VIRA] MAU NGOMONG LANGSUNG SAMA SAM :\n" + $('Chat Counter').first().json.user_wa + "\n" + $('Chat Counter').first().json.user_name + "\nPesan: " + $('Cek_user_status').first().json.user_message_final }}
+
+--- Reply Error ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = ={{ $('Chat Counter').first().json.user_wa }}
+    body.message = Maaf, saya belum bisa membantu menjawab pertanyaan tersebut. Bisa tolong diulang kembali? Atau, kalau mau ngobrol langsung dengan Sam, tinggal ketik 'mau ngomong sama Sam' ya.
+
+--- Send GForm Clarify ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = ={{ $json.phone }}
+    body.message = ={{ $json.message }}
+
+--- Notify User Error ---
+  method: POST
+  url: https://api.kirimi.id/v1/send-message
+    body.user_code = KM40LI0426
+    body.secret = REDACTED
+    body.device_id = D-4ZV1F
+    body.phone = ={{ $('Chat Counter').first().json.user_wa }}
+    body.message = =Maaf sedang ada kendala teknis, boleh dicoba kirim ulang pesan nya yaa, apabila masih error akan segera dicek. Terimakasih
+

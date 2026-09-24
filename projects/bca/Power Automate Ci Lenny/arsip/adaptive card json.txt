@@ -1,0 +1,128 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.4",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "📋 Weekly UAT Status Report — @{variables('varTanggal')}",
+      "wrap": true,
+      "weight": "Bolder",
+      "size": "Large"
+    },
+    {
+      "type": "TextBlock",
+      "text": "────────────",
+      "wrap": true,
+      "spacing": "Small"
+    },
+    {
+      "type": "TextBlock",
+      "text": "🟡 ON GOING PREP UAT",
+      "wrap": true,
+      "weight": "Bolder",
+      "color": "Warning",
+      "spacing": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": @{if(empty(variables('varPrepUAT')),'— (tidak ada)',replace(variables('varPrepUAT'), decodeUriComponent('%0A'), '\n'))},
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "🔵 ON GOING UAT",
+      "wrap": true,
+      "weight": "Bolder",
+      "color": "Accent",
+      "spacing": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": @{if(empty(variables('varUAT')),'— (tidak ada)',replace(variables('varUAT'), '%0A', '\n'))},
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "⏸️ ON HOLD",
+      "wrap": true,
+      "weight": "Bolder",
+      "color": "Attention",
+      "spacing": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": @{if(empty(variables('varOnHold')),'— (tidak ada)',replace(variables('varOnHold'), decodeUriComponent('%0A'), '\n'))},
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "📦 Next Project",
+      "wrap": true,
+      "weight": "Bolder",
+      "color": "Good",
+      "spacing": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": @{if(empty(variables('varODR')),'— (tidak ada)',replace(variables('varODR'), decodeUriComponent('%0A'), '\n'))},
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "────────────",
+      "wrap": true,
+      "spacing": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": "📅 INFO BULAN BERJALAN — @{variables('varBulan')}",
+      "wrap": true,
+      "weight": "Bolder",
+      "size": "Medium",
+      "spacing": "Medium"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Paketan / Fitur:",
+      "wrap": true,
+      "weight": "Bolder"
+    },
+    {
+      "type": "TextBlock",
+      "text": @{if(empty(variables('varFiturBulanIni')),'—',replace(variables('varFiturBulanIni'), decodeUriComponent('%0A'), '\n'))},
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Progress Summary:",
+      "wrap": true,
+      "weight": "Bolder",
+      "spacing": "Small"
+    },
+    {
+      "type": "TextBlock",
+      "text": "• Avg % Pilot Overall : @if(equals(variables('cntPilot'),0),'-',concat(formatNumber(mul(div(variables('sumPilot'),variables('cntPilot')),100),'0'),'%'))\n\n• Avg % Prod Overall : @if(equals(variables('cntProd'),0),'-',concat(formatNumber(mul(div(variables('sumProd'),variables('cntProd')),100),'0'),'%'))\n\n• Avg % Regresi Overall : @if(equals(variables('cntRegresi'),0),'-',concat(formatNumber(mul(div(variables('sumRegresi'),variables('cntRegresi')),100),'0'),'%'))",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "Timeline Implementation:",
+      "wrap": true,
+      "weight": "Bolder",
+      "spacing": "Small"
+    },
+    {
+      "type": "TextBlock",
+      "text": @{if(empty(variables('varTimeline')),'— (tidak ada)',replace(variables('varTimeline'), decodeUriComponent('%0A'), '\n'))},
+      "wrap": true
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.OpenUrl",
+      "title": "📎 Buka Tracking Sheet (Excel)",
+      "url": "https://bcaoffice365.sharepoint.com/:x:/r/sites/Ateam786/_layouts/15/Doc.aspx?sourcedoc=%7B50F3C17B-9E4A-4C1B-AB30-911DFAE76E39%7D&file=Tracking%20Project%20MBI.xlsx&nav=MTVfezU0MDA5NkIwLUM2REEtNDY1Ri1CODA4LUM3ODYyMzYzN0VGQ30&action=default&mobileredirect=true"
+    }
+  ]
+}

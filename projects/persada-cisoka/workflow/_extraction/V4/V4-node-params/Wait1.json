@@ -1,0 +1,14 @@
+﻿{
+    "parameters":  {
+                       "amount":  "={{ Math.floor(Math.random()*(10-5+1))+5}}"
+                   },
+    "type":  "n8n-nodes-base.wait",
+    "typeVersion":  1.1,
+    "position":  [
+                     528,
+                     2624
+                 ],
+    "id":  "3618eb8c-0e85-4de0-b615-b86c4f89cea7",
+    "name":  "Wait1",
+    "webhookId":  "6c89b72d-3d5b-48bd-8889-9337894b4b06"
+}

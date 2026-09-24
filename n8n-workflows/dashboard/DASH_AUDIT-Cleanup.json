@@ -1,0 +1,379 @@
+{
+  "name": "VIRA Dashboard - DASH_AUDIT Cleanup (tiap 3 bulan, 02:00 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 1 1,4,7,10 *"
+            }
+          ]
+        }
+      },
+      "id": "c96163a8-568d-46b6-a1c9-f320208a8412",
+      "name": "Tiap 3 bulan 02:00 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        432
+      ],
+      "notes": "0 2 1 1,4,7,10 * = 1 Jan / 1 Apr / 1 Jul / 1 Okt pukul 02:00 WIB.\nKalau mau BULANAN, ganti jadi: 0 2 1 * *"
+    },
+    {
+      "parameters": {},
+      "id": "a82f398e-cb38-4cd7-a0b8-183d00384e47",
+      "name": "Test manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        624
+      ],
+      "notes": "Untuk smoke test. Set RETENTION_DAYS besar dulu supaya dry-run aman."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// KONFIGURASI  -- HANYA NODE INI YANG PERLU DIEDIT\n// --------------------------------------------------------------------\n// Tambah klien ke-3 = tambah 1 baris di array TENANTS. Nol perubahan\n// di node lain (pola sama dengan 'Fan Out Tabs' di VIRA Dashboard API).\n//\n// RETENTION_DAYS = 0   -> hapus SEMUA baris data, sisakan header saja\n//                         (ini yang diminta: wipe, sisakan header)\n// RETENTION_DAYS = 90  -> simpan 90 hari terakhir, buang yang lebih tua\n//                         (kalau nanti mau tetap punya jejak audit)\n// ====================================================================\nconst RETENTION_DAYS = 0;\nconst AUDIT_TAB      = 'DASH_AUDIT';\n\nconst TENANTS = [\n  { tenant: 'thescholars', nama: 'The Scholars',             doc_id: '1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE' },\n  { tenant: 'persada',     nama: 'Persada Cisoka Residence', doc_id: '1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o' },\n];\n\n// Satu item per tenant -> diproses satu-satu oleh 'Loop Over Tenants'.\nreturn TENANTS.map(t => ({\n  json: { ...t, tab: AUDIT_TAB, retention_days: RETENTION_DAYS }\n}));\n"
+      },
+      "id": "c05eccc6-c65f-4cc3-b3b1-ca0fce4764af",
+      "name": "Fan Out Tenants",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "10952ab4-e857-4278-8d81-1c7b42a80ef4",
+      "name": "Loop Over Tenants",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        464,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.doc_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.tab }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "8e226bb9-d983-401f-a9aa-164381c32640",
+      "name": "Read DASH_AUDIT",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        704,
+        640
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "Baca semua baris DASH_AUDIT milik tenant yang sedang diproses.\nonError=continue supaya tab yang belum dibuat tidak menggagalkan tenant lain."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// HITUNG BLOK BARIS YANG DIHAPUS  (1 tenant per iterasi)\n// --------------------------------------------------------------------\n// DASH_AUDIT ditulis append-only oleh node 'Append Audit' di workflow\n// VIRA Dashboard API, jadi urutan baris = urutan waktu. Baris terlama\n// selalu blok kontigu di atas => cukup 1x delete range (hemat kuota).\n//\n// Header (baris 1) TIDAK PERNAH ikut: filter row_number >= 2.\n// Kalau tab DASH_AUDIT belum dibuat, node Read di-set\n// onError=continueRegularOutput sehingga item yang masuk ke sini tidak\n// punya row_number -> tersaring jadi 0 baris -> lewat, bukan error.\n// ====================================================================\nconst ctx  = $('Loop Over Tenants').first().json;\nconst RET  = Number(ctx.retention_days || 0);\nconst base = { tenant: ctx.tenant, nama: ctx.nama, doc_id: ctx.doc_id, tab: ctx.tab };\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && r.row_number !== undefined && Number(r.row_number) >= 2)\n  .sort((a, b) => Number(a.row_number) - Number(b.row_number)); // atas -> bawah\n\nif (!rows.length) {\n  return [{ json: { ...base, startRow: 0, count: 0, alasan: 'tidak ada baris data (tab kosong / belum dibuat)' } }];\n}\n\nconst startRow = Number(rows[0].row_number);\n\nif (RET <= 0) {\n  return [{ json: { ...base, startRow, count: rows.length, alasan: 'wipe penuh, header dipertahankan' } }];\n}\n\nconst cutoff = Date.now() - RET * 24 * 60 * 60 * 1000;\nlet n = 0;\nfor (const r of rows) {\n  const t = Date.parse(r.ts);\n  // ts tak terbaca dianggap sampah lama -> ikut dihapus, tapi hanya\n  // selama masih di blok kontigu paling atas.\n  if (isNaN(t) || t < cutoff) n++; else break;\n}\nreturn [{ json: { ...base, startRow, count: n, alasan: 'retensi ' + RET + ' hari' } }];\n"
+      },
+      "id": "d6c572a5-6fb9-4c88-a14a-022283a337e8",
+      "name": "Hitung Baris Dihapus",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ada-baris",
+              "leftValue": "={{ $json.count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "263bad50-e281-4db1-9ab5-861d30c7f64a",
+      "name": "Ada Baris?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.doc_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.tab }}",
+          "mode": "name"
+        },
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "fcef8ee5-9e38-4863-b2b5-f2802003caaa",
+      "name": "Delete Rows (header aman)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1392,
+        544
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "5KD9A3Tef1H8UQKk",
+          "name": "Google Service Account - VIRA Dashboard"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "notes": "startIndex = nomor baris 1-based (baris pertama = 1).\nSelalu >= 2 karena header disaring di node hitung."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node googleSheets 'delete' membuang konteks di output-nya.\n// Ambil lagi dari node hitung supaya ringkasan akhir tetap informatif.\nconst ctx = $('Hitung Baris Dihapus').first().json;\nreturn [{ json: { ...ctx, status: 'deleted' } }];\n"
+      },
+      "id": "400ebe77-43d0-421e-9bff-2987de243d20",
+      "name": "Catat Hasil",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Hitung Baris Dihapus').first().json;\nreturn [{ json: { ...ctx, status: 'skipped' } }];\n"
+      },
+      "id": "ada9b6ee-a46a-48b4-8ac1-e2955b931715",
+      "name": "Lewati (kosong)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Output SplitInBatches cabang 'done' = semua item yang kembali ke loop.\nconst detail = $input.all().map(i => i.json).map(r => ({\n  tenant:      r.tenant || '?',\n  tab:         r.tab || 'DASH_AUDIT',\n  status:      r.status || 'unknown',\n  mulai_baris: Number(r.startRow || 0),\n  dihapus:     Number(r.count || 0),\n  alasan:      r.alasan || '',\n}));\nreturn [{ json: {\n  ok: true,\n  workflow: 'VIRA Dashboard - DASH_AUDIT Cleanup',\n  total_baris_dihapus: detail.reduce((a, b) => a + b.dihapus, 0),\n  detail,\n} }];\n"
+      },
+      "id": "b3b7b5b8-d397-4965-b5b9-abacd9506521",
+      "name": "Ringkasan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## DASH_AUDIT Cleanup - 1 workflow untuk SEMUA tenant\n\nKenapa cukup satu, bukan satu per klien:\n- kedua spreadsheet dibuka pakai credential yang SAMA (Google Service Account - VIRA Dashboard)\n- nama tab & skema kolom identik: ts | actor | role | no_wa | from | to\n- documentId di-set dinamis lewat expression, persis pola Fan Out Tabs -> Loop Over Tabs di workflow VIRA Dashboard API\n\nTambah klien ke-3 = tambah 1 baris di node Fan Out Tenants. Node lain tidak perlu disentuh.\n\nIsolasi kegagalan: node Read & Delete pakai onError=continueRegularOutput, jadi kalau tab satu tenant belum ada / gagal, tenant lain tetap dibersihkan.",
+        "height": 320,
+        "width": 540
+      },
+      "id": "df3eb0b6-d599-4183-9263-aa63c626880d",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Tiap 3 bulan 02:00 WIB": {
+      "main": [
+        [
+          {
+            "node": "Fan Out Tenants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test manual": {
+      "main": [
+        [
+          {
+            "node": "Fan Out Tenants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fan Out Tenants": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Tenants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Tenants": {
+      "main": [
+        [
+          {
+            "node": "Ringkasan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read DASH_AUDIT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read DASH_AUDIT": {
+      "main": [
+        [
+          {
+            "node": "Hitung Baris Dihapus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hitung Baris Dihapus": {
+      "main": [
+        [
+          {
+            "node": "Ada Baris?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ada Baris?": {
+      "main": [
+        [
+          {
+            "node": "Delete Rows (header aman)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lewati (kosong)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Rows (header aman)": {
+      "main": [
+        [
+          {
+            "node": "Catat Hasil",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Catat Hasil": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Tenants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lewati (kosong)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Tenants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "xGsl3M3tONsHPDgT9lOWF"
+  },
+  "versionId": "d5551bd1-f5cb-4849-9cd0-b19bcb095fa3",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "1PClsIt53I6Cn2CcpkCPg",
+  "tags": []
+}

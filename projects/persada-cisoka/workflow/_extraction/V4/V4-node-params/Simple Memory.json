@@ -1,0 +1,15 @@
+﻿{
+    "parameters":  {
+                       "sessionIdType":  "customKey",
+                       "sessionKey":  "={{ $(\u0027Resolve User Row\u0027).first().json.resolved_key }}",
+                       "contextWindowLength":  10
+                   },
+    "type":  "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+    "typeVersion":  1.3,
+    "position":  [
+                     80,
+                     2944
+                 ],
+    "id":  "f3f0b0c9-0792-4052-a821-335d3479388b",
+    "name":  "Simple Memory"
+}

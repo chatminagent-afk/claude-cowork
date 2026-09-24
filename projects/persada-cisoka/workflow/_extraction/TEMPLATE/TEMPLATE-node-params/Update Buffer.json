@@ -1,0 +1,229 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "operation":  "appendOrUpdate",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "={{ $(\u0027Bootstrap Config\u0027).first().json.sheet_id }}",
+                                          "mode":  "id"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  "STATS",
+                                         "mode":  "name"
+                                     },
+                       "columns":  {
+                                       "mappingMode":  "defineBelow",
+                                       "value":  {
+                                                     "No WA":  "={{ $(\u0027Chat Counter\u0027).item.json.user_wa }}",
+                                                     "pending_msg":  "={{ (() =\u003e {\n  const userLid = String($(\u0027Chat Counter\u0027).first().json.user_lid || \u0027\u0027).trim();\n  const rows = $(\u0027Read User STATS\u0027).all();\n  const userRow = rows.find(r =\u003e String(r.json[\u0027lid\u0027] || \u0027\u0027).trim() === userLid) || rows[0];\n  const existing = userRow ? (userRow.json[\u0027pending_msg\u0027] || \u0027\u0027) : \u0027\u0027;\n  const newMsg = $(\u0027Chat Counter\u0027).first().json.original_message;\n  return existing ? existing + \u0027\\n\u0027 + newMsg : newMsg;\n})() }}",
+                                                     "timestamp":  "={{ $(\u0027Chat Counter\u0027).item.json.process_start_ts }}",
+                                                     "lid":  "={{ $(\u0027Chat Counter\u0027).item.json.user_lid }}"
+                                                 },
+                                       "matchingColumns":  [
+                                                               "lid"
+                                                           ],
+                                       "schema":  [
+                                                      {
+                                                          "id":  "No WA",
+                                                          "displayName":  "No WA",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  false
+                                                      },
+                                                      {
+                                                          "id":  "bot_mode",
+                                                          "displayName":  "bot_mode",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Tanggal Chat Pertama",
+                                                          "displayName":  "Tanggal Chat Pertama",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Jam Chat Terakhir",
+                                                          "displayName":  "Jam Chat Terakhir",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Nama",
+                                                          "displayName":  "Nama",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Pesan Pertama",
+                                                          "displayName":  "Pesan Pertama",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Counter",
+                                                          "displayName":  "Counter",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Tanggal Chat Terakhir",
+                                                          "displayName":  "Tanggal Chat Terakhir",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "Intensitas Chat",
+                                                          "displayName":  "Intensitas Chat",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "timestamp",
+                                                          "displayName":  "timestamp",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "last follow up",
+                                                          "displayName":  "last follow up",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "follow_up_count",
+                                                          "displayName":  "follow_up_count",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "gform_sent_ts",
+                                                          "displayName":  "gform_sent_ts",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "gform_filled",
+                                                          "displayName":  "gform_filled",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "user_status",
+                                                          "displayName":  "user_status",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "greeting_sent",
+                                                          "displayName":  "greeting_sent",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  true
+                                                      },
+                                                      {
+                                                          "id":  "pending_msg",
+                                                          "displayName":  "pending_msg",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "lid",
+                                                          "displayName":  "lid",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true,
+                                                          "removed":  false
+                                                      }
+                                                  ],
+                                       "attemptToConvertTypes":  false,
+                                       "convertFieldsToString":  false
+                                   },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -17520,
+                     2544
+                 ],
+    "id":  "321e179a-df20-498a-b163-9c6836f07198",
+    "name":  "Update Buffer",
+    "alwaysOutputData":  true,
+    "retryOnFail":  true,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    }
+}

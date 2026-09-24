@@ -1,0 +1,7 @@
+﻿Nama Link,Tipe,Keyword,Status,URL,Caption,Catatan Internal
+company-profile,document,"profil, company profile, perusahaan, tentang",Draft,,"Ini company profile-nya ya kak, semoga membantu.",PDF profil singkat Steven & VIRA.
+deck-vira,document,"deck, presentasi, penawaran, proposal",Draft,,"Ini deck VIRA versi umumnya. Kalau mau yang khusus untuk bisnismu, bilang aja.",PDF deck VIRA generic (bukan yang khusus per klien).
+demo-video,video,"demo, video, contoh, lihat cara kerja",Draft,,Ini video singkat cara VIRA bekerja.,Video demo pakai environment dummy — JANGAN production.
+portfolio,image,"portfolio, hasil, contoh kerja, tangkapan layar",Draft,,Ini beberapa contoh sistem yang sudah aku bangun.,Tangkapan layar HARUS di-blur/de-branded. Jangan ada nama klien.
+harga-ringkas,image,"harga, paket, tabel harga, biaya",Draft,,Ini ringkasan paketnya kak.,Gambar tabel Basic vs Premium. Pastikan angkanya sinkron dengan tab PROGRAM.
+instagram,website,"instagram, ig, sosmed, akun",Aktif,https://instagram.com/povstevens,"Ini Instagram-ku, banyak cerita di balik layar bikin sistemnya di situ.",Sudah aktif — tidak perlu diisi.

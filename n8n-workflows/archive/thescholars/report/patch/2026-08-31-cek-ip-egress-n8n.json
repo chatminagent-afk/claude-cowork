@@ -1,0 +1,90 @@
+{
+  "name": "CEK IP EGRESS n8n",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "a1000000-0000-4000-8000-000000000001",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.ipify.org?format=json",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "a1000000-0000-4000-8000-000000000002",
+      "name": "IP via HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// Cek IP egress n8n\n// Tujuan: tahu IP mana yang dilihat Kirimi, untuk diajukan unblock\n// ke support@kirimi.id.\n//\n// Dicek lewat DUA jalur, karena belum tentu sama:\n//   - node HTTP Request : jalan di proses utama n8n\n//   - Code node ini     : jalan lewat JsTaskRunner (n8n 2.x)\n// Provider-nya sengaja sama (ipify) supaya yang dibandingkan\n// murni jalur eksekusinya, bukan beda layanan.\n// ============================================================\n\nconst fromHttpNode = $('IP via HTTP Request').first().json.ip || '(tidak terbaca)';\n\nlet fromCodeNode = '(gagal)';\ntry {\n  const r = await this.helpers.httpRequest({\n    url: 'https://api.ipify.org?format=json',\n    json: true,\n    timeout: 15000,\n  });\n  fromCodeNode = (r && r.ip) ? r.ip : JSON.stringify(r);\n} catch (e) {\n  fromCodeNode = 'ERROR: ' + (e && e.message ? e.message : String(e));\n}\n\nconst sama = fromHttpNode === fromCodeNode;\n\nreturn [{\n  json: {\n    ip_via_http_node: fromHttpNode,\n    ip_via_code_node: fromCodeNode,\n    kedua_jalur_sama: sama,\n    langkah_berikutnya: sama\n      ? 'Kirim IP ini ke support@kirimi.id untuk minta pencabutan blokir.'\n      : 'Dua jalur keluar lewat IP BERBEDA. Kirim KEDUANYA ke support@kirimi.id.',\n  },\n}];\n"
+      },
+      "id": "a1000000-0000-4000-8000-000000000003",
+      "name": "Bandingkan Dua Jalur",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Cek IP egress n8n\n\nKlik **Test workflow**, lalu buka node **Bandingkan Dua Jalur**.\n\nAmbil nilai `ip_via_http_node` dan `ip_via_code_node`, kirim ke support@kirimi.id untuk minta pencabutan blokir IP.\n\nWorkflow ini read-only: tidak menyentuh Kirimi, Sheets, atau WhatsApp.",
+        "height": 260,
+        "width": 380,
+        "color": 4
+      },
+      "id": "a1000000-0000-4000-8000-000000000004",
+      "name": "Petunjuk",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        -320
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "IP via HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IP via HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Bandingkan Dua Jalur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  },
+  "pinData": {}
+}

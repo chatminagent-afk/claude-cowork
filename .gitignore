@@ -1,0 +1,22 @@
+# Kredensial & key
+*.pem
+*.key
+.env
+.env.*
+**/KREDENSIAL*
+**/service-account*.json
+**/vira-[0-9]*-*.json
+**/.claude/settings.local.json
+# Media & file besar -> backup ke Drive/harddisk
+*.mp4
+*.mov
+*.mkv
+*.mp3
+*.wav
+# Data pelanggan / kontak
+*.vcf
+# Sampah
+__pycache__/
+*.pyc
+node_modules/
+desktop.ini

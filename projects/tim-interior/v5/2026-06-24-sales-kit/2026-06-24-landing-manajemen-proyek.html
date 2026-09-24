@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manajemen Proyek — Catat · Pantau · Rencanakan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --bg:#F9F8F6;--surface:#FFFFFF;--surface-2:#F2EFE9;--surface-3:#EAE5DC;
+    --gold:#B49157;--gold-dim:#8A7257;--gold-glow:rgba(180,145,87,.12);
+    --text:#2C2B29;--text-muted:#59554C;--text-dim:#A39E93;
+    --border:rgba(180,145,87,.25);
+    --danger:#C0392B;--danger-bg:rgba(192,57,43,.10);
+    --success:#27AE60;--success-bg:rgba(39,174,96,.10);
+    --r:18px;
+    --shadow:0 2px 8px rgba(0,0,0,.03),0 12px 40px rgba(0,0,0,.05),0 0 0 1px rgba(180,145,87,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0F0F0D;--surface:#171714;--surface-2:#1E1E1A;--surface-3:#252521;
+      --gold:#C4A97D;--gold-dim:#C2A471;--gold-glow:rgba(196,169,125,.12);
+      --text:#EDE8DF;--text-muted:#C4BAAA;--text-dim:#948B7C;
+      --border:rgba(196,169,125,.22);
+      --danger:#E8897E;--danger-bg:rgba(232,137,126,.12);
+      --success:#6FCF97;--success-bg:rgba(111,207,151,.12);
+      --shadow:0 0 0 1px rgba(196,169,125,.04),0 24px 80px rgba(0,0,0,.5);
+    }
+  }
+
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);
+    font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+  section{padding:64px 0}
+  .topline{height:3px;background:linear-gradient(90deg,transparent,var(--gold-dim) 25%,var(--gold) 50%,var(--gold-dim) 75%,transparent)}
+
+  .eyebrow{display:flex;align-items:center;justify-content:center;gap:10px;
+    font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;
+    color:var(--gold-dim);flex-wrap:wrap;max-width:100%;text-align:center}
+  .eyebrow::before,.eyebrow::after{content:'';width:28px;height:1px;
+    background:linear-gradient(to right,transparent,var(--gold-dim));flex:0 0 auto}
+  .eyebrow::after{background:linear-gradient(to left,transparent,var(--gold-dim))}
+
+  h2.sec{font-family:'Playfair Display',serif;font-weight:400;
+    font-size:clamp(24px,5.5vw,34px);line-height:1.22;text-align:center;
+    margin:14px auto 8px;max-width:680px}
+  h2.sec em{font-style:italic;color:var(--gold)}
+  .sec-sub{text-align:center;color:var(--text-dim);font-size:14px;max-width:540px;margin:0 auto 8px}
+
+  /* HERO */
+  .hero{text-align:center;padding:72px 0 56px}
+  .hero .logo{width:76px;height:76px;border-radius:20px;margin:0 auto 22px;
+    background:var(--surface);border:1px solid var(--border);box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center}
+  .hero .logo span{width:30px;height:30px;border-radius:7px;border:3px solid var(--gold)}
+  .hero h1{font-family:'Playfair Display',serif;font-weight:400;
+    font-size:clamp(32px,8vw,56px);line-height:1.12;margin:14px 0 6px}
+  .hero h1 em{font-style:italic;color:var(--gold)}
+  .hero .tag{font-size:13px;color:var(--text-dim);letter-spacing:1px;margin-bottom:18px}
+  .hero p.lead{font-size:clamp(15px,2.4vw,18px);color:var(--text-muted);
+    max-width:600px;margin:0 auto 28px}
+  .btn{display:inline-block;background:var(--gold);color:#fff;text-decoration:none;
+    font-weight:600;font-size:15px;padding:13px 30px;border-radius:11px;
+    border:none;cursor:pointer;box-shadow:0 8px 22px var(--gold-glow);transition:transform .12s}
+  .btn:active{transform:scale(.98)}
+  .btn.ghost{background:transparent;color:var(--gold);border:1px solid var(--border);box-shadow:none}
+
+  /* PROBLEM vs SOLUTION */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:30px}
+  .col{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+    padding:22px;box-shadow:var(--shadow)}
+  .col-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .col-head .pill{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+    padding:4px 11px;border-radius:20px}
+  .col-bad .pill{color:var(--danger);background:var(--danger-bg)}
+  .col-good .pill{color:var(--success);background:var(--success-bg)}
+  .col-head h3{font-size:15px;font-weight:600}
+  .item{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--border)}
+  .item:first-of-type{border-top:none}
+  .ic{width:24px;height:24px;border-radius:50%;flex:0 0 auto;display:flex;
+    align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-top:1px}
+  .ic.bad{color:var(--danger);background:var(--danger-bg)}
+  .ic.good{color:var(--success);background:var(--success-bg)}
+  .item .txt b{display:block;font-size:14.5px;font-weight:600;margin-bottom:2px}
+  .item .txt span{font-size:13px;color:var(--text-muted)}
+
+  /* PILLARS */
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+  .pillar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+    padding:24px 22px;box-shadow:var(--shadow);text-align:center}
+  .pillar .em{font-size:26px;margin-bottom:12px}
+  .pillar h3{font-size:16px;font-weight:600;margin-bottom:6px}
+  .pillar p{font-size:13.5px;color:var(--text-muted)}
+
+  /* FEATURES */
+  .feats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:30px}
+  .feat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+    padding:20px;box-shadow:var(--shadow);display:flex;gap:14px;align-items:flex-start}
+  .feat .fi{width:46px;height:46px;flex:0 0 auto;border-radius:13px;background:var(--surface-2);
+    border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .feat h3{font-size:15px;font-weight:600;margin-bottom:3px}
+  .feat p{font-size:13px;color:var(--text-muted)}
+
+  /* WHATSAPP */
+  .wa{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+    box-shadow:var(--shadow);padding:28px;display:grid;grid-template-columns:1.1fr 1fr;
+    gap:26px;align-items:center;margin-top:30px}
+  .wa ul{list-style:none;margin-top:14px}
+  .wa li{position:relative;padding:7px 0 7px 26px;font-size:14px;color:var(--text-muted)}
+  .wa li::before{content:'✓';position:absolute;left:0;color:var(--success);font-weight:700}
+  .wa h3{font-size:18px;font-weight:600}
+  .wa .when{display:inline-block;margin-top:6px;font-size:12px;color:var(--gold-dim);
+    background:var(--gold-glow);padding:4px 12px;border-radius:20px}
+  .bubble{background:var(--surface-2);border:1px solid var(--border);border-radius:16px;
+    padding:16px 18px;font-size:13px;line-height:1.6}
+  .bubble .b-h{font-weight:600;color:var(--gold-dim);margin-bottom:8px;font-size:12px;letter-spacing:.5px}
+  .bubble .b-row{padding:3px 0;color:var(--text-muted)}
+  .bubble .b-row b{color:var(--text)}
+
+  /* PRICING */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px}
+  .tier{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+    padding:24px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;position:relative}
+  .tier.feat-tier{border:1.5px solid var(--gold)}
+  .tier .badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+    background:var(--gold);color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;
+    text-transform:uppercase;padding:4px 12px;border-radius:20px;white-space:nowrap}
+  .tier .tn{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);
+    font-weight:600;margin-bottom:10px}
+  .tier .price{font-size:24px;font-weight:600;color:var(--text)}
+  .tier .price small{display:block;font-size:11px;color:var(--text-dim);font-weight:400;margin-top:2px}
+  .tier .ret{margin:12px 0;padding-top:12px;border-top:1px dashed var(--border);
+    font-size:15px;font-weight:600;color:var(--gold)}
+  .tier .ret span{display:block;font-size:11px;color:var(--text-dim);font-weight:400}
+  .tier ul{list-style:none;font-size:13px;color:var(--text-muted)}
+  .tier li{padding:5px 0 5px 19px;position:relative}
+  .tier li::before{content:'✓';position:absolute;left:0;color:var(--gold);font-weight:700}
+
+  /* CTA */
+  .cta{text-align:center;background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--r);box-shadow:var(--shadow);padding:44px 28px;margin-top:8px}
+  .cta h2{font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(24px,6vw,34px);margin-bottom:10px}
+  .cta p{color:var(--text-muted);font-size:15px;max-width:460px;margin:0 auto 22px}
+  .contact{margin-top:16px;font-size:14px;color:var(--text-muted)}
+  .contact b{color:var(--text)}
+
+  footer{text-align:center;padding:30px 20px 48px;font-size:12px;color:var(--text-dim)}
+  footer strong{color:var(--gold-dim)}
+
+  /* ── RESPONSIVE: kunci perbaikan mobile ── */
+  @media (max-width:760px){
+    .compare{grid-template-columns:1fr;gap:14px}
+    .pillars{grid-template-columns:1fr;gap:12px}
+    .feats{grid-template-columns:1fr}
+    .wa{grid-template-columns:1fr;padding:22px}
+    .tiers{grid-template-columns:1fr;gap:14px}
+    .tier.feat-tier{order:-1}
+    section{padding:48px 0}
+  }
+  @media (max-width:380px){
+    .wrap{padding:0 14px}
+    .col,.feat,.pillar,.tier{padding:18px}
+    .eyebrow{letter-spacing:2px}
+  }
+</style>
+</head>
+<body>
+  <div class="topline"></div>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="wrap">
+      <div class="logo"><span></span></div>
+      <div class="eyebrow">Sistem Manajemen Proyek</div>
+      <h1>Manajemen <em>Proyek</em></h1>
+      <div class="tag">Catat · Pantau · Rencanakan</div>
+      <p class="lead">Satu aplikasi untuk mencatat pekerjaan, melacak komplain, dan menyusun RAB otomatis — lengkap dengan rekap WhatsApp harian ke seluruh tim.</p>
+      <a class="btn" href="#paket">Lihat Paket</a>
+      &nbsp;
+      <a class="btn ghost" href="#cta">Minta Demo</a>
+    </div>
+  </header>
+
+  <!-- PROBLEM vs SOLUTION -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Tanpa sistem vs Dengan sistem</div>
+      <h2 class="sec">Dari catatan tercecer ke <em>satu sumber yang rapi</em></h2>
+      <div class="compare">
+        <div class="col col-bad">
+          <div class="col-head"><span class="pill">Cara Lama</span><h3>Manual &amp; tercecer</h3></div>
+          <div class="item"><div class="ic bad">✕</div><div class="txt"><b>Komplain Tenggelam</b><span>Masuk lewat chat pribadi, lisan di lokasi, atau kertas corat-coret. Sangat rawan hilang dan terlupakan.</span></div></div>
+          <div class="item"><div class="ic bad">✕</div><div class="txt"><b>Catatan Tidak Seragam</b><span>Masing-masing pekerja menulis progres dengan format berbeda, membuat admin bingung mencocokkan data.</span></div></div>
+          <div class="item"><div class="ic bad">✕</div><div class="txt"><b>Rekap Manual</b><span>Merangkum progres tiap hari memakan waktu dan rawan ada yang terlewat.</span></div></div>
+          <div class="item"><div class="ic bad">✕</div><div class="txt"><b>RAB Dari Nol</b><span>Menyusun rincian anggaran ulang setiap proyek, rawan salah hitung.</span></div></div>
+        </div>
+        <div class="col col-good">
+          <div class="col-head"><span class="pill">Dengan Sistem</span><h3>Terpadu &amp; otomatis</h3></div>
+          <div class="item"><div class="ic good">✓</div><div class="txt"><b>Komplain Tercatat Instan</b><span>Dicatat lewat form terpadu, otomatis memiliki ID komplain resmi, dan berstatus awal "Pending".</span></div></div>
+          <div class="item"><div class="ic good">✓</div><div class="txt"><b>Pekerjaan Format RAB</b><span>Tim lapangan menginput terstandar (nama, proyek, volume, satuan, harga) lewat satu aplikasi.</span></div></div>
+          <div class="item"><div class="ic good">✓</div><div class="txt"><b>Laporan &amp; WhatsApp Otomatis</b><span>Dari input langsung ke database Google Sheets, lalu rekap terkirim ke WA tiap pagi.</span></div></div>
+          <div class="item"><div class="ic good">✓</div><div class="txt"><b>RAB Sekali Klik</b><span>Pilih proyek, sistem menyusun RAB &amp; checklist siap cetak dalam hitungan detik.</span></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Satu ekosistem</div>
+      <h2 class="sec">Semua terhubung, <em>tanpa intervensi manual</em></h2>
+      <div class="pillars">
+        <div class="pillar"><div class="em">📱</div><h3>1 Aplikasi</h3><p>Dipakai langsung dari HP lapangan — catat pekerjaan, komplain, cek status, dan dashboard dalam satu tempat.</p></div>
+        <div class="pillar"><div class="em">⚡</div><h3>Otomasi Penuh</h3><p>Dari input → database → notifikasi WhatsApp → update status, semua berjalan otomatis.</p></div>
+        <div class="pillar"><div class="em">📊</div><h3>1 Database Terpusat</h3><p>Google Sheets terstruktur. Bisa difilter, diedit, dan diekspor kapan saja. Tidak ada data tercecer.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Fitur</div>
+      <h2 class="sec">Yang bisa dilakukan tim Anda</h2>
+      <div class="feats">
+        <div class="feat"><div class="fi">📈</div><div><h3>Dashboard Monitoring</h3><p>Pantau progres, komplain &amp; realisasi RAB semua proyek dalam satu layar.</p></div></div>
+        <div class="feat"><div class="fi">📋</div><div><h3>Catat Pekerjaan</h3><p>Input item kerja harian format RAB — volume, satuan, harga, total otomatis.</p></div></div>
+        <div class="feat"><div class="fi">⚠️</div><div><h3>Catat Komplain</h3><p>Laporkan temuan lapangan dengan lokasi &amp; prioritas, dapat ID resmi.</p></div></div>
+        <div class="feat"><div class="fi">🔍</div><div><h3>Cek &amp; Update Status</h3><p>Cari per proyek/pekerja, ubah status Pending → Proses → Selesai.</p></div></div>
+        <div class="feat"><div class="fi">📊</div><div><h3>Generate RAB / Checklist</h3><p>Pilih proyek, sistem tarik data dan buat dokumen siap cetak.</p></div></div>
+        <div class="feat"><div class="fi">▲</div><div><h3>Pasang di Layar HP</h3><p>Berjalan sebagai aplikasi (PWA) — buka sekali ketuk, tanpa instal dari store.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHATSAPP -->
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Otomasi</div>
+      <h2 class="sec">Rekap harian <em>otomatis via WhatsApp</em></h2>
+      <div class="wa">
+        <div>
+          <h3>Mulai hari dengan situasi terkini</h3>
+          <div class="when">Terkirim tiap pagi · jam bisa disesuaikan</div>
+          <ul>
+            <li>Daftar komplain dikelompokkan per proyek</li>
+            <li>Summary: total komplain, pending, sudah ditangani</li>
+            <li>Komplain baru &amp; prioritas tinggi dengan penanda khusus</li>
+            <li>Progres pekerjaan tim (opsional)</li>
+          </ul>
+        </div>
+        <div class="bubble">
+          <div class="b-h">REKAP HARIAN · MANAJEMEN PROYEK</div>
+          <div class="b-row"><b>Rumah Kebun Jeruk</b></div>
+          <div class="b-row">• 3 komplain — 1 baru 🆕</div>
+          <div class="b-row">• 2 pending, 1 selesai</div>
+          <div class="b-row"><b>Apartemen PIK</b></div>
+          <div class="b-row">• 1 prioritas tinggi 🔴</div>
+          <div class="b-row" style="margin-top:8px;color:var(--gold-dim)">Total: 4 komplain aktif</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="paket">
+    <div class="wrap">
+      <div class="eyebrow">Investasi</div>
+      <h2 class="sec">Kami pasangkan, kami rawat — <em>Anda tinggal pakai</em></h2>
+      <p class="sec-sub">Biaya server &amp; WhatsApp sudah termasuk dalam langganan. Kontrak minimum 3 bulan.</p>
+      <div class="tiers">
+        <div class="tier">
+          <div class="tn">Mulai</div>
+          <div class="price">Rp 2,5jt<small>biaya setup (sekali)</small></div>
+          <div class="ret">Rp 350rb / bln<span>langganan &amp; perawatan</span></div>
+          <ul><li>s/d 3 proyek aktif</li><li>Semua fitur inti</li><li>Rekap WA harian</li><li>Video panduan</li></ul>
+        </div>
+        <div class="tier feat-tier">
+          <div class="badge">Paling diminati</div>
+          <div class="tn">Studio</div>
+          <div class="price">Rp 4jt<small>biaya setup (sekali)</small></div>
+          <div class="ret">Rp 750rb / bln<span>langganan &amp; perawatan</span></div>
+          <ul><li>s/d 15 proyek aktif</li><li>Kategori RAB kustom</li><li>Branding nama studio</li><li>Training live + prioritas support</li></ul>
+        </div>
+        <div class="tier">
+          <div class="tn">Skala</div>
+          <div class="price">Rp 6,5jt<small>biaya setup (sekali)</small></div>
+          <div class="ret">Rp 1,5jt / bln<span>langganan &amp; perawatan</span></div>
+          <ul><li>Proyek tak dibatasi</li><li>s/d 3 device WhatsApp</li><li>Logo &amp; warna studio</li><li>Review kuartalan</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section id="cta">
+    <div class="wrap">
+      <div class="cta">
+        <h2>Siap koordinasi lebih rapi?</h2>
+        <p>Saya tunjukkan sistemnya berjalan langsung — tanpa komitmen. Kalau cocok, studio Anda bisa aktif dalam hitungan hari.</p>
+        <a class="btn" href="#">Chat untuk Demo Gratis</a>
+        <div class="contact">WhatsApp: <b>[isi nomor Anda]</b> · <b>[nama Anda / nama jasa]</b></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <strong>Manajemen Proyek</strong> · Catat · Pantau · Rencanakan
+  </footer>
+</body>
+</html>

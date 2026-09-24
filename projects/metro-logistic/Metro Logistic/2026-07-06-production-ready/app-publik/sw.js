@@ -1,0 +1,185 @@
+/*
+ * Service Worker — APP PUBLIK (Pelacakan) Metro Logistik
+ * (Redesain & Mode Uji Dummy oleh Antigravity)
+ */
+
+'use strict';
+
+const CACHE_VERSION = 'v2.3.0-publik'; // [GABUNG 2026-07-06] pencarian terpadu satu tombol "Lacak 🔍" — bump agar cache lama dibuang
+const SHELL_CACHE = `metropublik-shell-${CACHE_VERSION}`;
+const API_CACHE = `metropublik-api-${CACHE_VERSION}`;
+const CDN_CACHE = `metropublik-cdn-${CACHE_VERSION}`;
+
+// Aset pihak ketiga (Tailwind CDN & Google Fonts) di-cache agar tampilan
+// tetap utuh saat offline — penting untuk admin lapangan dengan sinyal lemah.
+const CDN_HOSTS = [
+  'cdn.tailwindcss.com',
+  'fonts.googleapis.com',
+  'fonts.gstatic.com'
+];
+
+const NETWORK_TIMEOUT_MS = 5000;
+
+const APP_SHELL = [
+  './',
+  './index.html',
+  './manifest.json',
+  './js/config.js',
+  './js/tracking.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-192.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(SHELL_CACHE);
+      await Promise.all(
+        APP_SHELL.map(async (url) => {
+          try {
+            await cache.add(new Request(url, { cache: 'reload' }));
+          } catch (err) {
+            console.warn('[SW] Gagal precache (dilewati):', url, err);
+          }
+        })
+      );
+      await self.skipWaiting();
+    })()
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((key) => {
+          const milikApp = key.startsWith('metropublik-');
+          const versiSaatIni = key === SHELL_CACHE || key === API_CACHE || key === CDN_CACHE;
+          if (milikApp && !versiSaatIni) {
+            console.log('[SW] Menghapus cache lama:', key);
+            return caches.delete(key);
+          }
+          return Promise.resolve();
+        })
+      );
+      await self.clients.claim();
+    })()
+  );
+});
+
+function isApiRequest(url) {
+  return (
+    url.pathname.includes('/webhook/tracking-get') ||
+    url.pathname.includes('/webhook-test/tracking-get')
+  );
+}
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (req.method !== 'GET') {
+    return;
+  }
+
+  if (isApiRequest(url)) {
+    event.respondWith(networkFirstDenganTimeout(req));
+    return;
+  }
+
+  if (url.origin === self.location.origin) {
+    event.respondWith(cacheFirst(req));
+    return;
+  }
+
+  if (CDN_HOSTS.includes(url.hostname)) {
+    event.respondWith(cacheFirstCdn(req));
+    return;
+  }
+});
+
+// Cache-first untuk aset CDN (respons opaque diperbolehkan).
+async function cacheFirstCdn(req) {
+  const cache = await caches.open(CDN_CACHE);
+  const cached = await cache.match(req);
+  if (cached) return cached;
+  const resp = await fetch(req);
+  if (resp && (resp.status === 200 || resp.type === 'opaque')) {
+    cache.put(req, resp.clone());
+  }
+  return resp;
+}
+
+async function cacheFirst(req) {
+  const cache = await caches.open(SHELL_CACHE);
+  const cached = await cache.match(req, { ignoreSearch: false });
+  if (cached) {
+    return cached;
+  }
+  try {
+    const resp = await fetch(req);
+    if (resp && resp.status === 200 && resp.type === 'basic') {
+      cache.put(req, resp.clone());
+    }
+    return resp;
+  } catch (err) {
+    if (req.mode === 'navigate') {
+      const fallback = await cache.match('./index.html');
+      if (fallback) return fallback;
+    }
+    throw err;
+  }
+}
+
+async function networkFirstDenganTimeout(req) {
+  const cache = await caches.open(API_CACHE);
+
+  try {
+    const networkResp = await fetchDenganTimeout(req, NETWORK_TIMEOUT_MS);
+    if (networkResp && networkResp.status === 200) {
+      cache.put(req, networkResp.clone());
+    }
+    return networkResp;
+  } catch (err) {
+    console.warn('[SW] API network gagal/timeout, coba cache:', err);
+    const cached = await cache.match(req);
+    if (cached) {
+      return cached;
+    }
+    return new Response(
+      JSON.stringify({
+        error: true,
+        offline: true,
+        message: 'Tidak ada koneksi dan data belum tersimpan di cache.'
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+}
+
+function fetchDenganTimeout(req, timeoutMs) {
+  return new Promise((resolve, reject) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      controller.abort();
+      reject(new Error('Batas waktu jaringan tercapai'));
+    }, timeoutMs);
+
+    fetch(req, { signal: controller.signal })
+      .then((resp) => {
+        clearTimeout(timer);
+        resolve(resp);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}

@@ -1,0 +1,44 @@
+field,tingkat,bagian_deck,slide,diisi_oleh,contoh_isi,catatan
+ts,sistem,Meta,-,workflow,2026-08-30 23:04:11,Waktu brief pertama masuk (WIB). Tidak berubah setelah itu.
+update_terakhir,sistem,Meta,-,workflow,2026-08-30 23:41:02,Kapan terakhir diperkaya.
+no_wa,sistem,Meta,-,workflow,628xxxxxxxxxx,Kunci pencocokan baris. Format kolom harus Plain text.
+nama,1,A. Identitas,"1, 31",AI,Budi,Nama orang yang chat.
+jabatan,3,A. Identitas,1,AI,Owner,Menentukan sudut pandang deck & siapa pengambil keputusan.
+nama_bisnis,1,A. Identitas,"1, 31",AI,Akademi Arsi,Cover & judul deck.
+industri,1,A. Identitas,1,AI,edukasi software arsitek,Menentukan seluruh konteks pain point.
+deskripsi_bisnis,3,A. Identitas,2-3,AI,kursus software arsitek untuk calon siswa,Slide pembuka konteks.
+target_pelanggan,3,A. Identitas,"4-5, 8-15",AI,calon siswa yang mau belajar software arsitek,Pain point & mockup percakapan.
+channel,2,B. Situasi,4-5,AI,Instagram; WhatsApp,Pain point multi-platform.
+sumber_leads,3,B. Situasi,4-5,AI,iklan IG + organik,Seberapa mahal satu leads hilang. BEDA dari sumber_prospek.
+volume_chat_harian,2,B. Situasi,"4-5, 27",AI,10 chat per hari,Pain point + slide scalability.
+jam_operasional,3,B. Situasi,4-5,AI,09.00-17.00,Pain point 'di luar jam kerja'.
+siapa_balas_chat,2,B. Situasi,4-5,AI,owner menangani sendiri,Pain point 'owner overload'.
+biaya_admin_bulanan,3,B. Situasi,"21-22, 25-26",AI,Rp3.000.000,Slide biaya & perbandingan.
+sistem_sekarang,3,B. Situasi,"27, 29",AI,catat manual di Excel,Slide human error + integrasi.
+masalah_utama,1,C. Masalah,4-5,AI,"chat calon siswa masuk 24/7, tidak kekejar",Satu masalah terbesar menurut dia sendiri.
+pain_points,3,C. Masalah,4-5,AI,telat balas; lupa follow-up,"Keluhan lain, dipisah titik koma."
+aksi_utama,2,D. Alur & fitur,8-15,AI,pendaftaran kelas,Konversi yang dikejar. Mengganti slide 'Automated Booking'.
+alur_setelah_chat,3,D. Alur & fitur,8-15,AI,tanya jadwal -> daftar -> bayar,Slide The Flow + menentukan fitur mana yang dibuang.
+pertanyaan_tersering,3,D. Alur & fitur,8-15,AI,"kapan buka kelas, cara daftar",Bahan FAQ + mockup percakapan.
+fitur_diminati,3,D. Alur & fitur,20,AI,follow-up otomatis; kirim brosur,Slide perbandingan Basic vs Premium.
+nilai_transaksi,2B,E. ROI,25-26,AI,Rp2.500.000,Rata-rata nilai satu closing. Baru ditanya setelah setuju dibuatkan deck.
+prospek_per_bulan,2B,E. ROI,25-26,AI,50,Prospek masuk per bulan. Baru ditanya setelah setuju dibuatkan deck.
+minat_paket,3,F. Komersial,20-22,AI,Premium,Basic / Premium / belum tahu.
+budget_range,3,F. Komersial,21-22,AI,3-5 juta per bulan,Kisaran anggaran yang dia sebut sendiri.
+deadline,2,F. Komersial,29,AI,September 2026,Kapan dia ingin mulai jalan.
+urgensi,3,F. Komersial,29,AI,batch kelas baru buka Oktober,"Kenapa sekarang, bukan nanti."
+bahasa_deck,3,G. Meta,semua,AI,ID,"ID / EN / campur, mengikuti bahasa yang dia pakai."
+catatan,3,G. Meta,-,AI,"sempat coba chatbot gratisan, menyerah",Apa pun yang penting tapi tidak masuk field lain.
+kelengkapan,sistem,G. Meta,-,workflow,14/33,Untuk dibaca manusia. Untuk sortir pakai brief_jumlah.
+status_followup,manual,G. Meta,-,Steven,BARU,BARU / DIHUBUNGI / DEAL / BATAL.
+kota,3,A. Identitas,"1, 29",AI,Jakarta Selatan,"Konteks lokal, zona waktu, dan pengaturan meeting."
+jumlah_admin,3,B. Situasi,"4-5, 25-26",AI,1,Angka. Basis hitungan ROI; siapa_balas_chat isinya teks bebas.
+sudah_pakai_chatbot,3,C. Masalah,19-20,AI,"pernah, chatbot gratisan, berhenti karena kaku",Menentukan objection mana yang perlu dijawab di deck.
+integrasi_dibutuhkan,3,D. Alur & fitur,"27, 29",AI,belum ada; cukup WhatsApp,Sistem yang harus disambung. Menentukan scope build.
+data_tersedia,3,D. Alur & fitur,29,AI,"sudah ada price list, FAQ belum","Menentukan timeline implementasi. Tanpa ini, tanggal cuma tebakan."
+kutipan_asli,selalu,D. Alur & fitur,8-15,AI,chat numpuk pas lagi ngajar | sering kelewat,"3-5 kalimat mentah, dipisah ' | '. Bahan mockup percakapan."
+sumber_prospek,sistem,Funnel Steven,-,workflow,Organik,Dari mana dia sampai ke VIRA (IG / landing / referral). Disalin dari STATS.lead_source.
+brief_jumlah,sistem,G. Meta,-,workflow,14,Angka. Dipakai sortir 'brief mana yang paling matang'.
+deck_dikirim_ts,manual,Outcome,-,Steven,2026-09-02,Kapan deck dikirim. Kosong = belum dikirim.
+hasil,manual,Outcome,-,Steven,DEAL,DEAL / KALAH / NO_RESPONSE / MASIH_JALAN.
+alasan_kalah,manual,Outcome,-,Steven,harga di atas budget,Diisi hanya kalau hasil = KALAH. Ini umpan balik untuk memperbaiki deck.

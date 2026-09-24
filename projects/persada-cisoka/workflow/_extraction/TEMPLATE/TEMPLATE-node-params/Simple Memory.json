@@ -1,0 +1,15 @@
+﻿{
+    "parameters":  {
+                       "sessionIdType":  "customKey",
+                       "sessionKey":  "={{ $(\u0027Chat Counter\u0027).first().json.user_wa }}",
+                       "contextWindowLength":  10
+                   },
+    "type":  "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+    "typeVersion":  1.3,
+    "position":  [
+                     -14256,
+                     2768
+                 ],
+    "id":  "6c740336-02d6-4c7d-9320-79d37be45ac3",
+    "name":  "Simple Memory"
+}

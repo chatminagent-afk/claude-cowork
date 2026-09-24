@@ -1,0 +1,95 @@
+{
+  "name": "VIRA-PCR Error Notifier",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "641f2f43-616e-4e9b-b258-1ecd77a9710a",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Susun notifikasi error untuk admin\nconst e = $input.first().json;\nconst wfName = e.workflow?.name || 'VIRA';\nconst execId = e.execution?.id || '-';\nconst node = e.execution?.error?.node?.name || e.execution?.lastNodeExecuted || '-';\nconst msg = (e.execution?.error?.message || 'unknown error').substring(0, 300);\nconst url = e.execution?.url || '-';\n\nconst text = `🚨 [PCR ${wfName}] EKSEKUSI GAGAL\\nNode: ${node}\\nError: ${msg}\\nExecution: ${execId}\\n${url}\\n\\n⚠️ Ada pesan user yang kemungkinan TIDAK terbalas. Cek & balas manual.`;\n\nreturn [{ json: { notif_text: text } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ],
+      "id": "3b70572f-3507-42ca-86e7-63c86d92d369",
+      "name": "Compose Notif"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "{{ADMIN_PHONE}}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.notif_text }}"
+            }
+          ]
+        },
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        440,
+        0
+      ],
+      "id": "f2fc09bc-5265-4c9b-b427-5c0648e7e1ec",
+      "name": "Notify Admin Error",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+          "name": "Kirimi Custom Auth (REPLACE per client)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Compose Notif",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Notif": {
+      "main": [
+        [
+          {
+            "node": "Notify Admin Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Jakarta"
+  },
+  "pinData": {}
+}

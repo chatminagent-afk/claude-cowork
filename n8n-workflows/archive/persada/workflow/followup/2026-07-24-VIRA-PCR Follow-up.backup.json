@@ -1,0 +1,464 @@
+{
+  "name": "VIRA-PCR Follow-up",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        224
+      ],
+      "id": "e151f649-ef45-44d5-8b94-5c70bea4274b",
+      "name": "Schedule Trigger FU"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit?gid=1863977253#gid=1863977253",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1863977253,
+          "mode": "list",
+          "cachedResultName": "CONFIG",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=1863977253"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        224,
+        224
+      ],
+      "id": "6ffc1e37-0acb-46e6-b243-058122909e82",
+      "name": "Read CONFIG FU",
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Baca CONFIG (key/value) -> objek cfg + gate jam etis WIB\nconst rows = $input.all().map(i => i.json);\nconst cfg = {};\nfor (const r of rows) {\n  const k = String(r.key || r.Key || '').trim();\n  if (k) cfg[k] = (r.value !== undefined && r.value !== null) ? r.value : ((r.Value !== undefined && r.Value !== null) ? r.Value : '');\n}\nconst num = (k, d) => { const n = Number(cfg[k]); return isNaN(n) ? d : n; };\n\nlet templates = [];\ntry { templates = JSON.parse(cfg.followup_templates || '[]'); } catch (e) { templates = []; }\nif (!Array.isArray(templates)) templates = [];\n\nconst openH = num('followup_open_hour', 8);\nconst closeH = num('followup_close_hour', 21);\nconst wibHour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jakarta', hour: '2-digit', hour12: false }).format(new Date()));\n\n// Di luar jam etis atau template kosong -> stop; trigger jam berikutnya coba lagi.\n// Kandidat yang \"ketinggalan\" otomatis terkirim di slot pertama hari berikutnya.\nif (wibHour < openH || wibHour >= closeH) return [];\nif (!templates.length) return [];\n\nreturn [{ json: {\n  config: {\n    kirimi_user_code: String(cfg.kirimi_user_code || '').trim(),\n    kirimi_secret: String(cfg.kirimi_secret || '').trim(),\n    kirimi_device_id: String(cfg.kirimi_device_id || '').trim(),\n    admin_phone: String(cfg.admin_phone || '').trim(),\n    exclude_numbers: [cfg.admin_phone, cfg.admin_phone_display, cfg.field_team_phone, cfg.media_team_phone]\n      .map(v => String(v || '').replace(/\\D/g, '')).filter(Boolean),\n    followup_max: num('followup_max', 0),\n    followup_interval_hours: num('followup_interval_hours', 72),\n    templates: templates\n  },\n  now_epoch: Math.floor(Date.now() / 1000)\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        224
+      ],
+      "id": "1cad018b-c393-4a96-bb7f-1baab97e7ee3",
+      "name": "Parse Config FU"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit?gid=1863977253#gid=1863977253",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 824508993,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit#gid=824508993"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        224
+      ],
+      "id": "75d758da-d812-4254-ae3e-4c6348a0f2d0",
+      "name": "Read STATS FU",
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Saring baris STATS -> user yang layak di-follow-up sekarang\nconst base = $('Parse Config FU').first().json;\nconst cfg = base.config;\nconst now = base.now_epoch;\nconst intervalSec = (cfg.followup_interval_hours || 72) * 3600;\nconst out = [];\n\nfor (const item of $input.all()) {\n  const row = item.json;\n  const noWa = String(row['No WA'] || '').trim();\n  if (!noWa) continue;\n  const digits = noWa.replace(/\\D/g, '');\n  if (cfg.exclude_numbers.includes(digits)) continue;           // nomor tim/admin\n  if (/^off$/i.test(String(row['bot_mode'] || '').trim())) continue;              // sudah dipegang manusia\n  if (/^scheduled$/i.test(String(row['survey_status'] || '').trim())) continue;   // goal tercapai\n  if (Number(row['Counter'] || 0) < 1) continue;                // belum pernah chat\n\n  const lastReply = Number(row['last_reply_ts'] || 0);\n  if (!lastReply) continue;                                     // belum pernah dibalas bot\n  if (now - lastReply < intervalSec) continue;                  // masih hangat, jangan ganggu\n\n  const lastFu = Number(row['last_follow_up_ts'] || 0);\n  if (lastFu && now - lastFu < intervalSec) continue;           // belum 3 hari sejak follow-up terakhir\n\n  const fuCount = Number(row['follow_up_count'] || 0);\n  if (cfg.followup_max > 0 && fuCount >= cfg.followup_max) continue;  // 0 = tanpa batas\n\n  out.push({ json: {\n    no_wa: noWa,\n    lid: String(row['lid'] || '').trim(),\n    nama: String(row['Nama'] || '').trim(),\n    follow_up_count: fuCount,\n    message: cfg.templates[fuCount % cfg.templates.length]      // siklus 1..N lalu ulang\n  } });\n}\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        224
+      ],
+      "id": "9f3bcd2d-899d-4e4f-8397-9239e7c240a7",
+      "name": "Filter Kandidat",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        224
+      ],
+      "id": "41196290-ea14-4ce2-bb74-bdcfda57a2cf",
+      "name": "Loop Kandidat"
+    },
+    {
+      "parameters": {
+        "amount": 6
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "38bf7d27-15e0-4fab-8dc8-195f8882777c",
+      "name": "Wait FU",
+      "webhookId": "7f3d9a21-5b6c-4e8d-9f10-2a4b6c8d0e1f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.no_wa }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "6e4dfef7-b014-4243-8824-d35c979c572d",
+      "name": "Kirim Follow-up",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "=https://docs.google.com/spreadsheets/d/1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o/edit?gid=1863977253#gid=1863977253",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "STATS",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No WA": "={{ $('Loop Kandidat').first().json.no_wa }}",
+            "lid": "={{ $('Loop Kandidat').first().json.lid }}",
+            "follow_up_count": "={{ Number($('Loop Kandidat').first().json.follow_up_count) + 1 }}",
+            "last_follow_up_ts": "={{ Math.floor(Date.now()/1000) }}"
+          },
+          "matchingColumns": [
+            "No WA"
+          ],
+          "schema": [
+            {
+              "id": "No WA",
+              "displayName": "No WA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lid",
+              "displayName": "lid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "follow_up_count",
+              "displayName": "follow_up_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "last_follow_up_ts",
+              "displayName": "last_follow_up_ts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        80
+      ],
+      "id": "eb1ffa58-0802-4185-b70c-84e44dd0dd0f",
+      "name": "Update STATS FU",
+      "credentials": {
+        "googleApi": {
+          "id": "QC5aF1HyvTElhC0M",
+          "name": "Google Service Account - Persada"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_user_code }}"
+            },
+            {
+              "name": "secret",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_secret }}"
+            },
+            {
+              "name": "device_id",
+              "value": "={{ $('Parse Config FU').first().json.config.kirimi_device_id }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $('Parse Config FU').first().json.config.admin_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ '🚨 [PCR] Gagal kirim follow-up ke ' + $('Loop Kandidat').first().json.no_wa }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1792,
+        272
+      ],
+      "id": "86d90d09-3235-43e8-9ea1-c5bd10c1a5d7",
+      "name": "Notify Admin FU Error"
+    },
+    {
+      "parameters": {
+        "content": "## Syarat Follow Up\nNo WA: nomor yang BUKAN admin/field/media team (nomor kedua kamu kalau ada),\nsurvey_status: kosongkan,\nbot_mode: kosong/ON,\nCounter: ≥ 1,\nlast_reply_ts: mundurkan 4 hari — praktisnya ambil nilai epoch yang ada sekarang lalu kurangi 350000,\nfollow_up_count & last_follow_up_ts: kosongkan.",
+        "height": 192,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        368,
+        -96
+      ],
+      "typeVersion": 1,
+      "id": "ddbc50e8-7d11-42a3-8c8a-082995c6f5d3",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger FU": {
+      "main": [
+        [
+          {
+            "node": "Read CONFIG FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read CONFIG FU": {
+      "main": [
+        [
+          {
+            "node": "Parse Config FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Config FU": {
+      "main": [
+        [
+          {
+            "node": "Read STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Filter Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Kandidat": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Kandidat": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait FU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait FU": {
+      "main": [
+        [
+          {
+            "node": "Kirim Follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kirim Follow-up": {
+      "main": [
+        [
+          {
+            "node": "Update STATS FU",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notify Admin FU Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update STATS FU": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Admin FU Error": {
+      "main": [
+        [
+          {
+            "node": "Loop Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "rBsq-mGgHfqfwbz3YmwxI"
+  },
+  "versionId": "63fa0ef3-befd-4738-a027-bf2b1439a17b",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "Ey5WRO8pnOKCVjTHMLq9I",
+  "tags": [
+    {
+      "updatedAt": "2026-07-17T06:25:26.795Z",
+      "createdAt": "2026-07-17T06:25:26.795Z",
+      "id": "hfCmrJsnyiN3liz3",
+      "name": "pcr"
+    }
+  ]
+}

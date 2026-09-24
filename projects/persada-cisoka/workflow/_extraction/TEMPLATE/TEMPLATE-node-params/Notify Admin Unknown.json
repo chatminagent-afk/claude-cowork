@@ -1,0 +1,38 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $(\u0027Parse Config\u0027).first().json.config.admin_phone }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ \"🚨 [VIRA] UNKNOWN :\\n\" + $(\u0027Chat Counter\u0027).item.json.user_wa + \"\\n\" + $(\u0027Chat Counter\u0027).item.json.user_name + \"\\nPertanyaan: \" + $(\u0027Chat Counter\u0027).item.json.original_message }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   },
+                       "authentication":  "genericCredentialType",
+                       "genericAuthType":  "httpCustomAuth"
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     -13136,
+                     3248
+                 ],
+    "id":  "56528228-7add-48a6-8ffa-c57139c2703e",
+    "name":  "Notify Admin Unknown",
+    "credentials":  {
+                        "httpCustomAuth":  {
+                                               "id":  "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+                                               "name":  "Kirimi Custom Auth (REPLACE per client)"
+                                           }
+                    }
+}

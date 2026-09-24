@@ -1,0 +1,21 @@
+﻿{
+    "parameters":  {
+                       "promptType":  "define",
+                       "text":  "={{ $input.item.json.ai_input_text }}",
+                       "options":  {
+                                       "systemMessage":  "={{ $(\u0027Parse Config\u0027).first().json.config.system_prompt }}\n\n# DATA TERVERIFIKASI (hasil dari database untuk pesan ini - SATU-SATUNYA sumber fakta selain FAQ)\n{{ $json.data_context || \u0027(tidak ada data terlampir)\u0027 }}\n\n# FAQ RELEVAN (hasil retrieval untuk pesan ini)\n{{ $json.faq_context || \u0027(tidak ada FAQ cocok - kalau fakta tidak ada di DATA TERVERIFIKASI juga, jawab [UNKNOWN])\u0027 }}\n"
+                                   }
+                   },
+    "type":  "@n8n/n8n-nodes-langchain.agent",
+    "typeVersion":  3,
+    "position":  [
+                     -14384,
+                     2544
+                 ],
+    "id":  "d0b272de-b662-43cc-b1d3-b09d407d0f29",
+    "name":  "AI Agent",
+    "retryOnFail":  false,
+    "waitBetweenTries":  2000,
+    "maxTries":  2,
+    "onError":  "continueErrorOutput"
+}

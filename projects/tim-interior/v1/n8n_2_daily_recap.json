@@ -1,0 +1,233 @@
+{
+  "name": "Salero Dindo - 2. Rekapan Harian WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 1 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0],
+      "id": "b1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Jadwal - Setiap Hari 08.00 WIB",
+      "notes": "Cron: 0 1 * * * = jam 01:00 UTC = 08:00 WIB"
+    },
+    {
+      "parameters": {
+        "operation": "getRows",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_KAMU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GANTI_DENGAN_SPREADSHEET_ID_KAMU/edit#gid=0"
+        },
+        "options": {
+          "returnAllMatches": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [240, 0],
+      "id": "b1b2c3d4-0002-0002-0002-000000000002",
+      "name": "Baca Semua Data Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_KAMU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil semua item dari node sebelumnya\nconst allItems = $input.all();\nconst rows = allItems.map(item => item.json);\n\n// Filter: hanya pending dan resolved (bukan reported)\nconst activeRows = rows.filter(r =>\n  r.Status === 'pending' || r.Status === 'resolved'\n);\n\n// Kalau tidak ada item aktif, return signal kosong\nif (activeRows.length === 0) {\n  return [{ json: { hasItems: false, waMessage: '', resolvedRows: [] } }];\n}\n\n// ── Group by Nama_Project ──────────────────────────────────────\nconst projects = {};\nactiveRows.forEach(row => {\n  const proj = row.Nama_Project || 'Tidak Diketahui';\n  if (!projects[proj]) projects[proj] = [];\n  projects[proj].push(row);\n});\n\n// ── Format tanggal hari ini ─────────────────────────────────────\nconst now = new Date();\nconst formattedDate = now.toLocaleDateString('id-ID', {\n  day: '2-digit', month: '2-digit', year: '2-digit'\n});\n\n// ── Build pesan WhatsApp ────────────────────────────────────────\nconst numberEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];\n\nlet msg = `📋 *Daftar Komplain & Tambahan Salero Dindo (${formattedDate})*\\n\\n`;\n\nconst projectNames = Object.keys(projects);\nprojectNames.forEach((proj, idx) => {\n  const emoji = numberEmojis[idx] || `${idx + 1}.`;\n  msg += `${emoji} *${proj}*\\n`;\n\n  projects[proj].forEach(item => {\n    // Tanda resolved\n    const resolvedMark = item.Status === 'resolved' ? ' ✅' : '';\n\n    // Tanggal komplain (dd/MM)\n    let tglStr = '';\n    if (item.Tanggal_Komplain) {\n      const parts = String(item.Tanggal_Komplain).split('-');\n      if (parts.length === 3) {\n        tglStr = ` (${parts[2]}/${parts[1]}/${parts[0].slice(2)})`;\n      }\n    }\n\n    // Prioritas tinggi → tandai\n    const highMark = item.Prioritas === 'Tinggi' ? ' 🔴' : '';\n\n    msg += `• ${item.Komplain}${tglStr}${resolvedMark}${highMark}\\n`;\n  });\n\n  msg += '\\n';\n});\n\nmsg += `━━━━━━━━━━━━━━━\\n`;\n\n// Summary\nconst total    = activeRows.length;\nconst resolved = activeRows.filter(r => r.Status === 'resolved').length;\nconst pending  = activeRows.filter(r => r.Status === 'pending').length;\n\nmsg += `📊 *Summary:* Total ${total} | ✅ Selesai: ${resolved} | ⏳ Pending: ${pending}\\n\\n`;\nmsg += `_Catatan: Setiap outlet diberikan CCTV dan Speaker (nanti akan di-info kembali tempatnya)_\\n\\n`;\nmsg += `_Dikirim otomatis setiap hari pukul 08.00 WIB_`;\n\n// ── Kumpulkan resolved rows untuk diupdate statusnya ────────────\nconst resolvedRows = activeRows\n  .filter(r => r.Status === 'resolved')\n  .map(r => ({\n    row_number: r.row_number,\n    ID: r.ID\n  }));\n\nreturn [{\n  json: {\n    hasItems:    true,\n    waMessage:   msg,\n    resolvedRows: resolvedRows,\n    summary: { total, resolved, pending }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 0],
+      "id": "b1b2c3d4-0003-0003-0003-000000000003",
+      "name": "Format Pesan Rekapan"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "check-has-items",
+              "leftValue": "={{ $json.hasItems }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equal"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [720, 0],
+      "id": "b1b2c3d4-0004-0004-0004-000000000004",
+      "name": "Ada Komplain Aktif?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "user_code", "value": "GANTI_USER_CODE_KIRIMI_ID" },
+            { "name": "secret",    "value": "GANTI_SECRET_KIRIMI_ID" },
+            { "name": "device_id", "value": "GANTI_DEVICE_ID_KIRIMI_ID" },
+            {
+              "name": "phone",
+              "value": "GANTI_NOMOR_WA_TUJUAN_62XXXXXXXXXX"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.waMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [960, -80],
+      "id": "b1b2c3d4-0005-0005-0005-000000000005",
+      "name": "Kirim Rekapan ke WhatsApp",
+      "notes": "Ganti user_code, secret, device_id dengan kredensial kirimi.id kamu. Ganti phone dengan nomor/grup tujuan."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Ambil list resolved rows dari pesan yang sudah dikirim\nconst resolvedRows = $('Format Pesan Rekapan').item.json.resolvedRows || [];\n\n// Kalau tidak ada yang resolved, return array kosong (workflow berhenti)\nif (resolvedRows.length === 0) {\n  return [];\n}\n\n// Output 1 item per resolved row untuk diupdate satu-satu\nreturn resolvedRows.map(row => ({\n  json: {\n    row_number: row.row_number,\n    Status:     'reported'\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, -80],
+      "id": "b1b2c3d4-0006-0006-0006-000000000006",
+      "name": "Ekstrak Resolved Items"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_KAMU",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/GANTI_DENGAN_SPREADSHEET_ID_KAMU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "Status":     "={{ $json.Status }}"
+          },
+          "matchingColumns": ["row_number"],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [1440, -80],
+      "id": "b1b2c3d4-0007-0007-0007-000000000007",
+      "name": "Update Status: resolved → reported",
+      "notes": "Setelah rekapan terkirim, status resolved diubah ke 'reported' agar tidak dikirim lagi besok.",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_KAMU",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tidak ada komplain aktif hari ini - workflow berhenti di sini\nconsole.log('[Salero Dindo] Tidak ada komplain pending/resolved hari ini. Tidak ada WA yang dikirim.');\nreturn [{ json: { skipped: true, reason: 'Tidak ada komplain aktif' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [960, 120],
+      "id": "b1b2c3d4-0008-0008-0008-000000000008",
+      "name": "Tidak Ada Komplain (Skip)"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Jadwal - Setiap Hari 08.00 WIB": {
+      "main": [[{ "node": "Baca Semua Data Sheet", "type": "main", "index": 0 }]]
+    },
+    "Baca Semua Data Sheet": {
+      "main": [[{ "node": "Format Pesan Rekapan", "type": "main", "index": 0 }]]
+    },
+    "Format Pesan Rekapan": {
+      "main": [[{ "node": "Ada Komplain Aktif?", "type": "main", "index": 0 }]]
+    },
+    "Ada Komplain Aktif?": {
+      "main": [
+        [{ "node": "Kirim Rekapan ke WhatsApp", "type": "main", "index": 0 }],
+        [{ "node": "Tidak Ada Komplain (Skip)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Kirim Rekapan ke WhatsApp": {
+      "main": [[{ "node": "Ekstrak Resolved Items", "type": "main", "index": 0 }]]
+    },
+    "Ekstrak Resolved Items": {
+      "main": [[{ "node": "Update Status: resolved → reported", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "salero-dindo-recap-v1",
+  "meta": {
+    "instanceId": "GANTI_DENGAN_INSTANCE_ID_N8N_KAMU"
+  },
+  "id": "salero-dindo-recap",
+  "tags": [{ "name": "Salero Dindo" }]
+}

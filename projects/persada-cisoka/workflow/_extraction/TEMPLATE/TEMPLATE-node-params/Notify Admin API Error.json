@@ -1,0 +1,38 @@
+﻿{
+    "parameters":  {
+                       "method":  "POST",
+                       "url":  "https://api.kirimi.id/v1/send-message",
+                       "sendBody":  true,
+                       "bodyParameters":  {
+                                              "parameters":  [
+                                                                 {
+                                                                     "name":  "phone",
+                                                                     "value":  "={{ $(\u0027Parse Config\u0027).first().json.config.admin_phone }}"
+                                                                 },
+                                                                 {
+                                                                     "name":  "message",
+                                                                     "value":  "={{ \"🚨 [ERROR] KIRIMI API GAGAL\\nUser: \" + $(\u0027Chat Counter\u0027).item.json.user_wa + \"\\nNama: \" + $(\u0027Chat Counter\u0027).item.json.user_name + \"\\nPesan: \" + $(\u0027Chat Counter\u0027).item.json.original_message + \"\\n\\n⚠️ User tidak mendapat reply! Harap balas manual.\" }}"
+                                                                 }
+                                                             ]
+                                          },
+                       "options":  {
+
+                                   },
+                       "authentication":  "genericCredentialType",
+                       "genericAuthType":  "httpCustomAuth"
+                   },
+    "type":  "n8n-nodes-base.httpRequest",
+    "typeVersion":  4.3,
+    "position":  [
+                     -13136,
+                     2832
+                 ],
+    "id":  "8d43643d-5aea-4d91-8484-79d3ae42cce9",
+    "name":  "Notify Admin API Error",
+    "credentials":  {
+                        "httpCustomAuth":  {
+                                               "id":  "REPLACE_WITH_KIRIMI_CUSTOM_AUTH_CRED_ID",
+                                               "name":  "Kirimi Custom Auth (REPLACE per client)"
+                                           }
+                    }
+}

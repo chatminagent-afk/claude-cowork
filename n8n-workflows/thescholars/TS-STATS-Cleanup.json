@@ -1,0 +1,325 @@
+{
+  "name": "STATS Cleanup TS (tiap 3 bulan, 00:01 WIB)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "1 0 1 */3 *"
+            }
+          ]
+        }
+      },
+      "id": "2ba02146-d147-49ed-a5bd-a105c314accf",
+      "name": "Every 3 months 00:01 WIB",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -224
+      ],
+      "notes": "1 Jan / 1 Apr / 1 Jul / 1 Okt, 00:01 WIB (timezone workflow = Asia/Jakarta)"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "options": {}
+      },
+      "id": "652249d8-f0d2-4ca1-a6fb-3050f7f24173",
+      "name": "Read STATS (all)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -160,
+        -224
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ====================================================================\n// PLAN CLEANUP v3 - STATS housekeeping\n// Revisi 2026-08-27: aturan v2 (whitelist baris OFF) + FILTER UMUR.\n//\n// ATURAN\n//   Baris DIPERTAHANKAN kalau memenuhi salah satu:\n//     1. header (baris 1) - tidak pernah masuk hitungan\n//     2. DILINDUNGI: bot_mode == \"OFF\" dan off_reason BUKAN \"VIRA\"\n//        -> selamanya, tanpa kedaluwarsa. Ini kontak yang dipegang Sam.\n//     3. masih hangat: aktivitas terakhir < RETENTION_DAYS hari lalu\n//     4. tidak punya jejak waktu sama sekali -> umurnya tak bisa\n//        dipastikan, jadi tidak disentuh (dilaporkan supaya dicek manual)\n//\n//   Baris DIHAPUS hanya kalau ketiganya benar:\n//     tidak dilindungi  DAN  punya jejak waktu  DAN  jejaknya sudah lewat ambang\n//\n// KENAPA ADA FILTER UMUR (v2 belum punya)\n//   Di v2, baris bot_mode = ON dihapus tanpa peduli umur. Orang yang baru\n//   chat 30 September ikut hilang saat cleanup 1 Oktober - VIRA lalu\n//   menyapanya seperti orang asing dan Counter/greeting_sent balik ke nol.\n//\n// KENAPA PATOKANNYA BUKAN last_reply_ts SAJA (beda dari Persada)\n//   Di workflow utama, last_reply_ts HANYA ditulis node \"Update to STATS\",\n//   dan node itu ada di cabang IF Bot Mode Active = ON. Kontak yang\n//   di-OFF-kan tidak pernah memperbaruinya walau chat tiap hari - di data\n//   nyata cuma 41% baris OFF yang punya last_reply_ts. Yang menyelamatkan\n//   mereka adalah buffer_done_ts, ditulis \"Delete_Pending_Msg_Bot_Off\" di\n//   cabang OFF. Karena itu umur diambil dari NILAI TERBESAR beberapa kolom,\n//   dengan cadangan terakhir kolom tanggal berformat manusia.\n//\n// CATATAN UNIT: kolom ts di sheet ini campur - last_reply_ts/gform_sent_ts/\n// kelas_anak_ts dalam DETIK, buffer_done_ts dalam MILIDETIK, dan `timestamp`\n// campur keduanya antar-baris. Jadi normalisasi dilakukan PER NILAI.\n// ====================================================================\n\nconst RETENTION_DAYS = 90;     // ambang \"sudah lama\" - ubah di sini\nconst OFF_VALUE      = 'OFF';\nconst DELETE_LABEL   = 'VIRA'; // satu-satunya off_reason yang boleh dihapus\n\n// Urutan tidak penting - yang dipakai selalu nilai TERBESAR.\nconst TS_COLS = ['last_reply_ts', 'buffer_done_ts', 'timestamp',\n                 'gform_sent_ts', 'kelas_anak_ts'];\n\nconst norm = v => String(v ?? '').trim().toUpperCase();\n\nfunction toSec(v) {\n  const n = Number(String(v ?? '').trim());\n  if (!Number.isFinite(n) || n <= 0) return 0;\n  return n > 1e12 ? Math.floor(n / 1000) : Math.floor(n);   // milidetik -> detik\n}\n\n// \"16/06/2026\" (yang ditulis Update to STATS) atau \"2026-06-16\".\nfunction parseTanggal(v) {\n  const s = String(v ?? '').trim();\n  if (!s) return 0;\n  let m = s.match(/^(\\d{1,2})[\\/-](\\d{1,2})[\\/-](\\d{4})/);\n  if (m) return Math.floor(Date.UTC(+m[3], +m[2] - 1, +m[1]) / 1000);\n  m = s.match(/^(\\d{4})-(\\d{1,2})-(\\d{1,2})/);\n  if (m) return Math.floor(Date.UTC(+m[1], +m[2] - 1, +m[3]) / 1000);\n  return 0;\n}\n\nfunction lastActivity(r) {\n  let best = 0;\n  for (const c of TS_COLS) {\n    const n = toSec(r[c]);\n    if (n > best) best = n;\n  }\n  if (!best) best = parseTanggal(r['Tanggal Chat Terakhir']) || parseTanggal(r['Tanggal Chat Pertama']);\n  return best;\n}\n\nconst now = Math.floor(Date.now() / 1000);\nconst cutoff = now - RETENTION_DAYS * 86400;\n\nconst rows = $input.all()\n  .map(i => i.json)\n  .filter(r => r && typeof r === 'object'\n            && r.row_number !== undefined\n            && Number(r.row_number) >= 2);\n\nif (!rows.length) {\n  console.log('STATS kosong / hanya header - tidak ada yang dibersihkan.');\n  return [];\n}\n\n// --------------------------------------------------------------\n// Guard 1: pastikan yang terbaca benar-benar tab STATS.\n// --------------------------------------------------------------\nif (!rows.some(r => 'No WA' in r)) {\n  throw new Error('Kolom \"No WA\" tidak ditemukan - tab yang terbaca kemungkinan bukan STATS. Cleanup DIBATALKAN.');\n}\n\n// --------------------------------------------------------------\n// Guard 2 (KRITIS): tanpa bot_mode, tidak ada baris yang terlindungi.\n// --------------------------------------------------------------\nif (!rows.some(r => 'bot_mode' in r)) {\n  throw new Error('Kolom \"bot_mode\" tidak ditemukan di STATS. Tanpa kolom ini tidak ada baris yang terlindungi. Cleanup DIBATALKAN.');\n}\n\n// --------------------------------------------------------------\n// Guard 3 (KRITIS): minimal satu kolom patokan umur harus ada, kalau\n// tidak semua baris terbaca \"tanpa jejak\" dan cleanup jadi mubazir -\n// atau lebih buruk, salah menilai umur. Kolom tanggal manusia dihitung\n// sebagai patokan yang sah.\n// --------------------------------------------------------------\nconst AGE_COLS = TS_COLS.concat(['Tanggal Chat Terakhir', 'Tanggal Chat Pertama']);\nif (!AGE_COLS.some(c => rows.some(r => c in r))) {\n  throw new Error('Tidak ada satu pun kolom patokan umur (' + AGE_COLS.join(', ') + ') di STATS. Cleanup DIBATALKAN.');\n}\n\n// --------------------------------------------------------------\n// Guard 4 (peringatan): off_reason. Kalau kolomnya belum ada, semua\n// baris OFF terbaca tanpa label -> semuanya dilindungi. Aman, cuma\n// kurang bersih; cukup ditandai di laporan.\n// --------------------------------------------------------------\nconst hasOffReason = rows.some(r => 'off_reason' in r);\n\nconst delRowNums = [];\nconst noTsRows   = [];\nlet protSam = 0, protBlank = 0, protOther = 0;   // dilindungi (OFF non-VIRA)\nlet keepHangat = 0, keepTanpaJejak = 0;          // dipertahankan karena umur\nlet delOffVira = 0, delNotOff = 0;               // dihapus\n\nfor (const r of rows) {\n  const mode   = norm(r.bot_mode);\n  const reason = norm(r.off_reason);\n\n  // --- lapis 1: perlindungan permanen -------------------------\n  if (mode === OFF_VALUE && reason !== DELETE_LABEL) {\n    if (reason === 'SAM')     protSam++;\n    else if (reason === '')   protBlank++;\n    else                      protOther++;\n    continue;\n  }\n\n  // --- lapis 2: filter umur -----------------------------------\n  const act = lastActivity(r);\n  if (!act) {\n    keepTanpaJejak++;\n    noTsRows.push(Number(r.row_number) + '(' + String(r['No WA'] ?? '').trim() + ')');\n    continue;\n  }\n  if (act >= cutoff) {\n    keepHangat++;\n    continue;\n  }\n\n  if (mode === OFF_VALUE) delOffVira++;   // OFF + VIRA, dan sudah lama\n  else                    delNotOff++;    // bot aktif, dan sudah lama\n  delRowNums.push(Number(r.row_number));\n}\n\nconst totalDataRows = rows.length;\nconst deleteCount   = delRowNums.length;\nconst keepCount     = totalDataRows - deleteCount;\n\n// --------------------------------------------------------------\n// Blok penghapusan.\n// v1/v2 memakai \"salin yang disimpan ke bawah, lalu hapus blok 2..N\".\n// Itu masuk akal saat yang disimpan cuma segelintir baris SAM. Dengan\n// filter umur, MAYORITAS baris justru dipertahankan - menyalin ratusan\n// baris lalu menghapus blok raksasa jadi mahal dan berisiko.\n// v3 memakai pendekatan Persada: hapus hanya baris yang memang kena,\n// dikelompokkan jadi blok kontigu, diurutkan MENURUN supaya nomor baris\n// di atasnya tetap valid setelah blok di bawahnya hilang. Baris yang\n// dipertahankan tidak pernah disentuh sama sekali.\n// --------------------------------------------------------------\ndelRowNums.sort((a, b) => a - b);\nconst blocks = [];\nfor (const n of delRowNums) {\n  const last = blocks[blocks.length - 1];\n  if (last && n === last.startRow + last.count) last.count++;\n  else blocks.push({ startRow: n, count: 1 });\n}\nblocks.reverse();\n\nconst L = [];\nL.push('[VIRA] STATS Cleanup v3');\nL.push('');\nL.push('Total baris data : ' + totalDataRows);\nL.push('Dipertahankan    : ' + keepCount);\nL.push('Dihapus          : ' + deleteCount + (blocks.length ? ' (' + blocks.length + ' blok)' : ''));\nL.push('');\nL.push('Dipertahankan karena:');\nL.push('- Dipegang Sam (OFF + SAM)   : ' + protSam);\nL.push('- OFF tanpa label           : ' + protBlank);\nif (protOther) L.push('- OFF label lain            : ' + protOther);\nL.push('- Masih hangat (< ' + RETENTION_DAYS + ' hari) : ' + keepHangat);\nL.push('- Tanpa jejak waktu         : ' + keepTanpaJejak);\nif (deleteCount) {\n  L.push('');\n  L.push('Dihapus karena lewat ' + RETENTION_DAYS + ' hari:');\n  L.push('- Bot masih aktif           : ' + delNotOff);\n  L.push('- OFF by VIRA               : ' + delOffVira);\n}\nif (!hasOffReason) {\n  L.push('');\n  L.push('PERINGATAN: kolom off_reason belum ada di STATS - semua baris OFF diperlakukan sebagai dilindungi.');\n}\nif (keepTanpaJejak) {\n  L.push('');\n  L.push('PERLU DICEK: ' + keepTanpaJejak + ' baris tanpa jejak waktu apa pun, sengaja tidak disentuh.');\n  L.push('Baris: ' + noTsRows.slice(0, 15).join(', ') + (noTsRows.length > 15 ? ', +' + (noTsRows.length - 15) + ' lagi' : ''));\n}\nconst report = L.join('\\n');\n\nconsole.log('STATS cleanup v3: ' + totalDataRows + ' baris | ' + keepCount + ' dipertahankan | '\n  + deleteCount + ' dihapus dalam ' + blocks.length + ' blok.');\nif (blocks.length > 40) {\n  console.warn('PERHATIAN: ' + blocks.length + ' blok hapus - mendekati kuota tulis Google Sheets (60/menit). Node Delete sudah retry otomatis, tapi pantau hasilnya.');\n}\n\nreturn [{ json: {\n  retentionDays: RETENTION_DAYS,\n  totalDataRows, keepCount, deleteCount,\n  protSam, protBlank, protOther,\n  keepHangat, keepTanpaJejak,\n  delOffVira, delNotOff,\n  hasOffReason,\n  blocks, blockCount: blocks.length,\n  noTsRows,\n  report,\n} }];\n"
+      },
+      "id": "71196681-6901-409f-a408-3ba3c98158d4",
+      "name": "Plan cleanup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "kept-rows-exist-001",
+              "leftValue": "={{ $json.deleteCount }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bcd26da3-e4ec-4774-80a3-1672ff26f7d9",
+      "name": "IF Ada Yang Dihapus",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pecah daftar blok jadi item terpisah supaya node Delete jalan sekali\n// per blok. Urutannya sudah MENURUN dari Plan cleanup - jangan diurutkan\n// ulang, kalau naik maka penghapusan blok atas akan menggeser nomor baris\n// blok di bawahnya dan yang terhapus jadi baris yang salah.\nconst plan = $('Plan cleanup').first().json;\nconst blocks = plan.blocks || [];\n\nif (!blocks.length) {\n  console.log('Tidak ada blok untuk dihapus.');\n  return [];\n}\n\nconsole.log('Menghapus ' + plan.deleteCount + ' baris dalam ' + blocks.length + ' blok (dari bawah ke atas).');\nreturn blocks.map(b => ({ json: b }));\n"
+      },
+      "id": "537e8819-a06f-47fc-a56a-0abf08d2d6a4",
+      "name": "Split delete blocks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+          "mode": "list",
+          "cachedResultName": "The_Scholars_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 56867128,
+          "mode": "list",
+          "cachedResultName": "STATS",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=56867128"
+        },
+        "startIndex": "={{ $json.startRow }}",
+        "numberToDelete": "={{ $json.count }}"
+      },
+      "id": "911029b1-a523-4172-8ea2-124b3637698a",
+      "name": "Delete STATS rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        720,
+        -320
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googleApi": {
+          "id": "3gTKMbD8lJDLbRqR",
+          "name": "Google Service Account thescholars"
+        }
+      },
+      "notes": "Hapus baris 2..(totalDataRows+1). Salinan SAM ada di bawah blok ini, jadi ikut naik jadi baris 2 dst - hasilnya rapi tanpa celah."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Node ini WAJIB mengeluarkan TEPAT 1 item.\n// Node Delete jalan sekali per blok, jadi tanpa penciutan ini notifikasi\n// WA akan terkirim berkali-kali - satu per blok yang dihapus.\nconst plan = $('Plan cleanup').first().json;\nconsole.log('Cleanup selesai: ' + plan.deleteCount + ' baris dihapus, ' + plan.keepCount + ' dipertahankan.');\nreturn [{ json: plan }];\n"
+      },
+      "id": "0a682c91-3181-4a84-a6ce-ba5bca07d66b",
+      "name": "Collapse to one",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        -224
+      ],
+      "notes": "Menciutkan jadi 1 item supaya node Delete jalan sekali saja."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kirimi.id/v1/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_code",
+              "value": "KM40LI0426"
+            },
+            {
+              "name": "secret",
+              "value": "REDACTED"
+            },
+            {
+              "name": "device_id",
+              "value": "D-4ZV1F"
+            },
+            {
+              "name": "phone",
+              "value": "=6285155202354"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Plan cleanup').first().json.report }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "19c002e5-2eeb-45ce-ba6b-fe24fa10f0f3",
+      "name": "Notify Steven",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1168,
+        -224
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "GANTI ISI_NOMOR_WA_STEVEN dengan nomor WA-mu (format 62xxx, tanpa + dan tanpa spasi)."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every 3 months 00:01 WIB": {
+      "main": [
+        [
+          {
+            "node": "Read STATS (all)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read STATS (all)": {
+      "main": [
+        [
+          {
+            "node": "Plan cleanup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan cleanup": {
+      "main": [
+        [
+          {
+            "node": "IF Ada Yang Dihapus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Ada Yang Dihapus": {
+      "main": [
+        [
+          {
+            "node": "Split delete blocks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collapse to one",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split delete blocks": {
+      "main": [
+        [
+          {
+            "node": "Delete STATS rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete STATS rows": {
+      "main": [
+        [
+          {
+            "node": "Collapse to one",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse to one": {
+      "main": [
+        [
+          {
+            "node": "Notify Steven",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Jakarta",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "0mp_AdLtInm68RxQUwLqV"
+  },
+  "versionId": "3eaee086-ab4e-4a04-acbc-7de61ae7d85b",
+  "meta": {
+    "instanceId": "bc5f82215be48fb0bc8c26e9e796ab07403e7202f46c7b0b9b39bd0750f645cd"
+  },
+  "id": "flkj_TqYPs350gF3gp74K",
+  "tags": [
+    {
+      "updatedAt": "2026-04-27T10:34:27.809Z",
+      "createdAt": "2026-04-27T10:34:27.809Z",
+      "id": "8XUGIqRJiHa3WShu",
+      "name": "thescholars"
+    }
+  ]
+}

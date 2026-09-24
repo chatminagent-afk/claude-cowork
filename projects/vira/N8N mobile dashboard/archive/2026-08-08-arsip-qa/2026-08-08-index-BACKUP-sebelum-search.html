@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>n8n Ops</title>
+<meta name="theme-color" content="#09090b">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="n8n Ops">
+<link id="manifestLink" rel="manifest">
+<link id="appleIcon" rel="apple-touch-icon">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        ink:    { 900:'#09090b', 850:'#0e0e11', 800:'#131316', 700:'#1c1c21', 600:'#26262c' },
+        line:   { DEFAULT:'#232329', soft:'#1a1a1f' },
+        txt:    { hi:'#f4f4f5', mid:'#a1a1aa', lo:'#6b6b76' },
+        brand:  { DEFAULT:'#6366f1', dim:'#4f46e5' },
+        ok:     '#22c55e',
+        bad:    '#ef4444',
+        warn:   '#f59e0b',
+        run:    '#3b82f6'
+      },
+      fontFamily: {
+        sans: ['-apple-system','BlinkMacSystemFont','Inter','Segoe UI','Roboto','sans-serif'],
+        mono: ['ui-monospace','SFMono-Regular','Menlo','Consolas','monospace']
+      }
+    }
+  }
+}
+</script>
+<style>
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    background:#09090b; color:#f4f4f5;
+    overscroll-behavior-y:none;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-font-smoothing:antialiased;
+  }
+  [v-cloak]{display:none}
+  .safe-b{padding-bottom:env(safe-area-inset-bottom,0px)}
+  .safe-t{padding-top:env(safe-area-inset-top,0px)}
+  .tap{ min-height:44px; }
+  .scroller{ -webkit-overflow-scrolling:touch; }
+  .scroller::-webkit-scrollbar{width:0;height:0}
+  .no-sel{ -webkit-user-select:none; user-select:none; }
+  .fade-enter-active,.fade-leave-active{transition:opacity .16s ease}
+  .fade-enter-from,.fade-leave-to{opacity:0}
+  .sheet-enter-active,.sheet-leave-active{transition:transform .24s cubic-bezier(.32,.72,0,1), opacity .24s ease}
+  .sheet-enter-from,.sheet-leave-to{transform:translateY(3%);opacity:0}
+  @keyframes shimmer{0%{opacity:.35}50%{opacity:.7}100%{opacity:.35}}
+  .sk{animation:shimmer 1.4s ease-in-out infinite;background:#1c1c21;border-radius:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spin{animation:spin .8s linear infinite}
+  @keyframes pulseDot{0%,100%{opacity:1}50%{opacity:.25}}
+  .pdot{animation:pulseDot 1.2s ease-in-out infinite}
+  input[type=text],input[type=password],input[type=url]{font-size:16px}
+  .jsonline{ white-space:pre; }
+</style>
+</head>
+<body class="font-sans">
+<div id="app" v-cloak>
+
+  <!-- ===== PULL TO REFRESH INDICATOR ===== -->
+  <div class="fixed left-0 right-0 z-40 flex justify-center pointer-events-none safe-t"
+       :style="{ transform:'translateY(' + (pull.dist - 44) + 'px)', opacity: Math.min(pull.dist/70,1), transition: pull.active ? 'none' : 'transform .2s ease, opacity .2s ease' }">
+    <div class="mt-2 h-9 w-9 rounded-full bg-ink-700 border border-line flex items-center justify-center shadow-lg">
+      <svg class="h-4 w-4 text-brand" :class="{'spin': pull.refreshing}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+           :style="{ transform: pull.refreshing ? '' : 'rotate(' + (pull.dist*3) + 'deg)' }">
+        <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="fixed top-0 inset-x-0 z-30 bg-ink-900/85 backdrop-blur-xl border-b border-line-soft safe-t">
+    <div class="h-14 px-4 flex items-center gap-3">
+      <div class="h-7 w-7 rounded-lg bg-brand/15 border border-brand/30 flex items-center justify-center shrink-0">
+        <svg class="h-4 w-4 text-brand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="5" cy="12" r="2.2"/><circle cx="12" cy="6" r="2.2"/><circle cx="12" cy="18" r="2.2"/><circle cx="19" cy="12" r="2.2"/>
+          <path d="M7.2 12h2.6M13.7 7.3 17 10.6M13.7 16.7 17 13.4"/>
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="text-[15px] font-semibold leading-tight truncate">{{ tabTitle }}</div>
+        <div class="text-[11px] text-txt-lo leading-tight truncate">{{ hostLabel }}</div>
+      </div>
+      <button @click="testConnection" class="shrink-0 h-8 px-2.5 rounded-full border text-[11px] font-medium flex items-center gap-1.5 no-sel"
+              :class="conn.state==='ok' ? 'border-ok/30 bg-ok/10 text-ok' : conn.state==='error' ? 'border-bad/30 bg-bad/10 text-bad' : 'border-line bg-ink-800 text-txt-mid'">
+        <span class="h-1.5 w-1.5 rounded-full" :class="[conn.state==='ok'?'bg-ok':conn.state==='error'?'bg-bad':'bg-txt-lo', conn.state==='checking'?'pdot':'']"></span>
+        {{ conn.state==='ok' ? 'Connected' : conn.state==='error' ? 'Error' : conn.state==='checking' ? 'Checking' : 'Offline' }}
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== SCROLL BODY ===== -->
+  <main ref="scrollEl" class="scroller fixed inset-0 overflow-y-auto"
+        :style="{ paddingTop:'calc(3.5rem + env(safe-area-inset-top,0px))', paddingBottom:'calc(5.5rem + env(safe-area-inset-bottom,0px))', transform:'translateY(' + pull.dist + 'px)', transition: pull.active ? 'none' : 'transform .2s ease' }"
+        @touchstart.passive="onTouchStart" @touchmove="onTouchMove" @touchend.passive="onTouchEnd">
+
+    <!-- error banner -->
+    <transition name="fade">
+      <div v-if="banner" class="mx-4 mt-3 rounded-xl border border-bad/30 bg-bad/10 p-3 flex gap-2.5">
+        <svg class="h-4 w-4 text-bad shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.2v.1"/>
+        </svg>
+        <div class="min-w-0 flex-1">
+          <div class="text-[13px] font-semibold text-bad">{{ banner.title }}</div>
+          <div class="text-[12px] text-txt-mid mt-0.5 break-words">{{ banner.msg }}</div>
+          <div v-if="banner.hint" class="text-[11px] text-txt-lo mt-1.5 leading-relaxed">{{ banner.hint }}</div>
+        </div>
+        <button @click="banner=null" class="shrink-0 text-txt-lo h-6 w-6 flex items-center justify-center">
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </transition>
+
+    <!-- ============ SETUP GATE ============ -->
+    <section v-if="!configured && tab!=='settings'" class="px-4 pt-16 text-center">
+      <div class="mx-auto h-14 w-14 rounded-2xl bg-ink-800 border border-line flex items-center justify-center">
+        <svg class="h-6 w-6 text-txt-lo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6h.09A1.7 1.7 0 0 0 10 3v-.1a2 2 0 1 1 4 0V3a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </div>
+      <h2 class="mt-4 text-base font-semibold">Belum terhubung</h2>
+      <p class="mt-1.5 text-[13px] text-txt-mid leading-relaxed">Masukkan Base URL dan API Key n8n kamu untuk mulai memantau.</p>
+      <button @click="tab='settings'" class="tap mt-5 w-full rounded-xl bg-brand hover:bg-brand-dim text-white text-[14px] font-semibold">Buka Settings</button>
+    </section>
+
+    <!-- ============ TAB: EXECUTIONS ============ -->
+    <section v-show="configured && tab==='exec'" class="px-4 pt-3">
+
+      <!-- quick stats -->
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="rounded-2xl bg-ink-850 border border-line p-3.5">
+          <div class="text-[11px] text-txt-lo font-medium">Active Workflows</div>
+          <div v-if="loading.workflows && !workflows.length" class="sk h-7 w-14 mt-1.5"></div>
+          <div v-else class="mt-1 flex items-baseline gap-1.5">
+            <span class="text-[26px] font-semibold leading-none tabular-nums">{{ stats.activeWorkflows }}</span>
+            <span class="text-[12px] text-txt-lo">/ {{ workflows.length }}</span>
+          </div>
+        </div>
+        <div class="rounded-2xl bg-ink-850 border border-line p-3.5">
+          <div class="text-[11px] text-txt-lo font-medium">Executions · 24h</div>
+          <div v-if="loading.stats && !stats.loaded" class="sk h-7 w-14 mt-1.5"></div>
+          <div v-else class="mt-1 flex items-baseline gap-1">
+            <span class="text-[26px] font-semibold leading-none tabular-nums">{{ stats.total24 }}</span>
+            <span v-if="stats.capped" class="text-[11px] text-txt-lo">+</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-2.5 rounded-2xl bg-ink-850 border border-line p-3.5 flex items-center">
+        <div class="flex-1 text-center">
+          <div class="text-[20px] font-semibold text-ok tabular-nums leading-none">{{ stats.loaded||!loading.stats ? stats.success24 : '–' }}</div>
+          <div class="text-[10.5px] text-txt-lo mt-1.5 font-medium tracking-wide">SUCCESS</div>
+        </div>
+        <div class="w-px h-8 bg-line"></div>
+        <div class="flex-1 text-center">
+          <div class="text-[20px] font-semibold text-bad tabular-nums leading-none">{{ stats.loaded||!loading.stats ? stats.failed24 : '–' }}</div>
+          <div class="text-[10.5px] text-txt-lo mt-1.5 font-medium tracking-wide">FAILED</div>
+        </div>
+        <div class="w-px h-8 bg-line"></div>
+        <div class="flex-1 text-center">
+          <div class="text-[20px] font-semibold text-run tabular-nums leading-none">{{ stats.loaded||!loading.stats ? stats.running24 : '–' }}</div>
+          <div class="text-[10.5px] text-txt-lo mt-1.5 font-medium tracking-wide">RUNNING</div>
+        </div>
+      </div>
+
+      <!-- filter chips -->
+      <div class="mt-4 flex gap-2 overflow-x-auto scroller -mx-4 px-4 pb-0.5">
+        <button v-for="f in filters" :key="f.v" @click="setFilter(f.v)"
+                class="shrink-0 h-8 px-3.5 rounded-full text-[12.5px] font-medium border no-sel transition-colors"
+                :class="filter===f.v ? 'bg-txt-hi text-ink-900 border-txt-hi' : 'bg-ink-800 text-txt-mid border-line'">
+          {{ f.label }}
+        </button>
+      </div>
+
+      <!-- skeleton -->
+      <div v-if="loading.exec && !executions.length" class="mt-3 space-y-2.5">
+        <div v-for="i in 6" :key="i" class="rounded-2xl bg-ink-850 border border-line p-3.5">
+          <div class="flex items-center gap-2.5">
+            <div class="sk h-2.5 w-2.5 rounded-full"></div>
+            <div class="sk h-3.5 flex-1" :style="{maxWidth: (110 + i*14) + 'px'}"></div>
+          </div>
+          <div class="sk h-2.5 w-32 mt-3"></div>
+        </div>
+      </div>
+
+      <!-- empty -->
+      <div v-else-if="!executions.length" class="mt-10 text-center">
+        <div class="text-[13px] text-txt-mid">Tidak ada execution{{ filter ? ' dengan status ' + filter : '' }}.</div>
+        <button @click="refreshAll" class="tap mt-3 px-4 rounded-xl bg-ink-800 border border-line text-[13px] text-txt-hi">Refresh</button>
+      </div>
+
+      <!-- list -->
+      <div v-else class="mt-3 space-y-2.5">
+        <button v-for="e in executions" :key="e.id" @click="openExecution(e)"
+                class="w-full text-left rounded-2xl bg-ink-850 border border-line active:bg-ink-800 p-3.5 no-sel">
+          <div class="flex items-start gap-2.5">
+            <span class="mt-[5px] h-2 w-2 rounded-full shrink-0" :class="[dotClass(e), st(e)==='running'?'pdot':'']"></span>
+            <div class="min-w-0 flex-1">
+              <div class="text-[14px] font-medium leading-snug truncate">{{ wfName(e) }}</div>
+              <div class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+                <span class="px-1.5 h-[19px] inline-flex items-center rounded-md text-[10.5px] font-semibold tracking-wide border" :class="badgeClass(e)">
+                  {{ st(e).toUpperCase() }}
+                </span>
+                <span class="px-1.5 h-[19px] inline-flex items-center rounded-md text-[10.5px] font-medium bg-ink-700 text-txt-mid border border-line">
+                  {{ modeLabel(e.mode) }}
+                </span>
+                <span v-if="e.retryOf" class="px-1.5 h-[19px] inline-flex items-center rounded-md text-[10.5px] font-medium bg-warn/10 text-warn border border-warn/25">RETRY</span>
+              </div>
+              <div class="mt-2 text-[11.5px] text-txt-lo tabular-nums">
+                {{ relTime(e.startedAt) }} · {{ durLabel(e) }} · #{{ e.id }}
+              </div>
+            </div>
+            <svg class="h-4 w-4 text-txt-lo shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+          </div>
+        </button>
+
+        <button v-if="nextCursor" @click="loadMore" :disabled="loading.more"
+                class="tap w-full rounded-xl bg-ink-800 border border-line text-[13px] text-txt-mid font-medium disabled:opacity-50">
+          {{ loading.more ? 'Loading…' : 'Load more' }}
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ TAB: WORKFLOWS ============ -->
+    <section v-show="configured && tab==='wf'" class="px-4 pt-3">
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-txt-lo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input v-model="wfQuery" type="text" placeholder="Cari workflow…" autocomplete="off"
+               class="tap w-full rounded-xl bg-ink-850 border border-line pl-9 pr-3 text-[14px] placeholder:text-txt-lo focus:outline-none focus:border-brand/60">
+      </div>
+
+      <div class="mt-3 flex gap-2">
+        <button v-for="f in ['all','active','inactive']" :key="f" @click="wfFilter=f"
+                class="h-8 px-3.5 rounded-full text-[12.5px] font-medium border no-sel"
+                :class="wfFilter===f ? 'bg-txt-hi text-ink-900 border-txt-hi' : 'bg-ink-800 text-txt-mid border-line'">
+          {{ f==='all' ? 'Semua' : f==='active' ? 'Active' : 'Inactive' }}
+        </button>
+      </div>
+
+      <div v-if="loading.workflows && !workflows.length" class="mt-3 space-y-2.5">
+        <div v-for="i in 7" :key="i" class="rounded-2xl bg-ink-850 border border-line p-3.5 flex items-center gap-3">
+          <div class="flex-1"><div class="sk h-3.5" :style="{maxWidth:(120+i*12)+'px'}"></div><div class="sk h-2.5 w-20 mt-2.5"></div></div>
+          <div class="sk h-7 w-12 rounded-full"></div>
+        </div>
+      </div>
+
+      <div v-else-if="!filteredWorkflows.length" class="mt-10 text-center text-[13px] text-txt-mid">Tidak ada workflow yang cocok.</div>
+
+      <div v-else class="mt-3 space-y-2.5">
+        <div v-for="w in filteredWorkflows" :key="w.id" class="rounded-2xl bg-ink-850 border border-line p-3.5 flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="text-[14px] font-medium leading-snug break-words">{{ w.name }}</div>
+            <div class="mt-1.5 text-[11.5px] text-txt-lo flex items-center gap-1.5 flex-wrap">
+              <span :class="w.active ? 'text-ok' : 'text-txt-lo'">{{ w.active ? 'Active' : 'Inactive' }}</span>
+              <span>·</span><span class="tabular-nums">{{ (w.nodes && w.nodes.length) || 0 }} nodes</span>
+              <span>·</span><span>{{ relTime(w.updatedAt) }}</span>
+            </div>
+            <div v-if="w.tags && w.tags.length" class="mt-1.5 flex gap-1 flex-wrap">
+              <span v-for="t in w.tags" :key="t.id||t.name" class="px-1.5 py-0.5 rounded-md text-[10px] bg-ink-700 text-txt-mid border border-line">{{ t.name }}</span>
+            </div>
+          </div>
+          <button @click="toggleWorkflow(w)" :disabled="busyWf[w.id]"
+                  class="shrink-0 relative h-[30px] w-[52px] rounded-full border transition-colors no-sel disabled:opacity-60"
+                  :class="w.active ? 'bg-ok/25 border-ok/50' : 'bg-ink-700 border-line'"
+                  :aria-pressed="w.active" role="switch">
+            <span class="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all flex items-center justify-center"
+                  :class="w.active ? 'left-[26px] bg-ok' : 'left-[3px] bg-txt-lo'">
+              <svg v-if="busyWf[w.id]" class="h-3 w-3 text-ink-900 spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-4-7.5"/></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAB: SETTINGS ============ -->
+    <section v-show="tab==='settings'" class="px-4 pt-3 pb-4">
+      <div class="rounded-2xl bg-ink-850 border border-line p-4">
+        <div class="text-[13px] font-semibold">Koneksi n8n</div>
+        <p class="mt-1 text-[11.5px] text-txt-lo leading-relaxed">Disimpan <b class="text-txt-mid">hanya di localStorage HP ini</b>, dan cuma dikirim ke Base URL di bawah. Kalau Base URL menunjuk ke Worker proxy, isi kolom key adalah <b class="text-txt-mid">DASH_TOKEN</b> — API key n8n yang asli tinggal di Cloudflare dan tidak pernah sampai ke HP.</p>
+
+        <label class="block mt-4 text-[12px] font-medium text-txt-mid">N8N_BASE_URL</label>
+        <input v-model.trim="form.baseUrl" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"
+               placeholder="https://n8n.yourdomain.com"
+               class="tap mt-1.5 w-full rounded-xl bg-ink-900 border border-line px-3 text-[14px] placeholder:text-txt-lo focus:outline-none focus:border-brand/60">
+        <p class="mt-1 text-[11px] text-txt-lo">Tanpa <span class="font-mono">/api/v1</span> — cukup domain root.</p>
+
+        <label class="block mt-4 text-[12px] font-medium text-txt-mid">N8N_API_KEY</label>
+        <div class="relative mt-1.5">
+          <input v-model.trim="form.apiKey" :type="showKey ? 'text' : 'password'" autocapitalize="off" autocorrect="off" spellcheck="false"
+                 placeholder="n8n_api_…"
+                 class="tap w-full rounded-xl bg-ink-900 border border-line pl-3 pr-12 text-[14px] font-mono placeholder:font-sans placeholder:text-txt-lo focus:outline-none focus:border-brand/60">
+          <button @click="showKey=!showKey" class="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-10 flex items-center justify-center text-txt-lo">
+            <svg v-if="!showKey" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg v-else class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3l18 18"/><path d="M10.6 10.6a3 3 0 0 0 4.2 4.2"/><path d="M9.4 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.3 6.5A17 17 0 0 0 2 12s3.6 7 10 7c1.4 0 2.6-.2 3.8-.7"/></svg>
+          </button>
+        </div>
+        <p class="mt-1 text-[11px] text-txt-lo">n8n → Settings → n8n API → Create an API key.</p>
+
+        <div class="mt-5 flex gap-2">
+          <button @click="saveCreds" class="tap flex-1 rounded-xl bg-brand hover:bg-brand-dim text-white text-[14px] font-semibold">Save Credentials</button>
+          <button @click="testConnection" class="tap px-4 rounded-xl bg-ink-700 border border-line text-[14px] font-medium text-txt-hi">Test</button>
+        </div>
+      </div>
+
+      <!-- CORS proxy -->
+      <div class="mt-3 rounded-2xl bg-ink-850 border border-line p-4">
+        <div class="flex items-start gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="text-[13px] font-semibold">CORS Proxy pihak ketiga</div>
+            <p class="mt-1 text-[11.5px] text-txt-lo leading-relaxed">Jangan diaktifkan kalau Base URL sudah menunjuk ke Worker proxy — sudah tidak perlu, dan kredensialmu jadi lewat server orang lain.</p>
+          </div>
+          <button @click="form.useProxy=!form.useProxy" role="switch" :aria-pressed="form.useProxy"
+                  class="shrink-0 relative h-[30px] w-[52px] rounded-full border transition-colors no-sel"
+                  :class="form.useProxy ? 'bg-brand/30 border-brand/60' : 'bg-ink-700 border-line'">
+            <span class="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all" :class="form.useProxy ? 'left-[26px] bg-brand' : 'left-[3px] bg-txt-lo'"></span>
+          </button>
+        </div>
+
+        <div v-if="form.useProxy" class="mt-3">
+          <input v-model.trim="form.proxyUrl" type="text" autocapitalize="off" autocorrect="off" spellcheck="false"
+                 placeholder="https://corsproxy.io/?url={url}"
+                 class="tap w-full rounded-xl bg-ink-900 border border-line px-3 text-[13px] font-mono placeholder:font-sans placeholder:text-txt-lo focus:outline-none focus:border-brand/60">
+          <p class="mt-1.5 text-[11px] text-txt-lo leading-relaxed">Placeholder <span class="font-mono text-txt-mid">{url}</span> akan diganti URL n8n (URL-encoded). Kalau tanpa placeholder, URL di-append di belakang.</p>
+          <div class="mt-2.5 rounded-xl border border-warn/30 bg-warn/10 p-2.5 flex gap-2">
+            <svg class="h-4 w-4 text-warn shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17v.1"/></svg>
+            <p class="text-[11px] text-warn/90 leading-relaxed">Kredensial di kolom atas akan melewati server pihak ketiga yang tidak kamu kendalikan. Matikan toggle ini dan arahkan Base URL ke Worker proxy sendiri.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- prefs -->
+      <div class="mt-3 rounded-2xl bg-ink-850 border border-line p-4">
+        <div class="text-[13px] font-semibold">Preferensi</div>
+        <div class="mt-3 flex items-center gap-3">
+          <div class="min-w-0 flex-1">
+            <div class="text-[13px]">Auto-refresh</div>
+            <div class="text-[11.5px] text-txt-lo mt-0.5">Reload executions tiap {{ form.autoSec }} detik saat app terbuka.</div>
+          </div>
+          <button @click="form.autoRefresh=!form.autoRefresh; persistPrefs()" role="switch" :aria-pressed="form.autoRefresh"
+                  class="shrink-0 relative h-[30px] w-[52px] rounded-full border transition-colors no-sel"
+                  :class="form.autoRefresh ? 'bg-brand/30 border-brand/60' : 'bg-ink-700 border-line'">
+            <span class="absolute top-[3px] h-[22px] w-[22px] rounded-full transition-all" :class="form.autoRefresh ? 'left-[26px] bg-brand' : 'left-[3px] bg-txt-lo'"></span>
+          </button>
+        </div>
+        <div v-if="form.autoRefresh" class="mt-3 flex gap-2">
+          <button v-for="s in [15,30,60,120]" :key="s" @click="form.autoSec=s; persistPrefs()"
+                  class="h-9 flex-1 rounded-xl text-[12.5px] font-medium border no-sel tabular-nums"
+                  :class="form.autoSec===s ? 'bg-txt-hi text-ink-900 border-txt-hi' : 'bg-ink-900 text-txt-mid border-line'">{{ s }}s</button>
+        </div>
+      </div>
+
+      <button @click="clearData" class="tap mt-3 w-full rounded-xl border border-bad/35 bg-bad/10 text-bad text-[14px] font-semibold">Clear Data</button>
+
+      <p class="mt-4 px-1 text-[11px] text-txt-lo leading-relaxed">
+        n8n Ops · single-file dashboard. Tambahkan ke Home Screen untuk mode standalone.<br>
+        Endpoint yang dipakai: <span class="font-mono">/api/v1/executions</span>, <span class="font-mono">/api/v1/workflows</span>, <span class="font-mono">/activate</span> · <span class="font-mono">/deactivate</span>.
+      </p>
+    </section>
+  </main>
+
+  <!-- ===== FAB REFRESH ===== -->
+  <button v-if="configured && tab!=='settings'" @click="refreshAll" :disabled="anyLoading"
+          class="fixed right-4 z-30 h-14 w-14 rounded-full bg-brand active:bg-brand-dim shadow-xl shadow-brand/25 flex items-center justify-center no-sel disabled:opacity-70"
+          :style="{ bottom:'calc(5.25rem + env(safe-area-inset-bottom,0px))' }" aria-label="Refresh">
+    <svg class="h-5 w-5 text-white" :class="{spin:anyLoading}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>
+    </svg>
+  </button>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="fixed bottom-0 inset-x-0 z-30 bg-ink-900/90 backdrop-blur-xl border-t border-line-soft safe-b">
+    <div class="h-[60px] grid grid-cols-3">
+      <button v-for="t in tabs" :key="t.k" @click="tab=t.k"
+              class="flex flex-col items-center justify-center gap-1 no-sel" :class="tab===t.k ? 'text-txt-hi' : 'text-txt-lo'">
+        <svg class="h-[21px] w-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" v-html="t.icon"></svg>
+        <span class="text-[10.5px] font-medium">{{ t.label }}</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ===== EXECUTION DETAIL DRAWER ===== -->
+  <transition name="sheet">
+    <div v-if="detailOpen" class="fixed inset-0 z-50 bg-ink-900 flex flex-col">
+      <div class="shrink-0 safe-t border-b border-line-soft bg-ink-900">
+        <div class="h-14 px-3 flex items-center gap-2">
+          <button @click="closeDetail" class="h-10 w-10 shrink-0 flex items-center justify-center rounded-xl active:bg-ink-800 text-txt-mid">
+            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+          </button>
+          <div class="min-w-0 flex-1">
+            <div class="text-[14px] font-semibold truncate leading-tight">{{ detail.meta ? wfName(detail.meta) : 'Execution' }}</div>
+            <div class="text-[11px] text-txt-lo truncate leading-tight tabular-nums">#{{ detail.id }} · {{ detail.meta ? relTime(detail.meta.startedAt) : '' }}</div>
+          </div>
+          <span v-if="detail.meta" class="shrink-0 px-2 h-[22px] inline-flex items-center rounded-md text-[10.5px] font-semibold tracking-wide border" :class="badgeClass(detail.meta)">
+            {{ st(detail.meta).toUpperCase() }}
+          </span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto scroller" :style="{ paddingBottom:'calc(5rem + env(safe-area-inset-bottom,0px))' }">
+        <!-- loading -->
+        <div v-if="detail.loading" class="p-4 space-y-2.5">
+          <div class="sk h-20 rounded-2xl"></div>
+          <div class="sk h-3 w-40"></div>
+          <div class="sk h-3 w-56"></div>
+          <div class="sk h-3 w-32"></div>
+          <div class="sk h-3 w-48"></div>
+        </div>
+
+        <div v-else class="p-4">
+          <!-- meta grid -->
+          <div class="rounded-2xl bg-ink-850 border border-line divide-y divide-line">
+            <div v-for="row in detailRows" :key="row.k" class="px-3.5 py-2.5 flex items-start gap-3">
+              <span class="text-[12px] text-txt-lo w-[92px] shrink-0">{{ row.k }}</span>
+              <span class="text-[12.5px] text-txt-hi break-all flex-1 tabular-nums">{{ row.v }}</span>
+            </div>
+          </div>
+
+          <!-- error block -->
+          <div v-if="detail.error" class="mt-3 rounded-2xl border border-bad/30 bg-bad/[0.07] overflow-hidden">
+            <div class="px-3.5 py-2.5 border-b border-bad/20 flex items-center gap-2">
+              <svg class="h-4 w-4 text-bad" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.2v.1"/></svg>
+              <span class="text-[12.5px] font-semibold text-bad">{{ detail.error.name || 'Error' }}</span>
+              <span v-if="detail.errorNode" class="ml-auto text-[11px] text-txt-mid truncate max-w-[45%]">node: {{ detail.errorNode }}</span>
+            </div>
+            <div class="px-3.5 py-3 text-[12.5px] text-txt-hi leading-relaxed break-words">{{ detail.error.message || '—' }}</div>
+            <div v-if="detail.error.description" class="px-3.5 pb-3 text-[11.5px] text-txt-mid leading-relaxed break-words">{{ detail.error.description }}</div>
+            <div v-if="detail.error.stack" class="border-t border-bad/20">
+              <button @click="stackOpen=!stackOpen" class="tap w-full px-3.5 flex items-center gap-2 text-[12px] text-txt-mid">
+                <svg class="h-3.5 w-3.5 transition-transform" :class="{'rotate-90':stackOpen}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                Stack trace
+              </button>
+              <div v-show="stackOpen" class="px-3.5 pb-3 overflow-x-auto scroller">
+                <pre class="text-[11px] font-mono text-txt-mid leading-relaxed jsonline">{{ detail.error.stack }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- JSON viewer -->
+          <div class="mt-3 rounded-2xl bg-ink-850 border border-line overflow-hidden">
+            <div class="px-3.5 h-11 flex items-center gap-2 border-b border-line">
+              <span class="text-[12.5px] font-semibold">Payload</span>
+              <span class="text-[11px] text-txt-lo">{{ jsonSizeLabel }}</span>
+              <div class="ml-auto flex gap-1.5">
+                <button @click="jsonRoot='auto'" class="h-7 px-2 rounded-lg text-[11px] font-medium border" :class="jsonRoot==='auto'?'bg-ink-600 border-line text-txt-hi':'bg-ink-900 border-line text-txt-lo'">Ringkas</button>
+                <button @click="jsonRoot='raw'" class="h-7 px-2 rounded-lg text-[11px] font-medium border" :class="jsonRoot==='raw'?'bg-ink-600 border-line text-txt-hi':'bg-ink-900 border-line text-txt-lo'">Raw</button>
+              </div>
+            </div>
+            <div class="px-2 py-2.5 overflow-x-auto scroller">
+              <json-node :label="jsonRoot==='raw' ? 'execution' : 'summary'" :value="jsonPayload" :depth="0"></json-node>
+            </div>
+          </div>
+
+          <div class="h-2"></div>
+        </div>
+      </div>
+
+      <!-- action bar -->
+      <div class="absolute bottom-0 inset-x-0 bg-ink-900/95 backdrop-blur-xl border-t border-line-soft safe-b">
+        <div class="p-3 flex gap-2">
+          <button @click="copyJson" class="tap flex-1 rounded-xl bg-ink-700 border border-line text-[13.5px] font-semibold text-txt-hi flex items-center justify-center gap-2">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+            Copy {{ detail.error ? 'Error' : '' }} JSON
+          </button>
+          <button @click="retryExecution" :disabled="detail.retrying || detail.loading || !canRetry"
+                  :title="canRetry ? 'Jalankan ulang execution ini' : 'Hanya execution yang gagal bisa di-retry'"
+                  class="tap flex-1 rounded-xl bg-brand active:bg-brand-dim text-white text-[13.5px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40">
+            <svg class="h-4 w-4" :class="{spin:detail.retrying}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            {{ detail.retrying ? 'Retrying…' : 'Retry' }}
+          </button>
+        </div>
+        <label v-if="canRetry" class="px-4 pb-3 -mt-1 flex items-center gap-2 text-[11.5px] text-txt-lo no-sel">
+          <input type="checkbox" v-model="retryCurrent" class="h-4 w-4 accent-indigo-500">
+          Pakai versi workflow terbaru saat retry
+        </label>
+        <p v-else class="px-4 pb-3 -mt-1 text-[11.5px] text-txt-lo">Retry hanya tersedia untuk execution yang gagal.</p>
+      </div>
+    </div>
+  </transition>
+
+  <!-- ===== TOAST ===== -->
+  <transition name="fade">
+    <div v-if="toast" class="fixed left-1/2 -translate-x-1/2 z-[60] max-w-[92vw]" :style="{ bottom:'calc(6.5rem + env(safe-area-inset-bottom,0px))' }">
+      <div class="px-4 py-2.5 rounded-xl border shadow-xl text-[12.5px] font-medium"
+           :class="toast.kind==='bad' ? 'bg-bad/15 border-bad/40 text-bad backdrop-blur-xl' : toast.kind==='ok' ? 'bg-ok/15 border-ok/40 text-ok backdrop-blur-xl' : 'bg-ink-700 border-line text-txt-hi'">
+        {{ toast.msg }}
+      </div>
+    </div>
+  </transition>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+<script>
+/* ============================================================
+   PWA plumbing — manifest + apple-touch-icon generated inline
+   ============================================================ */
+(function () {
+  /* Ikon di-gambar di canvas supaya file ini tetap berdiri sendiri.
+     iOS butuh apple-touch-icon PNG (SVG tidak dipakai), jadi selalu diset. */
+  function drawIcon(size) {
+    var c = document.createElement('canvas'); c.width = c.height = size;
+    var x = c.getContext('2d'), k = size / 512;
+    x.fillStyle = '#09090b'; x.fillRect(0, 0, size, size);
+    x.strokeStyle = '#6366f1'; x.lineWidth = 26 * k; x.lineCap = 'round';
+    x.beginPath();
+    x.moveTo(150 * k, 256 * k); x.lineTo(234 * k, 256 * k);
+    x.moveTo(276 * k, 176 * k); x.lineTo(362 * k, 240 * k);
+    x.moveTo(276 * k, 336 * k); x.lineTo(362 * k, 272 * k);
+    x.stroke();
+    x.fillStyle = '#6366f1';
+    [[128, 256], [256, 160], [256, 352], [384, 256]].forEach(function (p) {
+      x.beginPath(); x.arc(p[0] * k, p[1] * k, 34 * k, 0, 6.2832); x.fill();
+    });
+    return c.toDataURL('image/png');
+  }
+
+  var link = document.getElementById('manifestLink');
+
+  try {
+    var i512 = drawIcon(512), i192 = drawIcon(192);
+    document.getElementById('appleIcon').href = i512;
+
+    /* Manifest cadangan untuk saat file ini dibuka tanpa deploy.
+       start_url/scope harus absolut — kalau relatif, resolusinya terhadap
+       blob: URL ngaco dan Chrome menolak manifest-nya. */
+    var here = location.href.split('#')[0].split('?')[0];
+    var mf = {
+      id: here, name: 'n8n Ops', short_name: 'n8n Ops',
+      description: 'Pantau dan kontrol n8n self-hosted dari HP.',
+      start_url: here, scope: here.slice(0, here.lastIndexOf('/') + 1),
+      display: 'standalone', orientation: 'portrait',
+      background_color: '#09090b', theme_color: '#09090b',
+      icons: [
+        { src: i192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+        { src: i512, sizes: '512x512', type: 'image/png', purpose: 'any' },
+        { src: i512, sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+      ]
+    };
+    link.href = URL.createObjectURL(new Blob([JSON.stringify(mf)], { type: 'application/manifest+json' }));
+  } catch (e) { /* file:// atau canvas diblokir — tidak fatal */ }
+
+  /* Kalau versi ter-deploy menyertakan manifest.webmanifest sungguhan, pakai
+     itu. Chrome jauh lebih rewel terhadap manifest ber-URL blob: saat menilai
+     apakah sebuah situs boleh di-install. */
+  if (location.protocol === 'https:') {
+    fetch('manifest.webmanifest', { cache: 'no-store' })
+      .then(function (r) { if (r.ok) link.href = 'manifest.webmanifest'; })
+      .catch(function () {});
+
+    /* Bukan syarat install lagi sejak Chrome 108 di mobile, tapi ini yang
+       bikin shell-nya tetap kebuka saat sinyal jelek. */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('sw.js').catch(function () {});
+      });
+    }
+  }
+})();
+
+const { createApp, ref, reactive, computed, watch, onMounted, nextTick } = Vue;
+
+/* ============================================================
+   Collapsible JSON viewer (recursive)
+   ============================================================ */
+const JsonNode = {
+  name: 'JsonNode',
+  props: {
+    label: { default: null },
+    value: { default: null },
+    depth: { type: Number, default: 0 },
+    isLast: { type: Boolean, default: true }
+  },
+  setup(props) {
+    const open = ref(props.depth < 1);
+    const expandStr = ref(false);
+
+    const type = computed(() => {
+      const v = props.value;
+      if (v === null) return 'null';
+      if (Array.isArray(v)) return 'array';
+      return typeof v;
+    });
+    const isBranch = computed(() => type.value === 'array' || type.value === 'object');
+    const entries = computed(() => {
+      if (!isBranch.value) return [];
+      const v = props.value;
+      return type.value === 'array'
+        ? v.map((item, i) => ({ k: String(i), v: item }))
+        : Object.keys(v).map(k => ({ k, v: v[k] }));
+    });
+    const count = computed(() => entries.value.length);
+    const preview = computed(() =>
+      type.value === 'array' ? '[ ' + count.value + ' ]' : '{ ' + count.value + ' }'
+    );
+    const strVal = computed(() => {
+      const v = props.value;
+      if (type.value !== 'string') return '';
+      if (v.length > 140 && !expandStr.value) return v.slice(0, 140) + '…';
+      return v;
+    });
+    const long = computed(() => type.value === 'string' && props.value.length > 140);
+
+    const valClass = computed(() => ({
+      string: 'text-emerald-400', number: 'text-amber-400', boolean: 'text-sky-400',
+      null: 'text-txt-lo', undefined: 'text-txt-lo'
+    })[type.value] || 'text-txt-hi');
+
+    return { open, isBranch, entries, count, preview, type, strVal, valClass, long, expandStr };
+  },
+  template: `
+    <div class="font-mono text-[12px] leading-[1.65]">
+      <!-- branch -->
+      <div v-if="isBranch">
+        <button @click="open = !open"
+                class="w-full text-left flex items-start gap-1 py-[3px] pr-1 rounded active:bg-ink-800"
+                :style="{ paddingLeft: (depth * 11 + 4) + 'px', minHeight: '26px' }">
+          <svg class="h-3 w-3 mt-[5px] shrink-0 text-txt-lo transition-transform" :class="{ 'rotate-90': open }"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 6l6 6-6 6"/>
+          </svg>
+          <span class="text-indigo-300 break-all">{{ label }}</span>
+          <span class="text-txt-lo shrink-0">{{ preview }}</span>
+        </button>
+        <!-- v-if (not v-show): collapsed subtrees are never built, so a huge
+             runData payload stays fast to open on a phone. -->
+        <div v-if="open">
+          <json-node v-for="(e, i) in entries" :key="e.k + '-' + i"
+                     :label="e.k" :value="e.v" :depth="depth + 1"></json-node>
+          <div v-if="!count" class="text-txt-lo py-[3px]" :style="{ paddingLeft: ((depth+1) * 11 + 19) + 'px' }">empty</div>
+        </div>
+      </div>
+      <!-- leaf -->
+      <div v-else class="flex items-start gap-1.5 py-[3px] pr-2" :style="{ paddingLeft: (depth * 11 + 19) + 'px' }">
+        <span class="text-indigo-300 shrink-0 break-all">{{ label }}:</span>
+        <span :class="valClass" class="break-all jsonline" style="white-space:pre-wrap">{{ type === 'string' ? '"' + strVal + '"' : String(value) }}</span>
+        <button v-if="long" @click="expandStr = !expandStr" class="shrink-0 text-[10px] px-1.5 h-5 rounded bg-ink-700 border border-line text-txt-mid">
+          {{ expandStr ? 'less' : 'more' }}
+        </button>
+      </div>
+    </div>`
+};
+
+/* ============================================================
+   App
+   ============================================================ */
+const LS = 'n8nops.v1';
+
+createApp({
+  components: { JsonNode },
+  setup() {
+    /* ---------- state ---------- */
+    const form = reactive({
+      baseUrl: '', apiKey: '', useProxy: false,
+      proxyUrl: 'https://corsproxy.io/?url={url}',
+      autoRefresh: false, autoSec: 30
+    });
+    const showKey = ref(false);
+    const tab = ref('exec');
+    const conn = reactive({ state: 'idle' });
+    const banner = ref(null);
+    const toast = ref(null);
+
+    const executions = ref([]);
+    const workflows = ref([]);
+    const wfMap = reactive({});
+    const nextCursor = ref(null);
+    const filter = ref('');
+    const wfQuery = ref('');
+    const wfFilter = ref('all');
+    const busyWf = reactive({});
+
+    const loading = reactive({ exec: false, workflows: false, stats: false, more: false });
+    const stats = reactive({ activeWorkflows: 0, total24: 0, success24: 0, failed24: 0, running24: 0, capped: false, loaded: false });
+
+    const detailOpen = ref(false);
+    const detail = reactive({ id: null, meta: null, raw: null, error: null, errorNode: null, loading: false, retrying: false });
+    const stackOpen = ref(false);
+    const jsonRoot = ref('auto');
+    const retryCurrent = ref(false);
+
+    const pull = reactive({ active: false, dist: 0, startY: 0, refreshing: false });
+
+    const filters = [
+      { v: '', label: 'Semua' }, { v: 'error', label: 'Failed' },
+      { v: 'success', label: 'Success' }, { v: 'running', label: 'Running' },
+      { v: 'waiting', label: 'Waiting' }
+    ];
+    const tabs = [
+      { k: 'exec', label: 'Executions', icon: '<path d="M4 6h16M4 12h16M4 18h10"/><circle cx="19" cy="18" r="2"/>' },
+      { k: 'wf', label: 'Workflows', icon: '<circle cx="5" cy="12" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M13.6 7.2 17 10.2M13.6 16.8 17 13.8"/>' },
+      { k: 'settings', label: 'Settings', icon: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.88 1.22V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.88 1.22l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>' }
+    ];
+
+    const configured = computed(() => !!(form.baseUrl && form.apiKey));
+    const anyLoading = computed(() => loading.exec || loading.workflows || loading.stats);
+    const tabTitle = computed(() => tab.value === 'exec' ? 'Executions' : tab.value === 'wf' ? 'Workflows' : 'Settings');
+    const hostLabel = computed(() => {
+      if (!form.baseUrl) return 'belum dikonfigurasi';
+      try { return new URL(form.baseUrl).host; } catch (e) { return form.baseUrl; }
+    });
+
+    /* ---------- persistence ---------- */
+    function load() {
+      try {
+        const s = JSON.parse(localStorage.getItem(LS) || '{}');
+        Object.keys(form).forEach(k => { if (s[k] !== undefined) form[k] = s[k]; });
+      } catch (e) {}
+    }
+    function persist() { try { localStorage.setItem(LS, JSON.stringify(form)); } catch (e) {} }
+    const persistPrefs = persist;
+
+    function saveCreds() {
+      if (!form.baseUrl || !form.apiKey) { say('Base URL dan API Key wajib diisi', 'bad'); return; }
+      if (!/^https?:\/\//i.test(form.baseUrl)) form.baseUrl = 'https://' + form.baseUrl;
+      form.baseUrl = form.baseUrl.replace(/\/+$/, '').replace(/\/api\/v1$/i, '');
+      persist();
+      say('Credentials tersimpan', 'ok');
+      banner.value = null;
+      bootstrap(true);
+    }
+
+    function clearData() {
+      if (!confirm('Hapus Base URL, API Key, dan semua preferensi dari HP ini?')) return;
+      try { localStorage.removeItem(LS); } catch (e) {}
+      form.baseUrl = ''; form.apiKey = ''; form.useProxy = false;
+      form.proxyUrl = 'https://corsproxy.io/?url={url}';
+      form.autoRefresh = false; form.autoSec = 30;
+      executions.value = []; workflows.value = []; nextCursor.value = null;
+      Object.keys(wfMap).forEach(k => delete wfMap[k]);
+      Object.assign(stats, { activeWorkflows: 0, total24: 0, success24: 0, failed24: 0, running24: 0, capped: false, loaded: false });
+      conn.state = 'idle'; banner.value = null; tab.value = 'settings';
+      say('Data dihapus', 'ok');
+    }
+
+    /* ---------- api ---------- */
+    function buildUrl(path) {
+      const base = (form.baseUrl || '').replace(/\/+$/, '');
+      const full = base + path;
+      if (form.useProxy && form.proxyUrl) {
+        return form.proxyUrl.includes('{url}')
+          ? form.proxyUrl.replace('{url}', encodeURIComponent(full))
+          : form.proxyUrl + encodeURIComponent(full);
+      }
+      return full;
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(buildUrl(path), {
+        method: opts.method || 'GET',
+        headers: Object.assign({
+          'X-N8N-API-KEY': form.apiKey,
+          'Accept': 'application/json'
+        }, opts.body ? { 'Content-Type': 'application/json' } : {}, opts.headers || {}),
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+        cache: 'no-store',
+        mode: 'cors'
+      }).catch(err => { throw Object.assign(new Error('network'), { network: true, cause: err }); });
+
+      if (!res.ok) {
+        let body = '';
+        try { body = await res.text(); } catch (e) {}
+        let parsed = null;
+        try { parsed = JSON.parse(body); } catch (e) {}
+        throw Object.assign(new Error((parsed && (parsed.message || parsed.error)) || ('HTTP ' + res.status)), {
+          status: res.status, body: body
+        });
+      }
+      const txt = await res.text();
+      if (!txt) return null;
+      try { return JSON.parse(txt); } catch (e) { return txt; }
+    }
+
+    function fail(err, where) {
+      conn.state = 'error';
+      if (err && err.network) {
+        banner.value = {
+          title: 'Tidak bisa menghubungi n8n',
+          msg: 'Request ke ' + hostLabel.value + ' gagal (' + where + ').',
+          hint: form.useProxy
+            ? 'Cek apakah URL CORS proxy benar dan proxy-nya hidup.'
+            : 'Kemungkinan besar CORS. Set N8N_CORS_ALLOW_ORIGIN di n8n, atau aktifkan CORS Proxy di Settings. Cek juga URL, HTTPS, dan koneksi HP.'
+        };
+      } else if (err && (err.status === 401 || err.status === 403)) {
+        banner.value = { title: 'API Key ditolak (' + err.status + ')', msg: 'n8n menolak kredensial ini.', hint: 'Buat ulang API key di n8n → Settings → n8n API, lalu simpan lagi di tab Settings.' };
+      } else if (err && err.status === 404) {
+        banner.value = { title: 'Endpoint tidak ditemukan (404)', msg: where + ' tidak tersedia di instance ini.', hint: 'Pastikan Public API aktif (N8N_PUBLIC_API_DISABLED tidak di-set) dan Base URL menunjuk ke root domain, bukan /api/v1.' };
+      } else {
+        banner.value = { title: 'Request gagal', msg: (err && err.message) || 'Unknown error', hint: where };
+      }
+    }
+
+    /* ---------- loaders ---------- */
+    async function loadWorkflows(silent) {
+      if (!configured.value) return;
+      loading.workflows = true;
+      try {
+        let all = [], cursor = null, guard = 0;
+        do {
+          const q = '/api/v1/workflows?limit=250' + (cursor ? '&cursor=' + encodeURIComponent(cursor) : '');
+          const r = await api(q);
+          const items = (r && r.data) || [];
+          all = all.concat(items);
+          cursor = (r && r.nextCursor) || null;
+        } while (cursor && ++guard < 8);
+        workflows.value = all;
+        all.forEach(w => { wfMap[w.id] = w.name; });
+        stats.activeWorkflows = all.filter(w => w.active).length;
+        conn.state = 'ok';
+        if (banner.value && banner.value.title !== 'Retry tidak didukung') banner.value = null;
+      } catch (e) { if (!silent) fail(e, 'GET /api/v1/workflows'); }
+      finally { loading.workflows = false; }
+    }
+
+    async function loadExecutions(silent) {
+      if (!configured.value) return;
+      loading.exec = true;
+      try {
+        const q = '/api/v1/executions?limit=20&includeData=false' + (filter.value ? '&status=' + filter.value : '');
+        const r = await api(q);
+        executions.value = (r && r.data) || [];
+        nextCursor.value = (r && r.nextCursor) || null;
+        conn.state = 'ok';
+        if (banner.value && banner.value.title !== 'Retry tidak didukung') banner.value = null;
+      } catch (e) { if (!silent) fail(e, 'GET /api/v1/executions'); }
+      finally { loading.exec = false; }
+    }
+
+    async function loadMore() {
+      if (!nextCursor.value || loading.more) return;
+      loading.more = true;
+      try {
+        const q = '/api/v1/executions?limit=20&includeData=false'
+          + (filter.value ? '&status=' + filter.value : '')
+          + '&cursor=' + encodeURIComponent(nextCursor.value);
+        const r = await api(q);
+        executions.value = executions.value.concat((r && r.data) || []);
+        nextCursor.value = (r && r.nextCursor) || null;
+      } catch (e) { fail(e, 'GET /api/v1/executions (cursor)'); }
+      finally { loading.more = false; }
+    }
+
+    async function loadStats(silent) {
+      if (!configured.value) return;
+      loading.stats = true;
+      try {
+        const r = await api('/api/v1/executions?limit=250&includeData=false');
+        const items = (r && r.data) || [];
+        const since = Date.now() - 86400000;
+        const win = items.filter(e => {
+          const t = Date.parse(e.startedAt || e.createdAt || '');
+          return isFinite(t) && t >= since;
+        });
+        stats.total24 = win.length;
+        stats.success24 = win.filter(e => st(e) === 'success').length;
+        stats.failed24 = win.filter(e => ['error', 'crashed'].includes(st(e))).length;
+        stats.running24 = win.filter(e => ['running', 'new'].includes(st(e))).length;
+        // if every one of the 250 rows fits in the window, the real count may be higher
+        stats.capped = items.length >= 250 && win.length === items.length;
+        stats.loaded = true;
+      } catch (e) { if (!silent) fail(e, 'GET /api/v1/executions (stats)'); }
+      finally { loading.stats = false; }
+    }
+
+    /* Auto-refresh memanggil ini tiap 30 detik. Menarik ulang SEMUA workflow
+       (paginasi 250/halaman) dan 250 baris execution setiap kali itu boros
+       kuota dan baterai, padahal keduanya jarang berubah secepat itu. Pada
+       refresh otomatis (light), keduanya dibatasi; refresh manual selalu penuh. */
+    let lastWf = 0, lastStats = 0;
+    async function refreshAll(silent, light) {
+      if (!configured.value) { tab.value = 'settings'; return; }
+      const now = Date.now();
+      const jobs = [loadExecutions(silent)];
+      if (!light || now - lastWf > 300000) { lastWf = now; jobs.push(loadWorkflows(silent)); }
+      if (!light || now - lastStats > 120000) { lastStats = now; jobs.push(loadStats(true)); }
+      await Promise.all(jobs);
+    }
+
+    async function bootstrap(force) {
+      if (!configured.value) { tab.value = 'settings'; return; }
+      conn.state = 'checking';
+      await refreshAll(false);
+    }
+
+    async function testConnection() {
+      if (!configured.value) { tab.value = 'settings'; say('Isi Base URL & API Key dulu', 'bad'); return; }
+      conn.state = 'checking'; banner.value = null;
+      try {
+        await api('/api/v1/workflows?limit=1');
+        conn.state = 'ok'; say('Koneksi OK', 'ok');
+        if (!executions.value.length) refreshAll(true);
+      } catch (e) { fail(e, 'GET /api/v1/workflows?limit=1'); say('Koneksi gagal', 'bad'); }
+    }
+
+    /* ---------- workflow toggle ---------- */
+    async function toggleWorkflow(w) {
+      if (busyWf[w.id]) return;
+      busyWf[w.id] = true;
+      const target = !w.active;
+      const prev = w.active;
+      w.active = target; // optimistic
+      try {
+        await api('/api/v1/workflows/' + encodeURIComponent(w.id) + '/' + (target ? 'activate' : 'deactivate'), { method: 'POST' });
+        stats.activeWorkflows = workflows.value.filter(x => x.active).length;
+        say((target ? 'Activated' : 'Deactivated') + ' · ' + w.name, 'ok');
+      } catch (e) {
+        w.active = prev;
+        say('Gagal toggle: ' + (e.message || 'error'), 'bad');
+        fail(e, 'POST /api/v1/workflows/{id}/' + (target ? 'activate' : 'deactivate'));
+      } finally { busyWf[w.id] = false; }
+    }
+
+    /* ---------- execution detail ---------- */
+    async function openExecution(e) {
+      detail.id = e.id; detail.meta = e; detail.raw = null;
+      detail.error = null; detail.errorNode = null; detail.retrying = false;
+      stackOpen.value = false; jsonRoot.value = 'auto';
+      detailOpen.value = true; detail.loading = true;
+      document.body.style.overflow = 'hidden';
+      try {
+        const r = await api('/api/v1/executions/' + encodeURIComponent(e.id) + '?includeData=true');
+        detail.raw = r || e;
+        if (r) detail.meta = Object.assign({}, e, r);
+        extractError();
+      } catch (err) {
+        detail.raw = e;
+        say('Gagal ambil detail: ' + (err.message || 'error'), 'bad');
+      } finally { detail.loading = false; }
+    }
+
+    function extractError() {
+      const d = detail.raw && detail.raw.data;
+      const rd = d && d.resultData;
+      let err = (rd && rd.error) || null;
+      let node = (rd && rd.lastNodeExecuted) || null;
+
+      if (!err && rd && rd.runData) {
+        for (const nm of Object.keys(rd.runData)) {
+          const runs = rd.runData[nm] || [];
+          for (const run of runs) {
+            if (run && run.error) { err = run.error; node = nm; break; }
+          }
+          if (err) break;
+        }
+      }
+      if (err) {
+        detail.error = {
+          name: err.name || (err.constructor && err.constructor.name) || 'Error',
+          message: err.message || err.description || '',
+          description: err.description && err.description !== err.message ? err.description : '',
+          stack: err.stack || ''
+        };
+        detail.errorNode = (err.node && (err.node.name || err.node)) || node;
+      }
+    }
+
+    function closeDetail() { detailOpen.value = false; document.body.style.overflow = ''; }
+
+    const detailRows = computed(() => {
+      const m = detail.meta || {};
+      const rows = [
+        { k: 'Execution', v: '#' + (m.id !== undefined ? m.id : '—') },
+        { k: 'Workflow', v: wfName(m) },
+        { k: 'Workflow ID', v: m.workflowId || '—' },
+        { k: 'Status', v: st(m) },
+        { k: 'Mode', v: modeLabel(m.mode) },
+        { k: 'Started', v: fullTime(m.startedAt) },
+        { k: 'Stopped', v: m.stoppedAt ? fullTime(m.stoppedAt) : '—' },
+        { k: 'Duration', v: durLabel(m) }
+      ];
+      if (m.retryOf) rows.push({ k: 'Retry of', v: '#' + m.retryOf });
+      if (m.retrySuccessId) rows.push({ k: 'Retry success', v: '#' + m.retrySuccessId });
+      if (detail.errorNode) rows.push({ k: 'Failed node', v: detail.errorNode });
+      return rows;
+    });
+
+    /* n8n hanya bisa me-retry execution yang gagal. Menawarkan tombolnya di
+       execution yang sukses cuma memancing panggilan yang pasti ditolak —
+       dan lebih buruk lagi, memancing re-run yang tidak diinginkan. */
+    const canRetry = computed(() => ['error', 'crashed'].includes(st(detail.meta || {})));
+
+    const jsonPayload = computed(() => {
+      if (!detail.raw) return {};
+      if (jsonRoot.value === 'raw') return detail.raw;
+      const r = detail.raw;
+      const d = r.data || {};
+      const rd = d.resultData || {};
+      const out = {
+        id: r.id, workflowId: r.workflowId, workflowName: wfName(r),
+        status: st(r), mode: r.mode, startedAt: r.startedAt, stoppedAt: r.stoppedAt,
+        finished: r.finished, retryOf: r.retryOf || null
+      };
+      if (rd.error) out.error = rd.error;
+      if (rd.lastNodeExecuted) out.lastNodeExecuted = rd.lastNodeExecuted;
+      if (rd.runData) {
+        const nodes = {};
+        Object.keys(rd.runData).forEach(nm => {
+          const runs = rd.runData[nm] || [];
+          nodes[nm] = runs.map(run => ({
+            executionTime: run && run.executionTime,
+            error: (run && run.error) || undefined,
+            output: run && run.data && run.data.main
+              ? run.data.main.map(br => (br || []).map(it => (it && it.json !== undefined ? it.json : it)))
+              : undefined
+          }));
+        });
+        out.nodes = nodes;
+      }
+      return out;
+    });
+
+    const jsonSizeLabel = computed(() => {
+      try {
+        const n = JSON.stringify(jsonRoot.value === 'raw' ? detail.raw : jsonPayload.value).length;
+        return n > 1024 ? (n / 1024).toFixed(1) + ' KB' : n + ' B';
+      } catch (e) { return ''; }
+    });
+
+    async function copyJson() {
+      const payload = detail.error
+        ? { executionId: detail.id, workflowId: detail.meta && detail.meta.workflowId, workflowName: wfName(detail.meta || {}), status: st(detail.meta || {}), startedAt: detail.meta && detail.meta.startedAt, failedNode: detail.errorNode, error: detail.error }
+        : (jsonRoot.value === 'raw' ? detail.raw : jsonPayload.value);
+      const text = JSON.stringify(payload, null, 2);
+      try {
+        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+        else {
+          const ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+        }
+        say('JSON disalin ke clipboard', 'ok');
+      } catch (e) { say('Gagal menyalin', 'bad'); }
+    }
+
+    /* POST /api/v1/executions/{id}/retry memang ada di build n8n ini —
+       diverifikasi lewat probe: GET pada path itu balas 405 (route terdaftar,
+       method salah), sementara path karangan balas 404. Tidak ada lagi fallback
+       ke /rest/: proxy memblokirnya, jadi itu cuma menambah satu request gagal
+       dan menutupi pesan error yang sebenarnya. */
+    async function retryExecution() {
+      if (!detail.id || detail.retrying || !canRetry.value) return;
+      detail.retrying = true;
+      const body = { loadWorkflow: !!retryCurrent.value };
+      try {
+        const res = await api('/api/v1/executions/' + encodeURIComponent(detail.id) + '/retry', { method: 'POST', body });
+        say('Retry dikirim' + (res && res.id ? ' · execution #' + res.id : ''), 'ok');
+        closeDetail();
+        setTimeout(() => refreshAll(true), 900);
+      } catch (e) {
+        if (e.status === 404) {
+          say('Execution #' + detail.id + ' sudah tidak ada di n8n', 'bad');
+        } else if (e.status === 405) {
+          banner.value = {
+            title: 'Retry tidak didukung',
+            msg: 'Build n8n ini tidak mengekspos POST /api/v1/executions/{id}/retry.',
+            hint: 'Jalankan retry dari UI n8n, atau bikin workflow ber-webhook yang men-trigger ulang execution.'
+          };
+          say('Retry tidak tersedia di instance ini', 'bad');
+          tab.value = 'exec';
+          closeDetail();
+        } else if (e.status === 403) {
+          say('Proxy menolak path ini', 'bad');
+        } else if (e.network) {
+          say('Retry gagal: jaringan / proxy tidak terjangkau', 'bad');
+        } else {
+          say('Retry gagal: ' + (e.message || 'error'), 'bad');
+        }
+      } finally { detail.retrying = false; }
+    }
+
+    /* ---------- helpers ---------- */
+    function st(e) {
+      if (!e) return 'unknown';
+      if (e.status) return String(e.status).toLowerCase();
+      if (e.stoppedAt && e.finished) return 'success';
+      if (e.stoppedAt && !e.finished) return 'error';
+      if (e.waitTill) return 'waiting';
+      return 'running';
+    }
+    function dotClass(e) {
+      return { success: 'bg-ok', error: 'bg-bad', crashed: 'bg-bad', running: 'bg-run', new: 'bg-run', waiting: 'bg-warn', canceled: 'bg-txt-lo' }[st(e)] || 'bg-txt-lo';
+    }
+    function badgeClass(e) {
+      return {
+        success: 'bg-ok/10 text-ok border-ok/30',
+        error: 'bg-bad/10 text-bad border-bad/30',
+        crashed: 'bg-bad/10 text-bad border-bad/30',
+        running: 'bg-run/10 text-run border-run/30',
+        new: 'bg-run/10 text-run border-run/30',
+        waiting: 'bg-warn/10 text-warn border-warn/30',
+        canceled: 'bg-ink-700 text-txt-mid border-line'
+      }[st(e)] || 'bg-ink-700 text-txt-mid border-line';
+    }
+    function wfName(e) {
+      if (!e) return 'Unknown workflow';
+      if (e.workflowData && e.workflowData.name) return e.workflowData.name;
+      if (e.workflowName) return e.workflowName;
+      if (e.workflowId && wfMap[e.workflowId]) return wfMap[e.workflowId];
+      return e.workflowId ? 'Workflow ' + e.workflowId : 'Unknown workflow';
+    }
+    function modeLabel(m) {
+      return { webhook: 'Webhook', trigger: 'Trigger', manual: 'Manual', cli: 'CLI', error: 'Error WF', retry: 'Retry', internal: 'Internal', integrated: 'Sub-WF' }[m] || (m ? m[0].toUpperCase() + m.slice(1) : '—');
+    }
+    function relTime(iso) {
+      const t = Date.parse(iso || '');
+      if (!isFinite(t)) return '—';
+      let s = Math.round((Date.now() - t) / 1000);
+      const future = s < 0; s = Math.abs(s);
+      // floor, bukan round: dengan round, 3599 detik jadi "60 mins ago" dan
+      // 86399 detik jadi "24 hrs ago" — satuan yang tidak pernah dipakai.
+      const unit = (n, w) => n + ' ' + w + (n > 1 ? 's' : '') + ' ago';
+      let out;
+      if (s < 45) out = 'just now';
+      else if (s < 3600) out = unit(Math.max(1, Math.floor(s / 60)), 'min');
+      else if (s < 86400) out = unit(Math.floor(s / 3600), 'hr');
+      else if (s < 604800) out = unit(Math.floor(s / 86400), 'day');
+      else out = new Date(t).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
+      return future && s >= 45 ? 'in ' + out.replace(' ago', '') : out;
+    }
+    function fullTime(iso) {
+      const t = Date.parse(iso || '');
+      if (!isFinite(t)) return '—';
+      // Tahun ikut ditampilkan supaya execution lintas tahun tidak ambigu.
+      // Zona waktu mengikuti HP — n8n mengirim UTC, browser yang mengonversi.
+      return new Date(t).toLocaleString(undefined, {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      });
+    }
+    function durLabel(e) {
+      if (!e) return '—';
+      const a = Date.parse(e.startedAt || ''), b = Date.parse(e.stoppedAt || '');
+      if (!isFinite(a)) return '—';
+      if (!isFinite(b)) return st(e) === 'running' ? 'running…' : '—';
+      const ms = b - a;
+      if (ms < 1000) return ms + 'ms';
+      if (ms < 60000) return (ms / 1000).toFixed(1) + 's';
+      const m = Math.floor(ms / 60000), s = Math.round((ms % 60000) / 1000);
+      return m + 'm ' + s + 's';
+    }
+
+    let toastTimer = null;
+    function say(msg, kind) {
+      toast.value = { msg, kind: kind || 'info' };
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.value = null; }, 2600);
+    }
+
+    const filteredWorkflows = computed(() => {
+      const q = wfQuery.value.trim().toLowerCase();
+      return workflows.value.filter(w => {
+        if (wfFilter.value === 'active' && !w.active) return false;
+        if (wfFilter.value === 'inactive' && w.active) return false;
+        if (!q) return true;
+        const tags = (w.tags || []).map(t => t.name).join(' ');
+        return ((w.name || '') + ' ' + w.id + ' ' + tags).toLowerCase().includes(q);
+      });
+    });
+
+    function setFilter(v) {
+      if (filter.value === v) return;
+      filter.value = v; nextCursor.value = null; executions.value = [];
+      loadExecutions(false);
+    }
+
+    /* ---------- pull to refresh ---------- */
+    const scrollEl = ref(null);
+    function onTouchStart(ev) {
+      if (detailOpen.value || pull.refreshing) return;
+      const el = scrollEl.value;
+      if (!el || el.scrollTop > 0) return;
+      pull.startY = ev.touches[0].clientY;
+      pull.active = true; pull.dist = 0;
+    }
+    function onTouchMove(ev) {
+      if (!pull.active) return;
+      const el = scrollEl.value;
+      if (el && el.scrollTop > 0) { pull.active = false; pull.dist = 0; return; }
+      const d = ev.touches[0].clientY - pull.startY;
+      if (d <= 0) { pull.dist = 0; return; }
+      if (ev.cancelable) ev.preventDefault();
+      pull.dist = Math.min(110, d * 0.45);
+    }
+    async function onTouchEnd() {
+      if (!pull.active) return;
+      pull.active = false;
+      if (pull.dist > 62 && configured.value) {
+        pull.refreshing = true; pull.dist = 56;
+        try { await refreshAll(false); } finally {
+          pull.refreshing = false; pull.dist = 0;
+        }
+      } else pull.dist = 0;
+    }
+
+    /* ---------- auto refresh ---------- */
+    let autoTimer = null;
+    function syncAuto() {
+      clearInterval(autoTimer);
+      if (form.autoRefresh && configured.value) {
+        autoTimer = setInterval(() => {
+          if (document.hidden || detailOpen.value || anyLoading.value) return;
+          refreshAll(true, true);
+        }, Math.max(10, form.autoSec) * 1000);
+      }
+    }
+    watch(() => [form.autoRefresh, form.autoSec, configured.value], syncAuto);
+    watch(() => form.useProxy, persist);
+    watch(() => form.proxyUrl, persist);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && configured.value && form.autoRefresh) refreshAll(true, true);
+    });
+
+    onMounted(() => {
+      load();
+      if (!configured.value) tab.value = 'settings';
+      else bootstrap();
+      syncAuto();
+    });
+
+    return {
+      form, showKey, tab, tabs, conn, banner, toast,
+      executions, workflows, nextCursor, filter, filters, setFilter,
+      wfQuery, wfFilter, filteredWorkflows, busyWf, toggleWorkflow,
+      loading, stats, anyLoading, configured, tabTitle, hostLabel,
+      saveCreds, clearData, testConnection, refreshAll, loadMore,
+      detailOpen, detail, detailRows, jsonPayload, jsonRoot, jsonSizeLabel,
+      stackOpen, retryCurrent, canRetry, openExecution, closeDetail, copyJson, retryExecution,
+      st, dotClass, badgeClass, wfName, modeLabel, relTime, fullTime, durLabel,
+      pull, onTouchStart, onTouchMove, onTouchEnd, scrollEl, persistPrefs
+    };
+  }
+}).mount('#app');
+</script>
+</body>
+</html>

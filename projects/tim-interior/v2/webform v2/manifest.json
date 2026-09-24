@@ -1,0 +1,17 @@
+{
+  "name": "Formulir Tim Interior",
+  "short_name": "Tim Interior",
+  "description": "Formulir untuk memonitor komplain dan temuan lapangan eksklusif Tim Interior by Salero.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9F8F6",
+  "theme_color": "#B49157",
+  "icons": [
+    {
+      "src": "./logo_tim.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

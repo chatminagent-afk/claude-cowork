@@ -1,0 +1,267 @@
+{
+  "name": "WF3 - Housekeeping Arsip",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 60
+            }
+          ]
+        }
+      },
+      "id": "schedule",
+      "name": "Schedule Trigger 60 Hari",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "read-utama",
+      "name": "Baca Semua Rows Utama",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        420,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF3 - Node Code: filter baris yang layak diarsipkan.\n// Syarat SEMUA harus terpenuhi:\n//   1. Status_Terakhir === \"Delivered\".\n//   2. Waktu entri Delivered terakhir di riwayat (fallback: Timestamp_Update)\n//      lebih tua dari 30 hari dari sekarang.\n// Baris dengan JSON korup ATAU status non-Delivered TIDAK diarsipkan.\n// ============================================================\n\nconst rows = $input.all().map(i => i.json);\n\nconst now = Date.now();\nconst AMBANG_MS = 30 * 24 * 60 * 60 * 1000; // 30 hari.\n\n// Tanggal diarsipkan (ISO +07:00 Asia/Jakarta).\nfunction nowJakartaISO() {\n  const d = new Date(Date.now() + 7 * 60 * 60 * 1000);\n  const pad = (n) => String(n).padStart(2, '0');\n  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}` +\n         `T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}+07:00`;\n}\nconst tanggalArsip = nowJakartaISO();\n\nconst lolos = [];\n\nfor (const row of rows) {\n  const status = String(row.Status_Terakhir || '').trim();\n\n  // Syarat 1: harus Delivered.\n  if (status !== 'Delivered') continue;\n\n  // Parse riwayat dengan aman. JSON korup => LEWATI (tidak diarsipkan).\n  let riwayat = null;\n  const raw = row.Riwayat_Posisi_JSON;\n  if (raw !== undefined && raw !== null && String(raw).trim() !== '') {\n    try {\n      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;\n      if (!Array.isArray(parsed)) throw new Error('bukan array');\n      riwayat = parsed;\n    } catch (e) {\n      // Korup => jangan arsip demi keamanan.\n      continue;\n    }\n  }\n\n  // Tentukan waktu Delivered terakhir dari riwayat.\n  let waktuDelivered = null;\n  if (riwayat && riwayat.length) {\n    for (const ev of riwayat) {\n      if (ev && String(ev.status).trim() === 'Delivered' && ev.waktu) {\n        const t = Date.parse(ev.waktu);\n        if (!isNaN(t)) {\n          if (waktuDelivered === null || t > waktuDelivered) waktuDelivered = t;\n        }\n      }\n    }\n  }\n\n  // Fallback ke Timestamp_Update jika tidak ada entri Delivered valid di riwayat.\n  if (waktuDelivered === null) {\n    const t = Date.parse(row.Timestamp_Update);\n    if (!isNaN(t)) waktuDelivered = t;\n  }\n\n  // Tanpa waktu acuan valid => jangan arsip.\n  if (waktuDelivered === null) continue;\n\n  // Syarat 2: lebih tua dari 30 hari.\n  if ((now - waktuDelivered) <= AMBANG_MS) continue;\n\n  // Lolos semua syarat. Siapkan payload arsip (kolom sama + Tanggal_Diarsipkan).\n  lolos.push({\n    json: {\n      No_Resi: row.No_Resi || '',\n      Pengirim: row.Pengirim || '',\n      Penerima: row.Penerima || '',\n      Status_Terakhir: row.Status_Terakhir || '',\n      Riwayat_Posisi_JSON: (typeof raw === 'string') ? raw : JSON.stringify(riwayat || []),\n      Timestamp_Update: row.Timestamp_Update || '',\n      Tanggal_Diarsipkan: tanggalArsip,\n      // Simpan row_number untuk keperluan delete dari sheet Utama nanti.\n      _row_number: row.row_number\n    }\n  });\n}\n\n// Jika tidak ada yang lolos, kembalikan array kosong => workflow selesai\n// tanpa aksi pada cabang berikutnya.\nreturn lolos;\n"
+      },
+      "id": "code-filter",
+      "name": "Code Filter Kandidat Arsip",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-ada",
+              "leftValue": "={{ $json.No_Resi }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-ada",
+      "name": "Filter Ada Kandidat",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        860,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_ARCHIVE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Archive",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "No_Resi": "={{ $json.No_Resi }}",
+            "Pengirim": "={{ $json.Pengirim }}",
+            "Penerima": "={{ $json.Penerima }}",
+            "Status_Terakhir": "={{ $json.Status_Terakhir }}",
+            "Riwayat_Posisi_JSON": "={{ $json.Riwayat_Posisi_JSON }}",
+            "Timestamp_Update": "={{ $json.Timestamp_Update }}",
+            "Tanggal_Diarsipkan": "={{ $json.Tanggal_Diarsipkan }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "append-archive",
+      "name": "Append ke Archive",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1080,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// ============================================================\n// WF3 - Node Code: siapkan daftar row_number untuk dihapus dari sheet Utama.\n// Dijalankan SETELAH append ke Archive sukses (urutan aman).\n// Delete harus dari row number TERBESAR ke terkecil agar index tidak bergeser.\n// ============================================================\n\n// Ambil data hasil filter (yang sudah diarsipkan) dari node Filter.\nconst items = $items('Code Filter Kandidat Arsip');\n\n// Kumpulkan row_number valid.\nconst rowNumbers = [];\nfor (const it of items) {\n  const rn = it.json._row_number;\n  if (rn !== undefined && rn !== null && !isNaN(Number(rn))) {\n    rowNumbers.push(Number(rn));\n  }\n}\n\n// Urutkan MENURUN (terbesar dulu) agar penghapusan tidak menggeser index.\nrowNumbers.sort((a, b) => b - a);\n\n// Keluarkan satu item per row_number agar node Delete berikutnya\n// mengeksekusi berurutan.\nreturn rowNumbers.map(rn => ({ json: { row_number: rn } }));\n"
+      },
+      "id": "code-delete-list",
+      "name": "Code Susun Daftar Hapus",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "GANTI_DENGAN_SPREADSHEET_ID_UTAMA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Tracking",
+          "mode": "name"
+        },
+        "startIndex": "={{ $json.row_number }}",
+        "numberToDelete": 1,
+        "options": {}
+      },
+      "id": "delete-utama",
+      "name": "Hapus Baris dari Utama",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1520,
+        400
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GANTI_DENGAN_CREDENTIAL_ID_GOOGLE_SHEETS",
+          "name": "Google Sheets Metro Logistik"
+        }
+      },
+      "notes": "Menghapus baris yang sudah diarsipkan. Input sudah diurutkan dari row_number TERBESAR ke terkecil oleh node sebelumnya agar index tidak bergeser."
+    }
+  ],
+  "connections": {
+    "Schedule Trigger 60 Hari": {
+      "main": [
+        [
+          {
+            "node": "Baca Semua Rows Utama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baca Semua Rows Utama": {
+      "main": [
+        [
+          {
+            "node": "Code Filter Kandidat Arsip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Filter Kandidat Arsip": {
+      "main": [
+        [
+          {
+            "node": "Filter Ada Kandidat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Ada Kandidat": {
+      "main": [
+        [
+          {
+            "node": "Append ke Archive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append ke Archive": {
+      "main": [
+        [
+          {
+            "node": "Code Susun Daftar Hapus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Susun Daftar Hapus": {
+      "main": [
+        [
+          {
+            "node": "Hapus Baris dari Utama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "metro-logistik-fase-a"
+  }
+}

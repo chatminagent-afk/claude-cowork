@@ -1,0 +1,92 @@
+﻿{
+    "parameters":  {
+                       "authentication":  "serviceAccount",
+                       "operation":  "append",
+                       "documentId":  {
+                                          "__rl":  true,
+                                          "value":  "1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE",
+                                          "mode":  "list",
+                                          "cachedResultName":  "The_Scholars_Database",
+                                          "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit?usp=drivesdk"
+                                      },
+                       "sheetName":  {
+                                         "__rl":  true,
+                                         "value":  932041221,
+                                         "mode":  "list",
+                                         "cachedResultName":  "MSG_BUFFER",
+                                         "cachedResultUrl":  "https://docs.google.com/spreadsheets/d/1tEJYayS0pQTVO2FI9xO363nQBkjFz5TL5u0-zsa-CwE/edit#gid=932041221"
+                                     },
+                       "columns":  {
+                                       "mappingMode":  "defineBelow",
+                                       "value":  {
+                                                     "no_wa":  "={{ $(\u0027Resolve User Row\u0027).first().json.resolved_key }}",
+                                                     "lid":  "={{ $(\u0027Chat Counter\u0027).first().json.user_lid }}",
+                                                     "message":  "={{ $(\u0027Chat Counter\u0027).first().json.original_message }}",
+                                                     "ts":  "={{ $(\u0027Chat Counter\u0027).first().json.process_start_ts }}"
+                                                 },
+                                       "matchingColumns":  [
+
+                                                           ],
+                                       "schema":  [
+                                                      {
+                                                          "id":  "no_wa",
+                                                          "displayName":  "no_wa",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "lid",
+                                                          "displayName":  "lid",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "message",
+                                                          "displayName":  "message",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      },
+                                                      {
+                                                          "id":  "ts",
+                                                          "displayName":  "ts",
+                                                          "required":  false,
+                                                          "defaultMatch":  false,
+                                                          "display":  true,
+                                                          "type":  "string",
+                                                          "canBeUsedToMatch":  true
+                                                      }
+                                                  ],
+                                       "attemptToConvertTypes":  false,
+                                       "convertFieldsToString":  false
+                                   },
+                       "options":  {
+
+                                   }
+                   },
+    "type":  "n8n-nodes-base.googleSheets",
+    "typeVersion":  4.7,
+    "position":  [
+                     -3408,
+                     2720
+                 ],
+    "id":  "f6ea3c4a-dc43-43cd-9a69-073a4937abb2",
+    "name":  "Append MSG_BUFFER",
+    "retryOnFail":  true,
+    "waitBetweenTries":  2000,
+    "credentials":  {
+                        "googleApi":  {
+                                          "id":  "3gTKMbD8lJDLbRqR",
+                                          "name":  "Google Service Account thescholars"
+                                      }
+                    },
+    "onError":  "continueErrorOutput"
+}
