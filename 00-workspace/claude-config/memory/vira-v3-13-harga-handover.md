@@ -1,6 +1,6 @@
 ---
 name: vira-v3-13-harga-handover
-description: "VIRA Personal v3.13 (2026-09-23) — harga hanya kalau ditanya, jawaban alur bukan tanya harga, sewa X = industri, handover langsung, notif singkat sesudah deck; UAT 885/0 + eval model asli; belum deploy"
+description: "VIRA Personal v3.13 (2026-09-23) — harga hanya kalau ditanya, jawaban alur bukan tanya harga, sewa X = industri, handover langsung, notif singkat sesudah deck; UAT 885/0 + eval model asli; LIVE (terbukti output live 25/09 punya hargaBukanTanya)"
 metadata:
   node_type: memory
   type: project
@@ -8,7 +8,7 @@ metadata:
   modified: 2026-09-23T07:48:25.349Z
 ---
 
-Dibangun 2026-09-23 dari v3.12 (= live, ID Main tetap `AC65HeFegHFCFc5aY609u`). **Belum di-deploy** — panduan `docs/2026-09-23-panduan-deploy-v3.13.md` (ganti isi workflow live seperti v3.12, ID tetap).
+Dibangun 2026-09-23 dari v3.12 (= live, ID Main tetap `AC65HeFegHFCFc5aY609u`). **LIVE per 2026-09-25** (output Process All live berisi `hargaBukanTanya`, field yang hanya ada di v3.13; MCP tak bisa baca Main) — panduan `docs/2026-09-23-panduan-deploy-v3.13.md` (ganti isi workflow live seperti v3.12, ID tetap).
 Berkas: `workflow/_patch_2026-09-23b.py` → `2026-09-23-VIRA-Personal-Main-v3.13.json` (91 node, tanpa node baru; md5 `209432822771f95633ddbd6941eef793`); UAT generator `_buat_uat_2026-09-23b.py` → `_uat_2026-09-23b.py` **885/0** (log `2026-09-23-hasil-uat-v3.13.log`); eval `_eval_2026-09-23b.py` → `2026-09-23-hasil-eval-balasan-v3.13.md` (S6 Rehan, S7 handover singkatan). Eval bisa paralel (`--versi --ulang-ke --json`, lalu `--gabung`) dan `--putar-ulang` (rekaman model lewat kode baru, tanpa memanggil model).
 
 **Why:** uji live Steven 23/09 13:22–14:06 ("Rehan", sewa raket padel) di v3.12: jawaban alur "harga dulu, trs…" dibaca tanya harga → VIRA mengutip catatan konteks + sebut Basic/Premium; "usahaku sewa raket padel" jadi nama_bisnis; "basic deh" sesudah deck terkirim → notif BRIEF DECK lengkap lagi; "kpn bs ngmng sm steven?" → tag keluar tapi bot tidak OFF & VIRA tanya "mau aku sambungkan?".
@@ -26,3 +26,10 @@ Berkas: `workflow/_patch_2026-09-23b.py` → `2026-09-23-VIRA-Personal-Main-v3.1
 - Deferred: model kadang bertanya langkah sesudah prospek menjelaskan alur (dalam konteks lain), dan tawaran deck + satu pertanyaan (2 tanya) lolos karena LEWATI_RINGKAS.
 
 Terkait: [[vira-v3-12-balasan-ringkas]], [[vira-personal-main-tidak-terbaca-mcp]], [[feedback-vira-balasan-ringkas]]
+
+**Temuan live 2026-09-25 ("Reza", 6285199701359) — kandidat v3.14, belum dikerjakan:** prospek balas "Brp" atas sapaan nama+usaha → balasan terkirim cuma "Salam kenal kak.".
+- Preprocess: "brp" polos tak dikenali (TANYA_HARGA_KITA butuh kata benda harga; fallback cuma "berapa") → askingPrice=false.
+- Prompt aturan "satu kata tak dikenal sesudah aku bertanya = jawaban" + `ambilJawaban('nama_lengkap')` tanpa pengecualian kata tanya (BUKAN_NAMA_USAHA punya berapa|brp, nama orang tidak) → nama_lengkap "Brp" tertulis ke STATS.
+- RINGKAS tanya-ulang buang "Nama usahanya apa ya?" (galian nama_bisnis nonaktif karena pesanBertanya) dan pengaman "jangan nol pertanyaan" dimatikan `!PROSPEK_BERTANYA` → balasan buntu.
+- UAT N3/V11h tak pernah uji "brp"/"berapa" polos di giliran 2 sapaan dua-slot.
+→ Dikerjakan jadi [[vira-v3-14-brp]] (2026-09-25).

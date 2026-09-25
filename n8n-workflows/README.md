@@ -11,6 +11,7 @@ Host n8n: `n8n.srv1270416.hstgr.cloud`. Repo ini **private**.
 | Folder | File | ID n8n | Catatan |
 |---|---|---|---|
 | `personal/` | `VIRA-Personal-Main.json` | `AC65HeFegHFCFc5aY609u` | v3.13 (live). Prompt: `system-prompt-v3.13.md` |
+| | `2026-09-25-VIRA-Personal-Main-v3.14.json` | (ID sama saat deploy) | v3.14 — **BELUM deploy** (fix "Brp" 25/09). Prompt: `system-prompt-v3.14.md`. Sesudah deploy: ganti `VIRA-Personal-Main.json`, v3.13 ke archive |
 | | `VIRA-Personal-Follow-up.json` | `THuHlao6hdnMtlL01vn_p` | v2, 3 bucket |
 | | `VIRA-Personal-STATS-Cleanup.json` | `JwbvgIE_hPSG92oihZTyX` | cron 02:30, tgl 1 Jan/Apr/Jul/Okt |
 | `thescholars/` | `VIRA-TS.json` | `27Nw6efKWq3Pq-J1T2Z2w` | 56 node |

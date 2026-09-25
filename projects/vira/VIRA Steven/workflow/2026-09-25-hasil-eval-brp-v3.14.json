@@ -1,0 +1,2420 @@
+[
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 1,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Boleh tau nama usahanya apa?\n\n[FACTS nama=\"Brp\"]",
+    "kirim": "Salam kenal kak.",
+    "detik": 5.5,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 3,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 8,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": true,
+   "kata": 3,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 2,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Kalau boleh tau, usahanya bergerak di bidang apa ya?",
+    "kirim": "Salam kenal kak. Kalau boleh tau, usahanya bergerak di bidang apa ya?",
+    "detik": 5.6,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 12,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 12,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 12,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 3,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak, Brp. Kalau boleh tau, nama usahanya apa?\n\n[FACTS nama=\"Brp\"]",
+    "kirim": "Salam kenal kak, kakak.",
+    "detik": 5.4,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 4,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 10,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": true,
+   "kata": 4,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 4,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Noted kak. Nama usahanya apa, kak?",
+    "kirim": "Noted kak.",
+    "detik": 4.3,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 2,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 6,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": false,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 2,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 5,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak, Brp. Kalau nama usahanya apa ya kak?",
+    "kirim": "Salam kenal kak, kakak.",
+    "detik": 4.0,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 4,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 10,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 4,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 6,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Nama usahanya apa ya?",
+    "kirim": "Salam kenal kak.",
+    "detik": 4.8,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 3,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 7,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 3,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 7,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Nama usahanya apa ya?",
+    "kirim": "Salam kenal kak.",
+    "detik": 4.0,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 3,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 7,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 3,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 8,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Usahanya apa ya kak?",
+    "kirim": "Salam kenal kak. Usahanya apa ya kak?",
+    "detik": 3.7,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 7,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 7,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 7,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 9,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Nama usahanya apa ya?",
+    "kirim": "Salam kenal kak.",
+    "detik": 4.1,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 3,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 7,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 3,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.13",
+  "pesan2": "Brp",
+  "ulang": 10,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Salam kenal kak. Nama usahanya apa kak?",
+    "kirim": "Salam kenal kak.",
+    "detik": 4.7,
+    "galian": "",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 3,
+     "kalimat": 1,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 7,
+     "kalimat": 2,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "Brp",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": false,
+   "jawab_harga": false,
+   "salam_kenal": true,
+   "nama_tersimpan": "Brp",
+   "buntu": true,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 3,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 1,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi nanti Steven yang kasih penawaran pastinya. Btw boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi nanti Steven yang kasih penawaran pastinya.",
+    "detik": 7.8,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 26,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 26,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 2,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang bakal hitung pastinya. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang bakal hitung pastinya.",
+    "detik": 9.3,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 26,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 26,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 3,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Untuk harga VIRA kak: Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, dan setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak nanti, jadi biasanya dibicarakan langsung sama Steven. Boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Untuk harga VIRA kak: Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, dan setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak nanti, jadi biasanya dibicarakan langsung sama Steven.",
+    "detik": 9.3,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 32,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 41,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 32,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 4,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang paling pas kasih angka pastinya. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang paling pas kasih angka pastinya.",
+    "detik": 8.4,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 27,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 37,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 27,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 5,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, dan setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak dibicarakan langsung sama Steven. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, dan setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak dibicarakan langsung sama Steven.",
+    "detik": 9.1,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 27,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 37,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 27,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 6,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak nanti.",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya sekarang gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak nanti.",
+    "detik": 7.5,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 20,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 20,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 20,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 7,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan kak. Setup-nya saat ini gratis. Angka finalnya nanti menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang kasih angka pastinya.",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan kak. Setup-nya saat ini gratis. Angka finalnya nanti menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang kasih angka pastinya.",
+    "detik": 6.6,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 28,
+     "kalimat": 3,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 28,
+     "kalimat": 3,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 28,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 8,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi bisa dibicarakan langsung sama Steven.",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi bisa dibicarakan langsung sama Steven.",
+    "detik": 4.8,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 26,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 26,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 26,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 9,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang akan kasih angka pastinya. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang akan kasih angka pastinya.",
+    "detik": 4.3,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 27,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 37,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 27,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Brp",
+  "ulang": 10,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Brp",
+    "mentah": "Basic mulai Rp3.000.000 per bulan kak, Premium Rp5.000.000 per bulan, dan setup-nya sekarang masih gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang akan kasih angka pastinya. Btw, kakak usahanya di bidang apa?",
+    "kirim": "Basic mulai Rp3.000.000 per bulan kak, Premium Rp5.000.000 per bulan, dan setup-nya sekarang masih gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi Steven yang akan kasih angka pastinya.",
+    "detik": 5.5,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 29,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 35,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": true,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 29,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "brp kak?",
+  "ulang": 1,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "brp kak?",
+    "mentah": "Kisaran Rp3 juta per bulan untuk Basic, Rp5 juta untuk Premium, setup-nya sekarang masih gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, nanti Steven yang kasih pastinya.",
+    "kirim": "Kisaran Rp3 juta per bulan untuk Basic, Rp5 juta untuk Premium, setup-nya sekarang masih gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, nanti Steven yang kasih pastinya.",
+    "detik": 3.2,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 27,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 27,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 27,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "brp kak?",
+  "ulang": 2,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "brp kak?",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan kak. Setup-nya saat ini gratis, dan angka finalnya menyesuaikan kompleksitas alur bisnis kakak — nanti Steven yang kasih detailnya setelah paham kebutuhan kakak.",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan kak. Setup-nya saat ini gratis, dan angka finalnya menyesuaikan kompleksitas alur bisnis kakak, nanti Steven yang kasih detailnya setelah paham kebutuhan kakak.",
+    "detik": 3.2,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 31,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 32,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 31,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "brp kak?",
+  "ulang": 3,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "brp kak?",
+    "mentah": "Kisaran Rp3 juta per bulan untuk Basic, Rp5 juta untuk Premium, setup-nya lagi gratis kak. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi nanti Steven yang kasih pastinya.",
+    "kirim": "Kisaran Rp3 juta per bulan untuk Basic, Rp5 juta untuk Premium, setup-nya lagi gratis kak. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi nanti Steven yang kasih pastinya.",
+    "detik": 3.1,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 28,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 28,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 28,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Berapa?",
+  "ulang": 1,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Berapa?",
+    "mentah": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas kalau dibicarakan langsung sama Steven.",
+    "kirim": "Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih pas kalau dibicarakan langsung sama Steven.",
+    "detik": 4.1,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 28,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 28,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 28,
+   "ringkas": ""
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Berapa?",
+  "ulang": 2,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Berapa?",
+    "mentah": "Paket Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, dan setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak ngobrol dulu supaya pas. Boleh tau nama kakak dan nama usahanya apa?",
+    "kirim": "Paket Basic mulai Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, dan setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak ngobrol dulu supaya pas.",
+    "detik": 5.5,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 29,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 37,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 29,
+   "ringkas": "tanya-ulang"
+  }
+ },
+ {
+  "versi": "v3.14",
+  "pesan2": "Berapa?",
+  "ulang": 3,
+  "giliran": [
+   {
+    "pesan": "Halo VIRA, aku lihat iklannya di IG, mau ngobrol soal AI customer service.",
+    "mentah": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Halo kak, aku Steven versi AI, dibangun Steven pakai VIRA, sistem yang sama yang dia buat untuk kliennya. Jadi kakak lagi ngobrol sama contoh hasilnya sekarang. Btw, boleh tau nama kakak siapa dan nama usahanya apa?",
+    "detik": 0.0,
+    "galian": "namanya dan nama usahanya — tanyakan bersama dalam SATU kalimat di pesan perkenalan ini (lihat NAMA LAWAN BICARA)",
+    "askingPrice": false,
+    "konteks_harga": false,
+    "ringkas": "",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 36,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": true,
+     "promosi": false,
+     "prospek_bertanya": false,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   },
+   {
+    "pesan": "Berapa?",
+    "mentah": "Paket Basic mulai dari Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak dibicarakan langsung sama Steven. Btw boleh tau nama kakak siapa dan nama usahanya apa?",
+    "kirim": "Paket Basic mulai dari Rp3.000.000 per bulan, Premium Rp5.000.000 per bulan, setup-nya saat ini gratis. Angka finalnya menyesuaikan kompleksitas alur bisnis kakak, jadi lebih enak dibicarakan langsung sama Steven.",
+    "detik": 5.5,
+    "galian": "",
+    "askingPrice": true,
+    "konteks_harga": true,
+    "ringkas": "tanya-ulang",
+    "deck": false,
+    "talk": false,
+    "matikan": false,
+    "m_kirim": {
+     "kata": 29,
+     "kalimat": 2,
+     "tanya": 0,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    },
+    "m_mentah": {
+     "kata": 39,
+     "kalimat": 3,
+     "tanya": 1,
+     "gema": false,
+     "promosi": false,
+     "prospek_bertanya": true,
+     "harga_tak_diminta": false,
+     "catatan_bocor": false
+    }
+   }
+  ],
+  "stats_akhir": {
+   "nama_lengkap": "",
+   "nama_bisnis": "",
+   "industri": "",
+   "masalah_utama": "",
+   "volume_chat": "",
+   "deck_requested": ""
+  },
+  "nilai": {
+   "sapaan_terkirim_persis": true,
+   "konteks_harga": true,
+   "jawab_harga": true,
+   "salam_kenal": false,
+   "nama_tersimpan": "",
+   "buntu": false,
+   "catatan_bocor": false,
+   "facts_nama_tanya": false,
+   "kata": 29,
+   "ringkas": "tanya-ulang"
+  }
+ }
+]

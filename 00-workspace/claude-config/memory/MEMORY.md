@@ -18,5 +18,6 @@
 - [Error notifier GLOBAL terbukti jalan](vira-global-error-notifier.md) — ID 0mp_AdLtInm68RxQUwLqV, host hstgr; nol eksekusi karena tak ada yang menunjuk, bukan rusak
 - [VIRA v3.11 deck terkirim](vira-v3-11-deck-terkirim.md) — kolom STATS deck_terkirim_ts bikin VIRA tahu decknya sudah sampai; Follow-up v2 berbucket (A/B/C), UAT 551/0 & 204/0, LIVE (dicek MCP 2026-09-23)
 - [VIRA v3.12 balasan ringkas](vira-v3-12-balasan-ringkas.md) — 23/09: prompt to the point + jaring RINGKAS + penangkap fakta; LIVE 23/09 (ID sama); uji live temukan bug askingPrice & sewa→nama_bisnis
-- [VIRA v3.13 harga & handover](vira-v3-13-harga-handover.md) — 23/09: harga hanya kalau ditanya, sewa X=industri, handover langsung, notif singkat sesudah deck; UAT 885/0 + eval; belum deploy
+- [VIRA v3.13 harga & handover](vira-v3-13-harga-handover.md) — 23/09: harga hanya kalau ditanya, sewa X=industri, handover langsung, notif singkat sesudah deck; UAT 885/0 + eval; LIVE per 25/09; bug "Brp" → v3.14
 - [Deck caption no intro](feedback-deck-caption.md) — caption WhatsApp tidak boleh punya "salam kenal, aku Steven"
+- [VIRA v3.14 "Brp"](vira-v3-14-brp.md) — 25/09: brp polos = tanya harga (catatan tegas), kata tanya bukan nama, tanya-ulang tak buntu; UAT 943/0 + eval asli 16/16; belum deploy
