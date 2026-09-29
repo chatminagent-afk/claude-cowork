@@ -1,7 +1,7 @@
 # Guide #3 — Multiple Media (foto + video dalam satu balasan)
 
 **Dibuat**: 2026-07-23
-**Temuan**: `test chat vira.txt` #3 — user minta "video dan foto", Vira hanya kirim foto.
+**Temuan**: `test chat miva.txt` #3 — user minta "video dan foto", Vira hanya kirim foto.
 **Akar masalah**: regex penangkap tag di `Process All` tanpa flag `/g` → hanya tag PERTAMA yang diproses; tag ke-2 dibersihkan dari teks tapi medianya tidak pernah terkirim.
 **Keputusan desain (07-23)**: "hanya yang diminta" (foto+video → dua-duanya; salah satu → satu saja) + **2 pesan WA terpisah**, urutan foto → video. Pricelist dikecualikan (tidak auto-bundle).
 

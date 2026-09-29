@@ -29,6 +29,6 @@ EXCLUDED.md            daftar file yang sengaja TIDAK ada di repo + alasannya
 ## Restore di laptop baru
 1. `git clone` repo ini ke `D:\Documents\Claude Cowork\`.
 2. Salin `00-workspace/claude-config/CLAUDE-global.md` → `C:\Users\<user>\.claude\CLAUDE.md`, dan isi `memory/` ke folder memory project.
-3. Pasang ulang skill dari `projects/vira/skills/`.
+3. Pasang ulang skill dari `projects/miva/skills/`.
 4. Isi ulang secret (Kirimi, service account Google, dst.) dari password manager.
 5. Ambil media/file besar dari backup Drive/harddisk sesuai `EXCLUDED.md`.

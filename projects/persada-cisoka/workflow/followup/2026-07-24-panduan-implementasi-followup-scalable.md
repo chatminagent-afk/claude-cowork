@@ -2,7 +2,7 @@
 
 **Tanggal:** 2026-07-24
 **File workflow:** `workflow/production/VIRA-PCR Follow-up.json`
-**Backup versi lama:** `workflow/production/2026-07-24-VIRA-PCR Follow-up.backup.json`
+**Backup versi lama:** `workflow/production/2026-07-24-MIVA-PCR Follow-up.backup.json`
 **Gateway:** tetap Kirimi (tidak resmi) — setting default sengaja konservatif untuk menekan risiko banned.
 
 Panduan ini urut. Kerjakan dari atas ke bawah. Jangan lompat ke "Aktifkan produksi" sebelum uji terbatas (Step 5) lulus.
@@ -154,7 +154,7 @@ Semua lewat CONFIG, tanpa import ulang:
 ## 8. Rollback (kalau ada masalah)
 
 1. Toggle workflow **Active → OFF**.
-2. Import ulang `workflow/production/2026-07-24-VIRA-PCR Follow-up.backup.json` (versi lama) kalau perlu balik total.
+2. Import ulang `workflow/production/2026-07-24-MIVA-PCR Follow-up.backup.json` (versi lama) kalau perlu balik total.
 3. Catatan: baris STATS yang sudah ter-follow-up tetap tercatat — tidak perlu di-reset.
 
 ---

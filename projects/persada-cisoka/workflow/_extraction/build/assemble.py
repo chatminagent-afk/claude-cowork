@@ -672,7 +672,7 @@ MAIN_WF = {
 
 # ================= FILE 2 & 3 =================
 def build_buffer_cleanup():
-    wf = load_json(os.path.join(DRAFT_DIR, '..', 'the scholars', 'report', 'production', '2026-07-03-VIRA_MSG_BUFFER-cleanup.json'))
+    wf = load_json(os.path.join(DRAFT_DIR, '..', 'the scholars', 'report', 'production', '2026-07-03-MIVA_MSG_BUFFER-cleanup.json'))
     wf["name"] = "VIRA-PCR - MSG_BUFFER Cleanup (harian 03:00 WIB)"
     for n in wf["nodes"]:
         if n["type"] == "n8n-nodes-base.googleSheets":
@@ -690,7 +690,7 @@ def load_json(p):
         return json.load(f)
 
 def build_buffer_cleanup2():
-    src = os.path.join(OUT_DIR, '..', '..', 'the scholars', 'report', 'production', '2026-07-03-VIRA_MSG_BUFFER-cleanup.json')
+    src = os.path.join(OUT_DIR, '..', '..', 'the scholars', 'report', 'production', '2026-07-03-MIVA_MSG_BUFFER-cleanup.json')
     src = os.path.normpath(src)
     wf = load_json(src)
     wf["name"] = "VIRA-PCR - MSG_BUFFER Cleanup (harian 03:00 WIB)"
@@ -709,7 +709,7 @@ def build_buffer_cleanup2():
     return wf
 
 def build_error_notifier():
-    src = os.path.join(OUT_DIR, '..', '..', 'the scholars', 'report', 'production', '2026-07-02-VIRA_V4-error-workflow.json')
+    src = os.path.join(OUT_DIR, '..', '..', 'the scholars', 'report', 'production', '2026-07-02-MIVA_V4-error-workflow.json')
     src = os.path.normpath(src)
     wf = load_json(src)
     wf["name"] = "VIRA-PCR Error Notifier"

@@ -276,7 +276,7 @@ Crash Main tidak menotifikasi siapa pun — persis lubang yang #10 tutup, terbuk
 
 ### Plan
 
-Sudah dieksekusi: `patch V.1.3/2026-07-19-VIRA-PCR-Main-V1.3.json` = V1.2 + settings V1 dipulihkan + pinData test dihapus (nodes & connections diverifikasi identik dengan V1.2). Sisa: import file itu (bukan V1.2) saat naik versi. Setelah import, cek Settings → Error Workflow terisi.
+Sudah dieksekusi: `patch V.1.3/2026-07-19-MIVA-PCR-Main-V1.3.json` = V1.2 + settings V1 dipulihkan + pinData test dihapus (nodes & connections diverifikasi identik dengan V1.2). Sisa: import file itu (bukan V1.2) saat naik versi. Setelah import, cek Settings → Error Workflow terisi.
 
 ### Trigger
 
@@ -303,7 +303,7 @@ Kalau dugaan salah (ternyata `1dJWq` justru sheet live), patch malah memindah ma
 
 ### Plan
 
-Sudah dieksekusi di `patch V.1.3/2026-07-19-VIRA-PCR-MSG-BUFFER-Cleanup-V1.3.json`: documentId → `1pzGu...`, authentication → serviceAccount, credential → `Google Service Account - Persada`, sheetName → mode name "MSG_BUFFER". Sisa: (1) verifikasi dugaan, (2) import + aktifkan menggantikan cleanup lama, (3) manual-run 1x — pastikan hanya baris >2 jam yang terhapus.
+Sudah dieksekusi di `patch V.1.3/2026-07-19-MIVA-PCR-MSG-BUFFER-Cleanup-V1.3.json`: documentId → `1pzGu...`, authentication → serviceAccount, credential → `Google Service Account - Persada`, sheetName → mode name "MSG_BUFFER". Sisa: (1) verifikasi dugaan, (2) import + aktifkan menggantikan cleanup lama, (3) manual-run 1x — pastikan hanya baris >2 jam yang terhapus.
 
 ### Trigger
 
@@ -413,7 +413,7 @@ Bug live 2026-07-17: STATS korup "Tipe 36" (tanpa slash) bikin VIRA menawarkan t
 
 **Batas yang tetap berlaku**: validasi struktural (`NN/NN`), bukan cek katalog PRODUK. Tipe well-formed tapi fiktif (mis. "Tipe 40/90") masih lolos. Follow-up katalog: kerjakan hanya kalau muncul laporan AI mengarang tipe well-formed yang tidak ada di PRODUK.
 
-⚠️ **Catatan untuk apply patch media 07-18**: file `2026-07-18-process-all-vira-pcr.js` dibuat dari live export TERBARU yang **sudah memuat** patch kanonikalisasi ini — aman di-paste langsung, tidak menimpa fix.
+⚠️ **Catatan untuk apply patch media 07-18**: file `2026-07-18-process-all-miva-pcr.js` dibuat dari live export TERBARU yang **sudah memuat** patch kanonikalisasi ini — aman di-paste langsung, tidak menimpa fix.
 
 ### 8. Prompt — sebut SEMUA tipe (termasuk subsidi) — DONE (terverifikasi di live, audit 2026-07-19)
 
@@ -433,7 +433,7 @@ Riwayat: DONE 12:50 → regresi di export 14:21 (`Wait1`+`Wait3` disabled lagi, 
 
 ### 10. Error-notifier — DONE di file production (verifikasi QA 2026-07-19 malam)
 
-File `workflow/production/VIRA-PCR Error Notifier.json` SUDAH diperbaiki total dari kondisi template: ada `Error Trigger` → `Compose Notif` (pesan informatif: workflow/node/error/execution + peringatan "ada pesan user yang mungkin tak terbalas") → HTTP Kirimi `send-message`; `phone` = literal `6285155202354` (valid), `message` = expression valid `={{ $json.notif_text }}`; `active: true`; **id = `rBsq-mGgHfqfwbz3YmwxI`** — persis yang dipasang di `errorWorkflow` Main V1 (dan patch V1.3). Placeholder `{{ADMIN_PHONE}}`/`REPLACE_*` = 0.
+File `workflow/production/MIVA-PCR Error Notifier.json` SUDAH diperbaiki total dari kondisi template: ada `Error Trigger` → `Compose Notif` (pesan informatif: workflow/node/error/execution + peringatan "ada pesan user yang mungkin tak terbalas") → HTTP Kirimi `send-message`; `phone` = literal `6285155202354` (valid), `message` = expression valid `={{ $json.notif_text }}`; `active: true`; **id = `rBsq-mGgHfqfwbz3YmwxI`** — persis yang dipasang di `errorWorkflow` Main V1 (dan patch V1.3). Placeholder `{{ADMIN_PHONE}}`/`REPLACE_*` = 0.
 **Catatan disengaja:** kredensial Kirimi di-hardcode plaintext di body — jalur error memang harus bebas dependensi (tidak boleh ikut bergantung Parse Config/Sheets yang mungkin justru sumber crash-nya). Konsekuensi: file JSON ini mengandung secret — jangan dishare; rotate secret kalau pernah bocor. Device `D-GHK1A` konsisten dengan CONFIG `kirimi_device_id`.
 **Sisa operasional (checklist §10B):** verifikasi workflow live di n8n = versi file ini + aktif, lalu tes paksa 1 error → notif WA masuk.
 
@@ -462,7 +462,7 @@ Steven konfirmasi tidak ada dampak ke produksi (pinData cuma dipakai saat manual
 
 ## 17. Enrichment PRODUK & FAQ — data harga (2026-07-20)
 
-Pemicu: VIRA salah info "cashback Rp20jt setelah akad". Rumus pricelist sudah di-reverse-engineer & dikonfirmasi tim (lihat `2026-07-20-planning-enrich-sheet-PRODUK-VIRA-PCR.md` + `2026-07-20-verifikasi-simulasi-harga-PCR.py`). Sheet subsidi + data non-angka SUDAH dikerjakan di `PCR_Database.xlsx`. Yang di bawah ini DITAHAN.
+Pemicu: VIRA salah info "cashback Rp20jt setelah akad". Rumus pricelist sudah di-reverse-engineer & dikonfirmasi tim (lihat `2026-07-20-planning-enrich-sheet-PRODUK-MIVA-PCR.md` + `2026-07-20-verifikasi-simulasi-harga-PCR.py`). Sheet subsidi + data non-angka SUDAH dikerjakan di `PCR_Database.xlsx`. Yang di bawah ini DITAHAN.
 
 ### 17A. BLOCKER — dua versi pricelist komersil
 Tim kirim 2 pricelist komersil berbeda: (A) asumsi 5,25%, tanpa bonus, UM 5% dari harga penuh, tenor 10/15/20; (B) asumsi 8,25% program BPJS Ketenagakerjaan, bonus Rp20jt, UM 5% dari harga setelah bonus, tenor 15/20/25/30. Tim minta program BPJS "di-skip dulu karena mayoritas konsumen wiraswasta" — padahal versi tanpa BPJS justru tidak punya bonus cashback. **Belum jelas mana yang berlaku dan apakah cashback Rp20jt masih ada.**
@@ -495,7 +495,7 @@ Tim menyebut UM subsidi riil Rp7.500.000 sementara bank tahu Rp5.850.000, dan un
 
 **Status**: IN PROGRESS (2026-07-23) — file SIAP APPLY: `2026-07-23-guide-3-multiple-media.md` (3 edit kode Process All + langkah wiring) + `2026-07-23-import-nodes-3-media2.json` (4 node branch media-2). Sisa: Steven apply 3 edit kode + import 4 node + 1 wiring wajib (`Send Media Kirimi` #0 → `IF Send Media 2`) + test.
 **Dicatat**: 2026-07-23
-**Terkait**: temuan QA `test chat vira.txt` (#3) — user minta "video dan foto", Vira hanya kirim foto lalu menjanjikan video yang tak pernah masuk.
+**Terkait**: temuan QA `test chat miva.txt` (#3) — user minta "video dan foto", Vira hanya kirim foto lalu menjanjikan video yang tak pernah masuk.
 
 ### Konteks (bug kode)
 Node `Process All` menangkap tag media dengan regex TANPA flag global:
@@ -567,7 +567,7 @@ Sudah disetujui — apply bersamaan patch Process All lain (#22 media-2) supaya 
 
 ## 25. False-handover: AI pasang `[TALK_TO_ADMIN]` saat user jawab "boleh" atas tawaran MEDIA
 
-**Status**: APPLIED ke `workflow/production/VIRA-PCR Main V1.4.json` (2026-07-24) — versi LEAN 2 rewrite prompt (blok baru dibuang, net ~+25 token). V1.4 = V1.3 + 2 edit systemMessage, 88 node & 64 koneksi identik (terverifikasi). Sisa: Steven review + import ke n8n live + jalankan QA suite. Spec: `2026-07-24-fix-false-handover-boleh-VIRA-PCR.md`.
+**Status**: APPLIED ke `workflow/production/VIRA-PCR Main V1.4.json` (2026-07-24) — versi LEAN 2 rewrite prompt (blok baru dibuang, net ~+25 token). V1.4 = V1.3 + 2 edit systemMessage, 88 node & 64 koneksi identik (terverifikasi). Sisa: Steven review + import ke n8n live + jalankan QA suite. Spec: `2026-07-24-fix-false-handover-boleh-MIVA-PCR.md`.
 **Dicatat**: 2026-07-24
 **Terkait**: #23 (false-handover — TAPI beda lapisan: #23 fallback frasa di KODE `Process All`, sudah fix; #25 = AI sendiri yang pasang tag, fix di PROMPT).
 
@@ -600,7 +600,7 @@ Segera — bug lead-facing aktif. Apply saat edit systemMessage berikutnya (gabu
 
 ## 24. Follow-up sustainability — siap untuk beban besar (~1000 nomor)
 
-**Status**: DONE DI FILE (2026-07-24) — `workflow/production/VIRA-PCR Follow-up.json` sudah ditulis ulang. Backup asli: `workflow/production/2026-07-24-VIRA-PCR Follow-up.backup.json`. **Sisa: Steven import ke n8n live + isi CONFIG keys baru + tes.**
+**Status**: DONE DI FILE (2026-07-24) — `workflow/production/VIRA-PCR Follow-up.json` sudah ditulis ulang. Backup asli: `workflow/production/2026-07-24-MIVA-PCR Follow-up.backup.json`. **Sisa: Steven import ke n8n live + isi CONFIG keys baru + tes.**
 **Dicatat**: 2026-07-24
 **Terkait**: analisis beban follow-up 1000 nomor — versi lama rawan banned Meta + duplicate-send + overrun >1 jam.
 
@@ -644,7 +644,7 @@ Step-by-step teknis lengkap: **`workflow/production/2026-07-24-panduan-implement
 
 **Status: menunggu Steven.** Workflow sudah jadi & lulus QA (45/45), belum di-import ke n8n live.
 
-Detail lengkap: `2026-08-07-enhancement-vision-VIRA-PCR.md`
+Detail lengkap: `2026-08-07-enhancement-vision-MIVA-PCR.md`
 File: `workflow/production/2026-08-07-VIRA-PCR-Main-V2.0-Vision.json` (V1.3 tidak diubah)
 
 ### Blocker sebelum aktivasi
@@ -785,8 +785,8 @@ Uji #2 (react emoji), #3 (kirim foto), #6 (mode full) di checklist deploy yang m
 
 ## 2026-08-21 — Fix retrieval: VIRA mengarang harga (INSIDEN LIVE)
 
-**File siap-import:** `workflow/production/2026-08-21-VIRA-PCR-fix-retrieval.json`
-(`active: false`, `id`/`versionId` baru — **tidak menimpa** workflow live `VIRA PCR.json`)
+**File siap-import:** `workflow/production/2026-08-21-MIVA-PCR-fix-retrieval.json`
+(`active: false`, `id`/`versionId` baru — **tidak menimpa** workflow live `MIVA PCR.json`)
 
 ### Insiden
 Lead **+62 812-9121-8300 (Kris)**, 2026-08-21 pagi, sumber Facebook:
@@ -847,9 +847,9 @@ Tanggal persisnya **belum dipastikan** — perlu dicek di execution history n8n.
 
 ### Tambahan 2026-08-21 — pembersihan sufiks angka pada nama node
 
-**File siap-import FINAL:** `workflow/production/2026-08-21-VIRA-PCR-fix-retrieval-clean.json`
+**File siap-import FINAL:** `workflow/production/2026-08-21-MIVA-PCR-fix-retrieval-clean.json`
 (berisi seluruh fix P0+P1+P2 **plus** nama node yang sudah dibersihkan)
-File `2026-08-21-VIRA-PCR-fix-retrieval.json` tetap disimpan sebagai opsi diff-kecil (fix saja, nama node dibiarkan).
+File `2026-08-21-MIVA-PCR-fix-retrieval.json` tetap disimpan sebagai opsi diff-kecil (fix saja, nama node dibiarkan).
 
 **Konfirmasi Steven:** sufiks muncul karena saat import, workflow lama masih ada di kanvas → n8n rename otomatis.
 
@@ -926,7 +926,7 @@ jauh sebelum L447); hanya 2 node berubah vs `-clean.json` (`FAQ Retrieve`, `Proc
 ## #26 — Retensi STATS: hapus lead yang 3 bulan tidak membalas VIRA — `PENDING`
 
 **Dibuat:** 2026-08-27 | **Status:** file siap-import, **belum diimport, belum diaktifkan**
-**File:** `workflow/2026-08-27-stats-purge/2026-08-27-VIRA-PCR-STATS-Purge-3bulan.json`
+**File:** `workflow/2026-08-27-stats-purge/2026-08-27-MIVA-PCR-STATS-Purge-3bulan.json`
 + `2026-08-27-README-stats-purge.md`
 
 ### Konteks
@@ -986,11 +986,11 @@ tree-sitter 4/4 node Code bebas syntax error; simulasi blok hapus bawah→atas
 ## #27 — Follow-up berbasis konteks AI (Haiku) — `PENDING`
 
 **Dibuat:** 2026-08-27 | **Status:** file siap-import, **belum diimport, belum diaktifkan**
-**File:** `workflow/production/VIRA PCR.json` + `workflow/production/VIRA-PCR Follow-up.json`
-**Dokumen:** `docs/2026-08-27-followup-konteks-AI-VIRA-PCR.md`
+**File:** `workflow/production/MIVA PCR.json` + `workflow/production/VIRA-PCR Follow-up.json`
+**Dokumen:** `docs/2026-08-27-followup-konteks-AI-MIVA-PCR.md`
 **Panduan eksekusi:** `docs/2026-08-27-README-implementasi-followup-konteks-AI.md`
-**Backup pre-patch:** `workflow/arsip/2026-08-27-VIRA-PCR-pre-konteks-AI.json`,
-`workflow/arsip/2026-08-27-VIRA-PCR-Follow-up-pre-konteks-AI.json`
+**Backup pre-patch:** `workflow/arsip/2026-08-27-MIVA-PCR-pre-konteks-AI.json`,
+`workflow/arsip/2026-08-27-MIVA-PCR-Follow-up-pre-konteks-AI.json`
 
 ### Konteks
 Permintaan Steven: follow-up jangan lagi cuma template rotasi, tapi AI yang merangkai
@@ -1214,7 +1214,7 @@ tetap perlu dibereskan datanya: cari nomor WA aslinya, atau arsipkan.
 
 ---
 
-## 2026-09-10 — Patch A + C′ `VIRA PCR AI Powered.json`: survey duplikat (Mirna 6285888255459)
+## 2026-09-10 — Patch A + C′ `MIVA PCR AI Powered.json`: survey duplikat (Mirna 6285888255459)
 
 ### Gejala
 Sheet SURVEY dapat 3 row untuk 1 klien, tim lapangan dinotif 3x untuk data yang sama.
@@ -1247,7 +1247,7 @@ Guard `svHallucinated` yang sudah ada tidak menangkap #2: `mentionsDateTime` ken
 dan slot terisi 3, jadi lolos. Guard itu menguji INTENT, bukan SUMBER tanggal.
 
 ### Sudah dikerjakan — `workflow/2026-09-10-VIRA-PCR-AI-Powered-patch-A-C-grounding.json`
-STATUS: **BELUM DI-IMPORT ke n8n.** File produksi `workflow/production/VIRA PCR AI Powered.json`
+STATUS: **BELUM DI-IMPORT ke n8n.** File produksi `workflow/production/MIVA PCR AI Powered.json`
 TIDAK diubah. Tepat 3 node tersentuh; `connections`/`settings`/`meta`/`pinData`/`id`/`versionId` utuh.
 
 - **A — `Cek_user_status`** (127→146 baris): tambah register #2 dari `debounceRow` (baris STATS
@@ -1310,7 +1310,7 @@ kredensial itu dipindah ke n8n credential store.
 
 ## 2026-09-10 (lanjutan) — V1.5: ganti jadwal survey (B′) + fix kolom berspasi (A2)
 
-File: `workflow/2026-09-10-VIRA-PCR-AI-Powered-V1.5-fix-ganti-jadwal-survey.json`
+File: `workflow/2026-09-10-MIVA-PCR-AI-Powered-V1.5-fix-ganti-jadwal-survey.json`
 STATUS: **BELUM DI-IMPORT.** Produksi tidak disentuh. V1.4 tetap ada sebagai langkah antara.
 Nama internal workflow sengaja TIDAK diubah (`VIRA PCR AI Powered`, id `oCQ315OHAjQEuG2vh14RR`)
 supaya import tidak me-rename workflow live. Versi hanya ada di nama file.

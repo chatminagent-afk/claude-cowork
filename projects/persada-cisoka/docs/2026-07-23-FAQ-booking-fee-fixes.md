@@ -1,7 +1,7 @@
 # FAQ Booking Fee — Fixes (#1 & #2)
 
 **Dibuat**: 2026-07-23
-**Sumber**: temuan QA `test chat vira.txt` (#1 "rugi", #2 "bayar 1jt lagi untuk saudara")
+**Sumber**: temuan QA `test chat miva.txt` (#1 "rugi", #2 "bayar 1jt lagi untuk saudara")
 **Target**: tab **FAQ** di Google Sheet live (spreadsheet `1pzGuRZbDXCFSZrHHbiEpTbF8F-_yMY0yex80_NmjB4o`).
 **Catatan**: file `PCR_Database.xlsx` lokal **tidak ditimpa** (menghindari kerusakan format/gambar sheet lain). Terapkan perubahan berikut langsung di Google Sheet.
 

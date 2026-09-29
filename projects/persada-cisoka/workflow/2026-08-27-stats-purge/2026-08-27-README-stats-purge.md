@@ -1,6 +1,6 @@
 # STATS Purge — hapus lead yang 3 bulan tidak membalas VIRA
 
-**File import:** `2026-08-27-VIRA-PCR-STATS-Purge-3bulan.json`
+**File import:** `2026-08-27-MIVA-PCR-STATS-Purge-3bulan.json`
 **Status:** `active: false` — belum aktif, sengaja. Baca checklist di bawah sebelum menyalakan.
 **Dibuat:** 2026-08-27 atas permintaan Steven.
 
@@ -135,7 +135,7 @@ mau dry run tanpa menyentuh kode.
 
 ---
 
-## Beda dengan `2026-08-25-VIRA-PCR-STATS-Archive-3bulan.json`
+## Beda dengan `2026-08-25-MIVA-PCR-STATS-Archive-3bulan.json`
 
 Keduanya jalan 4x setahun dan sama-sama menghapus baris STATS. Pilih **salah satu**.
 

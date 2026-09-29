@@ -1,7 +1,7 @@
 # Draft System Prompt — VIRA Telemarketer Persada Cisoka Residence
 
 **Tanggal:** 2026-07-15
-**Sumber struktur:** system prompt LIVE di `VIRA V4.json` (node `AI Agent.options.systemMessage`, ~13.4rb karakter) — **bukan** `VIRA_SystemPrompt_v8.md` yang stale (masih memuat alur PARENT/STUDENT yang sudah dihapus).
+**Sumber struktur:** system prompt LIVE di `MIVA V4.json` (node `AI Agent.options.systemMessage`, ~13.4rb karakter) — **bukan** `MIVA_SystemPrompt_v8.md` yang stale (masih memuat alur PARENT/STUDENT yang sudah dihapus).
 **Target:** ditempel ke `AI Agent.options.systemMessage` di VIRA-PCR Main.
 
 > **Kompatibilitas parsing V4 (WAJIB dijaga):**

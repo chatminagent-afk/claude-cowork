@@ -1,11 +1,11 @@
 # STATS Archive & Cleanup — VIRA PCR (tiap 3 bulan)
 
 **Dibuat**: 2026-08-25
-**File import**: `2026-08-25-VIRA-PCR-STATS-Archive-3bulan.json`
+**File import**: `2026-08-25-MIVA-PCR-STATS-Archive-3bulan.json`
 **Status**: siap import, `active: false` — belum dijadwalkan sampai kamu nyalakan sendiri
 **Jadwal**: 1 Jan / 1 Apr / 1 Jul / 1 Okt, **02:00 WIB** (`0 2 1 */3 *`, timezone workflow `Asia/Jakarta`)
 
-Padanan dari `2026-08-19-VIRA-STATS-cleanup-3bulan.json` milik The Scholars, tapi **bukan
+Padanan dari `2026-08-19-MIVA-STATS-cleanup-3bulan.json` milik The Scholars, tapi **bukan
 salinan** — lihat bagian "Kenapa beda" di bawah.
 
 ---

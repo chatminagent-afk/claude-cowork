@@ -2,13 +2,13 @@
 
 **Tanggal:** 2026-07-15
 **Sifat dokumen:** referensi teknis mentah untuk agent coding (Opus) yang merakit workflow n8n PCR lewat transformasi terprogram. Bukan desain baru — murni ekstraksi verbatim dari file production, disilangkan dengan kategori reuse/modifikasi/baru dari blueprint.
-**Basis:** `2026-07-15-blueprint-VIRA-persada-cisoka.md` §9–10, `2026-07-15-analisis-arsitektur-VIRA-eksisting.md`.
+**Basis:** `2026-07-15-blueprint-MIVA-persada-cisoka.md` §9–10, `2026-07-15-analisis-arsitektur-MIVA-eksisting.md`.
 
 **Folder dump mentah (baca langsung per node):** `D:\Documents\Claude Cowork\Persada Cisoka Residence\draft workflow\_extraction\`
 ```
 _extraction\
   V4\
-    V4-top-level.txt              -- top-level keys, settings, meta VIRA V4.json
+    V4-top-level.txt              -- top-level keys, settings, meta MIVA V4.json
     V4-node-inventory.txt         -- semua 59 node: name|type|typeVersion|position|flags
     V4-connections.txt            -- adjacency connections lengkap (semua cabang)
     V4-node-params\<Nama Node>.json   -- dump JSON UTUH per node (59 file)
@@ -18,7 +18,7 @@ _extraction\
     TEMPLATE-node-params\<Nama Node>.json  (59 file)
     TEMPLATE-code-nodes\<Nama Node>.js     (15 file)
 ```
-Semua file di atas dihasilkan oleh parsing terprogram (PowerShell `ConvertFrom-Json`/`ConvertTo-Json`) langsung dari `VIRA V4.json` dan `VIRA_TEMPLATE_v1.json` — isinya identik byte-untuk-struktur dengan JSON asli (bukan ringkasan manual), aman dipakai sebagai sumber copy-paste terprogram.
+Semua file di atas dihasilkan oleh parsing terprogram (PowerShell `ConvertFrom-Json`/`ConvertTo-Json`) langsung dari `MIVA V4.json` dan `MIVA_TEMPLATE_v1.json` — isinya identik byte-untuk-struktur dengan JSON asli (bukan ringkasan manual), aman dipakai sebagai sumber copy-paste terprogram.
 
 ---
 
@@ -434,8 +434,8 @@ Juga: TEMPLATE punya node `IF Status Update Needed`/`Update User Status` (alur P
 ## 7. Error Workflow & Buffer Cleanup
 
 Kedua file source kecil (2.7KB dan 5.4KB) — **sudah dibaca utuh**, isi lengkap ada di file asal:
-- `D:\Documents\Claude Cowork\the scholars\report\production\2026-07-02-VIRA_V4-error-workflow.json` (3 node: `Error Trigger` → `Compose Notif` (Code) → `Notify Admin Error` (HTTP Kirimi))
-- `D:\Documents\Claude Cowork\the scholars\report\production\2026-07-03-VIRA_MSG_BUFFER-cleanup.json` (3 node: `Every day 03:00 WIB` (Schedule cron `0 3 * * *`) → `Read MSG_BUFFER (all)` → `Pick expired block (>2h)` (Code) → `Delete expired rows`)
+- `D:\Documents\Claude Cowork\the scholars\report\production\2026-07-02-MIVA_V4-error-workflow.json` (3 node: `Error Trigger` → `Compose Notif` (Code) → `Notify Admin Error` (HTTP Kirimi))
+- `D:\Documents\Claude Cowork\the scholars\report\production\2026-07-03-MIVA_MSG_BUFFER-cleanup.json` (3 node: `Every day 03:00 WIB` (Schedule cron `0 3 * * *`) → `Read MSG_BUFFER (all)` → `Pick expired block (>2h)` (Code) → `Delete expired rows`)
 
 **Field yang harus diganti untuk PCR:**
 
@@ -457,7 +457,7 @@ Workflow #3 (Error Notifier) **harus di-set manual** di *Settings → Error Work
 
 ## 8. Settings Workflow & Struktur Top-Level
 
-### VIRA V4.json — top-level keys & settings
+### MIVA V4.json — top-level keys & settings
 ```json
 {
   "name": "VIRA V4",

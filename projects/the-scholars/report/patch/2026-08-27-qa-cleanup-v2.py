@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""QA for 2026-08-27-VIRA-STATS-cleanup-3bulan-v2.json
+"""QA for 2026-08-27-MIVA-STATS-cleanup-3bulan-v2.json
 
 Aturan v2 yang diuji:
   HAPUS semua baris data KECUALI header dan baris bot_mode == "OFF"
@@ -16,7 +16,7 @@ import json
 import re
 import sys
 
-WF = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-27-VIRA-STATS-cleanup-3bulan-v2.json"
+WF = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-27-MIVA-STATS-cleanup-3bulan-v2.json"
 
 PASS = []
 FAIL = []
@@ -245,7 +245,7 @@ check("C2b kept = c, d", {r["No WA"] for r in p["keptRows"]} == {"c", "d"}, str(
 check("C2c off_reason ' sam ' -> keptOffSam", p["keptOffSam"] == 1, str(p["keptOffSam"]))
 check("C2d off_reason '  ' -> keptOffBlank", p["keptOffBlank"] == 1, str(p["keptOffBlank"]))
 
-# --- C3: label di luar SAM/VIRA
+# --- C3: label di luar SAM/MIVA
 data = [row(2, "a", "OFF", "CEK"), row(3, "b", "OFF", "manual"), row(4, "c", "ON", "")]
 p = plan_cleanup(data)
 check("C3a label asing tetap DISIMPAN (fail-safe)", p["keptCount"] == 2, str(p["keptCount"]))

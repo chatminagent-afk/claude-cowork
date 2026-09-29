@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""QA for 2026-08-19-VIRA-V6-media-skill.json (base: r6)."""
+"""QA for 2026-08-19-MIVA-V6-media-skill.json (base: r6)."""
 import json
 import re
 import sys
 
-V6 = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-19-VIRA-V6-media-skill.json"
-R6 = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-14-VIRA-V4-r6-link-guard-wa-channel.json"
+V6 = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-19-MIVA-V6-media-skill.json"
+R6 = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-14-MIVA-V4-r6-link-guard-wa-channel.json"
 
 PASS, FAIL = [], []
 

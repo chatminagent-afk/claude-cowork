@@ -2,7 +2,7 @@
 
 **Dibuat:** 2026-07-25
 **Sumber:** QA menyeluruh `workflow/production/` — 4 workflow n8n + PCR_Database.xlsx
-**Laporan detail:** [2026-07-25-QA-skalabilitas-VIRA-PCR.md](2026-07-25-QA-skalabilitas-VIRA-PCR.md) · [Sesi 2 patch](2026-07-25-sesi2-patch-keamanan-VIRA-PCR.md) · [Sesi 4 desain](2026-07-25-sesi4-desain-beban-sheets-VIRA-PCR.md)
+**Laporan detail:** [2026-07-25-QA-skalabilitas-MIVA-PCR.md](2026-07-25-QA-skalabilitas-MIVA-PCR.md) · [Sesi 2 patch](2026-07-25-sesi2-patch-keamanan-MIVA-PCR.md) · [Sesi 4 desain](2026-07-25-sesi4-desain-beban-sheets-MIVA-PCR.md)
 
 > Register ini **terpisah** dari `Pending Waiting Changes.md`. File itu melacak pekerjaan go-live (item #1–#21). File ini khusus skalabilitas/beban. Penomoran pakai prefiks `L` supaya tidak bentrok.
 >
@@ -111,7 +111,7 @@ Perbaikan sungguhan datang **gratis** bersama L8 (migrasi database): `UPDATE ...
 ## L5. Kredensial Kirimi hardcode di Error Notifier
 
 **Masalah**
-`VIRA-PCR Error Notifier.json` → node `Notify Admin Error` menyimpan `user_code`, `secret`, `device_id` langsung di `bodyParameters`. `device_id` bahkan tertulis dua kali.
+`MIVA-PCR Error Notifier.json` → node `Notify Admin Error` menyimpan `user_code`, `secret`, `device_id` langsung di `bodyParameters`. `device_id` bahkan tertulis dua kali.
 
 **Penyebab**
 Workflow ini pakai `errorTrigger` dan tidak punya node `Read CONFIG`, jadi tidak bisa ambil dari CONFIG tanpa menambah node.
@@ -126,7 +126,7 @@ Minimal yang bisa dideploy hari ini tanpa risiko: hapus `device_id` duplikat, ta
 **Dampak**
 Rotate secret cukup di satu tempat, bukan edit workflow. Plus alert error tidak hilang karena satu timeout jaringan.
 
-Patch siap: [2026-07-25-sesi2-patch-keamanan-VIRA-PCR.md](2026-07-25-sesi2-patch-keamanan-VIRA-PCR.md)
+Patch siap: [2026-07-25-sesi2-patch-keamanan-MIVA-PCR.md](2026-07-25-sesi2-patch-keamanan-MIVA-PCR.md)
 
 ---
 
@@ -177,7 +177,7 @@ R3 paling aman: `Read STATS` satu-satunya dari 9 node read yang **nol referensi 
 **Dampak**
 9 → 5 baca per giliran. **6,6 → 12 giliran/menit (1,8×).**
 
-Desain lengkap: [2026-07-25-sesi4-desain-beban-sheets-VIRA-PCR.md](2026-07-25-sesi4-desain-beban-sheets-VIRA-PCR.md)
+Desain lengkap: [2026-07-25-sesi4-desain-beban-sheets-MIVA-PCR.md](2026-07-25-sesi4-desain-beban-sheets-MIVA-PCR.md)
 
 ---
 

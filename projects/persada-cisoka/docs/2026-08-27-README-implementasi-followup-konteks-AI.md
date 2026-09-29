@@ -7,7 +7,7 @@
 > Setiap penyebutan `VIRA-PCR Follow-up.json` di bawah ini merujuk file AI tersebut.
 
 
-**Panduan eksekusi. Detail teknis & alasan desain ada di [`2026-08-27-followup-konteks-AI-VIRA-PCR.md`](2026-08-27-followup-konteks-AI-VIRA-PCR.md).**
+**Panduan eksekusi. Detail teknis & alasan desain ada di [`2026-08-27-followup-konteks-AI-MIVA-PCR.md`](2026-08-27-followup-konteks-AI-MIVA-PCR.md).**
 
 Perkiraan waktu: **45–60 menit**, plus jeda menunggu hasil dry run.
 Urutannya mengikat. Langkah 1 tidak boleh dilewat — lihat kotak merah di bawah.
@@ -22,7 +22,7 @@ nyambung dengan topik terakhir — bukan lagi memutar 10 template secara bergili
 
 | File | Node |
 |---|---|
-| `workflow/production/VIRA PCR.json` | 81 → 84 |
+| `workflow/production/MIVA PCR.json` | 81 → 84 |
 | `workflow/production/VIRA-PCR Follow-up.json` | 13 → 23 |
 
 ---
@@ -67,7 +67,7 @@ sebenarnya `test_numbers` — `dry_run` saja tetap memproses seluruh lead (cuma 
 
 ## 2. Import workflow Main (10 menit)
 
-1. n8n → workflow **VIRA PCR** → ⋮ → **Import from File** → `workflow/production/VIRA PCR.json`.
+1. n8n → workflow **VIRA PCR** → ⋮ → **Import from File** → `workflow/production/MIVA PCR.json`.
 2. Cek 3 node baru muncul: `Build Konteks Input`, `Update Konteks`, `Merge Konteks`.
 3. Klik `Update Konteks` → pastikan model tersambung ke **Anthropic Chat Model1** (Haiku 4.5,
    credential `Anthropic Persada`). Kalau credential kosong, pilih ulang dari dropdown.
@@ -242,7 +242,7 @@ Klik **Execute Workflow** lagi **segera**.
 | Situasi | Tindakan |
 |---|---|
 | Pesan AI kurang pas, mau balik ke template | CONFIG `followup_ai_enabled` → `N`. **Tanpa import ulang.** |
-| Mau balik total | Import ulang `workflow/arsip/2026-08-27-VIRA-PCR-pre-konteks-AI.json` dan `…-Follow-up-pre-konteks-AI.json` |
+| Mau balik total | Import ulang `workflow/arsip/2026-08-27-MIVA-PCR-pre-konteks-AI.json` dan `…-Follow-up-pre-konteks-AI.json` |
 | Kolom baru bikin masalah di sheet | Restore dari tab duplikat langkah 1a |
 
 Baris STATS yang sudah ter-follow-up tidak perlu di-reset.

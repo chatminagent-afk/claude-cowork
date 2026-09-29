@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""QA for 2026-08-19-VIRA-STATS-cleanup-3bulan.json
+"""QA for 2026-08-19-MIVA-STATS-cleanup-3bulan.json
 
 Sections:
   A. Structure / graph
@@ -12,7 +12,7 @@ import json
 import re
 import sys
 
-WF = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-19-VIRA-STATS-cleanup-3bulan.json"
+WF = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-19-MIVA-STATS-cleanup-3bulan.json"
 XLSX = r"D:\Documents\Claude Cowork\the scholars\report\production\The_Scholars_Database.xlsx"
 
 PASS = []
@@ -164,7 +164,7 @@ code_nodes = {n["name"]: n["parameters"]["jsCode"]
               for n in nodes if n["type"] == "n8n-nodes-base.code"}
 check("B1 ada 3 node Code", len(code_nodes) == 3, str(list(code_nodes)))
 
-PROD_WF = r"D:\Documents\Claude Cowork\the scholars\report\production\2026-08-08-VIRA-V4-retryable.json"
+PROD_WF = r"D:\Documents\Claude Cowork\the scholars\report\production\2026-08-08-MIVA-V4-retryable.json"
 
 try:
     import esprima

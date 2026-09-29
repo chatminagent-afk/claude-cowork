@@ -14,7 +14,7 @@ This is the **original/production** VIRA instance — the logic other instances
 2. Root-cause analysis doc written first — `report/patch/YYYY-MM-DD-VIRA-V*-changelog.md`
    + matching `-handoff.md`, paired with the actual patched `.json` workflow export.
    Version numbers bump per patch (V3 → V3.1 → V3.2 … currently at **V6**, see
-   `report/patch/2026-08-19-VIRA-V6-media-skill-panduan.md`).
+   `report/patch/2026-08-19-MIVA-V6-media-skill-panduan.md`).
 3. Once a patch is stable, the workflow JSON becomes the new baseline referenced by
    the next patch (patches are cumulative, not squashed).
 4. `report/production/` holds full production exports + extracted reference dumps
@@ -23,7 +23,7 @@ This is the **original/production** VIRA instance — the logic other instances
    `report/report problem production/report <tanggal>/`.
 6. Bigger initiatives (mock booking flow, invoicing) get their own top-level folder
    (`mock booking/`, `archive/invoice/`) once mature.
-7. This instance's proven patterns get promoted into `mass production/VIRA_TEMPLATE_v1.json`
+7. This instance's proven patterns get promoted into `mass production/MIVA_TEMPLATE_v1.json`
    — the config-layer template other client instances (Persada Cisoka) are built from.
 
 ## Current status
@@ -41,7 +41,7 @@ blok dashboard, semua **dibangun & lulus QA otomatis tapi BELUM di-import ke n8n
 Tidak menyentuh workflow utama sama sekali. Baca `2026-08-26-MULAI-DI-SINI.md` dulu.
 Laporan penuh pertama = data September, tampil 1 Oktober.
 
-**STATS Cleanup v3 (2026-08-27)** — `2026-08-27-VIRA-STATS-cleanup-3bulan-v3.json`
+**STATS Cleanup v3 (2026-08-27)** — `2026-08-27-MIVA-STATS-cleanup-3bulan-v3.json`
 + panduan, QA 72/72 PASS. **Sudah di-import & dieksekusi manual di n8n; belum diaktifkan.**
 Output `Plan cleanup` cocok persis (10/10 metrik, selisih 0) dengan port Python di QA
 terhadap export sheet live 27 Ags — jadi logikanya tervalidasi di data nyata, bukan cuma
@@ -90,7 +90,7 @@ tidak membatasi.
 
 ## File map
 - `2026-08-26-MULAI-DI-SINI.md` — **titik masuk analytics topik**: 4 langkah setup + keputusan terbuka
-- `2026-08-26-rencana-analytics-topik-vira.md` — rencana induk analytics (keputusan terkunci, batasan, arsitektur)
+- `2026-08-26-rencana-analytics-topik-miva.md` — rencana induk analytics (keputusan terkunci, batasan, arsitektur)
 - `2026-08-26-taksonomi-seed-topik.md` — 16 topik hasil analisis 483 pesan pembuka + 151 baris UNKNOWN.
   Temuan penting: **IELTS praktis tidak ada demand** (5 sebutan/634 pesan), dan hari yang
   ditanyakan orang **Sabtu/Minggu, bukan Rabu** — dua asumsi awal yang terbantah data.
@@ -115,6 +115,6 @@ tidak membatasi.
   r6/V6 patches landed), `report-problem-production/` (closed-out incident investigations)
 
 ## Related
-- Shared dashboard: `../VIRA Dashboard/memory.md` (serves this client + Persada Cisoka)
-- Shared error notifier: `../Fallback VIRA Error Email Notifier/`
+- Shared dashboard: `../MIVA Dashboard/memory.md` (serves this client + Persada Cisoka)
+- Shared error notifier: `../Fallback MIVA Error Email Notifier/`
 - Fork target: `../Persada Cisoka Residence/memory.md`

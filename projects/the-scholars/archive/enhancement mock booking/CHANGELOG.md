@@ -3,7 +3,7 @@
 ---
 
 ## v3 — Write-First Submission + Graceful Booking Not Found
-**File:** `VIRA_MockBooking_Generator_Payment_v3.json`  
+**File:** `MIVA_MockBooking_Generator_Payment_v3.json`  
 **Tanggal:** 2026-06-09
 
 ### Problem yang Diselesaikan (v3)
@@ -70,9 +70,9 @@ Node urutan baru setelah `Validate Payload`:
 ### Cara Import
 
 1. Buka n8n → Import from File
-2. Pilih `VIRA_MockBooking_Generator_Payment_v3.json`
+2. Pilih `MIVA_MockBooking_Generator_Payment_v3.json`
 3. Aktifkan workflow
-4. **Nonaktifkan** v2 dan workflow lama (`VIRA_MockBooking_Generator_Payment.json`)
+4. **Nonaktifkan** v2 dan workflow lama (`MIVA_MockBooking_Generator_Payment.json`)
 5. Pastikan hanya **satu** workflow yang aktif untuk webhook path `mock-booking-submit`
 
 > **Penting:** `maxConcurrency: 1` sudah diset di semua versi workflow. Write-first adalah lapisan perlindungan tambahan untuk edge case di mana dua execution sempat overlap sebelum lock teraplikasi.
@@ -80,7 +80,7 @@ Node urutan baru setelah `Validate Payload`:
 ---
 
 ## v2 — Slot Conflict Detection (Race Condition Fix — Confirm Flow)
-**File:** `VIRA_MockBooking_Generator_Payment_v2.json`  
+**File:** `MIVA_MockBooking_Generator_Payment_v2.json`  
 **Tanggal:** 2026-06-09
 
 ---
@@ -165,8 +165,8 @@ Jika 2 orang submit booking untuk slot yang sama secara bersamaan, keduanya bisa
 ## Cara Import
 
 1. Buka n8n → Import from File
-2. Pilih `VIRA_MockBooking_Generator_Payment_v2.json`
+2. Pilih `MIVA_MockBooking_Generator_Payment_v2.json`
 3. Aktifkan workflow
-4. Nonaktifkan/hapus workflow lama (`VIRA_MockBooking_Generator_Payment.json`)
+4. Nonaktifkan/hapus workflow lama (`MIVA_MockBooking_Generator_Payment.json`)
 
 > **Catatan:** Tidak ada perubahan di Google Sheet schema, HTML booking form, atau workflow generator slot.

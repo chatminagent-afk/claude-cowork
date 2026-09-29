@@ -41,7 +41,7 @@ Biarkan kosong di bawah header. Workflow yang mengisi.
 
 ### 2. Import WF-A, uji manual, baru aktifkan (15 menit)
 
-File: `report/patch/2026-08-26-VIRA-WF-A-topic-harvester.json`
+File: `report/patch/2026-08-26-MIVA-WF-A-topic-harvester.json`
 
 Setelah import, **jangan langsung aktifkan.** Klik **Execute Workflow** manual:
 
@@ -73,7 +73,7 @@ Kalau dua-duanya benar → aktifkan.
 
 ### 3. Import WF-B, aktifkan (10 menit)
 
-File: `report/patch/2026-08-26-VIRA-WF-B-monthly-rollup.json`
+File: `report/patch/2026-08-26-MIVA-WF-B-monthly-rollup.json`
 
 Execute manual sekali. Karena Juli belum ada datanya, dia akan menulis satu baris
 berisi angka nol — **itu benar, bukan error.** Lalu aktifkan.
@@ -111,7 +111,7 @@ Ini satu-satunya bagian yang punya jam berdetak — sisanya bisa menyusul.
 
 ## 5. Patch r8 — hemat 31% operasi Sheets (opsional, terpisah)
 
-File: `report/patch/2026-08-26-VIRA-r8-cache-static-tabs.json`
+File: `report/patch/2026-08-26-MIVA-r8-cache-static-tabs.json`
 
 **Ini menyentuh workflow VIRA utama** — beda dari langkah 1–4 yang tidak menyentuh
 apa pun. Kerjakan setelah analytics jalan, jangan barengan.
@@ -139,8 +139,8 @@ Cara ujinya sebelum dipakai:
 
 | File | Kapan dibuka |
 |---|---|
-| `report/patch/2026-08-26-VIRA-analytics-topik-panduan-setup.md` | Kalau langkah 1–3 bermasalah |
-| `report/patch/2026-08-26-VIRA-analytics-topik-changelog.md` | Kalau mau tahu keputusan teknis & penyimpangan dari rencana |
-| `report/patch/2026-08-26-VIRA-analisa-efisiensi-13-ops.md` | Kalau mau tahu kenapa cuma caching yang saya kerjakan, dan apa yang sengaja TIDAK saya sentuh |
+| `report/patch/2026-08-26-MIVA-analytics-topik-panduan-setup.md` | Kalau langkah 1–3 bermasalah |
+| `report/patch/2026-08-26-MIVA-analytics-topik-changelog.md` | Kalau mau tahu keputusan teknis & penyimpangan dari rencana |
+| `report/patch/2026-08-26-MIVA-analisa-efisiensi-13-ops.md` | Kalau mau tahu kenapa cuma caching yang saya kerjakan, dan apa yang sengaja TIDAK saya sentuh |
 | `2026-08-26-taksonomi-seed-topik.md` | Kalau mau lihat data mentah di balik laporan Sam |
 | `report/patch/2026-08-26-qa-*.html` | Kalau mau lihat hasil QA (buka di browser) |

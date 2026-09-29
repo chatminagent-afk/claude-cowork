@@ -1,7 +1,7 @@
 # Update VIRA-PCR — Media Sending & Notifikasi Tim (2026-07-16)
 
 **Tanggal:** 2026-07-16
-**Basis:** `2026-07-15-VIRA-PCR-main.json` (71 node) → hasil update `2026-07-16-VIRA-PCR-main.json` (**74 node**).
+**Basis:** `2026-07-15-MIVA-PCR-main.json` (71 node) → hasil update `2026-07-16-MIVA-PCR-main.json` (**74 node**).
 **Pemicu:** requirement baru dari klien (Om Sulianto), 2026-07-16.
 **Cara rakit:** lewat jalur build (`_extraction/build/assemble.py` + `codenodes.py`) — rerunnable. Jalankan `python assemble.py` untuk regenerasi. File 2026-07-15 TIDAK ditimpa.
 
@@ -196,7 +196,7 @@ Test call 1x (lihat §6). Bila perlu, ganti nama parameter `phone`→`receiver` 
 
 ## 9. Validasi
 
-- `python -m json.tool 2026-07-16-VIRA-PCR-main.json` → **VALID**.
+- `python -m json.tool 2026-07-16-MIVA-PCR-main.json` → **VALID**.
 - Struktur: 74 node, semua referensi koneksi & `$('node')` valid, tidak ada secret plaintext bocor (`user_code`/`secret`/`device_id`/nomor lama Scholars = 0 hit).
 - 3 node baru hadir & terhubung: `Process All → IF Media Manual → Format Media Notif → Notify Media Team`.
 - `Notify Media Team` meniru persis pola `Notify Field Team` (auth httpCustomAuth, loop `phone`/`message` per item, continueOnFail).

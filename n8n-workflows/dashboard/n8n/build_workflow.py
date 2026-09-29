@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-build_workflow.py — merakit "VIRA Dashboard API.json" dari modul di src/.
+build_workflow.py — merakit "MIVA Dashboard API.json" dari modul di src/.
 
 Kenapa dirakit, bukan ditulis tangan:
   Kode di src/*.js dipakai DUA kali — di dalam Code node n8n dan di dalam
@@ -20,7 +20,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(HERE, 'src')
-OUT = os.path.join(HERE, 'VIRA-Dashboard-API.json')
+OUT = os.path.join(HERE, 'MIVA-Dashboard-API.json')
 
 # ---------------------------------------------------------------- rahasia --
 # Kunci HMAC penanda tangan token sesi. Bukan kredensial pihak ketiga —
@@ -122,7 +122,7 @@ def sheets_append(name, position, doc_expr, tab_expr, mapping,
     (`Append Audit` versi lama) memakai onError yang menelan kegagalan, jadi
     kalau selama ini gagal pun tidak ada yang tahu. Sebaliknya, SEMUA node
     append yang benar-benar jalan di produksi — termasuk `Append Audit` di
-    `live production/VIRA Dashboard API.json` — membawa schema, matchingColumns,
+    `live production/MIVA Dashboard API.json` — membawa schema, matchingColumns,
     attemptToConvertTypes, dan convertFieldsToString.
 
     n8n mengisi blok ini sendiri kalau node dibuka lewat UI. Karena workflow ini

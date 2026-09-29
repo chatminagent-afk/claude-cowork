@@ -43,7 +43,7 @@ to `workflow/arsip/`.
   new endpoint needed; brochures hosted at a public URL.
 - AI output tag pattern extended from the scholars' `[SEND_GFORM]`/`Talk To Sam`:
   `[SCHEDULE_SURVEY]`, `[SEND_MEDIA: key]`.
-- Old `VIRA_Follow_Up.json` was found silently broken (read a `STATS.timestamp` column
+- Old `MIVA_Follow_Up.json` was found silently broken (read a `STATS.timestamp` column
   V4 no longer writes) — follow-up was redesigned against the real V4 STATS schema
   (`last_reply_ts`).
 - Field name gotcha: Kirimi recipient field = `phone`, not `receiver` (matches public docs'
@@ -75,4 +75,4 @@ to `workflow/arsip/`.
 
 ## Related
 - Fork source: `../the scholars/memory.md`
-- Shared dashboard: `../VIRA Dashboard/memory.md`
+- Shared dashboard: `../MIVA Dashboard/memory.md`

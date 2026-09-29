@@ -26,6 +26,6 @@ Framework hook dari mudacumasekali (dipelajari 2026-08-19), dipakai buat naikin 
 3. Hindari framing "cara/tips/kenapa" yang edukatif — itu yang bikin hook lemah, karena otak pembaca langsung tau isinya sebelum baca lanjut.
 4. Hook harus nimbulin curiosity gap ("WTF, gimana ceritanya?"), bukan menjelaskan duluan.
 
-**Cara pakai:** dipakai buat nulis ulang baris HOOK di kolom C dan judul singkat di kolom B pada `2026-08-14-script-reels-vira-tracker.xlsx` — isi ISI/REVEAL/CTA tetap ngikutin fakta yang sama, cuma bukaannya diganti biar lebih WTF. Klaim tetap harus grounded ke [[vira-fakta-konten]] — jangan sampai demi hook nabrak angka sensitif atau melebih-lebihkan. Hook sendiri harus tetap 1-2 kalimat pendek — lihat [[feedback-hook-length]].
+**Cara pakai:** dipakai buat nulis ulang baris HOOK di kolom C dan judul singkat di kolom B pada `2026-08-14-script-reels-miva-tracker.xlsx` — isi ISI/REVEAL/CTA tetap ngikutin fakta yang sama, cuma bukaannya diganti biar lebih WTF. Klaim tetap harus grounded ke [[vira-fakta-konten]] — jangan sampai demi hook nabrak angka sensitif atau melebih-lebihkan. Hook sendiri harus tetap 1-2 kalimat pendek — lihat [[feedback-hook-length]].
 
 Pola hook lain yang dipakai bergantian: [[hook-pattern-confession-urgency]] (opener "kalau boleh jujur" + urgency waktu) — dipilih tergantung angle: WTF hook buat cerita hasil/insiden konkret, confession+urgency buat opini/insight.

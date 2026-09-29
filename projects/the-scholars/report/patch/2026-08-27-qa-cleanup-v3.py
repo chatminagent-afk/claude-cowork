@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""QA for 2026-08-27-VIRA-STATS-cleanup-3bulan-v3.json
+"""QA for 2026-08-27-MIVA-STATS-cleanup-3bulan-v3.json
 
 Aturan v3 = aturan v2 (lindungi baris OFF non-VIRA) + filter umur.
 Baris DIHAPUS hanya kalau: tidak dilindungi DAN punya jejak waktu DAN
@@ -18,7 +18,7 @@ import re
 import sys
 import datetime
 
-WF = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-27-VIRA-STATS-cleanup-3bulan-v3.json"
+WF = r"D:\Documents\Claude Cowork\the scholars\report\patch\2026-08-27-MIVA-STATS-cleanup-3bulan-v3.json"
 XLSX = r"D:\Documents\Claude Cowork\the scholars\archive\report-production-V4-obsolete\The_Scholars_Database.xlsx"
 
 PASS = []

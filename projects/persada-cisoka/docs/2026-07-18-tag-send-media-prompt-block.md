@@ -1,7 +1,7 @@
 # Blok TAG SEND_MEDIA baru — VIRA PCR (disambiguasi media)
 
 **Tanggal:** 2026-07-18
-**Implementasi:** planning §Langkah 2 (5 aturan). Menggantikan bullet `[SEND_MEDIA]` di blok `# TAG` pada systemMessage node AI Agent **dan** di doc `2026-07-17-enhanced-system-prompt-vira-pcr.md`. Dua versi WAJIB identik (jangan drift).
+**Implementasi:** planning §Langkah 2 (5 aturan). Menggantikan bullet `[SEND_MEDIA]` di blok `# TAG` pada systemMessage node AI Agent **dan** di doc `2026-07-17-enhanced-system-prompt-miva-pcr.md`. Dua versi WAJIB identik (jangan drift).
 
 ---
 
@@ -22,7 +22,7 @@ Catatan gaya: contoh pertanyaan ambigu pakai emoji 😊 (maks 1/pesan, sesuai # 
 
 ## (b) Instruksi apply (find/replace)
 
-**Berlaku untuk DUA tempat:** (1) node AI Agent live (`parameters.options.systemMessage`), (2) doc `2026-07-17-enhanced-system-prompt-vira-pcr.md`. Teks lama identik di keduanya.
+**Berlaku untuk DUA tempat:** (1) node AI Agent live (`parameters.options.systemMessage`), (2) doc `2026-07-17-enhanced-system-prompt-miva-pcr.md`. Teks lama identik di keduanya.
 
 ### CARI (verbatim — satu baris utuh di blok `# TAG`):
 

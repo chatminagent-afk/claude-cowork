@@ -5,7 +5,7 @@
 
 ## Now
 
-- [ ] Approve final VIRA execution plan (Paket 1–6) — plan is waiting on your approval, no changes executed yet (added 2026-07-04, from 2026-07-02-rencana-eksekusi-VIRA-final.md)
+- [ ] Approve final VIRA execution plan (Paket 1–6) — plan is waiting on your approval, no changes executed yet (added 2026-07-04, from 2026-07-02-rencana-eksekusi-MIVA-final.md)
 - [ ] Check n8n Executions list around 28/6 10:27:50–10:28:05 WIB — determines whether Adrian's lost message was a Sheets 429 error or a Kirimi webhook miss (added 2026-07-04, from VIRA plan)
 
 ## Next
