@@ -1,6 +1,6 @@
 ---
 name: deck-request
-description: Susun pitch deck VIRA dari brief REQUESTS, kirim ke Steven untuk direview, lalu kirim ke klien lewat WhatsApp setelah Steven approve. Pakai kapan pun Steven menyebut ada permintaan deck atau menyebut nomor WA prospek — trigger pada frasa seperti "ada deck request 628xxx", "generate deck", "bikinin deck buat", "cek request baru", "deck buat <nama bisnis>", "kirim decknya ke klien", "revisi decknya", "briefnya kurang apa", atau saat dia meneruskan notifikasi WA dari VIRA yang berisi brief prospek. Juga dipakai untuk merevisi deck yang sudah digenerate sebelum dikirim, dan untuk melengkapi brief yang field-nya kosong.
+description: Susun pitch deck MIVA dari brief REQUESTS, kirim ke Steven untuk direview, lalu kirim ke klien lewat WhatsApp setelah Steven approve. Pakai kapan pun Steven menyebut ada permintaan deck atau menyebut nomor WA prospek — trigger pada frasa seperti "ada deck request 628xxx", "generate deck", "bikinin deck buat", "cek request baru", "deck buat <nama bisnis>", "kirim decknya ke klien", "revisi decknya", "briefnya kurang apa", atau saat dia meneruskan notifikasi WA dari MIVA (nama lama: VIRA) yang berisi brief prospek. Juga dipakai untuk merevisi deck yang sudah digenerate sebelum dikirim, dan untuk melengkapi brief yang field-nya kosong.
 ---
 
 # Deck Request — generate, review, kirim
@@ -63,6 +63,15 @@ Blok `LENGKAP` dicetak paling awal:
 Ada `BLOKIR` atau `PERINGATAN` → jalankan prosedur **Field kosong** sebelum lanjut ke langkah 3.
 Kalau jadi, pastikan keluarannya `Slide: N dari 32` dan `PERIKSA: ... semua teks wajib ada`.
 
+**2b. Naskah percakapan sesuai industri (otomatis, sebelum kirim PDF ke Steven).** Kalau baris
+`Naskah` bilang "contoh umum" atau `naskah/<slug>.json` belum ada, tulis `naskah/<slug>.json`
+(format & contoh: `naskah/algionet-fiber-by-pt-algio-link-indonesia.json`) dari `industri`,
+`masalah_utama`, `kutipan_asli`: 8 gelembung (masuk/keluar bergantian), pertanyaan khas industri
+itu. Aturan: balasan MIVA hanya soal PROSES — tanpa harga, stok, ukuran/model tersedia, alamat,
+jam buka, atau janji apa pun; nama pelanggan/detail di contoh murni ilustrasi; `_catatan` menyebut
+"CONTOH dari Claude <tanggal>". Kalau `pertanyaan_tersering` sudah terisi, pakai itu, jangan
+mengarang naskah. Lalu render ulang dan cek `Naskah : naskah/<slug>.json`.
+
 **3. Kirim PDF-nya ke Steven** pakai SendUserFile, dari `deck/keluaran/<slug>.pdf`. Sebutkan
 singkat: berapa field brief terisi, field kosong apa saja beserta dampaknya (dari blok `LENGKAP`),
 field wajib apa yang diizinkan kosong, dan naskah percakapan slide 9 datang dari mana (barisnya
@@ -72,9 +81,10 @@ dicetak generator: `Naskah : ...`).
 
 | Yang diminta | Ubah di |
 |---|---|
-| isi brief (nama bisnis, pain point, volume chat, field yang kosong, dll) | kolom REQUESTS — `miva_sheet.tulis_sel("REQUESTS", header, baris, kolom, nilai)`, hanya dengan isi yang sudah disetujui Steven |
+| isi brief (nama bisnis, pain point, volume chat, field yang kosong) | kolom REQUESTS — `miva_sheet.tulis_sel("REQUESTS", header, baris, kolom, nilai)`, hanya dengan isi yang sudah disetujui Steven |
 | gelembung percakapan slide 9 | tulis tangan di `naskah/<slug>.json` (menang atas `pertanyaan_tersering`) |
 | caption WhatsApp | `caption-deck.txt` (`{nama}`, `{nama_bisnis}`) |
+| poin custom slide The Scholars / Persada (blok "Yang di-custom") | `template.html` (slide `the-scholars`, `persada-cisoka`) - hanya poin yang Steven sebut |
 | urutan/struktur slide | `struktur.lock.json` — hanya kalau Steven memang sengaja mengubah struktur |
 
 Render ulang setelah tiap perubahan, lalu kirim versi barunya ke Steven.
@@ -97,14 +107,8 @@ python kirim_deck.py --wa 628xxxxxxxxxx --kirim              # ke KLIEN
 ```
 
 Kalau di langkah 2 Steven sudah mengizinkan field wajib kosong untuk klien ini, kiriman ke klien
-butuh `--lanjut-tanpa` yang sama. Yang ke klien otomatis menulis tiga hal:
-`REQUESTS.deck_dikirim_ts`, `STATS.deck_terkirim_ts`, dan satu baris EVENTS.
-Laporkan balasan Kirimi apa adanya — kalau gagal, bilang gagal, jangan diperhalus.
-
-`STATS.deck_terkirim_ts` yang membuat VIRA tahu decknya sudah sampai. Kalau keluarannya memuat
-`PERINGATAN: ... STATS.deck_terkirim_ts GAGAL ditulis`, **sebutkan ke Steven** — decknya memang
-terkirim, tapi VIRA masih akan bicara seolah decknya belum dikirim dan follow-up masih
-menganggapnya menunggu, sampai kolom itu diisi manual di tab STATS.
+butuh `--lanjut-tanpa` yang sama. Yang ke klien otomatis menulis `REQUESTS.deck_dikirim_ts` dan
+satu baris EVENTS. Laporkan balasan Kirimi apa adanya — kalau gagal, bilang gagal, jangan diperhalus.
 
 ## Field kosong
 
@@ -133,7 +137,7 @@ Pertanyaan ke prospek diambil dari baris `tanya:` keluaran generator. Kolom usul
 **c. Tawarkan tiga jalan per field:**
 1. **Pakai usulan / Steven sebut isinya** → tulis ke REQUESTS persis seperti yang disetujui
    (revisi Steven menang), lalu render ulang.
-2. **Tanya prospek dulu** → Steven yang mengirim pertanyaannya, atau VIRA yang menanyakan di
+2. **Tanya prospek dulu** → Steven yang mengirim pertanyaannya, atau MIVA yang menanyakan di
    percakapan berikutnya. Deck ditunda sampai jawabannya masuk ke REQUESTS.
 3. **Lanjut tanpa field itu** → untuk field `BLOKIR` butuh izin eksplisit per field, lalu
    render dengan `--lanjut-tanpa <field>`. Untuk `PERINGATAN` cukup Steven bilang lanjut.
@@ -144,10 +148,10 @@ review (langkah 3) bersama tabel ini — dia yang memutuskan dilengkapi dulu ata
 
 ## Konteks yang perlu diingat
 
-- Brief masuk otomatis dari workflow n8n `VIRA Personal — Main`: AI Agent mengeluarkan
+- Brief masuk otomatis dari workflow n8n `MIVA Personal — Main`: AI Agent mengeluarkan
   `[DECK_REQUEST]` → `Merge Brief` → `Write REQUESTS` → `Notify Admin Deck` kirim WA ke Steven.
   Isi notif itu masih menyebut cara manual lama (`generate-deck.bat`) — abaikan, pakai alur ini.
-- Sejak v3.10 (2026-09-18) VIRA menanyakan nama usaha di pesan perkenalan, jadi `nama_bisnis`
+- Sejak v3.10 (2026-09-18) MIVA menanyakan nama usaha di pesan perkenalan, jadi `nama_bisnis`
   kosong seharusnya jarang. Kalau tetap kosong, itu tanda prospek belum mau menyebutnya.
 - Brief tanpa nama bisnis menghasilkan `tanpa-nama-<4 digit akhir no_wa>.pdf`, bukan lagi
   `tanpa-nama.pdf` bersama.
@@ -158,3 +162,5 @@ review (langkah 3) bersama tabel ini — dia yang memutuskan dilengkapi dulu ata
   kelengkapan dan alasannya ada di bagian "Gerbang kelengkapan — 2026-09-18" README yang sama.
 - Deck ini dokumen yang sudah dipikirkan, chat itu langsung: deck boleh menyebut add-on
   IDR 999.000/bln, bot tetap tidak boleh menyebut harga add-on.
+- Slide The Scholars & Persada memakai label "Latar belakang" dan "Goal" plus blok "Yang di-custom untuk <klien>" (2026-09-29). Semua em dash otomatis diganti "-" oleh `buat_deck.py`; jangan tulis em dash di template/naskah/caption.
+- Kirim ulang deck yang deck_dikirim_ts-nya sudah terisi butuh `--ulang`, dan hanya kalau Steven memintanya.

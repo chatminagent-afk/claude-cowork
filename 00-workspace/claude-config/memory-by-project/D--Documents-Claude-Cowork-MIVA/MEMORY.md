@@ -1,0 +1,32 @@
+- [Arah brand @povstevens](povstevens-brand-direction.md) — positioning "QA yang bangun AI", tone curhat, target owner scale-up; Threads = upload manual (reset 19 Agu, NIGHT SHIFT dibuang)
+- [WTF hook framework](wtf-hook-framework.md) — pola hook mudacumasekali: konkret + ironis/kontradiktif vs generik/edukatif, dipakai buat rewrite hook reel scripts
+- [Hook harus pendek](feedback-hook-length.md) — feedback: hook max 1-2 kalimat pendek, jangan kalimat beranak dengan klausa penjelas
+- [Hook confession+urgency](hook-pattern-confession-urgency.md) — pola "kalau boleh jujur..." + batas waktu konkret, pelengkap WTF hook untuk angle opini/insight
+- [Jangan inversi kaku](feedback-natural-phrasing.md) — feedback: hindari objek-di-depan-kalimat buat "keliatan punchy", pakai SVO + kalimat susulan pendek
+- [Fakta MIVA untuk konten](miva-fakta-konten.md) — angka grounded yang aman dipakai + daftar sensitif yang tidak boleh muncul
+- [Dua tenant MIVA](miva-dua-tenant.md) — The Scholars & Persada; nama asli tidak boleh disebut di konten, pakai deskripsi generik
+- [Meeting demo r8r](r8r-demo-meeting.md) — 2026-08-25 dengan Sam & founder r8r; repo GitHub r8r 404, verifikasi dulu sebelum dukung migrasi MIVA
+- [Marketing vs branding Pandji](pandji-marketing-vs-branding.md) — brand hidup di benak konsumen lewat interaksi nyata, bukan klaim; dipakai buat evaluasi angle reel scripts MIVA
+- [Temperature MIVA jangan diturunkan](miva-temperature-jangan-diturunkan.md) — 0.7 dipertahankan; panjang balasan diperbaiki lewat system message, bukan parameter node
+- [Main MIVA Personal tak terbaca MCP](miva-personal-main-tidak-terbaca-mcp.md) — availableInMCP=false, jangan tertukar "MIVA TS"; harness UAT butuh PYTHONIOENCODING=utf-8 (bukan hang)
+- [STATS terisi v3.8→v3.9](miva-stats-terisi-v3-8.md) — v3.8 live 2026-09-15; v3.9 (UAT 402/0) perbaiki insiden Aldi, live per export 16/09; patch berikutnya dari v3.9
+- [Nama tidak dipakai menyapa](feedback-miva-nama-tidak-menyapa.md) — feedback: nama prospek hanya disimpan, selalu "kak", bukan "kamu"
+- [Follow-up MIVA belum live](miva-followup-belum-live.md) — belum pernah di-import ke n8n; "Follow-up AI Powered" di n8n itu milik tenant PCR, bukan Personal
+- [MIVA v3.10 nama usaha + ringkas](miva-v3-10-nama-usaha-ringkas.md) — 18/09: nama usaha di perkenalan, tanya ulang sekali, UAT 491/0, belum deploy
+- [Balasan MIVA ringkas](feedback-miva-balasan-ringkas.md) — feedback: jangan ulang ucapan prospek; 2 kalimat ±20–35 kata, tidak sependek MIVA TS
+- [Deck: field kosong](feedback-deck-field-kosong.md) — 3 field wajib memblokir build/kirim, izin Steven per field; usulan isi hanya dari fakta tertulis
+- [Error notifier GLOBAL terbukti jalan](miva-global-error-notifier.md) — ID 0mp_AdLtInm68RxQUwLqV, host hstgr; nol eksekusi karena tak ada yang menunjuk, bukan rusak
+- [MIVA v3.11 deck terkirim](miva-v3-11-deck-terkirim.md) — kolom STATS deck_terkirim_ts bikin MIVA tahu decknya sudah sampai; Follow-up v2 berbucket (A/B/C), UAT 551/0 & 204/0, LIVE (dicek MCP 2026-09-23)
+- [MIVA v3.12 balasan ringkas](miva-v3-12-balasan-ringkas.md) — 23/09: prompt to the point + jaring RINGKAS + penangkap fakta; LIVE 23/09 (ID sama); uji live temukan bug askingPrice & sewa→nama_bisnis
+- [MIVA v3.13 harga & handover](miva-v3-13-harga-handover.md) — 23/09: harga hanya kalau ditanya, sewa X=industri, handover langsung, notif singkat sesudah deck; UAT 885/0 + eval; LIVE per 25/09; bug "Brp" → v3.14
+- [Deck caption no intro](feedback-deck-caption.md) — caption WhatsApp tidak boleh punya "salam kenal, aku Steven"
+- [Evaluasi funnel ads 26/09](miva-ads-funnel-eval-2026-09-26.md) — ~39 lead → 2 deck; bocor di opener, discovery kepanjangan, bug bidang, handover pasca-deck
+- [MIVA v3.15 tawaran deck](miva-v3-15-tawaran-deck.md) — 26/09: sapaan tanya bidang saja → contoh konkret + tawaran deck, notif LEAD PERLU DIBALAS; LIVE 27/09 (dicek MCP, 93 node identik); follow-up A masih 72 jam
+- [MIVA v3.14 "Brp"](miva-v3-14-brp.md) — 25/09: brp polos = tanya harga (catatan tegas), kata tanya bukan nama, tanya-ulang tak buntu; UAT 943/0 + eval asli 16/16; ikut LIVE lewat v3.15 (27/09)
+- [Rebrand VIRA → MIVA AI](rebrand-vira-ke-sapa-ai.md) — 28/09: bentrok dengan VIRA resmi BCA; SELESAI & LIVE semua tenant, klien dikabari, repo git dipush (69b6b00); sentinel off_reason kini 'MIVA' (TS Main live; cleanup v3.1 belum deploy); Harvester/dashboard mati
+- [⚠️ Repo claude-cowork PUBLIC bocor](repo-claude-cowork-public-bocor.md) — 29/09: private key SA + secret + nomor WA di repo public (masih public per 29/09); rename VIRA→MIVA dieksekusi 638/640, sisa lewat bat (panduan rebrand langkah 10–11)
+- [Motion video HyperFrames](motion-video-hyperframes.md) — semua video di reels\motion\ (hasil\ = MP4 final); 29/09: POC HTML+GSAP → MP4 9:16; v3 aturan gerak (ketik lalu diam), v7 (jam digital, count-up 100+, margin x 140–940, bento premium, 36 dtk) disetujui & jadi template skill miva-motion; gotcha png-sequence latar transparan; motion #3 "fresh" lime & #4 "keynote" disukai; #5 listicle 11 kerjaan menunggu penilaian; #7 jam2 (tidur vs kerja, beat drop) disetujui 30/09
+- [MIVA v3.16 dibangun](miva-v3-16-rencana.md) — 27/09: sapaan tawaran deck + 3 pertanyaan, UAT 1035/0, eval 353/354, FU v2.2; menunggu deploy 28/09 sebelum 09:00
+- [Kirimi batas 1200 chat/hari](kirimi-batas-1200-chat-meta.md) — internal: di bawah 1200/hari tak kena biaya per-chat Meta; belum diverifikasi, jangan diklaim ke klien
+- [Eval funnel 29/09 pasca v3.17](miva-funnel-eval-2026-09-29.md) — sapaan tawaran-deck 0/11 vs v3.15 7/8; deck ditawarkan tiap balasan; FU 21% & sumber 3 deck; bug klaim API resmi + balasan hantu
+- [MIVA v3.18 funnel fix](miva-v3-18-funnel-fix.md) — 29/09 DEPLOY (Main+FU ditempel Steven, sheet ditulis; LIVE dicek MCP 29/09 16:19, 95/27 node identik): sapaan tanya bidang, tawaran 1x/3 balasan, T/P, FAKTA API, [unknown] drop; UAT 1166/0, FU 235/0, eval 254/255, + Threads

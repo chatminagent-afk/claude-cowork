@@ -1,0 +1,5 @@
+- [Personal branding @povstevens](povstevens-personal-branding.md) — IG content plan, proven video formula, VIRA privacy guardrails
+- [Content style: document the process](content-style-document-process.md) — build-in-public series style, soft CTA, footage bank
+- [VIRA off_reason + STATS cleanup](vira-stats-archiving-plan.md) — SAM/VIRA labeling, 3-monthly cron that deletes all but SAM rows, node touchpoints and traps
+- [Autonomous build sessions](autonomous-build-sessions.md) — lanjut bangun sendiri saat Steven pergi/tidur; batasnya di mana
+- [VIRA: blokir IP Kirimi 2026-08-31](2026-08-31-vira-kirimi-ip-block.md) — IP egress n8n 76.13.18.214, 403 = IP block, cara diagnosa body respons

@@ -1,0 +1,2 @@
+- [Sumber Excel flow bukan file lokal](excel-sumber-flow-bukan-file-lokal.md) — flow baca copy SharePoint dengan nama berbeda; angka dari file lokal harus dicek silang
+- [Nama action Card tidak sama dengan urutan kartu](nama-action-card-tidak-sama-dengan-urutan-kartu.md) — "card 1" Steven = Compose_Card2, bukan Compose_Card1

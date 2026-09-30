@@ -1,11 +1,11 @@
 ---
 name: privacy-check
-description: Privacy guardrail review for any VIRA / @povstevens content before publishing — reel scripts, captions, screenshots, screen recordings, stories, or lead magnets. Use whenever Steven is about to post or publish content, asks "aman nggak", "cek privasi", "review sebelum post", "boleh di-post?", or shares a draft/footage plan that involves VIRA, client material, or The Scholars — even if he doesn't explicitly ask for a privacy check. Also run this as the final gate after generating any reel script.
+description: Privacy guardrail review for any MIVA (nama lama: VIRA) / @povstevens content before publishing — reel scripts, captions, screenshots, screen recordings, stories, or lead magnets. Use whenever Steven is about to post or publish content, asks "aman nggak", "cek privasi", "review sebelum post", "boleh di-post?", or shares a draft/footage plan that involves MIVA, client material, or The Scholars — even if he doesn't explicitly ask for a privacy check. Also run this as the final gate after generating any reel script.
 ---
 
-# Privacy Check — Konten VIRA / @povstevens
+# Privacy Check — Konten MIVA / @povstevens
 
-Gate wajib sebelum konten apapun yang menyentuh materi VIRA dipublikasikan. Konteksnya: VIRA adalah bot production dengan user asli (orang tua & siswa klien), kredensialnya masih plaintext di file workflow, dan sebagian bug-nya belum dipatch — satu screenshot ceroboh bisa membocorkan data user, membuka peta serangan, atau merusak kepercayaan Sam (klien). Review-nya harus teliti, bukan formalitas.
+Gate wajib sebelum konten apapun yang menyentuh materi MIVA dipublikasikan. Konteksnya: MIVA adalah bot production dengan user asli (orang tua & siswa klien), kredensialnya masih plaintext di file workflow, dan sebagian bug-nya belum dipatch — satu screenshot ceroboh bisa membocorkan data user, membuka peta serangan, atau merusak kepercayaan Sam (klien). Review-nya harus teliti, bukan formalitas.
 
 ## Cara review
 
@@ -24,11 +24,11 @@ Kalau tidak ada temuan sama sekali, tetap tunjukkan aturan apa saja yang dicek �
 
 ## Aturan keras — pelanggaran = 🔴 BLOKIR
 
-1. **Identitas user asli.** Nama atau nomor WA user VIRA (Adrian, Vivipoh, dkk.), isi chat pribadi orang tua/siswa, screenshot DM asli calon klien. *Kenapa:* mereka user bisnis klien, bukan aset konten Steven — bocor sekali, kepercayaan Sam dan klien berikutnya hilang. *Fix:* ganti dengan bot demo "A Course" + data dummy, atau ilustrasi/teks animasi buatan sendiri.
+1. **Identitas user asli.** Nama atau nomor WA user MIVA (Adrian, Vivipoh, dkk.), isi chat pribadi orang tua/siswa, screenshot DM asli calon klien. *Kenapa:* mereka user bisnis klien, bukan aset konten Steven — bocor sekali, kepercayaan Sam dan klien berikutnya hilang. *Fix:* ganti dengan bot demo "A Course" + data dummy, atau ilustrasi/teks animasi buatan sendiri.
 2. **Kredensial & ID sistem.** Kirimi `user_code`/`secret`/`device_id` (masih plaintext di file workflow!), Google Sheet ID/URL, webhook URL, nomor rekening di contoh invoice, node credentials di layar n8n. *Kenapa:* ini akses langsung ke sistem production. *Fix:* pakai layar mock/demo; jangan tampilkan address bar; crop.
 3. **Bug yang belum dipatch.** Jangan ceritakan bug yang fixnya belum live di production (contoh yang diketahui belum: webhook tanpa auth, validasi API Kirimi). *Kenapa:* itu peta serangan yang dipublikasikan. Cerita debugging hanya untuk bug yang **sudah** difix dan deploy-nya terkonfirmasi. Kalau statusnya tidak disebut atau meragukan → tanya Steven "fixnya sudah live di production?" dan tahan konten sampai terjawab. Khusus reel 4/7/11 dari batch Juli 2026: ceritanya ditulis "sudah difix" padahal per analisa 2 Juli masih menunggu approval — selalu cek status ini.
-4. **System prompt lengkap VIRA.** *Kenapa:* bisa ditiru kompetitor — itu bagian dari nilai jual. Cuplikan 1–2 baris yang sudah digeneralisir masih boleh (🟡 nilai kasus per kasus).
-5. **Nama "The Scholars" / "Sam" tanpa izin tertulis Sam.** Default: anonimkan jadi "klien-ku, sebuah konsultan pendidikan". Nama produk **"VIRA"** sendiri aman disebut bebas. Kalau Steven bilang izin sudah ada, minta konfirmasi bentuk izinnya (chat/tertulis) sekali, lalu loloskan.
+4. **System prompt lengkap MIVA.** *Kenapa:* bisa ditiru kompetitor — itu bagian dari nilai jual. Cuplikan 1–2 baris yang sudah digeneralisir masih boleh (🟡 nilai kasus per kasus).
+5. **Nama "The Scholars" / "Sam" tanpa izin tertulis Sam.** Default: anonimkan jadi "klien-ku, sebuah konsultan pendidikan". Nama produk **"MIVA"** sendiri aman disebut bebas (nama lama "VIRA" tidak dipakai lagi di konten — bentrok dengan nama asisten resmi kantor). Kalau Steven bilang izin sudah ada, minta konfirmasi bentuk izinnya (chat/tertulis) sekali, lalu loloskan.
 
 ## Aturan produksi — pelanggaran = 🟡 REVISI
 
@@ -39,7 +39,7 @@ Kalau tidak ada temuan sama sekali, tetap tunjukkan aturan apa saja yang dicek �
 
 ## Yang sudah dipastikan AMAN (jangan false-positive)
 
-- Nama produk **"VIRA"** dan cerita konsepnya.
+- Nama produk **"MIVA"** dan cerita konsepnya.
 - Cerita bug yang **sudah difix & live**, diceritakan dengan bahasa awam.
 - Angka agregat tanpa identitas (mis. "143 user", "ratusan chat terjawab").
 - Nomor WA business Steven **085155202354** — memang sengaja dipublikasikan di konten.

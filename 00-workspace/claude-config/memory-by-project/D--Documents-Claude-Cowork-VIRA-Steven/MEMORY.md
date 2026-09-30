@@ -1,0 +1,7 @@
+- [Kuota Google Sheets lintas klien](kuota-google-sheets-lintas-klien.md) — 60 read/menit itu per akun, dipakai bareng VIRA Steven + The Scholars + Persada
+- [VIRA Steven jalan di nomor pribadi campuran](vira-steven-jalan-di-nomor-pribadi-campuran.md) — nomor bot 6285155202354 dipakai juga rekan BCA & keluarga, jadi gating harus default-DENY
+- [Aksi VIRA lewat tag, bukan tool](vira-steven-aksi-lewat-tag-bukan-tool.md) — AI Agent tanpa ai_tool, jadi LLM bisa mengklaim aksi yang tidak pernah terjadi
+- [Persona "Steven versi AI"](vira-steven-persona-steven-versi-ai.md) — jangan tertukar dengan "Sam versi AI" milik The Scholars
+- [Pakai subagent Sonnet untuk baca file](pakai-subagent-sonnet-untuk-baca-file.md) — workflow JSON & xlsx besar selalu didelegasikan, minta kutipan mentah
+- [Jangan sebut The Scholars/Persada di konten](vira-content-jangan-sebut-thescholars-persada.md) — konten publik VIRA selalu anonimkan nama klien, VIRA sendiri aman disebut
+- [Acuan gaya reel: Script 1-5 & 11](vira-reel-acuan-gaya-script-1-5-11.md) — Script 6-10 didepriotisasi, kurang punchy menurut Steven (18 Agu 2026)
